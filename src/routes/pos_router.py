@@ -2624,7 +2624,9 @@ async def checkout_transaction(
                 reference_type="order",
                 description=f"Purchase {transaction.transaction_number}: +{earned} credits",
             ))
-        customer.recalculate_tier()
+        from src.services.loyalty_service import policy_from_settings
+        _tier_store = await get_active_store_settings(db)
+        customer.recalculate_tier(policy_from_settings(_tier_store))
 
     await db.commit()
     await db.refresh(transaction)
@@ -2820,7 +2822,9 @@ async def create_sale(
                 credits=earned, balance_after=customer.credits_balance,
                 reference_id=txn.id, reference_type="order",
                 description=f"Purchase {transaction_number}: +{earned} credits"))
-        customer.recalculate_tier()
+        from src.services.loyalty_service import policy_from_settings
+        _tier_store = await get_active_store_settings(db)
+        customer.recalculate_tier(policy_from_settings(_tier_store))
 
     # ONE commit. The UNIQUE index on client_uuid is the real idempotency guard: if a concurrent
     # replay raced us, the INSERT loses the unique race — roll back and return the sale that won.
@@ -3617,12 +3621,16 @@ async def update_store_settings(
     _roles = current_user.get("user_roles", []) or []
     _is_admin = any("pos-admin" in r for r in _roles)
     if not _is_admin:
-        _dropped = [f for f in ("cashier_max_discount", "manager_max_discount") if f in update_data]
+        _admin_only = ("cashier_max_discount", "manager_max_discount",
+                       "loyalty_tier1_threshold", "loyalty_tier1_discount",
+                       "loyalty_tier2_threshold", "loyalty_tier2_discount",
+                       "loyalty_tier3_threshold", "loyalty_tier3_discount")
+        _dropped = [f for f in _admin_only if f in update_data]
         for f in _dropped:
             update_data.pop(f, None)
         if _dropped:
             logger.info(f"Settings save by non-admin {current_user.get('preferred_username')} — "
-                        f"discount fields ignored (admin-only): {_dropped}")
+                        f"discount/loyalty fields ignored (admin-only): {_dropped}")
 
     # Piece C: the N-rate VAT table is stored as a JSON string. Validate the MENU server-side
     # (≥1 row, exactly 1 default, unique non-blank codes, numeric rates 0–100), then serialise. A CH

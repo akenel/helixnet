@@ -408,12 +408,12 @@ class CustomerModel(Base):
         from src.schemas.customer_schema import member_of_age
         return member_of_age(self.birthdate, self.age_confirmed)
 
-    def recalculate_tier(self) -> None:
-        """Update tier from lifetime spend via the pure loyalty policy (Banco 3-tier,
-        conservative). Bronze = points only / no standing %; Silver +5% @ CHF 500;
-        Gold +10% @ CHF 2000. (Platinum/Diamond enum values kept but unused for now.)"""
+    def recalculate_tier(self, policy=None) -> None:
+        """Update tier from lifetime spend via the loyalty policy. `policy` = the rungs from the
+        store's Settings → Discounts (Felix owns the thresholds + %); None falls back to the
+        conservative code defaults. Bronze = points only; Silver/Gold/Platinum are configurable."""
         from src.services.loyalty_service import tier_for_spend
-        name, pct = tier_for_spend(self.lifetime_spend)
+        name, pct = tier_for_spend(self.lifetime_spend, policy)
         self.loyalty_tier = LoyaltyTier(name)
         self.tier_discount_percent = pct
 

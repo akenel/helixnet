@@ -166,6 +166,32 @@
                             <div><label class="lbl" data-i18n="settings.manager_max_discount">Manager max discount (%)</label><input type="number" step="1" min="0" max="100" x-model="form.manager_max_discount" class="input-field" placeholder="25"></div>
                         </div>
                         <p class="text-xs text-gray-500" data-i18n="settings.discounts_hint">Admin is always unlimited. Enforced server-side at checkout.</p>
+
+                        <!-- 🏅 Member loyalty tiers — Felix owns these numbers (spend earns the tier,
+                             the tier earns a standing % on eligible items; tobacco/alcohol never
+                             discount). Bronze = every member, points only. Applies to ALL members
+                             automatically from their lifetime spend the next time they buy. -->
+                        <div class="pt-2 mt-2 border-t border-gray-200">
+                            <h3 class="font-semibold text-gray-800 mb-1">🏅 <span data-i18n="settings.loyalty_tiers">Member loyalty tiers</span></h3>
+                            <p class="text-xs text-gray-500 mb-3" data-i18n="settings.loyalty_tiers_hint">Bronze = points only. Set the spend (CHF) that earns each tier and its standing discount. Tobacco &amp; alcohol are never discounted. Applies to every member automatically.</p>
+                            <div class="space-y-3">
+                                <div class="grid grid-cols-3 gap-3 items-end">
+                                    <div class="text-sm font-medium text-gray-600 pb-2">🥈 <span data-i18n="settings.tier_silver">Silver</span></div>
+                                    <div><label class="lbl" data-i18n="settings.tier_threshold">Spend ≥ (CHF)</label><input type="number" step="1" min="0" x-model="form.loyalty_tier1_threshold" class="input-field" placeholder="500"></div>
+                                    <div><label class="lbl" data-i18n="settings.tier_discount">Discount (%)</label><input type="number" step="1" min="0" max="100" x-model="form.loyalty_tier1_discount" class="input-field" placeholder="5"></div>
+                                </div>
+                                <div class="grid grid-cols-3 gap-3 items-end">
+                                    <div class="text-sm font-medium text-gray-600 pb-2">🥇 <span data-i18n="settings.tier_gold">Gold</span></div>
+                                    <div><input type="number" step="1" min="0" x-model="form.loyalty_tier2_threshold" class="input-field" placeholder="1000"></div>
+                                    <div><input type="number" step="1" min="0" max="100" x-model="form.loyalty_tier2_discount" class="input-field" placeholder="10"></div>
+                                </div>
+                                <div class="grid grid-cols-3 gap-3 items-end">
+                                    <div class="text-sm font-medium text-gray-600 pb-2">💎 <span data-i18n="settings.tier_platinum">Platinum</span></div>
+                                    <div><input type="number" step="1" min="0" x-model="form.loyalty_tier3_threshold" class="input-field" placeholder="2000"></div>
+                                    <div><input type="number" step="1" min="0" max="100" x-model="form.loyalty_tier3_discount" class="input-field" placeholder="15"></div>
+                                </div>
+                            </div>
+                        </div>
                     </fieldset>
                 </div>
 
@@ -517,6 +543,9 @@
                     vat_rates: vatRows,
                     receipt_header: F.receipt_header, receipt_footer: F.receipt_footer, receipt_logo_url: F.receipt_logo_url,
                     cashier_max_discount: F.cashier_max_discount, manager_max_discount: F.manager_max_discount,
+                    loyalty_tier1_threshold: F.loyalty_tier1_threshold, loyalty_tier1_discount: F.loyalty_tier1_discount,
+                    loyalty_tier2_threshold: F.loyalty_tier2_threshold, loyalty_tier2_discount: F.loyalty_tier2_discount,
+                    loyalty_tier3_threshold: F.loyalty_tier3_threshold, loyalty_tier3_discount: F.loyalty_tier3_discount,
                 };
                 try {
                     this.form = await API.put(`/api/v1/pos/settings/${this.STORE}`, payload);
