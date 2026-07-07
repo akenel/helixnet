@@ -65,8 +65,11 @@
     <!-- VENDORED LOCALLY (PWA Phase 0) — was the Tailwind Play CDN + jsdelivr. Local copies
          work offline AND fix the dev-only-CDN production caveat. Proper Tailwind build
          (PostCSS, purged CSS) is a follow-up; this is the full in-browser engine. -->
-    <!-- Tailwind CSS -->
-    <script src="/static/vendor/tailwind.js"></script>
+    <!-- Tailwind CSS — REAL compiled build (build/tailwind → src/static/pos/tailwind.css), not the
+         in-browser Play engine. Rebuild after adding classes: see build/tailwind/README. Kills the
+         "cdn.tailwindcss.com should not be used in production" warning + the 451KB runtime compile. -->
+    <link rel="stylesheet" href="/static/pos/tailwind.css?v=20260707">
+
 
     <!-- Alpine.js for reactive components -->
     <script defer src="/static/vendor/alpine.min.js"></script>

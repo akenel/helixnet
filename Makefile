@@ -392,3 +392,8 @@ e2e-variance:
 # + the four money paths a cashier hits.
 .PHONY: e2e-all
 e2e-all: e2e e2e-moat e2e-money
+
+.PHONY: tailwind
+tailwind:
+	npx tailwindcss@3.4.17 -c build/tailwind/tailwind.config.js -i build/tailwind/input.css -o src/static/pos/tailwind.css --minify
+	@echo "Built src/static/pos/tailwind.css — bump ?v= in pos/base.html + sw.js CACHE_NAME"
