@@ -10,16 +10,17 @@
 
 ---
 
-## 🃏 ON DECK — NEXT ROUND (2026-07-07 late) ← START HERE
-**WHERE WE ARE.** Prod solid on `dd097c9`. Two big rounds shipped today: member-discount (eligible-only +
-option B + Felix-owned tiers) AND full member CRUD (edit modal, deactivate, manual tier override). Deck is
-open — pick the next real need. Candidates parked below.
-
-**Parked candidates (no urgent driver — these are DIRECTION choices, need Angel's steer):**
-- **CRM/loyalty depth** — credits redemption UX, birthday rewards, member directory polish. See `banco-crm-strategy`.
-- **Tailwind Play-CDN → real build** — rule-9 item (console warning in prod); proper Tailwind pipeline, separate task.
-- Older deck items: offline/PWA, fiscal (fiskaly TSE), multi-department, supplier-sync full framework (see memory index).
-- ✅ done this pass: "🔒 manual" tier badge on member card (`f70c3ef`); stale LoyaltyTier enum comments refreshed.
+## 🃏 ON DECK — DIRECTION FORK (2026-07-07 night) ← START HERE
+**WHERE WE ARE.** Prod solid on `fb81028`, all envs in parity, tree clean. A HUGE day shipped + human-green:
+cash type-in, member-discount (eligible-only + option B + Felix-owned tiers), full member CRUD + manual badge,
+eligible-only manual discount, real compiled Tailwind (POS), minor-member gate fix, back-button guard. The
+small polish is DONE — what's left are genuine DIRECTION choices (multi-hour, need Angel's steer, no urgent driver):
+- **CRM/loyalty depth** — credits redemption UX, birthday rewards, member directory (builds on today's member work). `banco-crm-strategy`.
+- **Offline/PWA resilience** — POS keeps ringing when the internet drops (real head-shop value). `banco-offline-and-pwa-plan`.
+- **Finish Tailwind site-wide** — home/login/La Piazza still on the external CDN (POS is done). Bigger/different surface.
+- **Fiscal (fiskaly TSE)** — go-live compliance (DE now / CH readiness). `banco-fiskaly-integration-brief`.
+- Also parked: multi-department, full supplier-sync framework (see memory index).
+This is also a fine STOP point — everything's clean.
 
 ## ✅ 2026-07-07 (night) — TAILWIND real build + MINOR-MEMBER gate fix SHIPPED PROD (`144a363`)
 (1) Replaced the 451 KB in-browser Tailwind Play engine with a REAL compiled build (build/tailwind → 91 KB
