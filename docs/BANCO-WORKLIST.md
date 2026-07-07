@@ -22,6 +22,12 @@ open — pick the next real need. Candidates parked below.
 - **Cosmetic:** `customer_schema` LoyaltyTier enum comments (5/10/15/20%) are stale vs the real policy — fix when convenient.
 - Older deck items: offline/PWA, fiscal, CRM loyalty wiring (see memory index).
 
+## ✅ 2026-07-07 (late) — CASH CHECKOUT: TYPE-IN AMOUNT + ADDITIVE NOTES (`c05877d`)
+Swiss pay OVER (a 50 for gum; 75.00 for a 72.50 bill) and combine notes (50+20=70). Old cash UI only
+had fixed single buttons → cashiers faked "exact". Now: free-form "Amount received (CHF)" input (primary),
+note buttons +5/+10/+20/+50/+100/+200 that ADD up, EXACT + CLEAR. Server always accepted any amount_tendered
+(proven e2e). Member CRUD also E2E-verified 11/11 (create→edit→tier override→deactivate RBAC→reactivate).
+
 ## ✅ 2026-07-07 (late) — FULL MEMBER CRUD SHIPPED PROD (`dd097c9`)
 The edit button was a stub ("coming soon") — backend PUT existed but was never wired. Now: ✏️ Edit Member
 modal on /pos/customer-lookup (handle, name, email, phone, IG/TG, DOB, notes) → PUT /api/v1/customers/{id};
