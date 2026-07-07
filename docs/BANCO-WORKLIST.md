@@ -10,6 +10,21 @@
 
 ---
 
+## 🧪 2026-07-07 — ARTEMIS CATALOG imported to SANDBOX (5,108 items, reviewed) ← Angel testing SBX
+Full Artemis Luzern webshop catalog **committed to `banco_sandbox`** (was 274 products → now 5,108):
+all with images, classified, **956 flagged 18+**, searchable/sellable. Ran `artemis_import.py --commit`
+in the sandbox container (mirrors the gated plan: sandbox first, review, THEN prod).
+- **Review caught + fixed** two supplier-vocab gaps (commit `c153c10`): nicotine vapes named the Artemis
+  way ("…Refill", "…BM6000 20mg Nachfüllbehälter") leaked as standard → taught the classifier the vape
+  brands + a brand-scoped refill rule; excluded absinthe *spoons* from alcohol. Re-classified IN PLACE via
+  new `scripts/reclassify_products.py` (no re-crawl) → 42 fixed, **re-audit 0 leaks, 0 class/flag drift**.
+  FourTwenty feed unchanged (674); 29 taxonomy unit tests green.
+- 🧍 **Angel: poking around SBX to test** the catalog. `https://sandbox-banco.lapiazza.app` (login pam/felix).
+- **NEXT (gated, Angel's go):** import to PROD — backup-gated, same steps. Note: all 5,108 have price but
+  **no cost** (webshop doesn't expose it) → margin-blind until a manager fills it (sold ones surface in the
+  cleanup cockpit). LLM enrichment (descriptions/translation) = separate later layer. Detail: memory
+  `banco-artemis-catalog-import`. (This live-catalog import is SEPARATE from `reference_products` = 7,272 FourTwenty lookup.)
+
 ## ✅ SHIPPED PROD 2026-07-07 (pt.2) — live discount cap + UAT sign-off (`b93ee26`, trio-clean)
 - **Discount cap reads LIVE from settings (client seal)** — `1851eb4` fixed the server; the till still
   hardcoded cashier=10 / checkout=25. New `GET /pos/discount-cap` (reuses `_max_discount_pct`); scan +
