@@ -401,10 +401,19 @@
             },
 
             async init() {
+                // Back-forward cache guard: if the browser restores this page from bfcache (Back button)
+                // AFTER the sale cleared the cart, it would show the frozen "Processing…" spinner of a
+                // closed deal. Bounce straight to a fresh New Sale so a completed order never reappears.
+                window.addEventListener('pageshow', (e) => {
+                    if (e.persisted && !sessionStorage.getItem('pos_cart')) {
+                        window.location.replace('/pos/scan');
+                    }
+                });
+
                 const stored = sessionStorage.getItem('pos_cart');
                 if (!stored) {
                     showToast(t('checkout.toast_no_cart'), 'warning');
-                    setTimeout(() => window.location.href = '/pos/scan', 1000);
+                    setTimeout(() => window.location.replace('/pos/scan'), 1000);
                     return;
                 }
 
@@ -883,9 +892,11 @@
 
                     showToast(t('checkout.toast_txn_completed'), 'success');
 
-                    // Redirect to receipt page
+                    // Redirect to the receipt with REPLACE (not href): a closed deal must leave the
+                    // history stack, so Back from the receipt goes to a fresh New Sale — never back to
+                    // this now-empty checkout showing a stale "Processing…" spinner.
                     setTimeout(() => {
-                        window.location.href = `/pos/receipt/${sale.id}`;
+                        window.location.replace(`/pos/receipt/${sale.id}`);
                     }, 500);
 
                 } catch (error) {
