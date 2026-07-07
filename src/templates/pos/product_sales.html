@@ -34,9 +34,11 @@
 
         <!-- Header -->
         <div class="flex justify-between items-center mb-4 flex-wrap gap-2 no-print">
-            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900" data-i18n="product_sales.title">📦 Product Sales</h1>
+            <div class="flex items-center gap-3">
+                <button @click="goDashboard()" class="btn-secondary flex-none" title="Dashboard" aria-label="Dashboard">🏠</button>
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900" data-i18n="product_sales.title">📦 Product Sales</h1>
+            </div>
             <div class="flex flex-wrap gap-2">
-                <button @click="goDashboard()" class="btn-secondary" data-i18n="product_sales.dashboard">🏠 Dashboard</button>
                 <button @click="goReports()" class="btn-secondary" data-i18n="product_sales.reports">📊 Reports</button>
                 <button @click="goTransactions()" class="btn-secondary" data-i18n="product_sales.transactions">💳 Transactions</button>
             </div>

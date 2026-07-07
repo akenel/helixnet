@@ -34,9 +34,7 @@
     <nav class="bg-white shadow-lg sticky top-0 z-10 no-print">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
-                <button @click="goBack()" class="btn-secondary" data-i18n="transactions.back">
-                    ← Back to Dashboard
-                </button>
+                <button @click="goBack()" class="btn-secondary flex-none" title="Dashboard" aria-label="Dashboard">🏠</button>
                 <h1 class="text-2xl font-bold text-gray-900" data-i18n="transactions.title">💳 Transaction History</h1>
                 <div class="text-sm text-gray-600">
                     <span x-text="user.username"></span> | <span x-text="roleDisplay()"></span>

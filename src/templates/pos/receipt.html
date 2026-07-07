@@ -7,6 +7,7 @@
     <!-- Print Button Bar (hidden when printing) -->
     <div class="no-print bg-white shadow-md sticky top-0 z-10 px-4 py-3 flex justify-between items-center flex-wrap gap-2">
         <div class="flex items-center gap-2 min-w-0">
+            <button @click="goDashboard()" class="btn-secondary flex-none" title="Dashboard" aria-label="Dashboard">🏠</button>
             <button x-show="cameFromReport" style="display: none;" @click="goBack()" class="btn-secondary whitespace-nowrap" title="Back to the sales report" data-i18n="receipt.back_to_report">← Back to report</button>
             <h1 class="text-lg sm:text-xl font-bold leading-tight min-w-0">
                 <span data-i18n="receipt.title">Receipt</span>
@@ -20,9 +21,6 @@
             </button>
             <button @click="printReceipt()" class="btn-secondary" data-i18n="receipt.print">
                 🖨️ Print
-            </button>
-            <button @click="goDashboard()" class="btn-secondary" data-i18n="receipt.dashboard">
-                🏠 Dashboard
             </button>
             <!-- Close the deal: straight into the next sale -->
             <button @click="newSale()" class="btn-primary" data-i18n="receipt.new_sale">

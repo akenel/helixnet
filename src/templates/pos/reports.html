@@ -8,9 +8,11 @@
 
         <!-- Header -->
         <div class="flex justify-between items-center mb-6 flex-wrap gap-2">
-            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900" data-i18n="reports.title">📊 Sales Reports</h1>
+            <div class="flex items-center gap-3">
+                <button @click="goDashboard()" class="btn-secondary flex-none" title="Dashboard" aria-label="Dashboard">🏠</button>
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900" data-i18n="reports.title">📊 Sales Reports</h1>
+            </div>
             <div class="flex flex-wrap gap-2">
-                <button @click="goDashboard()" class="btn-secondary" data-i18n="reports.dashboard">🏠 Dashboard</button>
                 <button @click="goProductSales()" class="btn-secondary" data-i18n="reports.product_sales">📦 Product Sales</button>
                 <button @click="goCleanup()" class="btn-secondary" data-i18n="reports.cleanup">🧹 Cleanup</button>
                 <button @click="goTransactions()" class="btn-secondary" data-i18n="reports.all_transactions">💳 All Transactions</button>
