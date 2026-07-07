@@ -111,6 +111,20 @@ def class_promo_restricted(cls: str | None) -> bool:
     return class_meta(cls).get("promo_restricted", False)
 
 
+def reconcile_age(product_class: str | None, is_age_restricted: bool | None) -> tuple[str, bool]:
+    """Keep product_class (the source of truth) and the is_age_restricted flag consistent.
+
+    The checkout age gate reads product_class, NOT the boolean column — so a bare "18+" toggle
+    must land on a class that actually gates. If the caller flipped 18+ on an otherwise unclassed
+    item (the on-the-fly quick-add, the cleanup cockpit), file it under the neutral "age_restricted"
+    class; a manager can re-class it precisely (tobacco/cbd/…) later. Then always DERIVE the flag
+    from the (possibly updated) class so the two can never drift. Returns (class, flag)."""
+    cls = product_class or DEFAULT_CLASS
+    if is_age_restricted and not class_is_age_restricted(cls):
+        cls = "age_restricted"
+    return cls, class_is_age_restricted(cls)
+
+
 # --- CLASSIFIER: (title + FourTwenty category) -> (our_category, our_class, age_restricted) ---
 
 # Negative guard so "tobacco-free" / "nikotinfrei" / "0mg" / herbal substitute never trip 18+.

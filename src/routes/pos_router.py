@@ -281,16 +281,10 @@ async def quick_create_product(
         data["category"] = "On the fly"
     data["is_active"] = True
     # 18+ toggle (cashier contract): the checkout age gate reads product_class, NOT the
-    # is_age_restricted column — so a bare column flag would NOT actually block the sale.
-    # Bind the toggle to a class that gates: if the cashier marked 18+ on an otherwise
-    # unclassified quick-add, file it under the neutral "age_restricted" class. Then always
-    # derive is_age_restricted from the class so the two can never drift (module contract).
-    from src.services.catalog_taxonomy import class_is_age_restricted, DEFAULT_CLASS
-    cls = (data.get("product_class") or DEFAULT_CLASS)
-    if data.get("is_age_restricted") and not class_is_age_restricted(cls):
-        cls = "age_restricted"
-    data["product_class"] = cls
-    data["is_age_restricted"] = class_is_age_restricted(cls)
+    # is_age_restricted column — bind the toggle to a gating class + keep the two in sync.
+    from src.services.catalog_taxonomy import reconcile_age
+    data["product_class"], data["is_age_restricted"] = reconcile_age(
+        data.get("product_class"), data.get("is_age_restricted"))
     new_product = ProductModel(**data)
     db.add(new_product)
     try:
@@ -693,6 +687,14 @@ async def update_product(
     update_data = product_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(product, field, value)
+
+    # If this edit touched the 18+ toggle or the class, reconcile them so product_class (which
+    # the checkout gate reads) and the is_age_restricted flag can never drift — a manager flipping
+    # "18+" in the cleanup cockpit on a plain item files it under the gating "age_restricted" class.
+    if "is_age_restricted" in update_data or "product_class" in update_data:
+        from src.services.catalog_taxonomy import reconcile_age
+        product.product_class, product.is_age_restricted = reconcile_age(
+            product.product_class, product.is_age_restricted)
 
     product.updated_at = datetime.now(timezone.utc)
     try:
@@ -3374,6 +3376,87 @@ async def get_category_sales_detail(
     }
 
 
+# A product is "half-baked" if it SOLD but is still missing the two things a cashier's lean
+# quick-add can't be trusted to fill: a real category (not the "On the fly" placeholder / blank)
+# and a cost (no cost = margin-blind). These are the objective gaps that keep an item in the
+# cleanup queue; 18+ and photo are surfaced for review but don't gate (a manager confirms them
+# while they're in there). This is the safety net that makes the lean quick-add safe — nothing a
+# cashier rings in a rush falls through permanently.
+_HALFBAKED_CATEGORIES = ("On the fly", "On The Fly", "on the fly")
+
+
+@router.get("/catalog/cleanup-queue")
+async def get_cleanup_queue(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_manager_or_admin()),
+):
+    """Sold-but-not-set-up cockpit (manager/admin): products that HAVE SOLD but are still
+    half-baked (placeholder/blank category or missing cost), prioritised by units sold — the
+    busiest gaps first. Read-only aggregate; the manager fixes each via PUT /products/{id}.
+
+    Cashier never edits the catalog/cost — they ring it in; the manager cleans it up here."""
+    # Units + revenue + last-sold per real product, over ALL completed sales (giveaways excluded).
+    sold = (await db.execute(
+        select(
+            LineItemModel.product_id.label("pid"),
+            func.sum(LineItemModel.quantity).label("qty"),
+            func.sum(LineItemModel.line_total).label("revenue"),
+            func.max(TransactionModel.completed_at).label("last_sold"),
+            func.count(func.distinct(LineItemModel.transaction_id)).label("txns"),
+        )
+        .join(TransactionModel, TransactionModel.id == LineItemModel.transaction_id)
+        .where(and_(
+            TransactionModel.status == TransactionStatus.COMPLETED,
+            LineItemModel.product_id.isnot(None),
+            LineItemModel.is_giveaway == False,
+        ))
+        .group_by(LineItemModel.product_id)
+    )).all()
+    if not sold:
+        return {"items": [], "count": 0}
+
+    sold_by_pid = {r.pid: r for r in sold}
+    products = (await db.execute(
+        select(ProductModel).where(and_(
+            ProductModel.id.in_(list(sold_by_pid.keys())),
+            ProductModel.is_active == True,
+        ))
+    )).scalars().all()
+
+    from src.services.catalog_taxonomy import category_emoji
+    items = []
+    for p in products:
+        cat = (p.category or "").strip()
+        gap_category = (cat == "") or (cat in _HALFBAKED_CATEGORIES)
+        gap_cost = p.cost is None
+        if not (gap_category or gap_cost):
+            continue  # fully set up — not in the queue
+        s = sold_by_pid[p.id]
+        items.append({
+            "product_id": str(p.id),
+            "name": p.name,
+            "sku": p.sku,
+            "category": p.category,
+            "price": float(p.price) if p.price is not None else None,
+            "cost": float(p.cost) if p.cost is not None else None,
+            "is_age_restricted": bool(p.is_age_restricted),
+            "product_class": p.product_class,
+            "image_url": p.image_url,
+            "qty_sold": int(s.qty or 0),
+            "revenue": float(Decimal(str(s.revenue or 0)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)),
+            "txn_count": int(s.txns or 0),
+            "last_sold": s.last_sold.isoformat() if s.last_sold else None,
+            "gaps": {
+                "category": gap_category,
+                "cost": gap_cost,
+                "photo": not p.image_url,   # soft — shown, not gated
+            },
+        })
+    # Busiest gaps first: most units sold = most urgent to tidy.
+    items.sort(key=lambda x: (x["qty_sold"], x["revenue"]), reverse=True)
+    return {"items": items, "count": len(items)}
+
+
 @router.get("/customers/{customer_id}/summary")
 async def get_customer_summary(
     customer_id: UUID,
@@ -5663,6 +5746,14 @@ async def pos_product_sales(request: Request):
     date range, tap a product to drill into who bought it. Manager/admin (the API endpoints
     enforce the role; this just serves the shell). See docs/BANCO-DAY-ONE-WISHLIST.md."""
     return templates.TemplateResponse("pos/product_sales.html", {"request": request})
+
+
+@html_router.get("/pos/cleanup", response_class=HTMLResponse, name="pos_cleanup")
+async def pos_cleanup(request: Request):
+    """Sold-but-not-set-up cleanup cockpit (Felix/manager) — products a cashier quick-added that
+    have SOLD but still need a category / cost / 18+ confirmed. Manager/admin (the /catalog/
+    cleanup-queue + PUT /products endpoints enforce the role; this just serves the shell)."""
+    return templates.TemplateResponse("pos/cleanup.html", {"request": request})
 
 
 @html_router.get("/pos/transactions", response_class=HTMLResponse, name="pos_transactions")

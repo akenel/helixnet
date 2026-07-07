@@ -9,7 +9,7 @@ classifier leaked them through as un-gated goods.
 
 Pure function, no DB/network — fast regression guard on classify().
 """
-from src.services.catalog_taxonomy import classify, class_is_age_restricted
+from src.services.catalog_taxonomy import classify, class_is_age_restricted, reconcile_age
 
 
 def _ft(cg2, cg1="Headshop"):
@@ -168,3 +168,27 @@ def test_tobacco_pouch_is_accessory_not_substance():
     # the classic false-positive: "Tabaktasche" is a pouch, not tobacco
     age, _, _ = _age("Kavatza Tabaktasche Small", TABAK)
     assert age is False
+
+
+# ---- reconcile_age: keep product_class (gate reads it) and the flag consistent ----
+
+def test_reconcile_toggle_on_plain_item_files_under_gating_class():
+    cls, flag = reconcile_age("standard", True)
+    assert cls == "age_restricted" and flag is True
+
+
+def test_reconcile_toggle_off_is_standard():
+    cls, flag = reconcile_age("standard", False)
+    assert cls == "standard" and flag is False
+
+
+def test_reconcile_respects_an_explicit_specific_class():
+    # already tobacco -> keep it (don't clobber to the neutral bucket); flag derives True
+    cls, flag = reconcile_age("tobacco_nicotine", True)
+    assert cls == "tobacco_nicotine" and flag is True
+
+
+def test_reconcile_derives_flag_from_class_when_flag_absent():
+    # flag None -> derive purely from the class (import path)
+    assert reconcile_age("cbd_hemp", None) == ("cbd_hemp", True)
+    assert reconcile_age("standard", None) == ("standard", False)

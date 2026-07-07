@@ -12,6 +12,7 @@
             <div class="flex flex-wrap gap-2">
                 <button @click="goDashboard()" class="btn-secondary" data-i18n="reports.dashboard">🏠 Dashboard</button>
                 <button @click="goProductSales()" class="btn-secondary" data-i18n="reports.product_sales">📦 Product Sales</button>
+                <button @click="goCleanup()" class="btn-secondary" data-i18n="reports.cleanup">🧹 Cleanup</button>
                 <button @click="goTransactions()" class="btn-secondary" data-i18n="reports.all_transactions">💳 All Transactions</button>
             </div>
         </div>
@@ -236,6 +237,7 @@
             goDashboard() { window.location.href = '/pos/dashboard'; },
             goTransactions() { window.location.href = '/pos/transactions'; },
             goProductSales() { window.location.href = '/pos/reports/products'; },
+            goCleanup() { window.location.href = '/pos/cleanup'; },
             formatPrice(amount) { return formatPrice(amount); }
         }
     }

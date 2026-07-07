@@ -1,0 +1,194 @@
+{% extends "pos/base.html" %}
+
+{% block title %}Cleanup Queue - HelixPOS - Artemis Store{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="cleanupData()" x-init="init()">
+    <div class="max-w-4xl mx-auto px-4 py-8">
+
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-2 flex-wrap gap-2">
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900" data-i18n="cleanup.title">🧹 Cleanup Queue</h1>
+            <div class="flex flex-wrap gap-2">
+                <button @click="goCatalog()" class="btn-secondary" data-i18n="cleanup.catalog">📦 Catalog</button>
+                <button @click="goReports()" class="btn-secondary" data-i18n="cleanup.reports">📊 Reports</button>
+            </div>
+        </div>
+        <p class="text-gray-600 mb-4" data-i18n="cleanup.intro">Products that <b>sold</b> but still need setting up — a real category and a cost.
+            Busiest first. The cashier rings it in; you tidy it here. Nothing falls through.</p>
+
+        <!-- Manager-only notice -->
+        <div x-show="!user.isManager" class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4 text-sm text-yellow-800" data-i18n="cleanup.manager_notice">
+            This cockpit is for managers. Ask a manager to finish setting up quick-added products.
+        </div>
+
+        <template x-if="user.isManager">
+            <div>
+                <!-- Summary -->
+                <div class="card mb-4 flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-xs uppercase tracking-wide" data-i18n="cleanup.need_setup">Need setup</p>
+                        <p class="text-3xl font-bold" :class="items.length ? 'text-amber-600' : 'text-green-600'" x-text="items.length"></p>
+                    </div>
+                    <button @click="load()" class="btn-secondary" :disabled="loading">
+                        <span x-show="!loading">🔄 <span data-i18n="cleanup.refresh">Refresh</span></span>
+                        <span x-show="loading" style="display:none;" data-i18n="cleanup.loading">Loading…</span>
+                    </button>
+                </div>
+
+                <!-- Empty / all-clear -->
+                <div x-show="!loading && items.length === 0" class="card text-center py-10">
+                    <p class="text-5xl mb-2">🎉</p>
+                    <p class="text-lg font-semibold text-gray-800" data-i18n="cleanup.all_clear">All caught up</p>
+                    <p class="text-gray-500" data-i18n="cleanup.all_clear_sub">Every product that has sold is fully set up.</p>
+                </div>
+
+                <!-- Queue -->
+                <div class="space-y-3">
+                    <template x-for="p in items" :key="p.product_id">
+                        <div class="card">
+                            <div class="flex gap-3">
+                                <!-- Photo / placeholder -->
+                                <div class="w-16 h-16 rounded-lg border bg-white flex-none flex items-center justify-center overflow-hidden">
+                                    <img x-show="p.image_url" :src="p.image_url" class="w-full h-full object-cover" alt="">
+                                    <span x-show="!p.image_url" class="text-2xl">📦</span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-bold text-gray-900 truncate" x-text="p.name"></p>
+                                    <p class="text-xs text-gray-400 truncate" x-text="p.sku"></p>
+                                    <p class="text-sm text-gray-600 mt-1">
+                                        <span class="font-semibold text-indigo-600" x-text="'× ' + p.qty_sold"></span>
+                                        <span data-i18n="cleanup.sold"> sold</span>
+                                        <span x-show="p.revenue"> · <span x-text="formatPrice(p.revenue)"></span></span>
+                                        <span x-show="p.last_sold" class="text-gray-400"> · <span data-i18n="cleanup.last"> last</span> <span x-text="shortDate(p.last_sold)"></span></span>
+                                    </p>
+                                    <!-- Gap chips -->
+                                    <div class="flex flex-wrap gap-1 mt-2">
+                                        <span x-show="p.gaps.category" class="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700" data-i18n="cleanup.chip_category">🏷️ no category</span>
+                                        <span x-show="p.gaps.cost" class="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700" data-i18n="cleanup.chip_cost">💰 no cost</span>
+                                        <span x-show="p.gaps.photo" class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500" data-i18n="cleanup.chip_photo">📷 no photo</span>
+                                        <span x-show="p.is_age_restricted" class="text-xs px-2 py-0.5 rounded-full bg-red-50 text-red-800">🔞 18+</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Inline fix -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3 pt-3 border-t">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="cleanup.f_category">Category</label>
+                                    <input type="text" x-model="p._category" :list="'cats-' + p.product_id"
+                                           placeholder="e.g. Papers & Filters" data-i18n-placeholder="cleanup.ph_category" class="input-field">
+                                    <datalist :id="'cats-' + p.product_id"><template x-for="c in categories" :key="c.name"><option :value="c.name"></option></template></datalist>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="cleanup.f_cost">Cost (CHF)</label>
+                                    <input type="number" step="0.05" min="0" x-model="p._cost" placeholder="0.00" class="input-field">
+                                </div>
+                                <label class="sm:col-span-2 flex items-center gap-3 p-2 rounded-lg border-2 cursor-pointer select-none"
+                                       :class="p._age ? 'bg-red-50 border-red-400' : 'bg-gray-50 border-gray-200'">
+                                    <input type="checkbox" x-model="p._age" class="w-5 h-5 accent-red-600 flex-none">
+                                    <span x-text="p._age ? '🔞' : '✅'"></span>
+                                    <span class="text-sm font-semibold" :class="p._age ? 'text-red-800' : 'text-gray-700'" data-i18n="cleanup.f_age">18+ — needs ID? (tobacco, alcohol, CBD flower…)</span>
+                                </label>
+                            </div>
+                            <div class="flex justify-end mt-3">
+                                <button @click="save(p)" :disabled="p._saving" class="btn-success">
+                                    <span x-show="!p._saving">✅ <span data-i18n="cleanup.save">Save &amp; done</span></span>
+                                    <span x-show="p._saving" style="display:none;" data-i18n="cleanup.saving">Saving…</span>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function cleanupData() {
+        return {
+            user: {},
+            items: [],
+            categories: [],
+            loading: false,
+
+            async init() {
+                const info = AuthHelper.getUserInfo();
+                this.user = { ...info, isManager: AuthHelper.isManager(), isAdmin: AuthHelper.isAdmin() };
+                if (!this.user.isManager) return;
+                await this.loadCategories();
+                await this.load();
+            },
+
+            async loadCategories() {
+                try {
+                    const cats = await API.get('/api/v1/pos/search/categories');
+                    // Only offer REAL categories in the picker (never the "On the fly" placeholder).
+                    this.categories = (cats || [])
+                        .filter(c => c.name && !/^on the fly$/i.test(c.name))
+                        .map(c => ({ name: c.name }));
+                } catch (e) { console.warn('categories unavailable', e); }
+            },
+
+            async load() {
+                this.loading = true;
+                try {
+                    const data = await API.get('/api/v1/pos/catalog/cleanup-queue');
+                    this.items = (data.items || []).map(p => ({
+                        ...p,
+                        // editable working copies — blank the placeholder so the manager types a real one
+                        _category: (p.gaps.category ? '' : (p.category || '')),
+                        _cost: (p.cost != null ? p.cost : ''),
+                        _age: !!p.is_age_restricted,
+                        _saving: false,
+                    }));
+                } catch (e) {
+                    console.error('cleanup queue failed', e);
+                    showToast(t('cleanup.toast_load_failed') || 'Could not load the queue', 'error');
+                } finally { this.loading = false; }
+            },
+
+            async save(p) {
+                const cat = (p._category || '').trim();
+                const costRaw = (p._cost === '' || p._cost === null) ? null : parseFloat(p._cost);
+                if (costRaw !== null && (isNaN(costRaw) || costRaw < 0)) {
+                    showToast(t('cleanup.toast_bad_cost') || 'Enter a valid cost', 'warning'); return;
+                }
+                const payload = { is_age_restricted: !!p._age };
+                if (cat) payload.category = cat;
+                if (costRaw !== null) payload.cost = costRaw;
+                p._saving = true;
+                try {
+                    await API.put(`/api/v1/pos/products/${p.product_id}`, payload);
+                    // Recompute the objective gaps; drop from the queue only when both are filled.
+                    const stillCat = !cat && p.gaps.category;    // was missing and still not provided
+                    const stillCost = (costRaw === null) && p.gaps.cost;
+                    showToast(t('cleanup.toast_saved') || 'Saved', 'success');
+                    if (!stillCat && !stillCost) {
+                        this.items = this.items.filter(x => x.product_id !== p.product_id);
+                    } else {
+                        // partial — keep it, refresh its live values
+                        await this.load();
+                    }
+                } catch (e) {
+                    console.error('save failed', e);
+                    showToast(t('cleanup.toast_save_failed') || 'Save failed', 'error');
+                } finally { p._saving = false; }
+            },
+
+            shortDate(iso) {
+                if (!iso) return '';
+                try { return new Date(iso).toLocaleDateString(); } catch (e) { return iso.slice(0, 10); }
+            },
+            formatPrice(v) {
+                return 'CHF ' + (Number(v) || 0).toFixed(2);
+            },
+            goCatalog() { window.location.href = '/pos/catalog'; },
+            goReports() { window.location.href = '/pos/reports'; },
+        };
+    }
+</script>
+{% endblock %}
