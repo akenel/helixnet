@@ -32,7 +32,8 @@ window.POS_STRINGS = {
       "cart": "Cart",
       "catalog": "Catalog",
       "customers": "Customers",
-      "my_day": "My Day"
+      "my_day": "My Day",
+      "dashboard": "Dashboard"
     },
     "status": {
       "ok": "System OK",
@@ -1432,7 +1433,8 @@ window.POS_STRINGS = {
       "cart": "Carrello",
       "catalog": "Catalogo",
       "customers": "Clienti",
-      "my_day": "La mia giornata"
+      "my_day": "La mia giornata",
+      "dashboard": "Cruscotto"
     },
     "status": {
       "ok": "Sistema OK",
@@ -2832,7 +2834,8 @@ window.POS_STRINGS = {
       "cart": "Warenkorb",
       "catalog": "Katalog",
       "customers": "Kunden",
-      "my_day": "Mein Tag"
+      "my_day": "Mein Tag",
+      "dashboard": "Übersicht"
     },
     "status": {
       "ok": "System OK",
