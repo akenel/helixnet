@@ -1647,18 +1647,25 @@ async def start_shift_session(
     user_id = current_user.get('sub', current_user.get('preferred_username', 'unknown'))
     username = current_user.get('preferred_username', current_user.get('name', 'Unknown'))
 
-    # Check for existing active session for this user
-    existing = await db.execute(
+    # Already on shift? This endpoint is a presence-tap fired on every dashboard load (the My Day
+    # auto-tally), so being already-active is the NORMAL case, not an error — return the existing
+    # session (200, idempotent) instead of a 400. Raising here only spammed a red "API call failed"
+    # in the console/network tab for a no-op the caller already swallows.
+    existing = (await db.execute(
         select(ShiftSessionModel).where(
             ShiftSessionModel.user_id == user_id,
             ShiftSessionModel.status == SessionStatus.ACTIVE
         )
-    )
-    if existing.scalar_one_or_none():
-        raise HTTPException(
-            status_code=400,
-            detail=f"User {username} already has an active session. End it first."
-        )
+    )).scalar_one_or_none()
+    if existing:
+        return {
+            "session_id": str(existing.id),
+            "username": existing.username,
+            "store_number": existing.store_number,
+            "started_at": existing.started_at.isoformat(),
+            "already_active": True,
+            "message": f"Shift already active for {username}",
+        }
 
     # Create new session
     session = ShiftSessionModel(

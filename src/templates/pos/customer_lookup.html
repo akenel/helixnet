@@ -42,11 +42,15 @@
                         🔍 Search
                     </button>
                 </div>
-                <div class="flex items-center justify-between mt-2 gap-2 flex-wrap">
-                    <p class="text-sm text-gray-500" data-i18n="customer.search_hint">Try: "poppie", "@poppie_420", "larry@..."</p>
+                <div class="flex items-center justify-between mt-3 gap-2 flex-wrap">
+                    <!-- Always available: knows the member is new? add one straight away, no dead-end search first. -->
+                    <button @click="startNewCrack()" class="btn-success" data-i18n="customer.add_new_crack">
+                        ➕ Add New CRACK
+                    </button>
                     <button @click="toggleDirectory()" class="text-sm font-semibold text-indigo-600 hover:underline"
                             x-text="showDirectory ? t('customer.hide_member_list') : t('customer.browse_all_members')"></button>
                 </div>
+                <p class="text-sm text-gray-500 mt-2" data-i18n="customer.search_hint">Try: "poppie", "@poppie_420", "larry@..."</p>
             </div>
 
             <!-- Several matches -> pick the right person (no more silent "first Larry") -->
@@ -373,6 +377,20 @@
                 } catch (error) {
                     console.log('Could not load recent customers:', error);
                 }
+            },
+
+            // Jump straight to a new profile (the always-on "➕ Add New CRACK" button). Prefills the
+            // handle from whatever they typed, and clears the "not found" nudge so there's no double
+            // Add button, then reveals + scrolls to the form.
+            startNewCrack() {
+                if (this.searchQuery && !this.newCustomer.handle) {
+                    this.newCustomer.handle = this.searchQuery.replace(/^@/, '').trim();
+                }
+                this.searched = false;
+                this.matches = [];
+                this.showNewCustomerForm = true;
+                this.$nextTick(() => document.querySelector('[data-i18n="customer.new_crack_profile"]')
+                    ?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
             },
 
             async searchCustomer() {
