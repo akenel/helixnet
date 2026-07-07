@@ -277,7 +277,7 @@
                         <div x-show="discountMode === 'percent'">
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 <span data-i18n="scan.discount_pct_label">Discount %</span>
-                                <span x-show="user.isCashier && !user.isManager" class="text-yellow-600" data-i18n="scan.max_10">(Max 10%)</span>
+                                <span x-show="!user.isAdmin" class="text-yellow-600" x-text="t('scan.max_pct', {n: maxDiscount})"></span>
                             </label>
                             <input
                                 type="number"
@@ -710,10 +710,10 @@
                     isCashier: AuthHelper.isCashier()
                 };
 
-                // Set max discount based on role
-                if (this.user.isCashier && !this.user.isManager) {
-                    this.maxDiscount = 10; // Cashiers max 10%
-                }
+                // Max discount: role default first (so the field works instantly), then override
+                // with the LIVE store setting the server actually enforces (no hardcoded 10).
+                this.maxDiscount = this.user.isAdmin ? 100 : (this.user.isManager ? 25 : 10);
+                this.loadDiscountCap();
 
                 // Restore cart from sessionStorage if coming back from checkout (Edit Cart)
                 const storedCart = sessionStorage.getItem('pos_cart');
@@ -733,6 +733,15 @@
 
                 this.loadCategories();
                 this.loadNextTransactionNumber();
+            },
+
+            // The manual-discount ceiling for THIS user, live from store settings (matches the
+            // server guard). Keeps the till in sync when an admin retunes caps in Settings.
+            async loadDiscountCap() {
+                try {
+                    const d = await API.get('/api/v1/pos/discount-cap');
+                    if (d && d.max_discount_pct != null) this.maxDiscount = d.max_discount_pct;
+                } catch (e) { /* keep the role default */ }
             },
 
             // Show the real next number in the header (TXN-…-NNNN), not a placeholder.

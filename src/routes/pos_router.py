@@ -4856,6 +4856,19 @@ async def _max_discount_pct(db: AsyncSession, current_user: dict) -> Decimal:
     return val if val is not None else Decimal("10")
 
 
+@router.get("/discount-cap")
+async def get_my_discount_cap(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """The manual-discount ceiling for the CURRENT user, LIVE from the store settings — the exact
+    value the checkout guard enforces (_max_discount_pct). The till reads THIS instead of a
+    hardcoded 10/25, so the cap + label can never drift from what the server allows (the
+    phantom-setting bug: an admin raised the cap in Settings but the till stayed stuck at 10)."""
+    cap = await _max_discount_pct(db, current_user)
+    return {"max_discount_pct": float(cap)}
+
+
 async def _open_shift_for(db: AsyncSession, user_id: str) -> Optional[CashShiftModel]:
     return (await db.execute(select(CashShiftModel).where(
         CashShiftModel.user_id == user_id,

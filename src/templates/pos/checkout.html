@@ -81,7 +81,7 @@
                     <button @click="applyDiscount(15)" :class="discount === 15 ? 'bg-yellow-300' : 'bg-yellow-100'" class="btn-secondary py-3">15%</button>
                     <button @click="customDiscount()" class="btn-secondary py-3 bg-blue-100" data-i18n="checkout.custom">Custom</button>
                 </div>
-                <p class="text-sm text-gray-500 mt-2">💡 <span data-i18n="checkout.discount_limits_note">Cashiers: max 10% | Managers: max 25% | Admin: unlimited</span></p>
+                <p class="text-sm text-gray-500 mt-2">💡 <span x-text="t('checkout.your_max_note', {n: maxDiscount})"></span></p>
             </div>
 
             <!-- Price Breakdown -->
@@ -279,8 +279,8 @@
          @click.self="showDiscountModal = false" @keydown.escape.window="showDiscountModal = false" style="display:none;">
         <div class="card w-full max-w-sm">
             <h3 class="text-xl font-bold text-gray-900 mb-1">🏷️ <span data-i18n="checkout.custom_discount_title">Custom discount</span></h3>
-            <p class="text-sm text-gray-500 mb-4" data-i18n="checkout.custom_discount_hint">Enter a percentage (0–25%).</p>
-            <input type="number" min="0" max="25" step="1" x-ref="discountInput" x-model="discountInput"
+            <p class="text-sm text-gray-500 mb-4" x-text="t('checkout.custom_discount_hint_dyn', {n: maxDiscount})">Enter a percentage.</p>
+            <input type="number" min="0" :max="maxDiscount" step="1" x-ref="discountInput" x-model="discountInput"
                    @keyup.enter="applyCustomDiscount()" placeholder="e.g. 12" data-i18n-placeholder="checkout.custom_discount_placeholder" class="input-field text-2xl font-bold text-center mb-4">
             <div class="flex gap-3">
                 <button @click="showDiscountModal = false" class="btn-secondary flex-1" data-i18n="common.cancel">Cancel</button>
@@ -355,6 +355,7 @@
             processing: false,
             discount: 0,
             discountAmount: 0,
+            maxDiscount: 100,   // live per-role cap from store settings (loaded in init)
             consumption: 'dine_in',   // dine-in (8.1%) vs takeaway (2.6%) — cafe food/drink only
 
             // Cash Quick Round
@@ -383,6 +384,7 @@
                 this.cartData = JSON.parse(stored);
                 this.discount = this.cartData.discount || 0;
                 this.consumption = this.cartData.consumption || 'dine_in';
+                this.loadDiscountCap();   // live per-role discount ceiling (matches the server guard)
                 // A member may have been picked on the lookup page ("Use for Checkout").
                 try {
                     const m = sessionStorage.getItem('checkout_customer');
@@ -486,8 +488,20 @@
                 showToast(`${product.emoji} ${product.name} ${t('checkout.on_the_house_suffix')}`, 'success');
             },
 
+            // Per-role discount ceiling, live from store settings (same value the server enforces).
+            async loadDiscountCap() {
+                try {
+                    const d = await API.get('/api/v1/pos/discount-cap');
+                    if (d && d.max_discount_pct != null) this.maxDiscount = d.max_discount_pct;
+                } catch (e) { /* keep default */ }
+            },
+
             applyDiscount(percent) {
-                // TODO: Check user role for max discount
+                // Respect the live per-role cap (the server rejects over-cap anyway; this is the UX).
+                if (percent > this.maxDiscount) {
+                    showToast(t('checkout.err_max_discount', {n: this.maxDiscount}), 'warning');
+                    percent = this.maxDiscount;
+                }
                 this.discount = percent;
                 this.cartData.discount = percent;
                 this.recalculateTotals();
@@ -502,7 +516,7 @@
                 this.$nextTick(() => { if (this.$refs.discountInput) this.$refs.discountInput.focus(); });
             },
             applyCustomDiscount() {
-                const percent = Math.min(25, Math.max(0, parseInt(this.discountInput) || 0));
+                const percent = Math.min(this.maxDiscount, Math.max(0, parseFloat(this.discountInput) || 0));
                 this.applyDiscount(percent);
                 this.showDiscountModal = false;
             },
