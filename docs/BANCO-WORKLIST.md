@@ -10,6 +10,19 @@
 
 ---
 
+## 🐛✅ 2026-07-07 — "[object Object]" checkout-error bug FIXED + SHIPPED PROD (`bf021b2`)
+Angel hit "[object Object]" in the checkout toast on prod (mobile; desktop looked fine). Diagnosed from
+prod logs: not a crash — a run of `POST /pos/sales` **400s** (the 18+ age gate, expected) then two **422s**
+(malformed payload) then a **201** (succeeded on retry). Root cause in the SHARED API helper (base.html):
+FastAPI `detail` is a STRING for a business 400 (age/drawer/cap) but an ARRAY of `{loc,msg,type}` for a 422
+validation error → `new Error(detail)` coerced the array to "[object Object]". **Fix:** parse the 422 array
+into a readable "field: msg" (stringify any other object). Fixes the toast on EVERY POS page + makes 422s
+self-diagnosing (names the offending field, e.g. `amount_tendered: Input should be a valid decimal`); the
+400 age-gate string still shows verbatim. Ladder-deployed, backup-gated (`banco_prod-preerrfix-…`), trio-clean.
+- ⏳ **Open:** the exact field that 422'd on Angel's mobile checkout is still unknown (never logged) — next
+  occurrence will now NAME it in the toast → screenshot → fix root cause (likely an empty/null number field,
+  amount_tendered / discount_percent, from the mobile keyboard). Watch for it.
+
 ## ✅ 2026-07-07 — ARTEMIS CATALOG IMPORTED TO PROD (5,111 items, fresh+clean)
 Full Artemis catalog now on Felix's LIVE till: prod 33 → **5,144 products** (5,111 Artemis TAM-, all
 active, all images). **1,036 flagged 18+, 0 class/flag drift** — FRESH import with the fixed classifier
