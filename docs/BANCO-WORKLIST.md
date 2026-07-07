@@ -10,6 +10,19 @@
 
 ---
 
+## ✅ SHIPPED PROD 2026-07-07 — cockpit + UX batch (`5791639`, backup-gated, trio-clean)
+Whole batch live on all 3 envs (backup `banco_prod-prebatch5791639-20260707_090138.sql.gz`):
+- **Cleanup cockpit** (`/pos/cleanup`) — sold-but-half-baked queue, manager-gated + dashboard card w/ count badge.
+- **18+ toggle** on quick-add (#1) + **tobacco enrichment** flag fix (#2) shipped earlier this day.
+- **Consistent 🏠 home button** — icon-only, top-left, one per page, dupes removed (14 POS pages).
+- **Always-on "➕ Add New CRACK"** on member lookup + **idempotent `/shift/start`** (killed the console 400).
+- **Role-based settings** — cashier view-only (👁️ Store Info card) · manager edits all EXCEPT discount caps
+  (server-stripped, not just UI) · admin all. Tests: cleanup(5)+settings-roles(5)+taxonomy(24)+age-gate(13).
+- ⚠️ Carry-forward (non-blocking): KC login-page font cosmetics (PatternFly `kern: Too large subtable`
+  warnings on the default `keycloak` theme) — separate KC-theme task, one-driver-on-KC. Not a bug.
+
+---
+
 ## 🃏 ON DECK — 2026-07-06 NIGHT · WEDNESDAY HANDOVER ← START HERE
 
 **WHERE WE ARE.** First in-shop UAT done (Layla, on prod, ~19 products, real sales). Two prod bugs
