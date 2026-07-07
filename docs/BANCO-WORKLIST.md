@@ -22,6 +22,13 @@ open — pick the next real need. Candidates parked below.
 - **Cosmetic:** `customer_schema` LoyaltyTier enum comments (5/10/15/20%) are stale vs the real policy — fix when convenient.
 - Older deck items: offline/PWA, fiscal, CRM loyalty wiring (see memory index).
 
+## ✅ 2026-07-07 (late) — SBX UAT 27/29 + 2 findings fixed & shipped (`6627449`)
+Angel ran the fav test sheet in SBX. Two findings, both fixed: (1) a MANUAL discount on a tobacco/alcohol
+cart hard-blocked the whole sale (400) — now applies ELIGIBLE-only like the member discount (Angel picked
+option A; cigarettes full price, the rest takes the %, no dead-end). (2) Edit-member modal was missing the
+"18+ confirmed" + "send offers" toggles — added (marketing_consent + age_confirmed in modal/schema/GET).
+Known non-today item noted: Tailwind Play CDN warning in prod console (rule-9 candidate, separate build task).
+
 ## ✅ 2026-07-07 (late) — CASH CHECKOUT: TYPE-IN AMOUNT + ADDITIVE NOTES (`c05877d`)
 Swiss pay OVER (a 50 for gum; 75.00 for a 72.50 bill) and combine notes (50+20=70). Old cash UI only
 had fixed single buttons → cashiers faked "exact". Now: free-form "Amount received (CHF)" input (primary),
