@@ -133,6 +133,11 @@ _SHISHA_TOBACCO = re.compile(r"shisha\s*tabak|shishatabak|\btabak\b|molasse|al\s
 # context (device words or the vape category) scopes it so a "CBD 20mg" edible isn't caught.
 _ECIG_CONTEXT = re.compile(r"disposable|\bpod\b|\bvape\b|e-?zigar|\bpuff\b|elf\s*bar|elfbar|\bvozol\b|\bhoke\b|vaporiz|e-?liquid|\bliquids?\b", re.I)
 _NIC_MG = re.compile(r"\b(?!0\b)\d{1,2}\s*mg\b", re.I)
+# The FORM carries nicotine by default: a "disposable" or a "prefilled pod" ships with e-liquid,
+# and in CH/EU that's nicotine unless the title explicitly says "No Nic" / "0mg" (caught by _AGE_NEG).
+# This catches the pods/disposables that carry no "NNmg" token in the title at all. Empty hardware
+# (refillable / replacement / bare "…Ohm" pods, kits with no liquid) has neither word → stays open.
+_ECIG_FORM = re.compile(r"\bdisposable\b|prefilled\s*pod", re.I)
 # Inside the tobacco/cigarette category group, these titles are ACCESSORIES/herbal, not the substance
 # (filling machines, filter tubes, papers). They must NOT inherit the group's 18+ flag.
 _TOBACCO_ACCESSORY = re.compile(r"filling|filter|stopf|maschine|machine|hülse|\btube\b|papier|\bpaper|\btips?\b|\bkulu\b", re.I)
@@ -207,8 +212,9 @@ def classify(title: str | None, ref_category: str | None = None, raw=None) -> tu
     #     so they hold up even when the supplier category is a coarse dump ("Accessories"/"Vaporizers").
     if (_TOBACCO.search(t) or _CIG.search(t) or _SHISHA_TOBACCO.search(t)) and not neg and not _SUBSTANCE_ACCESSORY.search(t):
         cls = "tobacco_nicotine"
-    elif _NIC_MG.search(t) and _ECIG_CONTEXT.search(t) and not is_cbd and not neg and not _SUBSTANCE_ACCESSORY.search(t):
-        cls = "tobacco_nicotine"                   # nicotine vape/pod/disposable ("…20mg")
+    elif ((_NIC_MG.search(t) and _ECIG_CONTEXT.search(t)) or _ECIG_FORM.search(t)) \
+            and not is_cbd and not neg and not _SUBSTANCE_ACCESSORY.search(t):
+        cls = "tobacco_nicotine"                   # nicotine vape ("…20mg") or a liquid-bearing form
     elif _ALCOHOL.search(t) and not neg and not _SUBSTANCE_ACCESSORY.search(t) and not _FLAVOUR_PAPER.search(t):
         cls = "alcohol"
     # (2) SUPPLIER CATEGORY closes the leaks the title can't see. A tobacco GROUP still can't

@@ -89,6 +89,27 @@ def test_nicotine_ecig_gates_off_title_under_coarse_category():
         assert age is True and cls == "tobacco_nicotine", title
 
 
+def test_prefilled_pod_and_disposable_form_is_nicotine_by_default():
+    # no "mg" token at all — the FORM carries nicotine unless it says No-Nic
+    for title in ["Elf Bar ELFA Pro Prefilled Pod (2 x 2ml) Blueberry",
+                  "Hoke XXL 1600 Watermelon Disposable Pod"]:
+        age, cls, _ = _age(title, "Vaporizers")
+        assert age is True and cls == "tobacco_nicotine", title
+
+
+def test_no_nic_prefilled_pod_stays_open():
+    age, _, _ = _age("Elf Bar ELFA Pro No Nic Prefilled Pod (2 x 2ml) Apple Peach", "Vaporizers")
+    assert age is False
+
+
+def test_empty_pod_hardware_stays_open():
+    for title in ["Elf Bar ELFX Pro Replacement Pod 0.8Ohm",
+                  "Elf Bar ELFA Refillable Pod 1.1Ohm 2ml 2pcs",
+                  "Lamu Refillable Pod 1.0 Ohm 2ml 2pcs for Elf Bar ELFA"]:
+        age, _, _ = _age(title, "Vaporizers")
+        assert age is False, title
+
+
 def test_cbd_eliquid_is_cbd_not_nicotine():
     # a CBD vape liquid is a smokable CBD form (18+) but NOT nicotine — the mg must not misclass it
     _, cls, _ = _age("Harmony CBD E-Liquid 100mg Mango", "E-Liquids")
