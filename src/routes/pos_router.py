@@ -2513,10 +2513,19 @@ async def checkout_transaction(
         transaction.customer_id = customer.id
         tier_pct = int(customer.tier_discount_percent or 0)
         if tier_pct > 0:
-            before = Decimal(str(transaction.total))
-            tier_disc = (before * Decimal(tier_pct) / Decimal("100")).quantize(
+            # Member discount applies ONLY to the eligible (non-promo-restricted) portion —
+            # tobacco/alcohol never get a promo discount (Swiss law). Same rule as the atomic
+            # /sales path; custom lines (no product) count as eligible standard goods.
+            from src.services.catalog_taxonomy import class_promo_restricted as _cpr
+            _rows = (await db.execute(
+                select(LineItemModel.line_total, ProductModel.product_class)
+                .select_from(LineItemModel)
+                .outerjoin(ProductModel, ProductModel.id == LineItemModel.product_id)
+                .where(LineItemModel.transaction_id == transaction_id))).all()
+            eligible_total = sum((lt for lt, pc in _rows if not _cpr(pc)), Decimal("0.00"))
+            tier_disc = (eligible_total * Decimal(tier_pct) / Decimal("100")).quantize(
                 Decimal("0.01"), rounding=ROUND_HALF_UP)
-            transaction.total = before - tier_disc
+            transaction.total = Decimal(str(transaction.total)) - tier_disc
             transaction.discount_amount = Decimal(str(transaction.discount_amount or 0)) + tier_disc
 
     # --- Age gate (18+): does this cart hold any age-restricted line? The class is the source
@@ -2647,11 +2656,18 @@ async def create_sale(
         logger.info(f"Idempotent replay adopted: client_uuid={sale.client_uuid} -> {existing.transaction_number}")
         return existing
 
+    # --- Option B: a member's earned tier rate is the ONLY discount. When a loyalty member is
+    # attached, a manual cashier discount is SUPPRESSED (no stacking) — the member paid their way
+    # to the rate, the cashier doesn't add to it. Walk-ins keep the manual path. So the effective
+    # manual % is 0 the instant a member is on the sale (this is why Pam's cap never fights a
+    # member's tier: they're different lanes — the cap governs manual only). ---
+    manual_pct = Decimal("0") if sale.customer_id is not None else (sale.discount_percent or Decimal("0"))
+
     # --- Discount cap by role, once, cart-wide (same ceiling the legacy /items enforces per line). ---
     cap = await _max_discount_pct(db, current_user)
-    if sale.discount_percent and sale.discount_percent > cap:
+    if manual_pct and manual_pct > cap:
         raise HTTPException(status_code=403,
-                            detail=f"Discount {sale.discount_percent}% exceeds your {cap}% limit.")
+                            detail=f"Discount {manual_pct}% exceeds your {cap}% limit.")
 
     cashier_uid = await _resolve_cashier_uid(db, current_user)
 
@@ -2678,6 +2694,7 @@ async def create_sale(
     # --- Build every line server-authoritatively: catalog price wins, VAT snapshot, promo guard. ---
     built_lines = []
     subtotal = Decimal("0.00")
+    eligible_subtotal = Decimal("0.00")  # non-promo-restricted lines only -> the member tier discount base
     cart_age_restricted = False  # set True by any 18+ line -> triggers the age gate below
     for ln in sale.lines:
         if ln.product_id is not None:
@@ -2702,7 +2719,7 @@ async def create_sale(
 
         # Compliance: NO cart discount on a promo-restricted class (tobacco/alcohol) — law,
         # blocks every role (it's about the sale, not the operator). Same guard as /items.
-        if sale.discount_percent and sale.discount_percent > 0 and class_promo_restricted(prod_class):
+        if manual_pct and manual_pct > 0 and class_promo_restricted(prod_class):
             raise HTTPException(status_code=400,
                 detail=f"Discounts aren't allowed on {class_meta(prod_class)['label']} — "
                        f"sales promotions on these are restricted by law.")
@@ -2720,9 +2737,11 @@ async def create_sale(
         db.add(line)
         built_lines.append(line)
         subtotal += line_gross
+        if not class_promo_restricted(prod_class):
+            eligible_subtotal += line_gross   # only this portion can carry the member discount
 
     # --- Cart totals (inclusive VAT; the EXACT formula the till displays, so charged == shown). ---
-    keep = (Decimal("100") - sale.discount_percent) / Decimal("100")
+    keep = (Decimal("100") - manual_pct) / Decimal("100")
     txn.subtotal = subtotal
     txn.total = (subtotal * keep).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
     txn.discount_amount = subtotal - txn.total
@@ -2736,9 +2755,14 @@ async def create_sale(
         txn.customer_id = customer.id
         tier_pct = int(customer.tier_discount_percent or 0)
         if tier_pct > 0:
-            before = Decimal(str(txn.total))
-            tier_disc = (before * Decimal(tier_pct) / Decimal("100")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-            txn.total = before - tier_disc
+            # Member discount applies ONLY to the eligible (non-promo-restricted) portion — tobacco
+            # and alcohol never get a promotional discount (Swiss law), the SAME per-line rule the
+            # manual discount follows. One receipt: cigarettes ring full price, the lighter gets the
+            # member rate. (keep==1 here because a member suppresses the manual discount, so the base
+            # is just the eligible subtotal — the * keep is kept for correctness if that ever changes.)
+            tier_base = (eligible_subtotal * keep).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            tier_disc = (tier_base * Decimal(tier_pct) / Decimal("100")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            txn.total = Decimal(str(txn.total)) - tier_disc
             txn.discount_amount = Decimal(str(txn.discount_amount)) + tier_disc
 
     # --- Age gate (18+): reject the sale unless an of-age member is attached OR the cashier

@@ -71,8 +71,9 @@
                 <p class="text-sm text-gray-500 mt-2">🇨🇭 <span data-i18n="checkout.swiss_law_note">Swiss law: a café seat makes the same item two prices. Alcohol & tobacco stay 8.1%.</span></p>
             </div>
 
-            <!-- 🏷️ Quick Discount (Pam's Rounding) -->
-            <div class="mb-6">
+            <!-- 🏷️ Quick Discount (Pam's Rounding) — HIDDEN when a member is attached: the member's
+                 earned tier rate is the only discount (no stacking a manual % on top of it). -->
+            <div class="mb-6" x-show="!member">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">🏷️ <span data-i18n="checkout.discount">Discount</span></h2>
                 <div class="grid grid-cols-3 md:grid-cols-5 gap-3">
                     <button @click="applyDiscount(0)" :class="discount === 0 ? 'bg-gray-300' : 'bg-gray-100'" class="btn-secondary py-3" data-i18n="checkout.none">None</button>
@@ -82,6 +83,12 @@
                     <button @click="customDiscount()" class="btn-secondary py-3 bg-blue-100" data-i18n="checkout.custom">Custom</button>
                 </div>
                 <p class="text-sm text-gray-500 mt-2">💡 <span x-text="t('checkout.your_max_note', {n: maxDiscount})"></span></p>
+            </div>
+            <!-- Member on the sale: the tier rate replaces manual discounts (eligible items only). -->
+            <div class="mb-6" x-show="member && member.tier_discount_percent > 0">
+                <div class="rounded-lg p-3 bg-indigo-50 text-indigo-800 text-sm">
+                    🏅 <span x-text="t('checkout.member_rate_note', {tier: member ? member.loyalty_tier : '', n: member ? member.tier_discount_percent : 0})"></span>
+                </div>
             </div>
 
             <!-- Price Breakdown -->
@@ -390,6 +397,9 @@
                     const m = sessionStorage.getItem('checkout_customer');
                     if (m) this.member = JSON.parse(m);
                 } catch (e) { this.member = null; }
+                // Option B: a member's earned tier rate is the only discount — clear any manual
+                // discount the instant a member is on the sale (mirrors the server, which ignores it).
+                if (this.member) { this.discount = 0; this.cartData.discount = 0; }
                 this.recalculateTotals();
 
                 // Load the treats catalog (real products) for the "give a treat" picker.
@@ -531,6 +541,11 @@
                 sessionStorage.setItem('pos_cart', JSON.stringify(this.cartData));
             },
 
+            // Mirror of the server's class_promo_restricted: tobacco/alcohol get NO discount.
+            isPromoRestricted(it) {
+                return !!(it && (it.promo_restricted ||
+                    ['tobacco_nicotine', 'alcohol'].includes(it.product_class)));
+            },
             recalculateTotals() {
                 // Sum the lines, then split the contained VAT by each line's Swiss rate so the
                 // breakdown shows 8.1% vs 2.6% live as the cashier flips dine-in/takeaway.
@@ -539,10 +554,14 @@
                 const subtotal = lineSum || this.cartData.totals.subtotal || 0;
                 this.discountAmount = subtotal * (this.discount / 100);
                 const afterDiscount = subtotal - this.discountAmount;  // after the manual discount
-                // Member tier discount stacks on top (display-only here -- the server applies
-                // it once at checkout from customer_id, so the displayed total matches the charge).
+                // Member tier discount applies to the ELIGIBLE (non-promo-restricted) portion only —
+                // tobacco/alcohol never get a promo discount (Swiss law). Mirrors the server so the
+                // Dry Run Preview total matches the charge. (A member also zeroes the manual discount.)
                 const memberPct = (this.member && this.member.tier_discount_percent) || 0;
-                this.memberDiscountAmount = afterDiscount * (memberPct / 100);
+                const eligibleSum = this.cartData.cart.reduce(
+                    (s, it) => s + (this.isPromoRestricted(it) ? 0 : (it.price || 0) * (it.quantity || 0)), 0);
+                const eligibleAfter = subtotal > 0 ? eligibleSum * (afterDiscount / subtotal) : 0;
+                this.memberDiscountAmount = eligibleAfter * (memberPct / 100);
                 const gross = afterDiscount - this.memberDiscountAmount;  // gross paid
                 // Spread the discount evenly across lines so each line's contained VAT
                 // reflects its share of the discounted gross.
