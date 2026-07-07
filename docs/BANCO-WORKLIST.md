@@ -78,10 +78,28 @@ form strips empty fields). 0 orphan rows. See git `fix: member enrol 422 on blan
      `IntegrityError: null value in column "keycloak_id" of relation "users"` during user-seeding — a
      prod-DATA quirk (a seed user lacks a KC id). Identical code on sandbox = **zero** occurrences; app
      reaches "startup complete" + serves 200 regardless. Worth a look later (seed hygiene), not a blocker.
-2. **🐯 Reference data under-flags tobacco (Seal B — the sneaky one).** Only **408 / 7,272** FourTwenty rows
-   carry the 18+ flag; real cigarettes (e.g. *Parisienne Jaune 8×25cig*) sit as `Accessories`, not 18+.
-   So even scan-HITS leak. Needs a SMARTER rule than regex — "Tabak**tasche**" = tobacco *pouch* (accessory,
-   correctly not 18+) pollutes any naive keyword sweep. Curate/re-flag the FourTwenty 18+ set.
+2. **✅ Reference data under-flags tobacco — FIXED + SHIPPED ALL 3 ENVS (`d90bffd`), re-enriched, prod
+   verified.** The 18+ decision now happens in the ENRICHER (`catalog_taxonomy.classify`) — Angel's call:
+   the import recipe should decide it. Was **408/7,272** flagged; now **640/7,272**, and it's the RIGHT set.
+   - **What leaked & why:** branded cigarette packs ("Marlboro/Parisienne … 10x20cig"), nicotine
+     disposables/pods ("Vozol … 20mg", "Elf Bar Prefilled Pod"), and shisha tobacco ("Al Fakher") carry
+     NO "tabak"/"zigarette" token in the title → the old title-regex missed them.
+   - **The fix (3 layers, most-certain first):** (1) title-decisive (cig brands + NNxNNcig + MYO/RYO +
+     shisha molasses brands + nicotine-mg/prefilled/disposable FORM); (2) **supplier's own category**
+     (already in `raw` — categorygroup_2) for feeds that carry it; (3) title-CBD fallback. Negative +
+     accessory guards veto at every layer: `Tabaktasche` (pouch), filling machines, filter tubes, herbal
+     `Tabakersatz`, **0mg/No-Nic**, refillable/replacement hardware, and CBD seeds/oils all stay OPEN.
+     Fixed a latent guard bug: `\b0\s*mg\b` so "20mg" nicotine isn't read as "0mg".
+   - **Proven:** new `src/tests/test_catalog_taxonomy.py` (20 tests), per-bucket verified on the live feed,
+     re-enriched all 3 env DBs (0 shisha leak, 0 true e-cig leak — remainder is all No-Nic/0mg). **Full
+     compliance chain intact:** enricher→reference row→adopt (copies `our_class`→`product_class`)→sale
+     age gate. Prod cigarettes/e-cigs/shisha now `tobacco_nicotine` age_restricted. Backups
+     `banco_prod-pre18flag-20260707_070631.sql.gz`.
+   - ⚠️ **FOLLOW-UP (deeper, for Angel):** the existing DB `raw` holds only the coarse bucket
+     (Accessories/Vaporizers/CBD), not FourTwenty's fine `categorygroup_2` — so layer (2) is currently
+     future-proofing, and the current DB is carried by the title rules. A clean **re-import from the raw
+     FourTwenty feed** (`debllm/feeds/fourtwenty/products_latest.csv`, 10,082 rows w/ categorygroups) would
+     let the category-layer shine + future-proof new suppliers. Not a blocker — title rules cover today.
 3. **👥 "Sold-but-not-set-up" cleanup COCKPIT (the real product).** Manager/Felix-only view: new products that
    have **sold** but are half-baked (category="On the fly", missing cost, 18+ unknown, needs_translation),
    prioritised by sold. Cashier never edits the catalog/cost; manager cleans up here. Aligns w/ hypercare
