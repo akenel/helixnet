@@ -34,6 +34,18 @@ def policy_from_settings(store) -> tuple | None:
     )
 
 
+def pct_for_tier(tier_name, policy=None) -> int:
+    """The standing discount % for a named tier under the current policy (bronze = 0). Used by a
+    MANUAL tier override so a hand-set 'gold' still tracks the store's current Gold %."""
+    if not tier_name or str(tier_name).lower() == "bronze":
+        return 0
+    name = str(tier_name).lower()
+    for _threshold, rung_name, pct in (policy or _DEFAULT_RUNGS):
+        if rung_name == name:
+            return int(pct)
+    return 0
+
+
 def tier_for_spend(lifetime_spend, policy=None) -> tuple[str, int]:
     """(tier_name, discount_percent) for a given lifetime spend. `policy` is the rungs from the
     store settings (Felix's numbers); falls back to conservative defaults. The HIGHEST threshold

@@ -454,6 +454,7 @@ async def get_customer(
         "loyalty_tier": customer.loyalty_tier.value,
         "lifetime_spend": float(customer.lifetime_spend),
         "tier_discount_percent": customer.tier_discount_percent,
+        "tier_locked": bool(customer.tier_locked),
         "credits_balance": customer.credits_balance,
         "credits_earned_total": customer.credits_earned_total,
         "credits_spent_total": customer.credits_spent_total,
@@ -506,6 +507,11 @@ async def update_customer(
     # Update fields
     update_data = update.model_dump(exclude_unset=True)
 
+    # MANUAL tier override (kept OUT of the generic setattr loop). "auto"/empty → unlock and recompute
+    # from lifetime spend; a tier name → lock the member at that tier (the % tracks the store's current
+    # setting for it, so a manual "gold" still follows the Gold % Felix sets). Any POS role may do this.
+    _tier_choice = update_data.pop("loyalty_tier", None)
+
     for field, value in update_data.items():
         # Check for new Instagram (bonus)
         if field == "instagram" and value and not customer.instagram:
@@ -524,6 +530,23 @@ async def update_customer(
             bonus_descriptions.append("Email added: +5")
 
         setattr(customer, field, value)
+
+    # Apply the manual tier override / release, if the form sent one.
+    if _tier_choice is not None:
+        from src.services.store_settings_seeding import get_active_store_settings
+        from src.services.loyalty_service import policy_from_settings, pct_for_tier
+        _pol = policy_from_settings(await get_active_store_settings(db))
+        choice = str(_tier_choice).strip().lower()
+        if choice in ("", "auto"):
+            customer.tier_locked = False
+            customer.recalculate_tier(_pol)          # revert to spend-based
+        else:
+            try:
+                customer.loyalty_tier = LoyaltyTier(choice)
+            except ValueError:
+                raise HTTPException(status_code=422, detail=f"Unknown loyalty tier: {choice}")
+            customer.tier_discount_percent = pct_for_tier(choice, _pol)
+            customer.tier_locked = True
 
     # Award profile completion bonuses
     if bonus_credits > 0:
@@ -547,6 +570,45 @@ async def update_customer(
         "handle": customer.handle,
         "message": f"Profile updated" + (f" (+{bonus_credits} bonus credits!)" if bonus_credits else ""),
     }
+
+
+@router.delete("/{customer_id}")
+async def deactivate_customer(
+    customer_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_manager_or_admin()),
+):
+    """SOFT-delete a member (manager/admin): is_active=False. Their purchase history + credits are
+    preserved (transactions reference them) — they just stop appearing in search / the till."""
+    customer = (await db.execute(
+        select(CustomerModel).where(CustomerModel.id == customer_id))).scalar_one_or_none()
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    customer.is_active = False
+    customer.updated_at = datetime.now(timezone.utc)
+    await db.commit()
+    logger.info(f"Member {customer.handle} deactivated by {current_user.get('username')}")
+    return {"id": str(customer.id), "handle": customer.handle, "is_active": False,
+            "message": "Member deactivated"}
+
+
+@router.post("/{customer_id}/reactivate")
+async def reactivate_customer(
+    customer_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_manager_or_admin()),
+):
+    """Bring a soft-deleted member back (manager/admin)."""
+    customer = (await db.execute(
+        select(CustomerModel).where(CustomerModel.id == customer_id))).scalar_one_or_none()
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    customer.is_active = True
+    customer.updated_at = datetime.now(timezone.utc)
+    await db.commit()
+    logger.info(f"Member {customer.handle} reactivated by {current_user.get('username')}")
+    return {"id": str(customer.id), "handle": customer.handle, "is_active": True,
+            "message": "Member reactivated"}
 
 
 # ================================================================

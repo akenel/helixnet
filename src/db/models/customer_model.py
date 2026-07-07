@@ -173,6 +173,13 @@ class CustomerModel(Base):
         nullable=False,
         comment="Current standing discount % (Banco 3-tier: Bronze 0 / Silver 5 / Gold 10)"
     )
+    tier_locked: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False,
+        server_default="false",
+        comment="True = tier was MANUALLY set (override); recalculate_tier keeps it, only the % tracks settings"
+    )
 
     # ================================================================
     # CREDITS - The Universal Currency
@@ -411,8 +418,14 @@ class CustomerModel(Base):
     def recalculate_tier(self, policy=None) -> None:
         """Update tier from lifetime spend via the loyalty policy. `policy` = the rungs from the
         store's Settings → Discounts (Felix owns the thresholds + %); None falls back to the
-        conservative code defaults. Bronze = points only; Silver/Gold/Platinum are configurable."""
-        from src.services.loyalty_service import tier_for_spend
+        conservative code defaults. Bronze = points only; Silver/Gold/Platinum are configurable.
+
+        If tier_locked (a MANUAL override), the tier NAME is left alone — spend can't demote or
+        promote a hand-set member — but the % still tracks the current settings for that tier."""
+        from src.services.loyalty_service import tier_for_spend, pct_for_tier
+        if self.tier_locked:
+            self.tier_discount_percent = pct_for_tier(self.loyalty_tier.value, policy)
+            return
         name, pct = tier_for_spend(self.lifetime_spend, policy)
         self.loyalty_tier = LoyaltyTier(name)
         self.tier_discount_percent = pct

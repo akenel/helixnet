@@ -6,7 +6,7 @@ tier_for_spend resolves from a store policy, falls back to conservative defaults
 """
 from decimal import Decimal
 
-from src.services.loyalty_service import tier_for_spend, policy_from_settings
+from src.services.loyalty_service import tier_for_spend, policy_from_settings, pct_for_tier
 
 
 class _FakeStore:
@@ -57,6 +57,18 @@ def test_highest_cleared_threshold_wins_even_if_misordered():
     assert tier_for_spend(Decimal("2500"), pol)[1] == 15   # clears 2000 (highest) -> 15%
     assert tier_for_spend(Decimal("600"), pol)[1] == 5     # clears only 500 -> 5%
     assert tier_for_spend(Decimal("100"), pol) == ("bronze", 0)
+
+
+def test_pct_for_tier_manual_override():
+    # A manually-locked tier pulls the store's current % for that tier name (bronze = 0).
+    pol = policy_from_settings(_FakeStore(500, 5, 1000, 10, 2000, 15))
+    assert pct_for_tier("bronze", pol) == 0
+    assert pct_for_tier("silver", pol) == 5
+    assert pct_for_tier("gold", pol) == 10
+    assert pct_for_tier("platinum", pol) == 15
+    assert pct_for_tier("GOLD", pol) == 10          # case-insensitive
+    assert pct_for_tier(None, pol) == 0
+    assert pct_for_tier("gold") == 10               # defaults when no policy
 
 
 def test_zeroed_thresholds_do_not_crash():
