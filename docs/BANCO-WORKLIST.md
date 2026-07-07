@@ -100,10 +100,16 @@ form strips empty fields). 0 orphan rows. See git `fix: member enrol 422 on blan
      future-proofing, and the current DB is carried by the title rules. A clean **re-import from the raw
      FourTwenty feed** (`debllm/feeds/fourtwenty/products_latest.csv`, 10,082 rows w/ categorygroups) would
      let the category-layer shine + future-proof new suppliers. Not a blocker — title rules cover today.
-3. **👥 "Sold-but-not-set-up" cleanup COCKPIT (the real product).** Manager/Felix-only view: new products that
-   have **sold** but are half-baked (category="On the fly", missing cost, 18+ unknown, needs_translation),
-   prioritised by sold. Cashier never edits the catalog/cost; manager cleans up here. Aligns w/ hypercare
-   cockpit. This is what makes the lean quick-add *safe* — nothing falls through permanently.
+3. **✅ "Sold-but-not-set-up" cleanup COCKPIT — BUILT + on SANDBOX+STAGING (`f6de318`); ⏳ HOLDING PROD
+   for Angel's human-green (new UI).** Manager-only `/pos/cleanup` (linked from Reports hub, EN/IT/DE):
+   products that **sold** but are still half-baked, **busiest first**. "Half-baked" = objective gaps:
+   category blank/"On the fly" OR cost null (18+ + photo surfaced for review, not gated). Inline fix per
+   card — category (datalist) + cost + 18+ toggle → `PUT /products/{id}`; drops off when both gaps filled.
+   Cashier never edits catalog/cost — rings it in, manager tidies here. **Seal reused:** `update_product`
+   now runs the shared `reconcile_age` (same as the quick-add) so a manager flipping 18+ files it under the
+   gating `age_restricted` class → checkout gate fires. Tests: `tests/pos/test_pos_cleanup_queue.py` (5
+   black-box lifecycle+gate+reconcile, green on sandbox) + 4 `reconcile_age` units; full suite green.
+   **→ 🧍 Angel: eyeball `https://sandbox-banco.lapiazza.app/pos/cleanup` (login felix) — say go for prod.**
 4. **👥 Role model: cashier vs manager — CONFIRM what's gated today.** Angel was `felix` (admin) so he COULD
    take photos + voice-dictate descriptions on-the-fly (the mic dictation was "cool" — worked). Untested as
    `pam` (cashier) — do cashiers even get photo/description? Decision: **cashier = name + price, move on;
