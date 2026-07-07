@@ -10,6 +10,17 @@
 
 ---
 
+## ✅ SHIPPED PROD 2026-07-07 (pt.2) — live discount cap + UAT sign-off (`b93ee26`, trio-clean)
+- **Discount cap reads LIVE from settings (client seal)** — `1851eb4` fixed the server; the till still
+  hardcoded cashier=10 / checkout=25. New `GET /pos/discount-cap` (reuses `_max_discount_pct`); scan +
+  checkout read it (dynamic "(Max N%)" label, input max, clamp, over-cap toast). Proven: admin sets
+  cashier 33.33 → pam's till reads 33.33; manager 42 → ralph 42; admin 100. Tests `test_pos_discount_cap.py` (3).
+- **UAT: Angel ran the HTML runbook `LP-UAT-20260707-BANCO-SBX` — 29/29, verdict SHIP.** (§7 `NS_BINDING_ABORTED`
+  = benign Firefox nav-abort, not our code.) Sheet: `docs/testing/banco/BANCO-SBX-BATCH-TEST-SCRIPT.html`.
+- ⚠️ **Prod caps NOW LIVE:** store#1 cashier=**33.33** / manager=**75** (Angel's test values). They actually
+  take effect now — dial to shop-sensible numbers in Settings (👑 admin) if 33/75 is too generous.
+- Backups: `banco_prod-prediscountcap-20260707_101706.sql.gz`.
+
 ## ✅ SHIPPED PROD 2026-07-07 — cockpit + UX batch (`5791639`, backup-gated, trio-clean)
 Whole batch live on all 3 envs (backup `banco_prod-prebatch5791639-20260707_090138.sql.gz`):
 - **Cleanup cockpit** (`/pos/cleanup`) — sold-but-half-baked queue, manager-gated + dashboard card w/ count badge.
