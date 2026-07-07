@@ -34,8 +34,8 @@ should be CHF 130–160/mo — 100 is Felix's founder price, don't make it the m
    spot). Receipt printer NOT needed (tablet screen / QR). Won't arrive by Wed.
 3. 🧍 **Angel · Wednesday after lunch (~1 hr, parking-limited):** hit list, **~50 products, on the
    PHONE** (hardware not here yet). Log throughput (min/100) — it's the estimate for everything.
-4. 🐯 **Tigs build queue** (when Angel greenlights each): P1 price-confirm · ~~P2 18+ toggle~~ ✅ BUILT
-   (main `9ea6043`, not deployed — see field-report #1) · P3 cleanup cockpit · R1 report fast-buttons
+4. 🐯 **Tigs build queue** (when Angel greenlights each): P1 price-confirm · ~~P2 18+ toggle~~ ✅ SHIPPED
+   PROD `a6f7b02` (see field-report #1) · P3 cleanup cockpit · R1 report fast-buttons
    (after Felix names them) · QR order-view receipt (small) · `/pos/scanner-test` + wedge-input check
    (before the gun lands).
 
@@ -63,16 +63,21 @@ form strips empty fields). 0 orphan rows. See git `fix: member enrol 422 on blan
 
 **THE ORDERED TO-DO from the field (finish one before the next):**
 
-1. **✅ 18+ checkbox on on-the-fly quick-add — BUILT + VERIFIED + COMMITTED (main `9ea6043`), NOT
-   DEPLOYED (awaiting Angel greenlight).** Big obvious **18+ toggle** (default OFF, 🔞/✅, EN/IT/DE) sits
-   between price and photo in the quick-add. **Seal-inspection catch:** the checkout age gate reads
-   `product_class`, NOT the `is_age_restricted` column — a bare column flag would've been cosmetic. Fixed
-   at source: new neutral **`age_restricted`** class (18+ with no promo/VAT/THC baggage, unlike
-   tobacco/alcohol/cbd — manager re-classes precisely later in the cockpit); `/products/quick` binds the
-   toggle to that class + re-derives the column so they can't drift. Proven `tests/pos/test_pos_age_gate.py`
-   **13/13** on live local (3 new: toggle→gates→blocks-sale / off-stays-open). sw.js cache v32→v33.
-   *Category = still take reference as-is / "On the fly" (already the behaviour); photo/description role-gating = item #4.*
-   **→ Deploy through the ladder (sandbox→staging→prod, backup-gated) when Angel says go.**
+1. **✅ 18+ checkbox on on-the-fly quick-add — SHIPPED ALL 3 ENVS (main `a6f7b02` / b1546), backup-gated,
+   proven on prod.** Big obvious **18+ toggle** (default OFF, 🔞/✅, EN/IT/DE) sits between price and photo
+   in the quick-add. **Seal-inspection catch:** the checkout age gate reads `product_class`, NOT the
+   `is_age_restricted` column — a bare column flag would've been cosmetic. Fixed at source: new neutral
+   **`age_restricted`** class (18+ with no promo/VAT/THC baggage, unlike tobacco/alcohol/cbd — manager
+   re-classes precisely later in the cockpit); `/products/quick` binds the toggle to that class +
+   re-derives the column so they can't drift. Proven `tests/pos/test_pos_age_gate.py` **13/13** local +
+   **6/6** on sandbox (backend gate, not just static). sw.js v32→v33. **Deploy:** ladder sandbox→staging→prod;
+   pre-prod backup `banco_prod-pre18plus-20260707_062609.sql.gz` (1.3 MB, gzip-t OK); trio parity-clean on
+   `a6f7b02`; served-bytes verified each env (toggle in HTML, i18n×3, sw v33); prod serves 200.
+   *Category = still take reference as-is / "On the fly"; photo/description role-gating = item #4.*
+   - ⚠️ **NEW OBSERVATION (pre-existing, NOT this change):** prod startup logs a non-fatal
+     `IntegrityError: null value in column "keycloak_id" of relation "users"` during user-seeding — a
+     prod-DATA quirk (a seed user lacks a KC id). Identical code on sandbox = **zero** occurrences; app
+     reaches "startup complete" + serves 200 regardless. Worth a look later (seed hygiene), not a blocker.
 2. **🐯 Reference data under-flags tobacco (Seal B — the sneaky one).** Only **408 / 7,272** FourTwenty rows
    carry the 18+ flag; real cigarettes (e.g. *Parisienne Jaune 8×25cig*) sit as `Accessories`, not 18+.
    So even scan-HITS leak. Needs a SMARTER rule than regex — "Tabak**tasche**" = tobacco *pouch* (accessory,
