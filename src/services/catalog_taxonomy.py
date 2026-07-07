@@ -13,6 +13,7 @@ This module also holds the rules-based classifier that maps the 7,272 FourTwenty
 onto the skeleton. It is re-runnable (scripts/reclassify_reference.py) — refine the rules here,
 re-run, done.
 """
+import html
 import re
 
 # --- CATEGORIES (merchandising skeleton — seeded, extensible) --------------------------------
@@ -112,10 +113,23 @@ def class_promo_restricted(cls: str | None) -> bool:
 
 # --- CLASSIFIER: (title + FourTwenty category) -> (our_category, our_class, age_restricted) ---
 
-# Negative guard so "tobacco-free" / "nikotinfrei" / "0mg" never trip the 18+ flag.
-_AGE_NEG = re.compile(r"tabakfrei|tobacco.?free|nikotinfrei|nicotine.?free|ohne\s+nikotin|0\s*mg|alkoholfrei|alcohol.?free|kräuter.?mischung|herbal", re.I)
+# Negative guard so "tobacco-free" / "nikotinfrei" / "0mg" / herbal substitute never trip 18+.
+# NOTE the \b0\s*mg\b boundary: without it, "20mg" (a NICOTINE e-cig) contains "0mg" and would be
+# falsely cleared. "tabakersatz"/"kräutermischung" = herbal tobacco-substitute (no nicotine) = open.
+_AGE_NEG = re.compile(r"tabakfrei|tobacco.?free|nikotinfrei|nicotine.?free|ohne\s+nikotin|\bno\s*nic\b|\b0\s*mg\b|null\s*nikotin|alkoholfrei|alcohol.?free|kräuter.?mischung|\bherbal\b|tabakersatz", re.I)
 _TOBACCO = re.compile(r"tabak|tabacc|tobacco|zigar|sigaret|cigaret|nikotin|nicotin\b|\bsnus\b", re.I)
+# Branded cigarettes + pack tokens the plain-tobacco regex misses. FourTwenty ships real cigarette
+# packs titled "Marlboro Gold 10x20cig" / "Parisienne Jaune 8x25cig" — no "tabak"/"zigarette" in the
+# title at all, so they leaked through as un-gated "standard" goods. Catch the brands + the NNxNNcig
+# pack pattern + MYO/RYO loose-tobacco + HEETS/IQOS.
+_CIG = re.compile(r"\bmarlboro\b|\bparisienne\b|\bcamel\b|\bwinston\b|gauloises|lucky\s*strike|\bchesterfield\b|american\s*spirit|\bpueblo\b|\bphilip\s*morris\b|\d+\s*x?\s*\d*\s*cig\b|\bcig\b|\bmyo\b|\bryo\b|\bheets\b|\biqos\b", re.I)
 _ALCOHOL = re.compile(r"alkohol|alcohol|vodka|\brum\b|whisky|whiskey|\bgin\b|liqueur|likör|absinth|\bbier\b|\bwein\b", re.I)
+# Shisha bucket is MIXED: molasses tobacco (18+) sits beside hoses/charcoal/foil/adapters (open).
+# Only these markers make a shisha line the actual 18+ substance.
+_SHISHA_TOBACCO = re.compile(r"shisha\s*tabak|shishatabak|\btabak\b|molasse|al\s*fakher|adalya|\bnakhla\b|serbetli", re.I)
+# Inside the tobacco/cigarette category group, these titles are ACCESSORIES/herbal, not the substance
+# (filling machines, filter tubes, papers). They must NOT inherit the group's 18+ flag.
+_TOBACCO_ACCESSORY = re.compile(r"filling|filter|stopf|maschine|machine|hülse|\btube\b|papier|\bpaper|\btips?\b|\bkulu\b", re.I)
 # Looks like tobacco/alcohol but is an ACCESSORY (a bag / holder / case), not the 18+ substance —
 # so it never gets the age gate. (Kavatza Tabaktasche, Zigarettenhalter, Tabakbefeuchter…)
 _SUBSTANCE_ACCESSORY = re.compile(r"tasche|portemonnaie|portmonnaie|halter|befeuchter|\betui\b|humidor|aufbewahr", re.I)
@@ -150,18 +164,61 @@ _REF_CATEGORY_MAP = {
 }
 
 
+def _reftags(raw, ref_category) -> str:
+    """The supplier's OWN taxonomy, html-unescaped + lowercased into one searchable string.
+
+    The title alone can't tell a Marlboro pack from a lighter, but FourTwenty files it under
+    "Tabak, ... Zigaretten"; a CBD flower under "CBD Blüten"; a nicotine e-cig under "Disposable
+    Einweg E-Zigaretten". The importer stows every feed column in `raw`, so we read the structured
+    category groups straight from there — the strong, non-guessy signal. Empty for feeds without
+    these columns, in which case classify() just leans on the title (unchanged behaviour)."""
+    parts = []
+    if isinstance(raw, dict):
+        parts = [raw.get(k) for k in
+                 ("categorygroup_1", "categorygroup_2", "categorygroup_3", "productcategory")]
+    if ref_category:
+        parts.append(ref_category)
+    return html.unescape(" | ".join(p for p in parts if p)).lower()
+
+
 def classify(title: str | None, ref_category: str | None = None, raw=None) -> tuple[str, str, bool]:
-    """Map a reference item to (our_category, our_class, age_restricted). Pure + deterministic."""
+    """Map a reference item to (our_category, our_class, age_restricted). Pure + deterministic.
+
+    CLASS is decided in three layers, most-certain first: (1) the TITLE says it outright (real
+    tobacco / cigarette brand / alcohol); (2) the SUPPLIER CATEGORY says it (the reliable signal
+    the title hides — nicotine e-cigs, shisha tobacco, CBD flower/pollen); (3) a TITLE-CBD
+    fallback. The negative guards (0mg / nikotinfrei / herbal / tabakersatz) and the
+    accessory guards veto at every layer, so a filling machine or a 0mg pod never gets gated."""
     t = title or ""
+    tags = _reftags(raw, ref_category)
+    neg = _AGE_NEG.search(t)
 
     # CLASS first (it drives the age flag).
     cls = DEFAULT_CLASS
-    if _TOBACCO.search(t) and not _AGE_NEG.search(t) and not _SUBSTANCE_ACCESSORY.search(t):
+    # (1) TITLE is decisive: named tobacco/cigarette or alcohol, unless it's an accessory/herbal.
+    if (_TOBACCO.search(t) or _CIG.search(t)) and not neg and not _SUBSTANCE_ACCESSORY.search(t):
         cls = "tobacco_nicotine"
-    elif _ALCOHOL.search(t) and not _AGE_NEG.search(t) and not _SUBSTANCE_ACCESSORY.search(t) and not _FLAVOUR_PAPER.search(t):
+    elif _ALCOHOL.search(t) and not neg and not _SUBSTANCE_ACCESSORY.search(t) and not _FLAVOUR_PAPER.search(t):
         cls = "alcohol"
-    elif ref_category == "CBD" or re.search(r"cbd|cannabidiol", t, re.I):
-        # Split CBD by form: clear oils/seeds/cosmetics = open (no ID); the rest stays 18+.
+    # (2) SUPPLIER CATEGORY closes the leaks the title can't see. A tobacco GROUP still can't
+    #     override the accessory guards: a pouch/holder/case (_SUBSTANCE_ACCESSORY) or a
+    #     machine/filter/paper (_TOBACCO_ACCESSORY) stays open even under "Tabak…Zigaretten".
+    elif tags:
+        tobacco_ok = not neg and not _SUBSTANCE_ACCESSORY.search(t) and not _TOBACCO_ACCESSORY.search(t)
+        if ("cbd blüten" in tags or "cbd pollen" in tags or "blüten" in tags) and not _CBD_OPEN.search(t):
+            cls = "cbd_hemp"                       # flower / trim / pollen (hash) = 18+
+        elif "cbd samen" in tags:
+            cls = "cbd_open"                       # seeds = open (no ID)
+        elif "disposable" in tags and "zigaret" in tags and tobacco_ok:
+            cls = "tobacco_nicotine"               # nicotine disposables (0mg vetoed above)
+        elif ("zigaretten" in tags or "tabak," in tags or tags.startswith("tabak")) and tobacco_ok:
+            cls = "tobacco_nicotine"               # the tobacco/cigarette group, minus machines/filters
+        elif "shisha" in tags and _SHISHA_TOBACCO.search(t) and tobacco_ok:
+            cls = "tobacco_nicotine"               # shisha molasses tobacco only (not hoses/charcoal)
+        elif ref_category == "CBD" or re.search(r"cbd|cannabidiol", t, re.I):
+            cls = "cbd_open" if _CBD_OPEN.search(t) else "cbd_hemp"
+    # (3) TITLE-CBD fallback (no supplier tags).
+    elif re.search(r"cbd|cannabidiol", t, re.I):
         cls = "cbd_open" if _CBD_OPEN.search(t) else "cbd_hemp"
 
     # CATEGORY: honour FourTwenty's clean buckets, else keyword-classify the dump.
@@ -174,8 +231,10 @@ def classify(title: str | None, ref_category: str | None = None, raw=None) -> tu
     if cat is None:
         cat = "Accessories" if ref_category == "Accessories" else "Other"
 
-    # A real cigarette/tobacco product belongs in its own category, not "Papers".
-    if cls == "tobacco_nicotine" and re.search(r"zigar|sigaret|cigaret|tabak\b|tabacc|tobacco|\bsnus\b", t, re.I):
+    # A real cigarette/tobacco product belongs in its own category, not "Papers"/"Other".
+    # Any tobacco_nicotine line qualifies now (branded packs like "Marlboro 10x20cig", disposable
+    # nicotine e-cigs, and shisha tobacco all lack a "tabak"/"zigarette" token in the title).
+    if cls == "tobacco_nicotine":
         cat = "Tobacco & Cigarettes"
 
     return cat, cls, class_meta(cls)["age_restricted"]
