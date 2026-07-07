@@ -183,8 +183,8 @@
                                     <p class="font-semibold text-gray-900" x-text="product.name"></p>
                                     <!-- Type + 18+ up front, so the cashier sees it BEFORE checkout -->
                                     <div class="flex flex-wrap items-center gap-1 mt-0.5">
-                                        <span x-show="product.is_age_restricted" class="text-xs font-bold px-2 py-0.5 rounded-full bg-red-600 text-white">🔞 18+</span>
-                                        <span class="text-xs font-medium px-2 py-0.5 rounded-full" :class="classInfo(product.product_class).c"
+                                        <span x-show="is18(product.product_class)" class="text-xs font-bold px-2 py-0.5 rounded-full bg-red-600 text-white">🔞 18+</span>
+                                        <span x-show="product.product_class !== 'age_restricted'" class="text-xs font-medium px-2 py-0.5 rounded-full" :class="classInfo(product.product_class).c"
                                               x-text="classInfo(product.product_class).e + ' ' + classInfo(product.product_class).l"></span>
                                     </div>
                                     <p class="text-sm text-gray-600">
@@ -238,15 +238,16 @@
                                                  class="w-full h-full object-cover" @error="onImgError(item)" @load="item._imgerr=false">
                                             <span x-show="!hasImg(item)" class="text-xl">📦</span>
                                         </div>
-                                        <div class="flex-1 min-w-0">
+                                        <div class="flex-1 min-w-0 cursor-pointer" @click="openDetail(item)" title="Tap for details">
                                             <p class="font-semibold text-gray-900" x-text="item.name"></p>
                                             <div class="flex flex-wrap items-center gap-1 mt-0.5">
-                                                <span x-show="item.is_age_restricted" class="text-xs font-bold px-2 py-0.5 rounded-full bg-red-600 text-white">🔞 18+</span>
-                                                <span x-show="item.product_class && item.product_class !== 'standard'" class="text-xs font-medium px-2 py-0.5 rounded-full" :class="classInfo(item.product_class).c"
+                                                <span x-show="is18(item.product_class)" class="text-xs font-bold px-2 py-0.5 rounded-full bg-red-600 text-white">🔞 18+</span>
+                                                <span x-show="item.product_class && item.product_class !== 'standard' && item.product_class !== 'age_restricted'" class="text-xs font-medium px-2 py-0.5 rounded-full" :class="classInfo(item.product_class).c"
                                                       x-text="classInfo(item.product_class).e + ' ' + classInfo(item.product_class).l"></span>
                                             </div>
                                             <p class="text-sm text-gray-600">
                                                 <span x-text="formatPrice(item.price)"></span> × <span x-text="item.quantity"></span>
+                                                <span class="text-indigo-400 text-xs"> · <span data-i18n="scan.tap_details">tap for details</span> →</span>
                                             </p>
                                         </div>
                                     </div>
@@ -377,6 +378,11 @@
                         <span x-show="!hasImg(detailProduct)" class="text-7xl">📦</span>
                     </div>
                     <p class="text-3xl font-bold text-indigo-600 mt-4" x-text="formatPrice(detailProduct?.price)"></p>
+                    <div class="flex flex-wrap items-center gap-1 mt-2" x-show="detailProduct">
+                        <span x-show="is18(detailProduct?.product_class)" class="text-sm font-bold px-2.5 py-1 rounded-full bg-red-600 text-white">🔞 18+</span>
+                        <span x-show="detailProduct && detailProduct.product_class !== 'age_restricted'" class="text-sm font-medium px-2.5 py-1 rounded-full" :class="classInfo(detailProduct?.product_class).c"
+                              x-text="classInfo(detailProduct?.product_class).e + ' ' + classInfo(detailProduct?.product_class).l"></span>
+                    </div>
                     <button @click="addToCart(detailProduct); detailProduct=null"
                             class="bg-green-500 hover:bg-green-600 text-white w-full mt-4 py-3 rounded-lg font-semibold">➕ <span data-i18n="scan.add_to_cart">Add to Cart</span></button>
                 </div>
@@ -1291,6 +1297,12 @@
 
             removeFromCart(index) {
                 this.cart.splice(index, 1);
+            },
+
+            // 18+ is DERIVED FROM THE CLASS (same rule the checkout gate uses) — never from the
+            // stored is_age_restricted column, which can drift (a tobacco item showing no 18+ pill).
+            is18(pc) {
+                return ['tobacco_nicotine', 'alcohol', 'cbd_hemp', 'age_restricted'].includes(pc);
             },
 
             // Behaviour-class badge for the item cards + cart — so a cashier sees the TYPE (and 18+)

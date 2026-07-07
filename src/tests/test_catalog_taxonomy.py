@@ -222,3 +222,16 @@ def test_lighter_gas_refill_is_not_nicotine():
 def test_absinthe_spoon_is_accessory_not_alcohol():
     age, cls, _ = _age("Absinth Löffel Antique 167mm")
     assert age is False and cls != "alcohol"
+
+
+def test_nic_salt_eliquid_and_aisu_are_nicotine():
+    for title in ["Aisu Bar Salt - Dragonfruit 10ml 20mg Salt",
+                  "Twelve Monkeys Tropika Nic Salt 10ml 20mg",
+                  "Elf Liq Watermelon 10ml 20mg"]:
+        age, cls, _ = _age(title)
+        assert age is True and cls == "tobacco_nicotine", title
+
+
+def test_vape_device_and_cbd_oil_stay_open():
+    assert _age("GeekVape AEGIS Legend 5 200W Kit mit Z-Subohm Tank")[0] is False
+    assert _age("CBD Öl 10ml 500mg Full Spectrum")[0] is False  # 3-digit mg + cbd = not nicotine

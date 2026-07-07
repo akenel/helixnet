@@ -145,13 +145,13 @@ _SHISHA_TOBACCO = re.compile(r"shisha\s*tabak|shishatabak|\btabak\b|molasse|al\s
 # Nicotine e-cigarettes: a vape context + a NON-ZERO nicotine strength ("20mg"). The (?!0) keeps
 # "0mg" / nicotine-free out; the mg is 1–2 digits so CBD's 100/500/1000mg never trips it. Vape
 # context (device words or the vape category) scopes it so a "CBD 20mg" edible isn't caught.
-_ECIG_CONTEXT = re.compile(r"disposable|\bpod\b|\bvape\b|e-?zigar|\bpuff\b|elf\s*bar|elfbar|\bvozol\b|\bhoke\b|lost\s*mary|maryliq|geek\s*bar|\belux\b|\bwaka\b|vaporiz|e-?liquid|\bliquids?\b", re.I)
+_ECIG_CONTEXT = re.compile(r"disposable|\bpod\b|\bvape\b|e-?zigar|\bpuff\b|elf\s*bar|elfbar|\bvozol\b|\bhoke\b|lost\s*mary|maryliq|geek\s*bar|\belux\b|\bwaka\b|\baisu\b|nic\s*salt|\bnicsalt\b|vaporiz|e-?liquid|\bliquids?\b|\b\d{1,3}\s*ml\b", re.I)
 _NIC_MG = re.compile(r"\b(?!0\b)\d{1,2}\s*mg\b", re.I)
 # Disposable-vape brands: their consumables (refill / prefilled pod / nachfüllbehälter) are nicotine
 # by default — Artemis names them "…Refill Blueberry Ice" / "…Nachfüllbehälter …20mg" (no "disposable"
 # word), which the FourTwenty-tuned rules missed. A "refill" ONLY counts as nicotine next to one of
 # these brands, so a lighter's "gas refill" is never caught. 0mg / OHNE NIKOTIN still veto (via _AGE_NEG).
-_VAPE_BRAND = re.compile(r"elf\s*bar|elfbar|lost\s*mary|maryliq|\bvozol\b|geek\s*bar|\belux\b|\bwaka\b|\bhoke\b", re.I)
+_VAPE_BRAND = re.compile(r"elf\s*bar|elfbar|lost\s*mary|maryliq|\bvozol\b|geek\s*bar|\belux\b|\bwaka\b|\bhoke\b|\baisu\b", re.I)
 _VAPE_REFILL = re.compile(r"\brefill\b|nachf(?:ü|ue)ll", re.I)
 # The FORM carries nicotine by default: a "disposable" or a "prefilled pod" ships with e-liquid,
 # and in CH/EU that's nicotine unless the title explicitly says "No Nic" / "0mg" (caught by _AGE_NEG).
