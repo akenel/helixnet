@@ -663,6 +663,8 @@
             // Mirrors the server rule so legacy members (no DOB, age_confirmed) don't trip the gate.
             memberOfAge(m) {
                 if (!m) return false;
+                // Prefer the server's authoritative call when present (single source of truth).
+                if (m.is_of_age === true || m.is_of_age === false) return m.is_of_age;
                 if (m.birthdate) {
                     const a = this.ageFromDob(m.birthdate);
                     return a !== null && a >= 18;

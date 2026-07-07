@@ -243,6 +243,11 @@ async def get_checkout_view(
         "id": str(customer.id),
         "handle": customer.handle,
         "instagram": customer.instagram,
+        # Age fields — the checkout gate reads these; without them the client can't tell a minor
+        # from an adult and either skips the gate (memberOfAge defaults true) or loops the walk-in.
+        "birthdate": customer.birthdate.isoformat() if customer.birthdate else None,
+        "age_confirmed": bool(customer.age_confirmed),
+        "is_of_age": bool(customer.is_of_age),
         "loyalty_tier": customer.loyalty_tier.value,
         "tier_discount_percent": customer.tier_discount_percent,
         "tier_locked": bool(customer.tier_locked),
