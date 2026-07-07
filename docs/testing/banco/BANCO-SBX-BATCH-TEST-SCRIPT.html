@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Banco SBX Batch — Test Runbook (cockpit · home · roles · discount cap)</title>
+<style>
+  :root{ --red:#C0392B; --dark:#8B0000; --ink:#1f2937; --mut:#6b7280; --line:#e5e7eb; --ok:#059669; --bg:#f7f7f8; }
+  *{ box-sizing:border-box; }
+  body{ font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--bg); margin:0; line-height:1.5; }
+  a{ color:var(--red); }
+  header{ position:sticky; top:0; z-index:10; background:#fff; border-bottom:2px solid var(--red); padding:14px 20px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  .htop{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  h1{ font-size:19px; margin:0; }
+  h1 small{ color:var(--mut); font-weight:500; font-size:13px; display:block; margin-top:2px; }
+  .meters{ display:flex; align-items:center; gap:18px; }
+  .meter{ text-align:center; }
+  .meter b{ font-size:20px; color:var(--red); display:block; }
+  .meter span{ font-size:11px; color:var(--mut); text-transform:uppercase; letter-spacing:.04em; }
+  .timer{ font-variant-numeric:tabular-nums; font-size:22px; font-weight:700; color:var(--ink); }
+  .btn{ border:1px solid var(--line); background:#fff; border-radius:8px; padding:6px 12px; font-size:13px; cursor:pointer; }
+  .btn:hover{ background:#f0f0f0; }
+  .btn.red{ background:var(--red); color:#fff; border-color:var(--red); }
+  main{ max-width:920px; margin:0 auto; padding:24px 20px 80px; }
+  .lead{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-bottom:22px; }
+  section{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:18px 20px; margin-bottom:18px; }
+  section h2{ font-size:16px; margin:0 0 4px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  section .why{ color:var(--mut); font-size:13px; margin:0 0 12px; }
+  .open{ display:inline-block; background:var(--ink); color:#fff; text-decoration:none; padding:8px 14px; border-radius:8px; font-size:13px; font-weight:600; margin-bottom:12px; }
+  .open:hover{ background:#000; }
+  .url{ font-family:ui-monospace,Menlo,monospace; font-size:12px; color:var(--mut); margin-left:10px; }
+  ol.steps{ margin:0; padding:0; list-style:none; }
+  ol.steps li{ display:flex; gap:10px; padding:8px 0; border-top:1px dashed var(--line); align-items:flex-start; }
+  ol.steps li:first-child{ border-top:none; }
+  ol.steps input[type=checkbox]{ width:20px; height:20px; margin-top:2px; accent-color:var(--red); flex:none; cursor:pointer; }
+  .step-body{ flex:1; }
+  .exp{ color:var(--ok); font-size:12.5px; }
+  .exp::before{ content:"✓ expect: "; font-weight:600; }
+  textarea{ width:100%; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font:inherit; font-size:13px; margin-top:10px; resize:vertical; min-height:54px; }
+  textarea.step-cm{ margin-top:0; min-height:32px; font-size:12.5px; background:#fcfcfd; flex:1; }
+  .step-extra{ margin-top:8px; }
+  .cm-row{ display:flex; gap:6px; align-items:flex-start; }
+  .mic-btn{ border:1px solid var(--line); background:#fff; border-radius:8px; padding:4px 9px; cursor:pointer; font-size:15px; flex:none; }
+  .mic-btn.on{ background:#fde8e6; border-color:var(--red); color:var(--red); animation:pulse 1s infinite; }
+  @keyframes pulse{ 50%{ opacity:.45 } }
+  .shot-zone{ margin-top:6px; border:1.5px dashed var(--line); border-radius:8px; padding:8px 10px; font-size:12px; color:var(--mut); cursor:pointer; background:#fafafa; }
+  .shot-zone:focus, .shot-zone.drag{ outline:none; border-color:var(--red); background:#fff7f6; color:var(--ink); }
+  .thumbs{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+  .thumbs .sh{ position:relative; }
+  .thumbs img{ height:66px; border-radius:6px; border:1px solid var(--line); cursor:zoom-in; display:block; }
+  .thumbs .rm{ position:absolute; top:-7px; right:-7px; background:var(--red); color:#fff; border:none; border-radius:99px; width:19px; height:19px; font-size:11px; cursor:pointer; line-height:1; }
+  .hidden{ display:none; }
+  label.cm{ font-size:11px; color:var(--mut); text-transform:uppercase; letter-spacing:.04em; }
+  .tag{ font-size:11px; font-weight:700; padding:2px 8px; border-radius:99px; background:#fde8e6; color:var(--dark); }
+  .who{ font-size:11px; font-weight:700; padding:2px 8px; border-radius:99px; background:#e0edff; color:#1e40af; }
+  footer{ text-align:center; color:var(--mut); font-size:12px; padding:20px; }
+  @media print{ header{ position:static; } .btn,.open{ display:none; } body{ background:#fff; } section{ break-inside:avoid; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="htop">
+    <h1>🐺 Banco — SBX Batch Test Runbook<small>Cleanup cockpit · home button · 18+ · Add New CRACK · role settings · live discount cap — on sandbox-banco.lapiazza.app · build 025911a</small><small style="color:#C0392B;font-weight:700;letter-spacing:.05em">🐺 La Piazza · № LP-UAT-20260707-BANCO-SBX · rev.1 · registered</small></h1>
+    <div class="meters">
+      <div class="meter"><b id="prog">0/0</b><span>checks</span></div>
+      <div class="meter"><span class="timer" id="clock">00:00</span><span>elapsed</span></div>
+      <button class="btn" id="startBtn" onclick="toggleTimer()">▶ Start</button>
+      <button class="btn" onclick="resetTimer()">reset</button>
+      <button class="btn" onclick="copyReport()">⧉ Copy text</button>
+      <button class="btn red" onclick="exportReport()">⬇ Export report (with screenshots)</button>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="lead">
+    <strong>How to use:</strong> work top to bottom. Each section says which role to <strong>sign in as</strong>
+    (<span class="who">👑 felix (admin)</span> · <span class="who">👔 ralph (manager)</span> · <span class="who">💰 pam (cashier)</span>).
+    Tick each check, jot anything odd (type or 🎤 speak), paste a screenshot where useful, then hit
+    <strong>Export report</strong> and send it back to Tigs. Ticks &amp; notes auto-save in this browser.
+    <span class="tag">SANDBOX — safe to test, resettable (make sandbox-reset)</span>
+    <br><br>
+    <strong>Best on Chrome</strong> for the 🎤 mic + 📋 paste. To switch roles, use the 🏠 → log out (or open a private window).
+    <strong>Tip:</strong> open the browser console (F12) once for §7.
+  </div>
+
+  <!-- 0. LOGIN -->
+  <section>
+    <h2>0 · Sign in <span class="who">👑 felix</span></h2>
+    <p class="why">Start as the admin so you can set caps and see every card.</p>
+    <a class="open" href="https://sandbox-banco.lapiazza.app/pos/dashboard" target="_blank">Open the Dashboard ↗</a>
+    <span class="url">sandbox-banco.lapiazza.app/pos/dashboard</span>
+    <ol class="steps" data-sec="login">
+      <li><input type="checkbox"><div class="step-body">Log in as <strong>felix</strong>, land on the dashboard. <span class="exp">a grid of cards (New Sale, Reports, Settings, 🧹 Cleanup Queue…)</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Do a hard refresh once (Ctrl+Shift+R) so the new build (v41) loads. <span class="exp">no stale page; footer/status bar shows a fresh build</span></div></li>
+    </ol>
+  </section>
+
+  <!-- 1. HOME BUTTON -->
+  <section>
+    <h2>1 · One home button — 🏠 icon, top-left, every page <span class="tag">consistency</span></h2>
+    <p class="why">Every POS sub-page should have exactly ONE way home: a plain 🏠 icon, top-left. No "Dashboard" text, no duplicates.</p>
+    <ol class="steps" data-sec="home">
+      <li><input type="checkbox"><div class="step-body">Visit Scan, Catalog, My Day, Customers, Settings, Cleanup, Reports. Each has a <strong>🏠 top-left</strong>. <span class="exp">icon-only 🏠, same spot every page, tapping it → dashboard</span></div></li>
+      <li><input type="checkbox"><div class="step-body">No page has TWO home/dashboard buttons. <span class="exp">exactly one 🏠 per page; no leftover "🏪 Dashboard"</span></div></li>
+      <li><input type="checkbox"><div class="step-body">On <strong>Scan with an item in the cart</strong>, tap 🏠. <span class="exp">it asks to confirm before leaving (won't silently dump the sale)</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="home" placeholder="Any page missing the 🏠? Wrong spot? Double button?"></textarea>
+  </section>
+
+  <!-- 2. CLEANUP COCKPIT -->
+  <section>
+    <h2>2 · Sold-but-not-set-up cleanup cockpit <span class="who">👑 felix</span></h2>
+    <p class="why">The manager view that makes the lean quick-add safe: anything a cashier rings in a rush that's still half-baked shows here, busiest first, until it's tidied.</p>
+    <a class="open" href="https://sandbox-banco.lapiazza.app/pos/cleanup" target="_blank">Open the Cleanup Queue ↗</a>
+    <span class="url">sandbox-banco.lapiazza.app/pos/cleanup</span>
+    <ol class="steps" data-sec="cleanup">
+      <li><input type="checkbox"><div class="step-body"><strong>Make a half-baked sale first:</strong> Scan → the "New item on the fly" box → type a name + price only (no category), Create &amp; add to cart → checkout → pay. <span class="exp">sale completes; item filed under "On the fly", no cost</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Dashboard: the <strong>🧹 Cleanup Queue</strong> card shows an amber <strong>count badge</strong>. <span class="exp">badge count ≥ 1</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Open Cleanup. Your item is listed with chips. <span class="exp">🏷️ no category · 💰 no cost; busiest items first</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Fill a <strong>Category</strong> + <strong>Cost</strong>, hit <strong>Save &amp; done</strong>. <span class="exp">the row disappears; badge drops by one</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Now sign in as <strong>pam</strong> → dashboard. <span class="exp">NO Cleanup card for a cashier (manager-only)</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="cleanup" placeholder="Queue right? Badge accurate? Save clears it?"></textarea>
+  </section>
+
+  <!-- 3. 18+ TOGGLE -->
+  <section>
+    <h2>3 · 18+ toggle on the quick-add <span class="who">💰 pam</span> <span class="tag">compliance</span></h2>
+    <p class="why">A cashier can flag a new item 18+ on the spot — and that must actually gate the sale, not just look pretty.</p>
+    <a class="open" href="https://sandbox-banco.lapiazza.app/pos/scan" target="_blank">Open New Sale ↗</a>
+    <ol class="steps" data-sec="age">
+      <li><input type="checkbox"><div class="step-body">In "New item on the fly", there's a big <strong>18+ toggle</strong> between price and photo, <strong>default OFF</strong>. <span class="exp">clear 🔞/✅ toggle, starts OFF</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Name + price, flip <strong>18+ ON</strong> (🔞), Create &amp; add to cart, go to checkout &amp; try to pay. <span class="exp">the sale is BLOCKED — asks to verify 18+ / attach an of-age member</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Verify age (attest) → pay. <span class="exp">now it completes; receipt shows the 🔞 line</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Ring a normal item with 18+ OFF. <span class="exp">no age gate — sells straight through</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="age" placeholder="Toggle obvious? Gate actually fires? Anything confusing for a cashier?"></textarea>
+  </section>
+
+  <!-- 4. ADD NEW CRACK -->
+  <section>
+    <h2>4 · "➕ Add New CRACK" on the member page <span class="who">💰 pam</span></h2>
+    <p class="why">If the cashier already knows the member is new, she shouldn't have to run a doomed search first — the add button is right there.</p>
+    <a class="open" href="https://sandbox-banco.lapiazza.app/pos/customer-lookup" target="_blank">Open Members ↗</a>
+    <span class="url">sandbox-banco.lapiazza.app/pos/customer-lookup</span>
+    <ol class="steps" data-sec="crack">
+      <li><input type="checkbox"><div class="step-body">A green <strong>➕ Add New CRACK</strong> button is on the page <strong>by default</strong> (before any search). <span class="exp">visible immediately under the search</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Type a name in search, then tap <strong>➕ Add New CRACK</strong>. <span class="exp">opens the New CRACK form, prefills the handle from what you typed, scrolls to it</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Search a name that doesn't exist. <span class="exp">the "Customer not found — create new?" nudge still appears too</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="crack" placeholder="Button obvious? Prefill handy? Flow smooth?"></textarea>
+  </section>
+
+  <!-- 5. ROLE-BASED SETTINGS -->
+  <section>
+    <h2>5 · Settings by role — view / edit / discounts <span class="tag">the seal</span></h2>
+    <p class="why">Cashier sees but can't change. Manager edits everything EXCEPT discount caps. Only admin changes discounts.</p>
+    <a class="open" href="https://sandbox-banco.lapiazza.app/pos/settings" target="_blank">Open Settings ↗</a>
+    <span class="url">sandbox-banco.lapiazza.app/pos/settings</span>
+    <ol class="steps" data-sec="roles">
+      <li><input type="checkbox"><div class="step-body"><span class="who">💰 pam</span> Dashboard shows <strong>👁️ Store Info</strong> (not ⚙️ Settings). Open it. <span class="exp">"View only" banner; every field greyed/read-only; NO Save; NO Staff tab</span></div></li>
+      <li><input type="checkbox"><div class="step-body"><span class="who">👔 ralph</span> Dashboard shows <strong>⚙️ Settings</strong>. Open → edit the Store name, Save. <span class="exp">saves fine (manager can edit general settings)</span></div></li>
+      <li><input type="checkbox"><div class="step-body"><span class="who">👔 ralph</span> Open the <strong>Discounts</strong> tab. <span class="exp">a 🔒 "admin-only" note; the two cap fields are locked (can't type)</span></div></li>
+      <li><input type="checkbox"><div class="step-body"><span class="who">👑 felix</span> Settings → Discounts tab. <span class="exp">caps ARE editable; Staff tab is present</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="roles" placeholder="Right things locked per role? Any field editable that shouldn't be?"></textarea>
+  </section>
+
+  <!-- 6. DISCOUNT CAP LIVE -->
+  <section>
+    <h2>6 · Discount cap reads LIVE from settings <span class="tag">the headline fix</span></h2>
+    <p class="why">The bug you caught: you set pam's cap to 33.33% but the till still said "Max 10%" and blocked her at 10. Now the till reads the real value.</p>
+    <ol class="steps" data-sec="cap">
+      <li><input type="checkbox"><div class="step-body"><span class="who">👑 felix</span> Settings → Discounts → set <strong>Cashier max discount = 33.33</strong> → Save. <span class="exp">saves</span></div></li>
+      <li><input type="checkbox"><div class="step-body"><span class="who">💰 pam</span> New Sale → add an item → open the discount field. <span class="exp">label now reads <strong>"(Max 33%)"</strong> — not 10</span></div></li>
+      <li><input type="checkbox"><div class="step-body"><span class="who">💰 pam</span> Enter a discount of <strong>33</strong>. <span class="exp">it applies (she's no longer capped at 10%); trying 40 is blocked / clamped with a message</span></div></li>
+      <li><input type="checkbox"><div class="step-body"><span class="who">👑 felix</span> (optional) set the cap back to a sensible number (e.g. 10 or 15). <span class="exp">pam's till reflects the new value next time</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="cap" placeholder="Label shows the real cap? Discount actually allowed? Checkout screen too?"></textarea>
+  </section>
+
+  <!-- 7. NO PHANTOM 400 -->
+  <section>
+    <h2>7 · No red console error on the dashboard <span class="tag">cleanliness</span></h2>
+    <p class="why">The dashboard used to spit a red "API call failed" 400 (shift/start) on every load. Now it's a clean 200.</p>
+    <ol class="steps" data-sec="console">
+      <li><input type="checkbox"><div class="step-body">Open the browser console (F12 → Console), then reload the dashboard a couple times. <span class="exp">NO red "API call failed" for <code>/pos/shift/start</code>; it returns 200</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="console" placeholder="Any red errors left in the console? Paste a screenshot if so."></textarea>
+  </section>
+
+  <!-- 8. TOBACCO 18+ ENRICHMENT (spot check) -->
+  <section>
+    <h2>8 · Tobacco / vape come up 18+ <span class="who">💰 pam</span> <span class="tag">spot-check</span></h2>
+    <p class="why">Real cigarettes, nicotine vapes and shisha tobacco should already be flagged 18+ from the catalog (they were leaking through before).</p>
+    <a class="open" href="https://sandbox-banco.lapiazza.app/pos/scan" target="_blank">Open New Sale ↗</a>
+    <ol class="steps" data-sec="tobacco">
+      <li><input type="checkbox"><div class="step-body">Search a cigarette by name (e.g. <em>Marlboro</em>, <em>Parisienne</em>) or a shisha tobacco (<em>Al Fakher</em>), add it, go to checkout. <span class="exp">the age gate fires — it's treated as 18+</span></div></li>
+      <li><input type="checkbox"><div class="step-body">Add a clearly non-18+ accessory (papers / a lighter / grinder). <span class="exp">no age gate — sells straight through</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="tobacco" placeholder="Anything obviously mis-flagged? (e.g. papers asking for ID, or a cig NOT asking)"></textarea>
+  </section>
+
+  <!-- OVERALL -->
+  <section>
+    <h2>★ Overall verdict</h2>
+    <ol class="steps" data-sec="verdict">
+      <li><input type="checkbox"><div class="step-body"><strong>Ship this batch to prod?</strong> — tick if you're happy for it all to go live.</div></li>
+    </ol>
+    <label class="cm">the big notes — what's gold, what to fix before/after ship</label>
+    <textarea data-cm="verdict" placeholder="Your call, Wolf. What ships, what waits." style="min-height:90px"></textarea>
+  </section>
+
+  <footer>
+    <div style="border-top:2px solid #C0392B;max-width:920px;margin:0 auto;padding-top:10px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:11px">
+      <span><strong style="color:#C0392B">🐺 La Piazza</strong> · Banco SBX Batch UAT Runbook · registered artifact</span>
+      <span style="font-variant-numeric:tabular-nums">№ LP-UAT-20260707-BANCO-SBX · rev.1 · 2026-07-07 · build 025911a</span>
+    </div>
+    <div style="margin-top:6px">One sheet — screen, print, or postcard. Stamped either way. · sandbox only until you say go 🐺</div>
+  </footer>
+</main>
+
+<script>
+  const KEY='banco_sbx_batch_runbook';
+  const STEPS=[];   // [{li, cb, label, ta, thumbs, shots:[{name,data}]}] indexed by DOM order
+
+  function buildSteps(){
+    document.querySelectorAll('ol.steps li').forEach((li,i)=>{
+      const cb = li.querySelector('input[type=checkbox]');
+      const label = (li.querySelector('.step-body')?.textContent||'').trim().replace(/\s+/g,' ');
+      const wrap = document.createElement('div'); wrap.className='step-extra';
+      const row = document.createElement('div'); row.className='cm-row';
+      const ta = document.createElement('textarea'); ta.className='step-cm'; ta.rows=1; ta.placeholder='note… (type or 🎤 speak)';
+      ta.addEventListener('input', save);
+      const mic = document.createElement('button'); mic.className='mic-btn'; mic.type='button'; mic.textContent='🎤'; mic.title='Dictate this note';
+      mic.addEventListener('click', ()=>micToggle(mic, ta));
+      row.appendChild(ta); row.appendChild(mic); wrap.appendChild(row);
+      const zone = document.createElement('div'); zone.className='shot-zone'; zone.tabIndex=0;
+      zone.textContent='📋 click here & paste a screenshot (Ctrl+V) · drop an image · or 📷 pick a file';
+      const fin = document.createElement('input'); fin.type='file'; fin.accept='image/*'; fin.capture='environment'; fin.className='hidden';
+      zone.addEventListener('click', ()=>{ activeIdx=i; fin.click(); });
+      zone.addEventListener('focus', ()=>{ activeIdx=i; });
+      zone.addEventListener('dragover', e=>{ e.preventDefault(); zone.classList.add('drag'); });
+      zone.addEventListener('dragleave', ()=>zone.classList.remove('drag'));
+      zone.addEventListener('drop', e=>{ e.preventDefault(); zone.classList.remove('drag'); activeIdx=i;
+        [...(e.dataTransfer.files||[])].forEach(f=>{ if(f.type.startsWith('image/')) addShot(i,f); }); });
+      fin.addEventListener('change', e=>{ [...(e.target.files||[])].forEach(f=>addShot(i,f)); e.target.value=''; });
+      const thumbs = document.createElement('div'); thumbs.className='thumbs';
+      wrap.appendChild(zone); wrap.appendChild(fin); wrap.appendChild(thumbs);
+      li.querySelector('.step-body').appendChild(wrap);
+      STEPS[i]={ li, cb, label, ta, thumbs, shots:[] };
+    });
+  }
+
+  let activeIdx=null;
+  document.addEventListener('paste', e=>{ if(activeIdx==null) return; const items=(e.clipboardData||{}).items||[];
+    for(const it of items){ if(it.type && it.type.startsWith('image/')){ const f=it.getAsFile(); if(f){ addShot(activeIdx,f); e.preventDefault(); } } } });
+  function downscale(file, cb){ const url=URL.createObjectURL(file); const img=new Image();
+    img.onload=()=>{ const max=1000; let w=img.width,h=img.height; if(w>max){ h=Math.round(h*max/w); w=max; }
+      const c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(url); try{ cb(c.toDataURL('image/jpeg',0.6)); }catch(e){ cb(null); } };
+    img.onerror=()=>{ URL.revokeObjectURL(url); cb(null); }; img.src=url; }
+  function addShot(i,file){ downscale(file, data=>{ if(!data) return; STEPS[i].shots.push({name:file.name||'screenshot.png', data}); renderThumbs(i); save(); }); }
+  function renderThumbs(i){ const t=STEPS[i].thumbs; t.innerHTML='';
+    STEPS[i].shots.forEach((sh,si)=>{ const d=document.createElement('div'); d.className='sh';
+      const im=document.createElement('img'); im.src=sh.data; im.title=sh.name; im.onclick=()=>{ const w=window.open(); if(w) w.document.write('<img src="'+sh.data+'" style="max-width:100%">'); };
+      const rm=document.createElement('button'); rm.className='rm'; rm.textContent='✕'; rm.title='remove'; rm.onclick=()=>{ STEPS[i].shots.splice(si,1); renderThumbs(i); save(); };
+      d.appendChild(im); d.appendChild(rm); t.appendChild(d); }); }
+
+  function save(){ const d={cb:[],note:[],shots:[],cm:{},seconds};
+    STEPS.forEach((s,i)=>{ d.cb[i]=s.cb?s.cb.checked:false; d.note[i]=s.ta.value; d.shots[i]=s.shots; });
+    document.querySelectorAll('textarea[data-cm]').forEach(t=>d.cm[t.dataset.cm]=t.value);
+    try{ localStorage.setItem(KEY,JSON.stringify(d)); }
+    catch(e){ console.warn('storage full', e); flash('⚠ Storage full — Export your report to save screenshots, then clear.'); } }
+  function restore(){ try{ const d=JSON.parse(localStorage.getItem(KEY)||'{}');
+    STEPS.forEach((s,i)=>{ if(d.cb&&s.cb) s.cb.checked=!!d.cb[i]; if(d.note&&d.note[i]!=null) s.ta.value=d.note[i];
+      if(d.shots&&Array.isArray(d.shots[i])){ s.shots=d.shots[i]; renderThumbs(i); } });
+    if(d.cm) document.querySelectorAll('textarea[data-cm]').forEach(t=>{ if(d.cm[t.dataset.cm]!=null) t.value=d.cm[t.dataset.cm]; });
+    if(typeof d.seconds==='number'){ seconds=d.seconds; paintClock(); } }catch(e){} }
+  function progress(){ const done=STEPS.filter(s=>s.cb&&s.cb.checked).length; document.getElementById('prog').textContent=done+'/'+STEPS.length; }
+  document.addEventListener('change',e=>{ save(); progress(); });
+  let flashT=null; function flash(msg){ const el=document.getElementById('prog'); if(flashT) clearTimeout(flashT); const old=el.textContent; el.textContent='⚠'; alert(msg); el.textContent=old; }
+
+  let seconds=0, timer=null;
+  function paintClock(){ const m=String(Math.floor(seconds/60)).padStart(2,'0'), s=String(seconds%60).padStart(2,'0'); document.getElementById('clock').textContent=m+':'+s; }
+  function toggleTimer(){ const b=document.getElementById('startBtn');
+    if(timer){ clearInterval(timer); timer=null; b.textContent='▶ Resume'; }
+    else { timer=setInterval(()=>{ seconds++; paintClock(); if(seconds%10===0) save(); },1000); b.textContent='⏸ Pause'; } }
+  function resetTimer(){ if(timer){ clearInterval(timer); timer=null; } seconds=0; paintClock(); document.getElementById('startBtn').textContent='▶ Start'; save(); }
+
+  let rec=null;
+  function micToggle(btn, ta){
+    if(rec){ rec.stop(); return; }
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){ alert('Voice notes need Chrome.'); return; }
+    rec=new SR(); rec.lang='en-US'; rec.continuous=true; rec.interimResults=true;
+    let base=ta.value?ta.value.trim()+' ':'';
+    btn.classList.add('on');
+    rec.onresult=e=>{ let fin='',int=''; for(let k=e.resultIndex;k<e.results.length;k++){ const t=e.results[k][0].transcript; if(e.results[k].isFinal) fin+=t; else int+=t; }
+      if(fin) base+=fin+' '; ta.value=(base+int).replace(/\s+/g,' ').trimStart(); save(); };
+    rec.onerror=()=>{}; rec.onend=()=>{ btn.classList.remove('on'); rec=null; };
+    try{ rec.start(); }catch(e){ btn.classList.remove('on'); rec=null; }
+  }
+
+  function copyReport(){ let out='BANCO SBX BATCH — TEST REPORT\n'+document.getElementById('prog').textContent+' checks · '+document.getElementById('clock').textContent+' elapsed\n№ LP-UAT-20260707-BANCO-SBX · build 025911a\n\n';
+    document.querySelectorAll('section').forEach(sec=>{ const h=sec.querySelector('h2'); if(!h) return; out+='## '+h.textContent.trim()+'\n';
+      sec.querySelectorAll('ol.steps li').forEach(li=>{ const idx=STEPS.findIndex(s=>s.li===li); const s=STEPS[idx]||{};
+        out+=((s.cb&&s.cb.checked)?'[x] ':'[ ] ')+(s.label||'')+'\n';
+        if(s.ta&&s.ta.value.trim()) out+='     note: '+s.ta.value.trim()+'\n';
+        if(s.shots&&s.shots.length) out+='     📷 '+s.shots.length+' screenshot(s) attached (see exported report)\n'; });
+      const t=sec.querySelector('textarea[data-cm]'); if(t&&t.value.trim()) out+='   section notes: '+t.value.trim()+'\n'; out+='\n'; });
+    navigator.clipboard.writeText(out).then(()=>alert('Text report copied. (Use Export for the version with screenshots.)')).catch(()=>prompt('Copy this:',out)); }
+
+  function exportReport(){ const esc=s=>(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+    let h='<!doctype html><meta charset=utf-8><title>Banco SBX Batch — UAT report</title>'+
+      '<style>body{font-family:system-ui,Arial;max-width:820px;margin:24px auto;padding:0 16px;color:#1f2937}h2{border-bottom:2px solid #C0392B;padding-bottom:4px;margin-top:28px}li{margin:10px 0;list-style:none}.ok{color:#059669;font-weight:700}.no{color:#9ca3af}.n{color:#374151;font-size:14px;margin:4px 0 0 24px}img{max-width:320px;display:block;margin:6px 0 0 24px;border:1px solid #ddd;border-radius:6px}.h{color:#6b7280;font-size:13px}</style>';
+    h+='<h1>🐺 Banco SBX Batch — UAT report</h1><p class=h>'+document.getElementById('prog').textContent+' checks · '+document.getElementById('clock').textContent+' elapsed · № LP-UAT-20260707-BANCO-SBX · '+new Date().toLocaleString()+'</p>';
+    document.querySelectorAll('section').forEach(sec=>{ const ttl=sec.querySelector('h2'); if(!ttl) return; h+='<h2>'+esc(ttl.textContent.trim())+'</h2><ul>';
+      sec.querySelectorAll('ol.steps li').forEach(li=>{ const s=STEPS[STEPS.findIndex(x=>x.li===li)]||{};
+        h+='<li><span class="'+((s.cb&&s.cb.checked)?'ok':'no')+'">'+((s.cb&&s.cb.checked)?'✓':'○')+'</span> '+esc(s.label||'');
+        if(s.ta&&s.ta.value.trim()) h+='<div class=n>📝 '+esc(s.ta.value.trim())+'</div>';
+        (s.shots||[]).forEach(sh=>{ h+='<img src="'+sh.data+'" alt="'+esc(sh.name)+'">'; }); h+='</li>'; });
+      const t=sec.querySelector('textarea[data-cm]'); if(t&&t.value.trim()) h+='<li class=n>📝 '+esc(t.value.trim())+'</li>'; h+='</ul>'; });
+    const blob=new Blob([h],{type:'text/html'}); const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='banco-sbx-batch-uat-report.html'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); }
+
+  buildSteps(); restore(); progress(); paintClock();
+</script>
+</body>
+</html>
