@@ -163,23 +163,29 @@
             <div x-show="paymentMethod === 'cash'" x-transition class="mb-6">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">💵 <span data-i18n="cash.cash_received">Cash Received</span></h2>
 
-                <!-- Quick Amount Buttons -->
-                <div class="grid grid-cols-3 md:grid-cols-5 gap-3 mb-4">
-                    <button @click="setCashReceived(10)"
-                        :class="cashReceived === 10 ? 'bg-green-500 text-white' : 'bg-green-100'"
-                        class="btn-secondary py-3 font-bold">10</button>
-                    <button @click="setCashReceived(20)"
-                        :class="cashReceived === 20 ? 'bg-green-500 text-white' : 'bg-green-100'"
-                        class="btn-secondary py-3 font-bold">20</button>
-                    <button @click="setCashReceived(50)"
-                        :class="cashReceived === 50 ? 'bg-green-500 text-white' : 'bg-green-100'"
-                        class="btn-secondary py-3 font-bold">50</button>
-                    <button @click="setCashReceived(100)"
-                        :class="cashReceived === 100 ? 'bg-green-500 text-white' : 'bg-green-100'"
-                        class="btn-secondary py-3 font-bold">100</button>
+                <!-- Type the EXACT amount handed over (Swiss pay over: a 50 for a pack of gum, or
+                     72.50 with a 75.00, and take clean coins back). Free-form field is primary. -->
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="cash.amount_received">Amount received (CHF)</label>
+                    <input type="number" inputmode="decimal" step="0.05" min="0"
+                           x-model.number="cashReceived" @input="calculateChange()"
+                           placeholder="0.00"
+                           class="w-full px-4 py-3 border-2 border-green-300 rounded-lg text-3xl font-bold text-right focus:border-green-500 focus:outline-none">
+                </div>
+
+                <!-- Tap notes to ADD them up — a 50 and a 20 = 70. Swiss CHF notes. -->
+                <div class="grid grid-cols-3 md:grid-cols-6 gap-2 mb-3">
+                    <template x-for="note in [5,10,20,50,100,200]" :key="note">
+                        <button @click="addCash(note)" class="btn-secondary py-3 font-bold bg-green-100 hover:bg-green-200">+<span x-text="note"></span></button>
+                    </template>
+                </div>
+
+                <!-- Exact + Clear -->
+                <div class="grid grid-cols-2 gap-3 mb-4">
                     <button @click="setCashReceived(cartData.totals.total)"
-                        :class="cashReceived === cartData.totals.total ? 'bg-blue-500 text-white' : 'bg-blue-100'"
+                        :class="Math.round(cashReceived*100) === Math.round((cartData.totals.total||0)*100) && cashReceived > 0 ? 'bg-blue-500 text-white' : 'bg-blue-100'"
                         class="btn-secondary py-3 font-bold" data-i18n="cash.exact">EXACT</button>
+                    <button @click="clearCash()" class="btn-secondary py-3 font-bold bg-gray-100 hover:bg-gray-200" data-i18n="cash.clear">CLEAR</button>
                 </div>
 
                 <!-- Cash Received Display -->
@@ -425,7 +431,21 @@
             },
 
             setCashReceived(amount) {
-                this.cashReceived = amount;
+                this.cashReceived = Math.round((Number(amount) || 0) * 100) / 100;
+                this.quickRoundApplied = false;
+                this.calculateChange();
+            },
+
+            // Tap-to-add a note (a 50 and a 20 = 70) — accumulates onto whatever's already entered.
+            addCash(amount) {
+                this.cashReceived = Math.round(((Number(this.cashReceived) || 0) + amount) * 100) / 100;
+                this.quickRoundApplied = false;
+                this.calculateChange();
+            },
+
+            clearCash() {
+                this.cashReceived = 0;
+                this.quickRoundApplied = false;
                 this.calculateChange();
             },
 
@@ -433,15 +453,16 @@
             // (integer-cent compare avoids float dust failing an exactly-paid sale).
             cashShort() {
                 if (this.paymentMethod !== 'cash') return false;
-                return Math.round(this.cashReceived * 100) < Math.round((this.cartData.totals.total || 0) * 100);
+                return Math.round((Number(this.cashReceived) || 0) * 100) < Math.round((this.cartData.totals.total || 0) * 100);
             },
 
             calculateChange() {
                 const total = this.cartData.totals.total;
+                const recv = Number(this.cashReceived) || 0;   // empty field / NaN -> 0
                 // Round to whole cents -- the discount/VAT math leaves float dust
                 // (e.g. 10.0000001), which otherwise reads as a "0.00 short" on an
                 // exactly-paid sale. Compare in cents, not raw floats.
-                this.changeAmount = Math.round((this.cashReceived - total) * 100) / 100;
+                this.changeAmount = Math.round((recv - total) * 100) / 100;
                 // Gap is the cents part that could be rounded
                 this.changeGap = this.changeAmount > 0 ? (this.changeAmount % 1) : Math.abs(this.changeAmount);
                 // (Treats are free now -- no affordability filtering; the old filter
