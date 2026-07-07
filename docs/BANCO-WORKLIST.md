@@ -10,7 +10,31 @@
 
 ---
 
-## 🃏 ON DECK — NEXT ROUND (2026-07-07 eve) · MEMBER DISCOUNT vs PROMO-RESTRICTION ← START HERE
+## 🃏 ON DECK — NEXT ROUND (2026-07-07 night) · PER-MEMBER TIER OVERRIDE ← START HERE
+**WHERE WE ARE.** Prod solid on `a00b905`. Today's member-discount round is SHIPPED (see ✅ below):
+eligible-only tier discount, option-B manual suppression, AND loyalty tiers are now DATA Felix edits in
+Settings → Discounts (thresholds + %, admin-only, applies to all members by spend, no redeploy).
+
+**THE NEXT PIECE — per-member manual override.** Right now tier is auto-computed from lifetime spend
+(the guardrail: cashiers can't gift a tier). Ralph/Felix want to hand-set a well-known regular (George
+Clooney) to Gold on the spot regardless of spend. Needs: (1) member-profile EDITING (doesn't exist yet —
+can't edit a member at all today), (2) an override flag that SURVIVES `recalculate_tier` (else the next
+sale resets it to the spend-derived tier), (3) manager/admin-gated. Design-then-build. Detail in memory
+`banco-member-discount-promo-restriction` + `banco-crm-strategy`.
+
+**Also parked (cosmetic):** `customer_schema` LoyaltyTier enum comments (5/10/15/20%) are stale vs the real
+running policy — fix the comments when convenient.
+
+## ✅ 2026-07-07 (night) — MEMBER DISCOUNT ROUND SHIPPED PROD (`f75373a` + `a00b905`)
+(1) Tier discount hits ELIGIBLE (non-tobacco/alcohol) subtotal only — cigarettes full price, lighter gets
+the member %, ONE receipt; all-tobacco cart → 0 discount, still completes. (2) Option B: a member SUPPRESSES
+the manual cashier discount (no stacking; checkout hides the buttons). (3) Loyalty tiers = DATA in Settings →
+Discounts (Felix sets Silver/Gold/Platinum spend + %, admin-only). Proven e2e (bronze/silver/gold/platinum
+exact centimes; live threshold change re-tiers on next sale). Unit tests added. Backup-gated; landmine
+`tier1_threshold=0` reset on all envs before deploy. **SANDBOX demo ready:** BruceLee (Gold 10%, spend 1200)
++ Marlboro rot 7.10 + Feuerzeug BIC 2.50 → 7.10 + 2.25 = 9.35.
+
+## 🃏 SUPERSEDED — 2026-07-07 eve · MEMBER DISCOUNT vs PROMO-RESTRICTION (done, see above)
 **WHERE WE ARE.** Prod is SOLID: full Artemis catalog (5,111 items) live, badges + 18+ gate + readable
 errors + blank-discount fix all shipped; Angel can close cash deals on prod, no blocks. Session compacted
 here at a clean boundary.
