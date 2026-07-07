@@ -10,6 +10,38 @@
 
 ---
 
+## 🃏 ON DECK — NEXT ROUND (2026-07-07 eve) · MEMBER DISCOUNT vs PROMO-RESTRICTION ← START HERE
+**WHERE WE ARE.** Prod is SOLID: full Artemis catalog (5,111 items) live, badges + 18+ gate + readable
+errors + blank-discount fix all shipped; Angel can close cash deals on prod, no blocks. Session compacted
+here at a clean boundary.
+
+**THE NEXT PROBLEM (Angel spotted it before it bit).** A tier member (Gold etc.) gets an AUTOMATIC
+discount at checkout. But tobacco/alcohol are **promo_restricted** (Swiss law — no promo discounts).
+Today the two discount paths DISAGREE:
+- **Manual/cart discount:** already blocks promo-restricted lines per-line (`pos_router.py` ~2342-2348 /
+  2703-2705, the `2b8aefa` fix). ✅ correct.
+- **Member TIER discount:** applies `tier% × transaction.total` CART-WIDE (`~2514-2520` & `~2737`), never
+  checks promo_restricted → would silently discount the cigarettes too. ❌ the gap.
+
+**THE SENSIBLE DESIGN (agreed, discuss-confirm then build — NO two receipts):**
+> Member discount applies ONLY to the **eligible (non-promo-restricted) portion**: `tier% × subtotal of
+> non-tobacco/alcohol lines`. Cigarettes ring full price, the lighter gets −5%, **ONE receipt**. Makes the
+> auto-discount obey the SAME per-line law the manual discount already does. All-tobacco cart → discount 0,
+> sale completes at full price (no block).
+
+**NOT a showstopper now** (Felix has no tier members yet) — becomes one the day he makes his first Gold.
+
+**TEST PLAN (sandbox — do it there):**
+1. Seed test members per tier: bronze / silver / gold / platinum (**Bruce Lee**) with discount %.
+2. Rings per tier: (a) tobacco-only, (b) lighter-only, (c) mixed tobacco+lighter.
+3. Verify: eligible discounted, tobacco full price, ONE receipt, totals+VAT correct, completes (no block).
+4. Decide receipt wording ("member −5% on eligible items").
+
+**Doctrine reminder:** talk design first, then build as a Block. Detail in memory `banco-crm-strategy` +
+`banco-member-discount-promo-restriction`.
+
+---
+
 ## 🐛✅ 2026-07-07 — "[object Object]" checkout-error bug FIXED + SHIPPED PROD (`bf021b2`)
 Angel hit "[object Object]" in the checkout toast on prod (mobile; desktop looked fine). Diagnosed from
 prod logs: not a crash — a run of `POST /pos/sales` **400s** (the 18+ age gate, expected) then two **422s**
