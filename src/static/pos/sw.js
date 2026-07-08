@@ -11,7 +11,7 @@
  * Phases 1–2 build on this: P1 adds an IndexedDB catalog read-cache; P2 adds the
  * offline sales OUTBOX + background sync. Bump CACHE_NAME on any shell change.
  */
-const CACHE_NAME = 'banco-pos-v56';
+const CACHE_NAME = 'banco-pos-v57';
 
 // The shell we want available instantly / offline. Kept small + safe (GET, same-origin).
 const SHELL = [
@@ -60,7 +60,10 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET' || url.origin !== location.origin) return;
 
   // Sales + auth stay live in P0 — never serve a stale sale/token from cache.
-  if (url.pathname.startsWith('/api/') || url.pathname === '/pos/refresh') return;
+  // /pos/callback is BYPASSED so the browser follows the OAuth 302 → /pos/dashboard#token=…
+  // NATIVELY: when the SW follows that redirect via fetch(), the #token FRAGMENT is dropped and
+  // the dashboard bounces back to login (the "press Login twice" bug on mobile). Let the browser do it.
+  if (url.pathname.startsWith('/api/') || url.pathname === '/pos/refresh' || url.pathname === '/pos/callback') return;
 
   // Static assets + vendored libs: cache-first, then fill the cache on first hit.
   const isStatic = url.pathname.startsWith('/static/');
