@@ -196,6 +196,20 @@ def test_reconcile_derives_flag_from_class_when_flag_absent():
     assert reconcile_age("standard", None) == ("standard", False)
 
 
+def test_reconcile_toggle_off_demotes_the_neutral_bucket():
+    # field 2026-07-08: turning 18+ OFF on an "age_restricted" item must actually un-gate it
+    # (was stuck 18+ — the flag got re-derived from the unchanged class)
+    assert reconcile_age("age_restricted", False) == ("standard", False)
+
+
+def test_reconcile_toggle_off_never_ungate_a_real_substance_class():
+    # a cigarette / CBD flower / alcohol stays gated even if the flag arrives False —
+    # the toggle can't un-gate a substance; reclass it explicitly instead
+    assert reconcile_age("tobacco_nicotine", False) == ("tobacco_nicotine", True)
+    assert reconcile_age("cbd_hemp", False) == ("cbd_hemp", True)
+    assert reconcile_age("alcohol", False) == ("alcohol", True)
+
+
 # ---- Artemis supplier vocabulary (sandbox import review, 2026-07-07) ----
 
 def test_brand_refill_pods_are_nicotine():

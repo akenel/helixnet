@@ -118,10 +118,18 @@ def reconcile_age(product_class: str | None, is_age_restricted: bool | None) -> 
     must land on a class that actually gates. If the caller flipped 18+ on an otherwise unclassed
     item (the on-the-fly quick-add, the cleanup cockpit), file it under the neutral "age_restricted"
     class; a manager can re-class it precisely (tobacco/cbd/…) later. Then always DERIVE the flag
-    from the (possibly updated) class so the two can never drift. Returns (class, flag)."""
+    from the (possibly updated) class so the two can never drift.
+
+    The toggle is BIDIRECTIONAL for the NEUTRAL bucket: flipping 18+ OFF on an "age_restricted"
+    item demotes it back to standard (field 2026-07-08: editing 18+ off "saved" but stayed 18+,
+    because the flag was re-derived from the unchanged class). It never un-gates a REAL substance
+    class (tobacco/alcohol/cbd_hemp) via the toggle — those stay gated; reclass them explicitly.
+    Returns (class, flag)."""
     cls = product_class or DEFAULT_CLASS
     if is_age_restricted and not class_is_age_restricted(cls):
-        cls = "age_restricted"
+        cls = "age_restricted"            # toggle ON a plain item → the neutral 18+ bucket
+    elif is_age_restricted is False and cls == "age_restricted":
+        cls = DEFAULT_CLASS               # toggle OFF the NEUTRAL bucket → standard (the fix)
     return cls, class_is_age_restricted(cls)
 
 
