@@ -9,7 +9,9 @@ classifier leaked them through as un-gated goods.
 
 Pure function, no DB/network — fast regression guard on classify().
 """
-from src.services.catalog_taxonomy import classify, class_is_age_restricted, reconcile_age
+from src.services.catalog_taxonomy import (
+    classify, class_is_age_restricted, reconcile_age, resolve_class_on_create,
+)
 
 
 def _ft(cg2, cg1="Headshop"):
@@ -194,6 +196,20 @@ def test_reconcile_derives_flag_from_class_when_flag_absent():
     assert reconcile_age("standard", None) == ("standard", False)
 
 
+def test_reconcile_toggle_off_demotes_the_neutral_bucket():
+    # field 2026-07-08: turning 18+ OFF on an "age_restricted" item must actually un-gate it
+    # (was stuck 18+ — the flag got re-derived from the unchanged class)
+    assert reconcile_age("age_restricted", False) == ("standard", False)
+
+
+def test_reconcile_toggle_off_never_ungate_a_real_substance_class():
+    # a cigarette / CBD flower / alcohol stays gated even if the flag arrives False —
+    # the toggle can't un-gate a substance; reclass it explicitly instead
+    assert reconcile_age("tobacco_nicotine", False) == ("tobacco_nicotine", True)
+    assert reconcile_age("cbd_hemp", False) == ("cbd_hemp", True)
+    assert reconcile_age("alcohol", False) == ("alcohol", True)
+
+
 # ---- Artemis supplier vocabulary (sandbox import review, 2026-07-07) ----
 
 def test_brand_refill_pods_are_nicotine():
@@ -235,3 +251,61 @@ def test_nic_salt_eliquid_and_aisu_are_nicotine():
 def test_vape_device_and_cbd_oil_stay_open():
     assert _age("GeekVape AEGIS Legend 5 200W Kit mit Z-Subohm Tank")[0] is False
     assert _age("CBD Öl 10ml 500mg Full Spectrum")[0] is False  # 3-digit mg + cbd = not nicotine
+
+
+# ---- Field leaks closed (Artemis prod run, 2026-07-08) --------------------
+
+def test_nicotine_pouches_english_spelling_are_18plus():
+    # the "nicotin\b" boundary missed the English "Nicotine" (trailing e) → pouches leaked as standard
+    for title in ["Elf Nicotine Pouches Max Polar Mint 20mg/g",
+                  "Killa Nicotine Pouches Cold Mint 16mg", "Pablo Nicotine Pouch Ice Cold"]:
+        age, cls, _ = _age(title)
+        assert age is True and cls == "tobacco_nicotine", title
+
+
+def test_cigars_and_cigarillos_are_18plus():
+    for title in ["Swisher Sweets classic", "Smock Woods Natural Mild Cigars",
+                  "Backwoods Honey Berry", "Villiger Export Cigarillos 10er",
+                  "Al Capone Pockets Cigarillo"]:
+        age, cls, cat = _age(title)
+        assert age is True and cls == "tobacco_nicotine", title
+        assert cat == "Tobacco & Cigarettes", title
+
+
+def test_blunt_wraps_are_gated_conservatively():
+    # tobacco-leaf wraps — over-gating is the safe error (Felix/Treuhänder to confirm CH line)
+    age, cls, _ = _age("Blunt Wraps Double Platinum Blueberry 2 in 1")
+    assert age is True and cls == "tobacco_nicotine"
+
+
+def test_nicotine_free_pouch_and_plain_papers_stay_open():
+    # the negative guard still wins; a bare rolling paper is never a cigar/wrap
+    assert _age("Nicotine Free Pouches Fresh Mint 0mg")[0] is False
+    assert _age("OCB Premium Rolls Papers")[0] is False
+    assert _age("RAW Classic King Size Slim Papers")[0] is False
+
+
+def test_permanent_marker_is_not_cbd_or_age_restricted():
+    # over-flag caught in the field: a marker was saved cbd_hemp (operator slip) — the classifier
+    # itself must land it as plain standard so a reclassify sweep corrects the row
+    age, cls, cat = _age("Natural Rebel - Permanent Marker")
+    assert age is False and cls == "standard" and cat != "CBD & Hemp"
+
+
+# ---- resolve_class_on_create: the on-the-fly compliance safety net --------
+
+def test_safety_net_gates_a_tobacco_name_left_as_standard():
+    # cashier forgot the 18+ toggle on a tobacco item → the net gates it anyway
+    assert resolve_class_on_create("Swisher Sweets classic", "standard", False) == ("tobacco_nicotine", True)
+    assert resolve_class_on_create("Elf Nicotine Pouches 20mg/g", None, None) == ("tobacco_nicotine", True)
+
+
+def test_safety_net_leaves_a_genuine_standard_alone():
+    assert resolve_class_on_create("Bic Lighter Blue", "standard", False) == ("standard", False)
+    assert resolve_class_on_create("Remedy Kombucha Ginger 250ml", None, None) == ("standard", False)
+
+
+def test_safety_net_never_ungate_or_downgrade_an_operator_choice():
+    # an explicit 18+ toggle stays gated; an explicit specific class is never clobbered
+    assert resolve_class_on_create("Mystery Item", "standard", True) == ("age_restricted", True)
+    assert resolve_class_on_create("House CBD Flower 3g", "cbd_hemp", None) == ("cbd_hemp", True)

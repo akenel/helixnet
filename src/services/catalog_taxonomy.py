@@ -118,10 +118,18 @@ def reconcile_age(product_class: str | None, is_age_restricted: bool | None) -> 
     must land on a class that actually gates. If the caller flipped 18+ on an otherwise unclassed
     item (the on-the-fly quick-add, the cleanup cockpit), file it under the neutral "age_restricted"
     class; a manager can re-class it precisely (tobacco/cbd/…) later. Then always DERIVE the flag
-    from the (possibly updated) class so the two can never drift. Returns (class, flag)."""
+    from the (possibly updated) class so the two can never drift.
+
+    The toggle is BIDIRECTIONAL for the NEUTRAL bucket: flipping 18+ OFF on an "age_restricted"
+    item demotes it back to standard (field 2026-07-08: editing 18+ off "saved" but stayed 18+,
+    because the flag was re-derived from the unchanged class). It never un-gates a REAL substance
+    class (tobacco/alcohol/cbd_hemp) via the toggle — those stay gated; reclass them explicitly.
+    Returns (class, flag)."""
     cls = product_class or DEFAULT_CLASS
     if is_age_restricted and not class_is_age_restricted(cls):
-        cls = "age_restricted"
+        cls = "age_restricted"            # toggle ON a plain item → the neutral 18+ bucket
+    elif is_age_restricted is False and cls == "age_restricted":
+        cls = DEFAULT_CLASS               # toggle OFF the NEUTRAL bucket → standard (the fix)
     return cls, class_is_age_restricted(cls)
 
 
@@ -131,12 +139,19 @@ def reconcile_age(product_class: str | None, is_age_restricted: bool | None) -> 
 # NOTE the \b0\s*mg\b boundary: without it, "20mg" (a NICOTINE e-cig) contains "0mg" and would be
 # falsely cleared. "tabakersatz"/"kräutermischung" = herbal tobacco-substitute (no nicotine) = open.
 _AGE_NEG = re.compile(r"tabakfrei|tobacco.?free|nikotinfrei|nicotine.?free|ohne\s+nikotin|\bno\s*nic\b|\b0\s*mg\b|null\s*nikotin|alkoholfrei|alcohol.?free|kräuter.?mischung|\bherbal\b|tabakersatz", re.I)
-_TOBACCO = re.compile(r"tabak|tabacc|tobacco|zigar|sigaret|cigaret|nikotin|nicotin\b|\bsnus\b", re.I)
+_TOBACCO = re.compile(r"tabak|tabacc|tobacco|zigar|sigaret|cigaret|nikotin|nicotin|\bsnus\b|nikotinbeutel|nicotine\s*pouch", re.I)
 # Branded cigarettes + pack tokens the plain-tobacco regex misses. FourTwenty ships real cigarette
 # packs titled "Marlboro Gold 10x20cig" / "Parisienne Jaune 8x25cig" — no "tabak"/"zigarette" in the
 # title at all, so they leaked through as un-gated "standard" goods. Catch the brands + the NNxNNcig
 # pack pattern + MYO/RYO loose-tobacco + HEETS/IQOS.
 _CIG = re.compile(r"\bmarlboro\b|\bparisienne\b|\bcamel\b|\bwinston\b|gauloises|lucky\s*strike|\bchesterfield\b|american\s*spirit|\bpueblo\b|\bphilip\s*morris\b|\d+\s*x?\s*\d*\s*cig\b|\bcig\b|\bmyo\b|\bryo\b|\bheets\b|\biqos\b", re.I)
+# Cigars / cigarillos / blunt wraps — tobacco products the cigarette rules miss (field 2026-07-08:
+# "Swisher Sweets" + "Smock Woods … Cigars" leaked as un-gated 'standard'). Brands (Swisher,
+# Backwoods) + generic cigar/cigarillo terms + "blunt wrap" (a tobacco-leaf wrap). "blunt wrap" is
+# narrow on purpose so plain rolling "papers" stay open. Blunt wraps are gated CONSERVATIVELY —
+# over-gating a tobacco wrap is the safe error; Felix/Treuhänder can confirm the CH line. 0mg/herbal
+# still veto via _AGE_NEG.
+_CIGAR = re.compile(r"\bswisher\b|backwoods|cigarillo|zigarillo|\bcigars?\b|\bzigarre\b|\bzigarren\b|stumpen|\bcheroot\b|black\s*&?\s*mild|smock\s*woods|blunt\s*wraps?", re.I)
 _ALCOHOL = re.compile(r"alkohol|alcohol|vodka|\brum\b|whisky|whiskey|\bgin\b|liqueur|likör|absinth|\bbier\b|\bwein\b", re.I)
 # Shisha bucket is MIXED: molasses tobacco (18+) sits beside hoses/charcoal/foil/adapters (open).
 # These markers make a shisha line the actual 18+ substance — the brands are ALWAYS molasses
@@ -230,7 +245,7 @@ def classify(title: str | None, ref_category: str | None = None, raw=None) -> tu
     # (1) TITLE is decisive: named tobacco/cigarette, shisha molasses, or a nicotine e-cig — unless
     #     it's an accessory/herbal. Shisha brands + the mg-in-vape signal gate off the title alone,
     #     so they hold up even when the supplier category is a coarse dump ("Accessories"/"Vaporizers").
-    if (_TOBACCO.search(t) or _CIG.search(t) or _SHISHA_TOBACCO.search(t)) and not neg and not _SUBSTANCE_ACCESSORY.search(t):
+    if (_TOBACCO.search(t) or _CIG.search(t) or _CIGAR.search(t) or _SHISHA_TOBACCO.search(t)) and not neg and not _SUBSTANCE_ACCESSORY.search(t):
         cls = "tobacco_nicotine"
     elif ((_NIC_MG.search(t) and _ECIG_CONTEXT.search(t)) or _ECIG_FORM.search(t)
           or (_VAPE_BRAND.search(t) and _VAPE_REFILL.search(t))) \
@@ -276,3 +291,22 @@ def classify(title: str | None, ref_category: str | None = None, raw=None) -> tu
         cat = "Tobacco & Cigarettes"
 
     return cat, cls, class_meta(cls)["age_restricted"]
+
+
+def resolve_class_on_create(name: str | None, product_class: str | None,
+                            is_age_restricted: bool | None) -> tuple[str, bool]:
+    """The on-the-fly / quick-create rule (compliance safety net).
+
+    Honour the operator's explicit choice first (a picked class or the 18+ toggle, via
+    reconcile_age). THEN, if the item is still plain 'standard', run the title classifier —
+    and if the NAME is an age-restricted substance (tobacco/nicotine, alcohol, CBD flower),
+    upgrade to that class so it can NEVER be sold un-gated (field 2026-07-08: a cashier who
+    forgot the 18+ toggle on "Swisher Sweets" was ringing it with no ID gate). The net only
+    ever makes an item MORE restrictive — it never un-gates an operator's choice. A manager
+    can re-class precisely later in the cleanup cockpit. Returns (class, flag)."""
+    cls, flag = reconcile_age(product_class, is_age_restricted)
+    if cls == DEFAULT_CLASS:
+        _, suggested, _ = classify(name or "")
+        if suggested in ("tobacco_nicotine", "alcohol", "cbd_hemp"):
+            return suggested, True
+    return cls, flag

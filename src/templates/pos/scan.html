@@ -946,7 +946,12 @@
                             const r = await fetch(`/api/v1/pos/products/${product.id}/images`, {
                                 method: 'POST', headers: { 'Authorization': `Bearer ${AuthHelper.getToken()}` }, body: fd });
                             if (r.ok) { const j = await r.json(); product.image_url = j.image_url; }
-                            else { showToast(t('scan.toast_photo_not_attached'), 'warning'); }
+                            else {
+                                // BL-17: name WHY the snapped photo didn't attach (was a silent generic warning)
+                                let why = 'HTTP ' + r.status;
+                                try { const e = await r.json(); if (e && e.detail) why = (typeof e.detail === 'string') ? e.detail : JSON.stringify(e.detail); } catch (_) {}
+                                showToast(t('scan.toast_photo_not_attached') + ' — ' + why, 'warning');
+                            }
                         } catch (imgErr) {
                             console.warn('photo upload failed', imgErr);
                             showToast(t('scan.toast_photo_not_attached'), 'warning');
@@ -1189,7 +1194,12 @@
                                 body: fd,
                             });
                             if (r.ok) { const j = await r.json(); product.image_url = j.image_url; }
-                            else { showToast(t('scan.toast_photo_not_uploaded'), 'warning'); }
+                            else {
+                                // BL-17: name WHY the snapped photo didn't attach (was a silent generic warning)
+                                let why = 'HTTP ' + r.status;
+                                try { const e = await r.json(); if (e && e.detail) why = (typeof e.detail === 'string') ? e.detail : JSON.stringify(e.detail); } catch (_) {}
+                                showToast(t('scan.toast_photo_not_uploaded') + ' — ' + why, 'warning');
+                            }
                         } catch (imgErr) {
                             console.warn('Photo upload failed:', imgErr);
                             showToast(t('scan.toast_photo_not_uploaded'), 'warning');

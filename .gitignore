@@ -297,3 +297,12 @@ docs/business/**/Banco-ZReport-*.pdf
 scripts/import/.artemis_cache/
 docs/testing/banco/Test-Scripts/
 **/*-uat-report.html
+
+# Field photos (shop / card-reader research) — binaries, machine-local. Keep the README + findings, not the JPGs.
+docs/testing/banco/field-*/card-readers/*
+docs/testing/banco/field-*/shop/*
+docs/testing/banco/field-*/*.jpg
+docs/testing/banco/field-*/*.jpeg
+docs/testing/banco/field-*/*.png
+docs/testing/banco/field-*/*.heic
+!docs/testing/banco/field-*/README.md

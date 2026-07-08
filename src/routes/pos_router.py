@@ -282,9 +282,12 @@ async def quick_create_product(
     data["is_active"] = True
     # 18+ toggle (cashier contract): the checkout age gate reads product_class, NOT the
     # is_age_restricted column — bind the toggle to a gating class + keep the two in sync.
-    from src.services.catalog_taxonomy import reconcile_age
-    data["product_class"], data["is_age_restricted"] = reconcile_age(
-        data.get("product_class"), data.get("is_age_restricted"))
+    # PLUS a compliance safety net: if the operator leaves it plain 'standard' but the NAME is
+    # an age-restricted substance (tobacco/nicotine/alcohol/CBD), auto-gate it so an on-the-fly
+    # "Swisher Sweets" can't be rung without ID (field 2026-07-08). Gate-only — never un-gates.
+    from src.services.catalog_taxonomy import resolve_class_on_create
+    data["product_class"], data["is_age_restricted"] = resolve_class_on_create(
+        data.get("name"), data.get("product_class"), data.get("is_age_restricted"))
     new_product = ProductModel(**data)
     db.add(new_product)
     try:
