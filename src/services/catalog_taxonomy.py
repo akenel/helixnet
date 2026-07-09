@@ -247,10 +247,14 @@ def classify(title: str | None, ref_category: str | None = None, raw=None) -> tu
     #     so they hold up even when the supplier category is a coarse dump ("Accessories"/"Vaporizers").
     if (_TOBACCO.search(t) or _CIG.search(t) or _CIGAR.search(t) or _SHISHA_TOBACCO.search(t)) and not neg and not _SUBSTANCE_ACCESSORY.search(t):
         cls = "tobacco_nicotine"
-    elif ((_NIC_MG.search(t) and _ECIG_CONTEXT.search(t)) or _ECIG_FORM.search(t)
+    elif (_NIC_MG.search(t) or _ECIG_FORM.search(t)
           or (_VAPE_BRAND.search(t) and _VAPE_REFILL.search(t))) \
             and not is_cbd and not neg and not _SUBSTANCE_ACCESSORY.search(t):
-        cls = "tobacco_nicotine"                   # nicotine vape ("…20mg"), a liquid-bearing form, or a brand refill
+        # A non-CBD NNmg nicotine strength gates ON ITS OWN — no ecig-context word required.
+        # (field 2026-07-09: "VAAL E-Pack 20mg" / "Instaflow O Pro Starterkit … 20mg" had no
+        # disposable/pod/vape token → leaked as un-gated standard.) CBD (100/500/1000mg = 3-digit,
+        # excluded by _NIC_MG's 1-2 digit cap + the is_cbd guard) and 0mg / no-nic still veto.
+        cls = "tobacco_nicotine"                   # nicotine strength, a liquid-bearing form, or a brand refill
     elif _ALCOHOL.search(t) and not neg and not _SUBSTANCE_ACCESSORY.search(t) and not _FLAVOUR_PAPER.search(t):
         cls = "alcohol"
     # (2) SUPPLIER CATEGORY closes the leaks the title can't see. A tobacco GROUP still can't
