@@ -278,6 +278,23 @@ def test_blunt_wraps_are_gated_conservatively():
     assert age is True and cls == "tobacco_nicotine"
 
 
+def test_nicotine_mg_gates_without_an_ecig_context_word():
+    # field 2026-07-09 prod leak: "E-Pack"/"Instaflow"/"Starterkit" 20mg had no disposable/pod/vape token
+    for title in ["VAAL E-Pack Kit 20mg Blueberry Ice", "VAAL E-Pack Refill 20mg Grape Ice 8Stk.",
+                  "Instaflow O Pro Starterkit - Strawberry - 20mg", "Instaflow O Pro Refill - Cola - 20mg",
+                  "Killa Snus 16mg Cold Mint", "Some Nic Strips 6mg Peach"]:
+        age, cls, _ = _age(title)
+        assert age is True and cls == "tobacco_nicotine", title
+
+
+def test_mg_alone_still_respects_the_guards():
+    # the relaxation must NOT gate: 0mg, no-nic, CBD (3-digit mg), or a filter's mm
+    assert _age("VAAL E-Pack Kit 0mg Blueberry Ice")[0] is False              # 0mg veto
+    assert _age("VAAL E-Pack Refill No Nic 20mg Grape 8Stk.")[0] is False     # no-nic veto beats the mg
+    assert _age("Harmony CBD E-Liquid 100mg Mango", cg2=None, ref_category="E-Liquids")[1] == "cbd_hemp"
+    assert _age("Gizeh Filter Tips 6mm 100er")[0] is False                    # mm is not mg
+
+
 def test_nicotine_free_pouch_and_plain_papers_stay_open():
     # the negative guard still wins; a bare rolling paper is never a cigar/wrap
     assert _age("Nicotine Free Pouches Fresh Mint 0mg")[0] is False
