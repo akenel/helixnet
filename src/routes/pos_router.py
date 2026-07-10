@@ -645,6 +645,10 @@ async def adopt_reference_product(
         image_url=ref.image_url,    # provisional — copied into our storage below (best-effort)
         supplier_name=ref.supplier,
         supplier_sku=ref.supplier_sku,
+        # Non-destructive price reference: keep what the supplier suggested (RRP) alongside our
+        # editable `price` (the operator's own selling price). Lets us later show the supplier
+        # figure as a grayed reference to beat, instead of losing it the moment we adopt.
+        supplier_price=ref.suggested_price,
         is_active=True,
     )
     db.add(new_product)

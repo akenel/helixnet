@@ -103,6 +103,7 @@ class ProductBase(BaseModel):
     # Catalog picture + supplier + reorder fields (BL-88 catalog dashboard / P4 reorder)
     image_url: Optional[str] = Field(None, max_length=500, description="Catalog picture URL")
     supplier_name: Optional[str] = Field(None, max_length=255, description="Supplier")
+    supplier_price: Optional[Decimal] = Field(None, ge=0, description="Supplier's suggested/reference price (RRP) — kept alongside our editable price so we can show it as a grayed reference to beat")
     min_stock: Optional[int] = Field(None, ge=0, description="Reorder trigger level")
     max_stock: Optional[int] = Field(None, ge=0, description="Reorder up-to level")
     lead_time_days: Optional[int] = Field(None, ge=0, description="Supplier lead time (days)")
@@ -132,6 +133,7 @@ class ProductUpdate(BaseModel):
     vending_slot: Optional[int] = None
     image_url: Optional[str] = Field(None, max_length=500)
     supplier_name: Optional[str] = Field(None, max_length=255)
+    supplier_price: Optional[Decimal] = Field(None, ge=0)
     min_stock: Optional[int] = Field(None, ge=0)
     max_stock: Optional[int] = Field(None, ge=0)
     lead_time_days: Optional[int] = Field(None, ge=0)
