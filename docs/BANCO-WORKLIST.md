@@ -10,7 +10,44 @@
 
 ---
 
-## 🃏 ON DECK — DIRECTION FORK (2026-07-07 night) ← START HERE
+## ✅ SHIPPED PROD 2026-07-09 — batch live (b1610 · 35ef4a0) + compliance sweep lesson ← START HERE
+Batch deployed to prod, healthy, code proven (v57 + callback bypass + disclaimer gone). Backup-gated
+(`banco_prod-prebatch-20260708_194247.sql.gz`). **The reclassify sweep was eventful — READ THIS:**
+- ⚠️ **`reclassify_products` is NAME-ONLY → it UN-GATED context-dependent items** (CBD flower/hash + a
+  nicotine vape whose 18+ came from the supplier CATEGORY, not the title). Caught in the flip review;
+  **remediated** by re-gating every demotion from the backup (additive-only). **LESSON: never run a
+  name-only reclassify as a compliance sweep on a live catalog — it's GATE-then-review or reference-based.**
+- 🔎 The sweep also surfaced **pre-existing nicotine-mg leaks** (21 items: VAAL E-Pack / Instaflow O Pro,
+  all 20mg) that were ALWAYS `standard` — classifier misses "E-Pack"/"Instaflow" + requires ecig-context
+  next to the mg. Closed them via targeted UPDATE (non-CBD `NNmg` → tobacco_nicotine). Final audit: 0
+  un-gated nicotine; every substance class 18+ (`bool_and=true`); accessories (cig cases/holders) correctly open.
+- **✅ FOLLOW-UP SHIPPED PROD 2026-07-09 (b1612 · 4566169):** (1) classifier — a non-CBD `NNmg` strength now
+  gates as tobacco_nicotine ON ITS OWN (no ecig-context word), closing the VAAL/Instaflow leak class (CBD
+  3-digit-mg + 0mg + no-nic still veto); (2) `reclassify_products` gained **`--gate-only`** (never removes a
+  gate) + **`--dry-run`** + loud ⚠UNGATE flagging. Verified on sandbox (gate-only KEPT 89 gates a plain sweep
+  would drop). Backup-gated (`banco_prod-premg-20260709_063441.sql.gz`), gate 1828/3-flaky, 43 taxonomy.
+  Prod gate-only sweep = changed 1 (precision reclass), **un-gated 0**. Final audit: every substance class
+  18+, 0 un-gated non-CBD NNmg. **Compliance tooling is now safe — a live sweep can never un-gate again.**
+- **🧍 Angel: spot-check prod catalog** (up-gates right, nothing legit over-gated) + **verify login one-press on Fairphone.**
+- ✅ BL-18 description cron LIVE (`*/10min --limit 80`, first batch filled 67/80, ~5044 draining overnight).
+
+## (batch contents, for reference)
+Branch `fix/p0-otf-compliance-20260708` (build **b1609**), all deployed + proven on SANDBOX, prod
+UNTOUCHED (Felix live on prod — batch tonight/tomorrow). **Code in the batch:**
+1. **P0 compliance** — OTF tobacco can't be born un-gated (classifier `nicotin` + `_CIGAR` + `resolve_class_on_create` net). Proven e2e.
+2. **BL-18 description cron** — `scripts/ops/artemis_description_backfill.py` scrapes real Artemis text. Proven (4/5 live).
+3. **hide-stock** — dropped "(not a sell gate)" disclaimer on catalog card.
+4. **login SW fix** — SW bypasses `/pos/callback` so OAuth `#token` survives (mobile "press Login twice"). ⚠ **Angel: verify on Fairphone.**
+5. **18+ toggle bidirectional** — turning 18+ OFF on the neutral `age_restricted` bucket now un-gates (substance classes stay gated). Proven e2e.
+6. **BL-17 photo diagnostic** — snapped-photo upload now names WHY it failed (self-diagnosing; not a blind fix).
+Tooling (not deployed to prod): `seed_sbx_test_products.py` (40 SBXTEST- playground), `generate_catalog.py` (paper catalog), `generate_label.py` (v1 label, QL-820NWB).
+
+**PROD-PUSH STEPS (gated, backup-gates prod):** (1) merge branch→main (or deploy branch to prod); (2) **backup prod first**;
+(3) deploy; (4) **reclassify_products with EMPTY prefix (ALL products, NOT TAM-)** + reclassify_reference — **REVIEW the flip
+list before committing** (the sweep un-gates some drifted accessories — correct but sensitive); (5) wire the BL-18 cron crontab
+(`*/5 … --limit 80`); (6) re-probe + **human-green on Fairphone** (login one-press; snap a tobacco item → gates). Tests: 41 taxonomy + full gate 1824 (3 known-flaky).
+
+## 🃏 ON DECK — DIRECTION FORK (2026-07-07 night)
 **WHERE WE ARE.** Prod solid on `fb81028`, all envs in parity, tree clean. A HUGE day shipped + human-green:
 cash type-in, member-discount (eligible-only + option B + Felix-owned tiers), full member CRUD + manual badge,
 eligible-only manual discount, real compiled Tailwind (POS), minor-member gate fix, back-button guard. The
@@ -434,6 +471,77 @@ The 2026-06-28 collision (a `checkout --force` reverted the identity terminal's 
 
 ## ✨ POLISH BACKLOG — after go-live, only on demand
 *(Most specced in [BANCO-DAY-ONE-WISHLIST.md](BANCO-DAY-ONE-WISHLIST.md). Don't build ahead of need.)*
+- **✅ P0 COMPLIANCE — BUILT + PROVEN ON SANDBOX, HELD FROM PROD (2026-07-08 eve).** Branch
+  `fix/p0-otf-compliance-20260708` (build b1601) deployed to sandbox ONLY (Angel: Felix is live on prod,
+  don't disturb; batch to prod tonight/tomorrow). Fix = classifier (`nicotin\b`→`nicotin` English catch +
+  new `_CIGAR` cigars/cigarillos/Swisher/blunt-wraps) + `resolve_class_on_create` gate-only safety net wired
+  into on-the-fly create. PROVEN end-to-end on the live sandbox server: OTF "Swisher Sweets" (no 18+ toggle)
+  → `tobacco_nicotine`/18+ ✓; "Bic Lighter" → standard/open ✓. Reference reclassify: tobacco_nicotine
+  **325→442 (+117** under-flagged pouches/cigars/cigarillos now gated — fixes the ADOPT path). Products
+  (TAM-) sweep: 89 changes, mostly DRIFT-FIX (accessories wrongly flagged 18+ → un-flagged; Backwoods→tobacco).
+  Tests: 39 taxonomy + full gate 1824 pass (3 known-flaky). **⚠ PROD-STEP CAVEATS:** (1) prod leaked SKUs are
+  NOT `TAM-` (REF-FOURTWENTY/LZ-/SKU-/OTF-) → prod `reclassify_products` MUST run with **empty prefix (ALL
+  products)**, not default TAM-. (2) REVIEW the products flip list before prod — the sweep un-gates some
+  accessories (drift-fix, correct but sensitive). (3) blunt wraps gated conservatively (Felix/Treuhänder confirm
+  CH line); "Cream Haschisch"→cbd_open via cream-veto is pre-existing, flag for review.
+- **🐛 DIAGNOSED 2026-07-08 — mobile login "press Login twice" race (fix teed up, NOT shipped).** Angel: on
+  mobile (repro'd on staging) after entering KC creds you land back on the login screen ("you're not logged
+  in"); a 2nd Login press (KC SSO still alive → silent, no re-typing) then works. **Root cause (confirmed
+  chain):** `/pos/callback` hands the token back in the URL **fragment** via a 302 → `/pos/dashboard#token=…`
+  (`pos_router.py:5318`); the dashboard reads the fragment (`dashboard.html:265`) but **hard-bounces to `/pos`
+  the instant no token is found** (`dashboard.html:282-286`). On mobile the `/pos/` **service worker**
+  intercepts the navigation and follows the redirect via `fetch()` (`sw.js:83`) — **URL fragments don't
+  reliably survive a SW-followed redirect**, so `#token` is eaten → bounce. (Same fragment-timing seal that
+  the `_revealChrome`/`_authInFlight`/"dead page until refresh" comments already bandaged in `base.html` —
+  fix the seal, not the drip.) **FIX (smallest→robust):** (1) one line — SW ignores `/pos/callback`
+  (`if(url.pathname==='/pos/callback') return;` in sw.js) so the browser follows natively + keeps the
+  fragment [most likely cure, low risk]; (2) real fix — `/pos/callback` returns a tiny 200 interstitial that
+  stores the token inline then `location.replace('/pos/dashboard')` — no fragment for anything to eat, AND
+  gets the token out of the `Location:` header (small security win); (3) soften the instant hard-bounce (one
+  retry/grace) so a transient miss never logs a cashier out mid-shift. **DEFER reason:** only reproduces on
+  mobile → must be verified on the Fairphone (machine-green ≠ human-green for an auth race). Do the 1-line SW
+  fix + interstitial, then Angel confirms on the phone in ~2 min. Non-blocking today (worst case = press twice).
+- **🧹 LOGGED 2026-07-08 — hide "Stock (info)" on the cashier sale card (zero-perpetual UX).** Angel (in-shop,
+  Ralph) hit the Lighter detail: `Stock 0 (not a sell gate)` and rightly asked why we show a field we have to
+  disclaim. **Decision:** stock is a MANAGER/reorder concept, not a point-of-sale concept — show it where it's
+  acted on, hide it where it only confuses. **Do:** (1) cashier / sale-detail card → **hide the bare stock
+  line + drop the "(not a sell gate)" disclaimer** (a naked `0` just makes a cashier hesitate; the label is a
+  band-aid over confusion the line itself creates); optionally surface a small "⚠ reorder" flag ONLY on a real
+  low-stock signal (min_stock set AND stock ≤ it) — never a naked zero. (2) manager catalog / receiving /
+  reorder report → **keep stock** (its real home; feeds the Order-Book). (3) **do NOT touch the data model** —
+  `stock`/`min_stock` seed the [[banco-zero-perpetual-and-order-book]] reorder report (P4) + receiving already
+  writes to it; residual on the sale card, foundational there. Small conditional-render change; verify the
+  manager view still shows stock. Non-blocking.
+- **🏷️ HARDWARE 2026-07-08 — LABEL PRINTER COMMITTED: Brother QL-820NWB (Angel confirmed).** Runs on
+  **Debian 12 / Linux — no Windows** via **`brother_ql`** (open Python lib: render label → PNG raster → send
+  over the printer's WiFi/USB, NO proprietary driver). Fallback = Brother's official Linux CUPS driver.
+  Best path = network backend (printer on WiFi → print to its IP), fits "Banco/laptop prints directly."
+  Thermal (no ink); barcode/QR = **always mono black** (colour hurts scanning); red is optional-accent only
+  (2-colour DK-22251 roll) for a 🔞 flag later. **v1 label = 1D barcode (EAN-13/Code128) + title + price**
+  (operational, for the GUN at checkout). v2 = customer label adds a small QR → La Piazza (community loop).
+  Draft roll = 62mm continuous DK-22205 (cut-to-length while tuning) → die-cut later for speed. Label
+  generator = next build (python-barcode + qrcode → HTML/PNG preview now, brother_ql to the printer when it lands).
+- **🔫 HARDWARE 2026-07-08 — scanner ALTERNATIVE pick: Datalogic QuickScan QBT2500** (Digitec 23483940),
+  next to the earlier **Zebra DS8178** decision. Both are premium 2D Bluetooth imagers from top-3 brands.
+  Datalogic = mid-range general-retail, **fully capable + usually cheaper**; Zebra DS8178 = higher-end "hero"
+  gun (more aggressive engine + tougher build, pricier) — its extra cost mostly buys ruggedness/speed a
+  single-counter head shop won't notice. QBT2500 is a **2D area imager** (reads 1D + 2D/QR — reads small/dense/
+  damaged 1D far better than a laser, reads QR too), Bluetooth cordless + charging base, keyboard-wedge (BT HID
+  to phone/tablet, USB via base to desktop → fits the desktop cataloging rig). **Verify before buying:** (1)
+  it's the BT kit WITH the base/cradle (not scanner-only); (2) HID keyboard-wedge mode (QuickScan supports it,
+  set via programming barcode); (3) price delta vs the Zebra; (4) THE decider — does it read Artemis's *worst
+  tiny barcode* (both should; prove it on Felix's smallest cig-pack code, not the spec sheet). Verdict: sensible
+  cheaper alternative; brand isn't the thing — "reads the shelf + types into the browser" is, and this does both.
+- **🖥️ IDEA 2026-07-08 — desktop "cataloging rig" for the one-time catalog/cutover pass.** The Zebra DS8178 is
+  a keyboard-wedge → device-agnostic (USB cradle to a desktop = acts as a USB keyboard + charges; or Bluetooth
+  HID to phone/tablet). Insight: for the BIG one-time cataloging/labeling pass, a **desktop + gun + label
+  printer** beats thumbing the phone — big screen to see the catalog, real keyboard for names/prices/categories,
+  gun for instant barcode capture, printer to assign+print a code for unmarked goods on the spot ("born once,
+  known forever" made physical). Station flow: scan/type item → assign code → print label → stick → next.
+  Then the **phone/tablet is for daily *selling*** at the counter (cordless gun in hand). Same one gun bridges
+  both. **Prereq (already queued):** `/pos/scanner-test` wedge-input check — Banco needs a focused field that
+  takes the typed barcode + Enter (not just the camera) for the gun to work in the browser. Non-blocking;
+  informs the hardware-dry-run (P3) + cutover setup.
 - **✅ DONE 2026-06-28:** Feedback button → small corner 💬 icon (`17fa4ba`) · **Promo-restricted discount block** — no discounts on tobacco/alcohol, cashier+manager (`2b8aefa`, Angel: Pam discounted cigs; was role-cap-only). Both LIVE all 3 envs + regression tests.
 - **✅ SHIPPED 2026-06-29 — Catalog pass + Ticket Timing tracker (both LIVE all 3 envs, `e43843f` / `b1386`):**
   - **Catalog pass** (infinite scroll / Sort / tap-to-PREVIEW) — Angel-tested green; was ALREADY on prod (merged to main before the `aae0629` build-stamp deploy → rode along), confirmed by parity + ancestry. No separate promote needed.

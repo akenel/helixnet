@@ -22,6 +22,8 @@
   .counts{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-top:12px; }
   .counts div{ background:#f0f0ee; border-radius:10px; padding:8px 4px; font-size:12px; }
   .counts b{ display:block; font-size:22px; }
+  .thru{ margin-top:10px; font-size:14px; font-weight:600; background:#f0f0ee; border-radius:10px; padding:8px 6px; }
+  .thru b{ font-size:17px; color:#161616; }
   /* entry */
   .entry{ margin-top:14px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px; }
   .entry label{ font-size:13px; font-weight:700; opacity:.7; }
@@ -58,7 +60,7 @@
 <body>
 <header>
   <h1>🔫 Banco Scan Field Tally</h1>
-  <div class="sub">Artemis · <b>PROD</b> banco.lapiazza.app · one tap per item</div>
+  <div class="sub">Artemis · <b>PROD</b> banco.lapiazza.app · Wed run · full catalog LIVE (5,111) → misses should auto-lookup</div>
 </header>
 
 <div class="wrap">
@@ -73,6 +75,7 @@
       <div style="color:var(--snap)">📷<b id="c-snap">0</b>snap/pick</div>
       <div style="color:var(--fail)">❌<b id="c-fail">0</b>fail</div>
     </div>
+    <div id="thru" class="thru">⏱ pace: <b>—</b></div>
     <div class="hint">Workable % = (hit + lookup + snap) ÷ total. Fails are the fix list.</div>
   </div>
 
@@ -140,6 +143,17 @@
     document.getElementById('c-fail').textContent = c.fail;
     document.getElementById('total').textContent = total;
 
+    // throughput from timestamps — wall-clock (includes chat/parking/interruptions), the honest daily-ops pace
+    var thru = document.getElementById('thru');
+    if(total >= 2){
+      var span = state.items[total-1].t - state.items[0].t;
+      var avg = span / (total - 1);
+      var per100 = avg*100/60000, perHr = avg>0 ? 3600000/avg : 0, mins = span/60000;
+      thru.innerHTML = '⏱ <b>'+per100.toFixed(1)+' min/100</b> · ~'+Math.round(perHr)+'/hr · '+mins.toFixed(0)+'m for '+total+' items';
+    } else {
+      thru.innerHTML = '⏱ pace: <b>—</b> <span style="opacity:.6">(needs 2+ items)</span>';
+    }
+
     var v = document.getElementById('verdict');
     if(pct===null){ v.textContent='Scan your first item →'; v.style.color='var(--ink)'; }
     else if(pct>=70){ v.textContent='🟢 '+pct+'% workable — ready-ish, note the fails'; v.style.color='var(--hit)'; }
@@ -177,6 +191,8 @@
     var L=[]; L.push('BANCO SCAN FIELD TALLY — Artemis PROD');
     L.push('WORKABLE: '+pct+'%  ('+good+'/'+total+' handled)');
     L.push('  hit '+c.hit+' · lookup '+c.lookup+' · snap/pick '+c.snap+' · FAIL '+c.fail);
+    if(total>=2){ var span=state.items[total-1].t-state.items[0].t, avg=span/(total-1);
+      L.push('PACE: '+(avg*100/60000).toFixed(1)+' min/100 · ~'+Math.round(3600000/avg)+'/hr · '+(span/60000).toFixed(0)+'m wall-clock ('+total+' items)'); }
     var fails = state.items.filter(function(x){return x.k==='fail';});
     if(fails.length){ L.push(''); L.push('FIX LIST ('+fails.length+'):');
       fails.forEach(function(x){ L.push('  - '+(x.n||'(no note)')); }); }
