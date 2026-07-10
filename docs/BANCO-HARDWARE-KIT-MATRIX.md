@@ -56,6 +56,27 @@ The kit exists to survive the big lift — getting the whole catalog in.
 - **Even a no-hit is fine:** if the gun doesn't find a barcode, we don't have to label it — but the
   background option is to **print our own** clean label as we go, so the item is readable forever after.
 
+### Two weeks → a few sessions: LINK, don't CREATE
+
+**The fear:** scan → photo → categorize → *create* every item (~2 min × 2,000 = **two weeks**).
+
+**The unlock:** **70-80% are ALREADY in the catalog, with a photo** (the 5,111-item Artemis import — every
+product has a name + image; the only missing thing is the barcode). So for most items the job is to
+**LINK the scanned code to the item that's already there**, not create it.
+
+- **Fast flow (item in hand):** scan (or type 3-4 letters of the name) → tap the matching catalog card —
+  **its existing photo confirms the match** → barcode linked → next. **~8 seconds, no photo-taking.**
+- **Photo + create only for the 10-20% genuinely new** → queue them, do them at the desk with AI snap-fill.
+- **Accelerator:** pre-link barcodes from the **Mosey/Tamar supplier feed** → those auto-link, zero manual
+  touch (maybe half the work gone before you start).
+- **Result:** a few focused sessions, **not two weeks.** You're not *building* the catalog — Felix's
+  webshop already did — you're **teaching it the barcodes.**
+
+> Field note: scanning resolves the barcode via the **Mosey/FourTwenty reference** (which carries EANs),
+> not the Artemis catalog (which doesn't) — that's why a scan "just works" ~9/10. The **type-the-letters**
+> path is what searches the Artemis catalog. Adopting from Mosey brings *Mosey's* price → **edit to
+> Felix's price on the spot** (that's the normal case, not an edge case).
+
 ---
 
 ## Budget
