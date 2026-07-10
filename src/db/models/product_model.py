@@ -180,6 +180,12 @@ class ProductModel(Base):
                 "(fill or empty). Lets the cron rotate the queue instead of re-scraping "
                 "permanent-empties every run.",
     )
+    image_checked_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+        comment="BL-17: last time the image backfill tried to pull this item's external "
+                "hotlink into MinIO (ok or failed). Same rotation trick as description_checked_at.",
+    )
     sync_override: Mapped[bool] = mapped_column(
         Boolean,
         default=False,

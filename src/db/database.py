@@ -206,6 +206,8 @@ _ADDITIVE_COLUMNS: list[str] = [
     "ALTER TABLE products ADD COLUMN IF NOT EXISTS enrichment_meta JSONB",
     # BL-18: description-backfill rotation marker (stamped on every scrape attempt).
     "ALTER TABLE products ADD COLUMN IF NOT EXISTS description_checked_at TIMESTAMPTZ",
+    # BL-17: image-backfill rotation marker (stamped on every hotlink-migration attempt).
+    "ALTER TABLE products ADD COLUMN IF NOT EXISTS image_checked_at TIMESTAMPTZ",
     # Source provenance / parity link (§9.6 'View on Artemis') + §6d translation seam.
     "ALTER TABLE products ADD COLUMN IF NOT EXISTS source_system VARCHAR(40)",
     "ALTER TABLE products ADD COLUMN IF NOT EXISTS source_id VARCHAR(64)",
