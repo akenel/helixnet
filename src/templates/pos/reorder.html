@@ -32,10 +32,13 @@
                     <!-- BL-27: a barcode gun is a keyboard wedge — it types the code here + Enter.
                          onItemEnter() spots an all-digit barcode and looks it up; otherwise Enter/typing
                          just searches by name. So scan OR type both add an item. -->
-                    <input type="text" x-model="form.title" list="reorder-products" @input="onTitleInput()"
-                           @keyup.enter="onItemEnter()"
-                           placeholder="Scan a barcode, or type a product name"
-                           data-i18n-placeholder="reorder.item_ph" class="input-field">
+                    <div class="flex gap-2">
+                        <input type="text" x-model="form.title" list="reorder-products" @input="onTitleInput()"
+                               @keyup.enter="onItemEnter()"
+                               placeholder="Scan a barcode, or type a product name"
+                               data-i18n-placeholder="reorder.item_ph" class="input-field flex-1">
+                        <button type="button" @click="startItemScan()" class="btn-secondary flex-none px-4" title="Scan barcode">📷</button>
+                    </div>
                     <datalist id="reorder-products">
                         <template x-for="p in productMatches" :key="p.id"><option :value="p.name"></option></template>
                     </datalist>
@@ -178,8 +181,34 @@
         </div>
 
     </div>
+
+    <!-- BL-27: barcode scanner overlay (shared PosScanner) for adding an item -->
+    <div x-show="scanOpen" x-transition class="fixed inset-0 z-[70] bg-black flex flex-col" style="display:none;">
+        <div class="flex justify-between items-center px-4 py-3 bg-black/80 text-white">
+            <span class="font-semibold">📷 <span data-i18n="catalog.scan_barcode_title">Scan the barcode</span></span>
+            <button @click="stopScan()" class="text-white text-3xl leading-none px-2" aria-label="Cancel scan">&times;</button>
+        </div>
+        <div class="flex-1 relative flex items-center justify-center overflow-hidden">
+            <div id="reorder-reader" class="w-full max-w-md"></div>
+            <div x-show="scanFallback" class="absolute inset-0 flex flex-col items-center justify-center text-center px-6 gap-4" style="display:none;">
+                <span class="text-5xl">📁</span>
+                <p class="text-white text-base max-w-xs" x-text="scanError || t('catalog.no_camera')"></p>
+                <label class="btn-primary cursor-pointer">
+                    📁 <span data-i18n="catalog.choose_photo">Choose a photo from your computer</span>
+                    <input type="file" accept="image/*" class="hidden" @change="onScanFile($event)">
+                </label>
+                <p class="text-white/60 text-xs max-w-xs" data-i18n="catalog.scan_fallback_hint">Pick a photo of the barcode and it'll be read from the image — or just cancel and type it.</p>
+            </div>
+            <p x-show="scanError && !scanFallback" class="absolute bottom-24 left-4 right-4 text-center text-white bg-red-600/90 rounded-lg px-4 py-3" x-text="scanError" style="display:none;"></p>
+        </div>
+        <div class="px-4 py-4 bg-black/80 text-center">
+            <button @click="stopScan()" class="btn-secondary" data-i18n="catalog.cancel_type_instead">Cancel — type it instead</button>
+        </div>
+    </div>
 </div>
 
+<script src="/static/vendor/html5-qrcode.min.js"></script>
+<script src="/static/pos-scanner.js?v=qr2"></script>
 <script>
     function reorderData() {
         return {
@@ -190,6 +219,7 @@
             productMatches: [],
             loading: false,
             saving: false,
+            scanOpen: false, scanError: '', scanFallback: false,
             form: { title: '', product_id: null, qty: 1, reason: 'restock', supplier_code: '', customer_note: '' },
 
             async init() {
@@ -261,6 +291,49 @@
                     // 404 = not in the catalog; keep the typed code so the manager can add it free-text.
                     showToast(t('reorder.scan_miss') || 'Barcode not in catalog — type a name', 'warning');
                 }
+            },
+
+            // BL-27: 📷 camera scan (shared PosScanner) → drop the barcode in the item field and
+            // run the same catalog lookup as a typed/wedge barcode.
+            async startItemScan() {
+                if (typeof window.PosScanner === 'undefined' || typeof Html5Qrcode === 'undefined') {
+                    showToast(t('reorder.scan_miss') || 'Scanner not loaded — type instead', 'warning'); return;
+                }
+                this.scanError = ''; this.scanFallback = false; this.scanOpen = true;
+                await this.$nextTick();
+                window.PosScanner.start('reorder-reader',
+                    async (text) => {
+                        PosScanner.vibrate(60); PosScanner.beep();
+                        this.scanOpen = false;
+                        this.form.title = (text || '').trim();
+                        await this.onItemEnter();
+                    },
+                    (err) => this.onScanCameraFail(err));
+            },
+            onScanCameraFail(err) {
+                const n = String((err && (err.name || err)) || '');
+                this.scanError = /permission|denied|NotAllowed/i.test(n)
+                    ? t('catalog.camera_blocked') : t('catalog.no_camera_here');
+                this.scanFallback = true;   // reveal the file picker, keep the modal open
+            },
+            async onScanFile(e) {
+                const f = e.target.files && e.target.files[0];
+                e.target.value = '';
+                if (!f) return;
+                if (!f.type.startsWith('image/')) { showToast(t('catalog.not_an_image'), 'warning'); return; }
+                this.scanError = t('catalog.reading_photo');
+                try {
+                    const text = await window.PosScanner.decodeFile(f);
+                    if (!text) throw new Error('no-code');
+                    PosScanner.vibrate(60); PosScanner.beep();
+                    this.scanOpen = false; this.scanFallback = false;
+                    this.form.title = text.trim();
+                    await this.onItemEnter();
+                } catch (err) { this.scanError = t('catalog.no_barcode_in_photo'); }
+            },
+            async stopScan() {
+                try { await window.PosScanner.stop(); } catch (e) {}
+                this.scanOpen = false; this.scanFallback = false;
             },
 
             async add() {

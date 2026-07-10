@@ -101,7 +101,7 @@
                      only cart the eligible subtotal is 0, so the amount is 0 — showing "5%: -0.00" was
                      misleading. Show the row when it bites; otherwise a note that says WHY it's zero. -->
                 <div x-show="discountAmount > 0" class="flex justify-between text-green-600">
-                    <span>Discount (<span x-text="discount"></span>%):</span>
+                    <span>Discount (<span x-text="Number(discount)"></span>%):</span>
                     <span x-text="'-' + formatPrice(discountAmount)"></span>
                 </div>
                 <div x-show="member && member.tier_discount_percent > 0 && memberDiscountAmount > 0" class="flex justify-between text-indigo-600">
