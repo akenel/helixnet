@@ -97,13 +97,21 @@
                     <span data-i18n="checkout.subtotal">Subtotal:</span>
                     <span x-text="formatPrice(cartData.totals.subtotal)"></span>
                 </div>
-                <div x-show="discount > 0" class="flex justify-between text-green-600">
+                <!-- BL-25: only show a discount row when a REAL discount applies. On a tobacco/alcohol-
+                     only cart the eligible subtotal is 0, so the amount is 0 — showing "5%: -0.00" was
+                     misleading. Show the row when it bites; otherwise a note that says WHY it's zero. -->
+                <div x-show="discountAmount > 0" class="flex justify-between text-green-600">
                     <span>Discount (<span x-text="discount"></span>%):</span>
                     <span x-text="'-' + formatPrice(discountAmount)"></span>
                 </div>
-                <div x-show="member && member.tier_discount_percent > 0" class="flex justify-between text-indigo-600">
+                <div x-show="member && member.tier_discount_percent > 0 && memberDiscountAmount > 0" class="flex justify-between text-indigo-600">
                     <span>Member discount (<span x-text="member ? member.loyalty_tier : ''"></span> <span x-text="member ? member.tier_discount_percent : 0"></span>%):</span>
                     <span x-text="'-' + formatPrice(memberDiscountAmount)"></span>
+                </div>
+                <div x-show="(discount > 0 || (member && member.tier_discount_percent > 0)) && discountAmount === 0 && memberDiscountAmount === 0"
+                     class="flex justify-between text-amber-600 text-sm">
+                    <span data-i18n="checkout.no_discount_promo">No discount — tobacco/alcohol only</span>
+                    <span>−0.00</span>
                 </div>
                 <div class="border-t pt-3 flex justify-between text-xl font-bold">
                     <span data-i18n="checkout.total">TOTAL:</span>
