@@ -258,7 +258,14 @@
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center space-x-3">
                                         <button @click="decreaseQuantity(index)" class="bg-gray-200 hover:bg-gray-300 active:bg-gray-400 w-12 h-12 rounded-full text-2xl font-bold leading-none flex items-center justify-center" aria-label="Decrease quantity">−</button>
-                                        <span class="font-bold text-xl w-8 text-center" x-text="item.quantity"></span>
+                                        <!-- BL-16: type the count directly (scan once, type 6) — no more scanning water 6× -->
+                                        <input type="number" inputmode="numeric" min="1" step="1"
+                                               :value="item.quantity"
+                                               @focus="$event.target.select()"
+                                               @change="setQuantity(index, $event.target.value)"
+                                               @keyup.enter="$event.target.blur()"
+                                               class="font-bold text-xl w-16 h-12 text-center border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-0"
+                                               aria-label="Quantity">
                                         <button @click="increaseQuantity(index)" class="bg-gray-200 hover:bg-gray-300 active:bg-gray-400 w-12 h-12 rounded-full text-2xl font-bold leading-none flex items-center justify-center" aria-label="Increase quantity">+</button>
                                     </div>
                                     <p class="text-lg font-bold text-indigo-600" x-text="formatPrice(item.price * item.quantity)"></p>
@@ -1340,6 +1347,15 @@
                 } else {
                     this.removeFromCart(index);
                 }
+            },
+
+            // BL-16: cashier types the count directly. Sanitize to a whole number ≥ 1
+            // (a 0/blank/garbage entry snaps back to 1 — removal is the 🗑 button, not a typo).
+            setQuantity(index, value) {
+                let q = parseInt(value, 10);
+                if (isNaN(q) || q < 1) q = 1;
+                if (q > 9999) q = 9999;   // fat-finger / stuck-key guard
+                this.cart[index].quantity = q;
             },
 
             validateDiscount() {
