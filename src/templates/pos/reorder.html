@@ -262,13 +262,20 @@
                 }
             },
 
-            addFromSuggestion(s) {
-                this.form.title = s.title;
-                this.form.product_id = s.product_id;
-                this.form.reason = 'restock';
-                if (s.supplier_code) this.form.supplier_code = s.supplier_code;
-                this.form.qty = 1;
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+            // A suggestion's ➕ Add now adds it straight to the Order Book (was only pre-filling
+            // the form → felt like a dead click). One tap → it's on the board, gone from suggestions.
+            async addFromSuggestion(s) {
+                try {
+                    await API.post('/api/v1/pos/reorder', {
+                        product_id: s.product_id, title: s.title, qty: 1,
+                        reason: 'restock', supplier_code: s.supplier_code || null,
+                    });
+                    this.suggestions = this.suggestions.filter(x => x.product_id !== s.product_id);
+                    showToast(t('reorder.toast_added') || 'Added to Order Book', 'success');
+                    await this.load();
+                } catch (e) {
+                    showToast((t('reorder.toast_add_failed') || 'Could not add') + ': ' + e.message, 'error');
+                }
             },
 
             async patch(it, payload) {
