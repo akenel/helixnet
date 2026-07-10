@@ -10,7 +10,21 @@
 
 ---
 
-## ✅ SHIPPED PROD 2026-07-10 — hypercare BL-16→22 batch + Felix in-shop fixes (b1632 · 79e73ee) ← START HERE
+## ✅ SHIPPED PROD 2026-07-11 — non-destructive supplier price reference (`c0c2768` · b1637) ← START HERE
+**First "ON DECK" build off the price-comparison spec.** Adopting a reference (Mosey/420) item used to
+DISCARD the supplier's suggested price (folded into sale price, gone). Now it persists to
+`ProductModel.supplier_price` (no migration — column pre-existed) and the catalog EDIT view shows it as a
+grayed **"Supplier ref: CHF X · ✓ you beat it / — above supplier"** hint (en/it/de). `make test` 1828 pass
+(3 known-flaky). Shipped sandbox→staging→prod via `deploy-banco.py`, **backup-gated**
+(`banco_prod_20260710_2216.sql.gz.gpg`, restore-verified 39/5155/131), **re-probed serving** each rung
+(build stamp · sw v68 · i18n keys). Human-green: Angel on sandbox ("its fine").
+- ⚠️ **FOUND (separate, pre-existing, app-wide):** prices render **"30,50 €"** on a CHF shop — global
+  `formatPrice` (`base.html:722`) uses `_cfg('currency')` = EUR/default. Affects EVERY price, not this
+  Block. Likely just sandbox's default — **verify PROD currency = CHF**; tiny config fix. Angel: "its fine" (not blocking).
+- ▶ **NEXT slices** (same spec): the two-supplier side-by-side (Tamar vs 420) + the beat-the-online-price
+  view; and BL-26 papers tier pricing. Detail: memory `banco-supplier-price-comparison-spec` / `banco-tier-pricing`.
+
+## ✅ SHIPPED PROD 2026-07-10 — hypercare BL-16→22 batch + Felix in-shop fixes (b1632 · 79e73ee)
 **A full "ON DECK" → ship day, twice through the gated ladder, human-green both times.** The AI hypercare
 cockpit did the triage; Tigs was the engineer; Angel steered + tested on the phone with the branded test sheets.
 
