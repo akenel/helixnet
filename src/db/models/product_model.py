@@ -173,6 +173,13 @@ class ProductModel(Base):
         nullable=True,
         comment="Last sync from supplier feed"
     )
+    description_checked_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+        comment="BL-18: last time the description backfill scraped this item's page "
+                "(fill or empty). Lets the cron rotate the queue instead of re-scraping "
+                "permanent-empties every run.",
+    )
     sync_override: Mapped[bool] = mapped_column(
         Boolean,
         default=False,

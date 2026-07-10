@@ -22,6 +22,7 @@ import re
 import time
 import urllib.error
 import urllib.request
+from datetime import datetime, timezone
 
 from sqlalchemy import func, or_, select
 
@@ -68,26 +69,36 @@ async def main() -> None:
         backlog = (await db.execute(
             select(func.count()).select_from(ProductModel).where(*where)
         )).scalar_one()
+        # Never-checked first, then least-recently-checked. Stamping description_checked_at on
+        # EVERY attempt (below) rotates the queue: a permanent-empty page (a gasket, a water
+        # bottle — genuinely no description on Artemis) sinks to the back after one look instead
+        # of clogging the head of the batch and starving the items that DO have a description.
         rows = (await db.execute(
-            select(ProductModel).where(*where).order_by(ProductModel.sku).limit(args.limit)
+            select(ProductModel).where(*where)
+            .order_by(ProductModel.description_checked_at.asc().nulls_first(), ProductModel.sku)
+            .limit(args.limit)
         )).scalars().all()
 
-        filled = empty = frozen = 0
+        now = datetime.now(timezone.utc)
+        filled = empty = err = frozen = 0
         for p in rows:
             if getattr(p, "sync_override", False):
                 frozen += 1
                 continue
             desc = fetch_description(p.source_url)
+            p.description_checked_at = now       # mark as looked-at regardless of outcome
             if desc:
                 p.description = desc[: args.max_chars].strip()
                 filled += 1
+            elif desc == "":
+                empty += 1          # page has no description div — permanent; won't retry until it rotates back
             else:
-                empty += 1          # '' (no desc on page) or None (fetch error) — try again next run
+                err += 1            # None = fetch error (transient); rotates back to retry sooner-ish
             time.sleep(args.delay)
         await db.commit()
 
     print(f"[bl18-backfill] backlog {backlog} | tried {len(rows)} | filled {filled} | "
-          f"empty/err {empty} | frozen {frozen} | remaining ~{max(0, backlog - filled)}")
+          f"empty {empty} | err {err} | frozen {frozen} | remaining ~{max(0, backlog - filled)}")
 
 
 if __name__ == "__main__":
