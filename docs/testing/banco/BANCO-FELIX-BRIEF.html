@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Felix Brief — meeting capture (Tempest skin)</title>
+<style>
+  :root{
+    --bg:#05060a; --panel:#0b0e16; --panel2:#0e1220; --ink:#e2e8f0; --mut:#7688a6;
+    --line:#1c2436; --yellow:#facc15; --cyan:#22d3ee; --red:#ef4444; --lime:#a3e635; --mag:#e879f9; --ok:#4ade80;
+    --glowY:0 0 6px rgba(250,204,21,.7); --glowC:0 0 8px rgba(34,211,238,.6);
+    --font:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  }
+  *{ box-sizing:border-box; } html,body{ margin:0; }
+  body{ font-family:var(--font); color:var(--ink); line-height:1.55;
+    background: radial-gradient(1200px 600px at 50% -10%, #0d1224 0%, transparent 60%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,.015) 0 1px, transparent 1px 3px), var(--bg);
+    padding-bottom:90px; }
+  a{ color:var(--cyan); }
+  header{ position:sticky; top:0; z-index:20; background:linear-gradient(180deg,#0a0d17,#070911);
+    border-bottom:1px solid var(--cyan); box-shadow:0 0 18px rgba(34,211,238,.25); padding:12px 18px; }
+  .htop{ display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; max-width:840px; margin:0 auto; }
+  h1{ font-size:16px; margin:0; letter-spacing:.12em; color:var(--yellow); text-shadow:var(--glowY); text-transform:uppercase; }
+  h1 small{ display:block; margin-top:3px; font-size:11px; letter-spacing:.05em; color:var(--mut); text-shadow:none; text-transform:none; }
+  .timer{ font-size:20px; font-weight:700; color:var(--yellow); text-shadow:var(--glowY); font-variant-numeric:tabular-nums; }
+  main{ max-width:840px; margin:0 auto; padding:20px 18px 40px; }
+  .coin{ text-align:center; color:var(--yellow); letter-spacing:.26em; font-size:12px; margin:2px 0 16px; animation:blink 1.1s steps(2) infinite; }
+  @keyframes blink{ 50%{ opacity:.25 } }
+  h2.sec{ font-size:13px; letter-spacing:.12em; color:var(--cyan); text-shadow:var(--glowC); text-transform:uppercase; margin:22px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--line); }
+  .card{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:13px 15px; margin-bottom:10px; }
+  /* show list */
+  .show{ display:flex; gap:11px; align-items:flex-start; }
+  .show input{ width:22px; height:22px; margin-top:1px; accent-color:var(--lime); flex:none; }
+  .show .t{ font-size:13.5px; } .show .t b{ color:var(--yellow); }
+  .show .t .why{ color:var(--mut); font-size:12px; margin-top:2px; }
+  /* question card */
+  .q{ font-size:14px; margin-bottom:9px; } .q b{ color:var(--yellow); }
+  .q .n{ display:inline-block; min-width:20px; color:var(--cyan); }
+  .chips{ display:flex; flex-wrap:wrap; gap:7px; margin-bottom:9px; }
+  .chip{ border:1px solid var(--line); background:#0c1120; color:var(--ink); border-radius:99px; padding:6px 13px; font:inherit; font-size:12px; cursor:pointer; }
+  .chip.on{ background:rgba(34,211,238,.16); border-color:var(--cyan); color:var(--cyan); box-shadow:0 0 8px rgba(34,211,238,.4); }
+  .cap{ display:flex; gap:7px; align-items:flex-start; }
+  textarea.note{ flex:1; border:1px solid var(--line); background:#0a0e19; color:var(--ink); border-radius:8px; padding:7px 10px; font:inherit; font-size:12.5px; resize:vertical; min-height:38px; }
+  textarea.note:focus{ outline:none; border-color:var(--cyan); box-shadow:var(--glowC); }
+  .mic{ border:1px solid var(--line); background:#0a0e19; border-radius:8px; padding:6px 11px; cursor:pointer; font-size:16px; flex:none; color:var(--ink); }
+  .mic.on{ background:rgba(239,68,68,.18); border-color:var(--red); color:var(--red); animation:blink .9s infinite; }
+  .info{ background:var(--panel2); border-left:3px solid var(--mag); border-radius:8px; padding:10px 13px; font-size:12.5px; color:#cbd5e1; margin-bottom:10px; }
+  .info b{ color:var(--mag); }
+  .tid{ color:var(--lime); }
+  .handoff{ display:flex; gap:11px; align-items:center; background:rgba(250,204,21,.08); border:1px solid rgba(250,204,21,.35); border-radius:10px; padding:11px 14px; margin-bottom:10px; }
+  .handoff input{ width:24px; height:24px; accent-color:var(--yellow); flex:none; }
+  .handoff .t{ font-size:13px; } .handoff .t b{ color:var(--yellow); }
+  .bar{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:22px; }
+  .util{ border:1px solid var(--line); background:#0a0e19; color:var(--cyan); border-radius:9px; padding:10px 18px; font-size:13px; cursor:pointer; letter-spacing:.05em; }
+  .util.big{ background:rgba(74,222,128,.12); border-color:var(--ok); color:var(--ok); }
+  .util:hover{ box-shadow:var(--glowC); }
+  footer{ text-align:center; color:var(--mut); font-size:11px; padding:20px; letter-spacing:.06em; }
+</style>
+</head>
+<body>
+<header>
+  <div class="htop">
+    <h1>▚ Felix Brief<small>Show the wins · get his answers · hand off the terminal ask</small></h1>
+    <div class="timer" id="timer">00:00</div>
+  </div>
+</header>
+
+<main>
+  <div class="coin">◂ ◃ ◄  YOU STEER — CAPTURE HIS ANSWERS  ► ▻ ▸</div>
+
+  <!-- ============ SHOW ============ -->
+  <h2 class="sec">🎁 Show Felix (his own tickets — live on prod)</h2>
+  <div class="card"><label class="show"><input type="checkbox" data-chk="s0"><span class="t"><b>📓 Order Book</b> — Ralph's reorder ask. The headline. Add a line → pick supplier → Ordered → Received.</span></label></div>
+  <div class="card"><label class="show"><input type="checkbox" data-chk="s1"><span class="t"><b>Type-in qty</b> at checkout <span class="why">— no more scanning water 6×.</span></span></label></div>
+  <div class="card"><label class="show"><input type="checkbox" data-chk="s2"><span class="t"><b>View CSV + VAT</b> on Reports <span class="why">— VAT in its own columns, imports to Banana clean.</span></span></label></div>
+  <div class="card"><label class="show"><input type="checkbox" data-chk="s3"><span class="t"><b>Images + descriptions</b> filling in on the catalog.</span></label></div>
+  <div class="info">Line: <i>"You talked, we built — six tickets from your floor, live this week."</i></div>
+
+  <!-- ============ DECISIONS ============ -->
+  <h2 class="sec">❓ Get his answer</h2>
+
+  <div class="card">
+    <div class="q"><span class="n">1.</span> <b>Order Book</b> — does the <i>to-order → on-order → received</i> flow match how you actually reorder? Supplier-per-line right?</div>
+    <div class="chips" data-chips="q1"><button class="chip">👍 Loves it</button><button class="chip">✏️ Wants tweaks</button><button class="chip">👎 Rethink</button></div>
+    <div class="cap"><textarea class="note" data-note="q1" placeholder="his words…"></textarea><button class="mic" data-mic="q1">🎤</button></div>
+  </div>
+
+  <div class="card">
+    <div class="q"><span class="n">2.</span> <b>Suppliers</b> — confirm the real list + the <b>preferred</b> one. Show the <b>code</b> too (420, BR…) or just the name?</div>
+    <div class="chips" data-chips="q2"><button class="chip">Name only OK</button><button class="chip">Show code too</button></div>
+    <div class="cap"><textarea class="note" data-note="q2" placeholder="real supplier list + preferred + who does he order from most…"></textarea><button class="mic" data-mic="q2">🎤</button></div>
+  </div>
+
+  <div class="card">
+    <div class="q"><span class="n">3.</span> <b>CSV VAT</b> — keep the VAT summary <i>in</i> the accounting file, or a <b>separate</b> VAT report?</div>
+    <div class="chips" data-chips="q3"><button class="chip">Keep in file</button><button class="chip">Separate report</button><button class="chip">Don't care</button></div>
+    <div class="cap"><textarea class="note" data-note="q3" placeholder="his call…"></textarea><button class="mic" data-mic="q3">🎤</button></div>
+  </div>
+
+  <div class="card">
+    <div class="q"><span class="n">4.</span> <b>Report presets</b> — which reports does he want as <b>fast-buttons</b>? (name them)</div>
+    <div class="cap"><textarea class="note" data-note="q4" placeholder="daily takings, by cashier, product sales, VAT, …"></textarea><button class="mic" data-mic="q4">🎤</button></div>
+  </div>
+
+  <div class="card">
+    <div class="q"><span class="n">5.</span> <b>Hypercare parallel-run</b> — pen+paper + POS reconciled daily for how long before full cutover?</div>
+    <div class="chips" data-chips="q5"><button class="chip">2 weeks</button><button class="chip">3 weeks</button><button class="chip">6 weeks</button></div>
+    <div class="cap"><textarea class="note" data-note="q5" placeholder="…"></textarea><button class="mic" data-mic="q5">🎤</button></div>
+  </div>
+
+  <!-- ============ TERMINAL ============ -->
+  <h2 class="sec">💳 Terminal integration (BL-19) — the prize</h2>
+  <div class="info">
+    Both his terminals are <b>Ingenico · Worldline · ep2</b> → integrable (not dead-ends).<br>
+    ▸ <b>AXIUM DX8000</b> (newer Android smart POS) · TID <span class="tid">25409030</span> → <b>best target</b><br>
+    ▸ <b>Move/5000</b> (older, 4G) · TID <span class="tid">25145450</span><br>
+    <b>Plan:</b> ep2 <b>ECR</b> — Banco sends the amount → terminal takes the card → sends back approved + reference → Banco records it. <b>Kills the manual re-keying.</b> Real project, external dep (Worldline). <b>First move = Felix's call, not code.</b>
+  </div>
+  <label class="handoff"><input type="checkbox" data-chk="handoff"><span class="t"><b>Handed Felix the Worldline ask</b> (DE+EN draft — asks them to enable the ECR interface + send the spec/SDK + confirm fee &amp; contract). He fills company + customer #, sends it.</span></label>
+
+  <div class="card">
+    <div class="q"><span class="n">A.</span> Which terminal does he use <b>day-to-day</b>?</div>
+    <div class="chips" data-chips="qA"><button class="chip">AXIUM DX8000</button><button class="chip">Move/5000</button><button class="chip">Both</button></div>
+    <div class="cap"><textarea class="note" data-note="qA" placeholder="…"></textarea><button class="mic" data-mic="qA">🎤</button></div>
+  </div>
+  <div class="card">
+    <div class="q"><span class="n">B.</span> Will he <b>call Worldline</b> to turn on integrated/ECR mode?</div>
+    <div class="chips" data-chips="qB"><button class="chip">Yes, he'll call</button><button class="chip">We help / join</button><button class="chip">Not yet</button></div>
+    <div class="cap"><textarea class="note" data-note="qB" placeholder="who / when…"></textarea><button class="mic" data-mic="qB">🎤</button></div>
+  </div>
+  <div class="card">
+    <div class="q"><span class="n">C.</span> New hardware fallback — tell him <b>we probably don't need it</b>, his terminals are integrable. His reaction?</div>
+    <div class="cap"><textarea class="note" data-note="qC" placeholder="…"></textarea><button class="mic" data-mic="qC">🎤</button></div>
+  </div>
+
+  <div class="bar">
+    <button class="util big" id="copy">📋 Copy the brief (send to Tigs)</button>
+    <button class="util" id="reset">↻ Reset</button>
+  </div>
+
+  <footer>🐯 You steer, I row · dictate his answers with 🎤 · auto-saves to this phone · <span id="stamp"></span></footer>
+</main>
+
+<script>
+  const KEY = 'banco-felix-brief-v1';
+  let state; try{ state = JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ state={}; }
+  const save = ()=> localStorage.setItem(KEY, JSON.stringify(state));
+
+  function apply(){
+    document.querySelectorAll('[data-chk]').forEach(el=>{ el.checked = !!state[el.dataset.chk]; });
+    document.querySelectorAll('[data-note]').forEach(el=>{ el.value = state['note_'+el.dataset.note] || ''; });
+    document.querySelectorAll('[data-chips]').forEach(box=>{
+      const key = box.dataset.chips;
+      [...box.querySelectorAll('.chip')].forEach(c=> c.classList.toggle('on', state['chip_'+key]===c.textContent));
+    });
+  }
+  document.querySelectorAll('[data-chk]').forEach(el=>{
+    el.addEventListener('change', ()=>{ state[el.dataset.chk]=el.checked; save(); });
+  });
+  document.querySelectorAll('[data-note]').forEach(el=>{
+    el.addEventListener('input', ()=>{ state['note_'+el.dataset.note]=el.value; save(); });
+  });
+  document.querySelectorAll('[data-chips]').forEach(box=>{
+    const key = box.dataset.chips;
+    box.querySelectorAll('.chip').forEach(chip=>{
+      chip.addEventListener('click', ()=>{
+        state['chip_'+key] = (state['chip_'+key]===chip.textContent) ? '' : chip.textContent;
+        save(); apply();
+      });
+    });
+  });
+  // voice dictation → append to the matching note
+  document.querySelectorAll('[data-mic]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const ta = document.querySelector('[data-note="'+btn.dataset.mic+'"]');
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if(!SR){ alert('Voice not supported here — type the note.'); return; }
+      if(btn._rec){ btn._rec.stop(); return; }
+      const rec = new SR(); rec.lang='en-US'; rec.interimResults=false; rec.continuous=true;
+      btn._rec=rec; btn.classList.add('on');
+      rec.onresult=e=>{ let t=''; for(let i=e.resultIndex;i<e.results.length;i++) t+=e.results[i][0].transcript;
+        ta.value=(ta.value?ta.value+' ':'')+t.trim(); state['note_'+btn.dataset.mic]=ta.value; save(); };
+      rec.onend=()=>{ btn.classList.remove('on'); btn._rec=null; };
+      rec.onerror=()=>{ btn.classList.remove('on'); btn._rec=null; };
+      rec.start();
+    });
+  });
+
+  document.getElementById('reset').onclick=()=>{ if(confirm('Clear the brief?')){ state={}; save(); apply(); state.__t0=Date.now(); save(); t0=state.__t0; } };
+  document.getElementById('copy').onclick=()=>{
+    const chip=k=>state['chip_'+k]||'—'; const note=k=>state['note_'+k]||'';
+    const line=(label,k)=>`- ${label}: ${chip(k)}${note(k)?'  ↳ '+note(k):''}`;
+    const shown=['s0','s1','s2','s3'].filter(k=>state[k]).length;
+    const out =
+`FELIX MEETING — captured
+Shown: ${shown}/4 · Worldline ask handed: ${state.handoff?'YES':'no'}
+
+DECISIONS
+${line('Order Book','q1')}
+${line('Suppliers','q2')}
+${line('CSV VAT','q3')}
+- Report presets: ${note('q4')||'—'}
+${line('Hypercare run','q5')}
+
+TERMINAL (BL-19)
+${line('Day-to-day terminal','qA')}
+${line('Will call Worldline','qB')}
+- New-hardware reaction: ${note('qC')||'—'}`;
+    navigator.clipboard.writeText(out).then(()=>{ const b=document.getElementById('copy'); b.textContent='✓ Copied — paste to Tigs'; setTimeout(()=>b.textContent='📋 Copy the brief (send to Tigs)',1800); });
+  };
+
+  let t0 = state.__t0 || (state.__t0=Date.now(), save(), state.__t0);
+  setInterval(()=>{ const s=Math.floor((Date.now()-t0)/1000); document.getElementById('timer').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); },1000);
+  document.getElementById('stamp').textContent='built '+new Date().toISOString().slice(0,10);
+  apply();
+</script>
+</body>
+</html>
