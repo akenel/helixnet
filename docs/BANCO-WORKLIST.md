@@ -10,7 +10,35 @@
 
 ---
 
-## ✅ SHIPPED PROD 2026-07-09 — batch live (b1610 · 35ef4a0) + compliance sweep lesson ← START HERE
+## ✅ SHIPPED PROD 2026-07-10 — hypercare BL-16→22 batch + Felix in-shop fixes (b1632 · 79e73ee) ← START HERE
+**A full "ON DECK" → ship day, twice through the gated ladder, human-green both times.** The AI hypercare
+cockpit did the triage; Tigs was the engineer; Angel steered + tested on the phone with the branded test sheets.
+
+**PART 1 — the shop's own tickets BL-16→22 (main `467ac85`, b1627).** Six tickets Felix/Ralph filed from the
+floor, all live: **BL-16** type-in qty at the cart line · **BL-17** image backfill → MinIO (cron NOT yet wired
+on prod — 5,111 hotlinks still to drain; turning it on is an open 🧍 decision) · **BL-18** description-cron
+un-jammed (rotation via `description_checked_at`; self-heals on its next run) · **BL-20** CSV viewer + a **VAT
+summary in real Turnover/VAT columns** (memo rows — Banana import untouched) · **BL-21/22 the Order Book**
+(reorder pencil-list + per-line supplier pick + velocity suggestions) · plus **role-based permission text**
+(dropped hardcoded "Felix/Ralph" everywhere) + **HTML-in-i18n render fixes** (intros were showing raw `<b>`).
+New table `reorder_items` + columns `description_checked_at`/`image_checked_at` (create_all + IF-NOT-EXISTS
+ALTER). 4 UAT rounds (v1 sheet + R3/R4 quick-checks). Backup `banco_prod-prehypercare-20260710_110644.sql.gz`.
+
+**PART 2 — Felix's live in-shop round BL-24→30 (main `79e73ee`, b1632).** Filed WITH Felix on prod, triaged in
+the cockpit. Fixed + shipped: **BL-25** no phantom discount on a tobacco/alcohol-only cart ("No discount —
+tobacco/alcohol only"; also `Number(discount)` kills the "010%" label) · **BL-27** scan a barcode into the
+Order Book — **visible 📷 button** (shared PosScanner camera) + gun/wedge Enter + file fallback. Backup
+`banco_prod-prefelixfix-20260710_133114.sql.gz`. Re-probed clean (R5 sheet green).
+- 🟢 **BL-28/29/30 = NOT bugs — stale SW translation cache** (raw `reorder.toast_added` toasts). Resolved by a
+  hard-refresh (Ctrl+Shift+R). Lesson: a POS deploy that adds i18n keys needs the operator to hard-refresh,
+  because the SW cache-firsts `pos-i18n.js` and doesn't auto-activate. **🧍 Felix: hard-refresh to pick it all up.**
+- ⚪ **BL-24 ".." descriptions = won't-fix** — Artemis's own source ellipsis (10 of 3,201, mostly stylistic).
+- 🎟️ **BL-26 TIER / QUANTITY-BREAK PRICING — PARKED for the Lion's Den discussion.** Felix wants auto
+  quantity-break pricing (e.g. 1 pack papers = 4.-, buy **3 → 10.-**, 10 → even better). **Reference: Artemis's
+  OWN website already does this** — model their tiers/UX. Real feature, needs design (how to make it easy at the
+  till + how it interacts with the promo-restricted/member-discount rules). Discuss back at HQ. Detail → memory `banco-crm-strategy` / a new `banco-tier-pricing` note.
+
+## ✅ SHIPPED PROD 2026-07-09 — batch live (b1610 · 35ef4a0) + compliance sweep lesson
 Batch deployed to prod, healthy, code proven (v57 + callback bypass + disclaimer gone). Backup-gated
 (`banco_prod-prebatch-20260708_194247.sql.gz`). **The reclassify sweep was eventful — READ THIS:**
 - ⚠️ **`reclassify_products` is NAME-ONLY → it UN-GATED context-dependent items** (CBD flower/hash + a
