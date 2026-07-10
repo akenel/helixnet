@@ -3343,43 +3343,42 @@ async def get_daily_summary_csv(
     ]
     buf = _io.StringIO()
     writer = _csv.writer(buf, quoting=_csv.QUOTE_ALL)
-    writer.writerow(["Date", "Description", "Income", "Expenses", "Account", "VatCode"])
+    # Two extra columns (Turnover, VAT) carry the VAT-summary NUMBERS in their own cells — the
+    # accounting rows leave them blank, so Banana's import (which maps Income/Expenses) is
+    # untouched, but Felix sees real number columns in the file + the on-screen viewer.
+    writer.writerow(["Date", "Description", "Income", "Expenses", "Account", "VatCode", "Turnover", "VAT"])
     for label, amount in by_method:
         if amount and amount > 0:
-            writer.writerow([summary.date, f"POS daily sales - {label}", f"{amount:.2f}", "", "", ""])
+            writer.writerow([summary.date, f"POS daily sales - {label}", f"{amount:.2f}", "", "", "", "", ""])
     # Promotional treats given free -- the cost is an expense (COGS) for tax.
     if summary.giveaway_cost and summary.giveaway_cost > 0:
         writer.writerow([summary.date,
                          f"POS giveaways (treats) x{summary.giveaway_count} - cost",
-                         "", f"{summary.giveaway_cost:.2f}", "", ""])
+                         "", f"{summary.giveaway_cost:.2f}", "", "", "", ""])
 
     # --- VAT SUMMARY (BL-20 follow-up — proposal for Felix) ---------------------------------
-    # Felix wanted to SEE the VAT when he opens the CSV. These are INFORMATIONAL memo rows: the
-    # numbers live in the Description, Income/Expenses stay blank, so they never touch Banana's
-    # income/expense sum on import — pure reference. Per-country aware (CH: 8.1% / 2.6%; the
-    # streams come from the same resolver the receipt + closeout use). If Felix says "don't want
-    # it in the accounting file" we move it to a separate report; if "perfect", it stays.
-    writer.writerow(["", "— VAT SUMMARY (reference only, not imported) —", "", "", "", ""])
-    writer.writerow([summary.date, f"Total sales incl. VAT: {summary.total_sales:.2f}", "", "", "", ""])
-    writer.writerow([summary.date, f"VAT total (contained in sales): {summary.vat_total:.2f}", "", "", "", ""])
+    # Reference only — the numbers sit in the Turnover/VAT columns (Income/Expenses stay blank),
+    # so they never touch Banana's income/expense sum on import. Per-country aware (CH: 8.1% /
+    # 2.6%; streams come from the same resolver the receipt + closeout use). If Felix wants it
+    # out of the accounting file we split it to its own report; if it's perfect, it stays.
+    writer.writerow(["", "— VAT SUMMARY (reference only, not imported) —", "", "", "", "", "", ""])
+    writer.writerow([summary.date, "Total sales incl. VAT", "", "", "", "", f"{summary.total_sales:.2f}", ""])
+    writer.writerow([summary.date, "VAT total (contained in sales)", "", "", "", "", "", f"{summary.vat_total:.2f}"])
     streams = summary.vat_streams or []
     if streams:
         for s in streams:
             rate, label = s.get("rate"), (s.get("label") or "")
             turn, vat = float(s.get("turnover") or 0), float(s.get("vat") or 0)
-            writer.writerow([summary.date,
-                             f"VAT {rate}% ({label}): turnover {turn:.2f}, VAT {vat:.2f}",
-                             "", "", "", str(rate)])
+            writer.writerow([summary.date, f"VAT {rate}% ({label})", "", "", "", str(rate),
+                             f"{turn:.2f}", f"{vat:.2f}"])
     else:
         # Fallback to the CH standard/reduced split if the per-code streams aren't populated.
         if summary.turnover_standard or summary.vat_standard:
-            writer.writerow([summary.date,
-                             f"VAT standard: turnover {summary.turnover_standard:.2f}, VAT {summary.vat_standard:.2f}",
-                             "", "", "", ""])
+            writer.writerow([summary.date, "VAT standard (8.1%)", "", "", "", "8.1",
+                             f"{summary.turnover_standard:.2f}", f"{summary.vat_standard:.2f}"])
         if summary.turnover_reduced or summary.vat_reduced:
-            writer.writerow([summary.date,
-                             f"VAT reduced: turnover {summary.turnover_reduced:.2f}, VAT {summary.vat_reduced:.2f}",
-                             "", "", "", ""])
+            writer.writerow([summary.date, "VAT reduced (2.6%)", "", "", "", "2.6",
+                             f"{summary.turnover_reduced:.2f}", f"{summary.vat_reduced:.2f}"])
 
     filename = f"banana-{summary.date}.csv"
     return Response(

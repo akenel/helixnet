@@ -385,7 +385,12 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="catalog.form_supplier">Supplier</label>
-                        <input type="text" x-model="form.supplier_name" class="input-field" placeholder="(optional)" data-i18n-placeholder="catalog.optional_placeholder">
+                        <!-- pick from known suppliers (datalist) — still tolerant of an existing value
+                             that isn't a formal supplier row (e.g. "Artemis"), so no data is lost. -->
+                        <input type="text" x-model="form.supplier_name" list="catalog-supplier-list" class="input-field" placeholder="(optional)" data-i18n-placeholder="catalog.optional_placeholder">
+                        <datalist id="catalog-supplier-list">
+                            <template x-for="s in suppliers" :key="s.id || s.code || s.name"><option :value="s.name"></option></template>
+                        </datalist>
                     </div>
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-1"><span data-i18n="catalog.form_photos">Photos</span>
@@ -485,6 +490,7 @@
             q: '',
             category: '',
             categories: [],
+            suppliers: [],   // active suppliers → the supplier pick-list on the product form
             // BL-96 taxonomy — mirrors src/services/catalog_taxonomy.py (CONTROLLED set).
             // CATEGORY = merchandising skeleton (grows freely); CLASS = behaviour (drives 18+/VAT).
             catSkeleton: [
@@ -560,6 +566,10 @@
                         name: c.name, count: c.count, group: c.product_group || null,
                     }));
                 } catch (e) { console.warn('categories unavailable', e); }
+                try {
+                    // Supplier pick-list for the product form (choose from known suppliers, don't free-type).
+                    this.suppliers = await API.get('/api/v1/pos/suppliers');
+                } catch (e) { console.warn('suppliers unavailable', e); }
             },
 
             // Preferred order of the level-1 group headers in the Category dropdown.
