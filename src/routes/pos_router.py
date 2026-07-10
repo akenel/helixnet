@@ -51,6 +51,9 @@ from src.db.models import (
     CreditTransactionModel,
     CreditTransactionType,
     SupplierModel,
+    ReorderItemModel,
+    REORDER_REASONS,
+    REORDER_STATUSES,
 )
 from src.core.constants import HelixApplication
 from src.services.cash_shift_service import (
@@ -863,6 +866,208 @@ async def update_supplier(
     supplier.product_count = await _count_products_for_prefix(db, supplier.prefix)
     logger.info(f"Supplier updated: {supplier.prefix} ({supplier.name}) by {current_user['username']}")
     return supplier
+
+
+# ================================================================
+# BL-21/22 — THE ORDER BOOK (reorder pencil-list + per-line supplier pick)
+# Zero-perpetual doctrine (docs/BANCO-REORDER-ORDER-BOOK.md): never compute from an on-hand
+# count. Track order STATE (to_order → on_order → received), suggest by sales VELOCITY, let
+# the human decide. BL-22: each line carries the supplier the human PICKED for it.
+# ================================================================
+
+class ReorderCreate(BaseModel):
+    product_id: Optional[UUID] = None      # None = free-typed "we don't stock this yet"
+    title: Optional[str] = None            # required if no product_id
+    qty: int = 1
+    reason: str = "restock"                # restock | customer_request
+    customer_id: Optional[UUID] = None
+    customer_note: Optional[str] = None
+    supplier_code: Optional[str] = None
+    note: Optional[str] = None
+
+
+class ReorderUpdate(BaseModel):
+    qty: Optional[int] = None
+    status: Optional[str] = None           # to_order | on_order | received | cancelled
+    supplier_code: Optional[str] = None
+    eta: Optional[date] = None
+    note: Optional[str] = None
+    customer_note: Optional[str] = None
+
+
+def _reorder_dto(r: ReorderItemModel) -> dict:
+    return {
+        "id": str(r.id),
+        "product_id": str(r.product_id) if r.product_id else None,
+        "title": r.title,
+        "qty": r.qty,
+        "reason": r.reason,
+        "customer_id": str(r.customer_id) if r.customer_id else None,
+        "customer_note": r.customer_note,
+        "supplier_code": r.supplier_code,
+        "status": r.status,
+        "eta": r.eta.isoformat() if r.eta else None,
+        "note": r.note,
+        "created_by": r.created_by,
+        "created_at": r.created_at.isoformat() if r.created_at else None,
+    }
+
+
+@router.get("/reorder")
+async def list_reorder(
+    status_filter: Optional[str] = None,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """The Order Book. Any POS role can read it (it's the shared pencil-list). Default view
+    hides cancelled + long-received; pass ?status_filter=all for everything."""
+    q = select(ReorderItemModel)
+    if status_filter and status_filter in REORDER_STATUSES:
+        q = q.where(ReorderItemModel.status == status_filter)
+    elif status_filter != "all":
+        q = q.where(ReorderItemModel.status.in_(("to_order", "on_order", "received")))
+    q = q.order_by(ReorderItemModel.created_at.desc())
+    rows = (await db.execute(q)).scalars().all()
+    return {"items": [_reorder_dto(r) for r in rows]}
+
+
+@router.post("/reorder", status_code=status.HTTP_201_CREATED)
+async def add_reorder(
+    body: ReorderCreate,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),   # a cashier captures "Larry wanted X"
+):
+    """Add a line to the Order Book — a restock or a customer special-order. A product_id
+    snapshots its name; otherwise `title` is required (free-typed, not-yet-stocked item)."""
+    if body.reason not in REORDER_REASONS:
+        raise HTTPException(status_code=422, detail=f"reason must be one of {REORDER_REASONS}")
+    title = (body.title or "").strip()
+    if body.product_id:
+        p = (await db.execute(
+            select(ProductModel).where(ProductModel.id == body.product_id)
+        )).scalar_one_or_none()
+        if p is None:
+            raise HTTPException(status_code=404, detail="Product not found")
+        if not title:
+            title = p.name
+        # BL-22: default the supplier to the product's known supplier if the caller didn't pick one.
+        if not body.supplier_code and p.supplier_name:
+            body.supplier_code = p.supplier_name
+    if not title:
+        raise HTTPException(status_code=422, detail="title is required for a free-typed item")
+    item = ReorderItemModel(
+        product_id=body.product_id,
+        title=title[:200],
+        qty=max(1, body.qty or 1),
+        reason=body.reason,
+        customer_id=body.customer_id,
+        customer_note=(body.customer_note or None),
+        supplier_code=(body.supplier_code or None),
+        note=(body.note or None),
+        status="to_order",
+        created_by=current_user["username"],
+    )
+    db.add(item)
+    await db.commit()
+    await db.refresh(item)
+    logger.info(f"Order Book +1: '{item.title}' ({item.reason}) by {current_user['username']}")
+    return _reorder_dto(item)
+
+
+@router.patch("/reorder/{item_id}")
+async def update_reorder(
+    item_id: UUID,
+    body: ReorderUpdate,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_manager_or_admin()),   # advancing state = manager's call
+):
+    """Advance an Order Book line: pick/switch supplier (BL-22), set qty/eta/note, or move
+    its status (to_order → on_order → received / cancelled)."""
+    item = (await db.execute(
+        select(ReorderItemModel).where(ReorderItemModel.id == item_id)
+    )).scalar_one_or_none()
+    if item is None:
+        raise HTTPException(status_code=404, detail="Order Book item not found")
+    data = body.model_dump(exclude_unset=True)
+    if "status" in data and data["status"] not in REORDER_STATUSES:
+        raise HTTPException(status_code=422, detail=f"status must be one of {REORDER_STATUSES}")
+    if "qty" in data and data["qty"] is not None:
+        data["qty"] = max(1, data["qty"])
+    for field, value in data.items():
+        setattr(item, field, value)
+    await db.commit()
+    await db.refresh(item)
+    logger.info(f"Order Book ~ '{item.title}' → {item.status} "
+                f"(supplier={item.supplier_code}) by {current_user['username']}")
+    return _reorder_dto(item)
+
+
+@router.delete("/reorder/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_reorder(
+    item_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_manager_or_admin()),
+):
+    """Remove an Order Book line outright (manager/admin)."""
+    item = (await db.execute(
+        select(ReorderItemModel).where(ReorderItemModel.id == item_id)
+    )).scalar_one_or_none()
+    if item is None:
+        raise HTTPException(status_code=404, detail="Order Book item not found")
+    await db.delete(item)
+    await db.commit()
+    return None
+
+
+@router.get("/reorder/suggestions")
+async def reorder_suggestions(
+    days: int = 21,
+    limit: int = 15,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """Advisory ONLY (never a gate): fastest-selling products over the last `days` that are
+    NOT already on the Order Book. Velocity is rock-solid even with zero-perpetual — the till
+    knows exactly what sold. Suggest, don't decide."""
+    since = datetime.now(timezone.utc) - timedelta(days=max(1, days))
+    # Products already on the book (to_order / on_order) — don't re-suggest them.
+    on_book = set((await db.execute(
+        select(ReorderItemModel.product_id).where(
+            ReorderItemModel.product_id.isnot(None),
+            ReorderItemModel.status.in_(("to_order", "on_order")),
+        )
+    )).scalars().all())
+    rows = (await db.execute(
+        select(
+            LineItemModel.product_id,
+            func.sum(LineItemModel.quantity).label("sold"),
+        )
+        .join(TransactionModel, LineItemModel.transaction_id == TransactionModel.id)
+        .where(
+            TransactionModel.status == TransactionStatus.COMPLETED,
+            TransactionModel.created_at >= since,
+            LineItemModel.product_id.isnot(None),
+        )
+        .group_by(LineItemModel.product_id)
+        .order_by(func.sum(LineItemModel.quantity).desc())
+        .limit(limit * 3)   # over-fetch, then filter out on-book ones
+    )).all()
+    out = []
+    for pid, sold in rows:
+        if pid in on_book:
+            continue
+        p = (await db.execute(
+            select(ProductModel).where(ProductModel.id == pid)
+        )).scalar_one_or_none()
+        if p is None:
+            continue
+        out.append({
+            "product_id": str(pid), "title": p.name, "sold": int(sold),
+            "supplier_code": p.supplier_name, "days": days,
+        })
+        if len(out) >= limit:
+            break
+    return {"suggestions": out, "days": days}
 
 
 # ================================================================
@@ -5497,6 +5702,14 @@ async def pos_suppliers(request: Request):
     the list; it feeds the receiving 'pick a supplier' dropdown.
     """
     return templates.TemplateResponse("pos/suppliers.html", {"request": request})
+
+
+@html_router.get("/pos/reorder", response_class=HTMLResponse, name="pos_reorder")
+async def pos_reorder(request: Request):
+    """BL-21/22 — the Order Book: the digital reorder pencil-list. Velocity suggestions +
+    order-state (to_order → on_order → received) + per-line supplier pick. Manager-gated
+    client-side; the mutating API is role-gated server-side."""
+    return templates.TemplateResponse("pos/reorder.html", {"request": request})
 
 
 @html_router.get("/pos/checkout", response_class=HTMLResponse, name="pos_checkout")

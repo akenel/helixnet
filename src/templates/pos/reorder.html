@@ -1,0 +1,298 @@
+{% extends "pos/base.html" %}
+
+{% block title %}Order Book - HelixPOS - Artemis Store{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="reorderData()" x-init="init()">
+    <div class="max-w-4xl mx-auto px-4 py-8">
+
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-2 flex-wrap gap-2">
+            <div class="flex items-center gap-3">
+                <button @click="goDashboard()" class="btn-secondary flex-none" title="Dashboard" aria-label="Dashboard">🏠</button>
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900" data-i18n="reorder.title">📓 Order Book</h1>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <button @click="goReports()" class="btn-secondary" data-i18n="reorder.reports">📊 Reports</button>
+                <button @click="load()" class="btn-secondary" :disabled="loading">
+                    <span x-show="!loading">🔄 <span data-i18n="reorder.refresh">Refresh</span></span>
+                    <span x-show="loading" style="display:none;" data-i18n="reorder.loading">Loading…</span>
+                </button>
+            </div>
+        </div>
+        <p class="text-gray-600 mb-4" data-i18n="reorder.intro">The reorder pencil-list. Walk the floor, add what's low or what a
+            customer asked for, pick who to order it from, and track it from <b>to order → on order → received</b>. It suggests; you decide.</p>
+
+        <!-- ➕ Add a line -->
+        <div class="card mb-4">
+            <h2 class="text-lg font-semibold mb-3">➕ <span data-i18n="reorder.add_title">Add to Order Book</span></h2>
+            <div class="grid gap-3">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="reorder.item">Item</label>
+                    <input type="text" x-model="form.title" list="reorder-products" @input="onTitleInput()"
+                           placeholder="Type a product name, or anything not stocked yet"
+                           data-i18n-placeholder="reorder.item_ph" class="input-field">
+                    <datalist id="reorder-products">
+                        <template x-for="p in productMatches" :key="p.id"><option :value="p.name"></option></template>
+                    </datalist>
+                    <p x-show="form.product_id" class="text-xs text-green-700 mt-1">✓ <span data-i18n="reorder.linked">linked to catalog</span></p>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="reorder.qty">Qty</label>
+                        <input type="number" min="1" step="1" x-model.number="form.qty" class="input-field">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="reorder.supplier">Supplier</label>
+                        <select x-model="form.supplier_code" class="input-field">
+                            <option value="" data-i18n="reorder.supplier_any">— pick —</option>
+                            <template x-for="s in suppliers" :key="s.code || s.prefix">
+                                <option :value="s.code || s.prefix" x-text="(s.code || s.prefix) + ' · ' + s.name"></option>
+                            </template>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="reorder.reason">Reason</label>
+                    <div class="flex gap-2">
+                        <button type="button" @click="form.reason='restock'"
+                            :class="form.reason==='restock' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700'"
+                            class="btn-secondary flex-1" data-i18n="reorder.restock">🔁 Restock</button>
+                        <button type="button" @click="form.reason='customer_request'"
+                            :class="form.reason==='customer_request' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700'"
+                            class="btn-secondary flex-1" data-i18n="reorder.special">🙋 Customer order</button>
+                    </div>
+                </div>
+                <div x-show="form.reason==='customer_request'">
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="reorder.customer_note">Who / note</label>
+                    <input type="text" x-model="form.customer_note" placeholder="e.g. Larry wanted the extra thing"
+                           data-i18n-placeholder="reorder.customer_note_ph" class="input-field">
+                </div>
+                <button @click="add()" :disabled="saving" class="btn-success">
+                    <span data-i18n="reorder.add_btn">➕ Add to Order Book</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 🔥 Suggestions (advisory only) -->
+        <div class="card mb-4" x-show="suggestions.length">
+            <h2 class="text-lg font-semibold mb-1">🔥 <span data-i18n="reorder.sugg_title">Selling fast, not on order</span></h2>
+            <p class="text-gray-500 text-xs mb-3" data-i18n="reorder.sugg_sub">Last 3 weeks by units sold. A hint, never a rule.</p>
+            <div class="space-y-2">
+                <template x-for="s in suggestions" :key="s.product_id">
+                    <div class="flex items-center justify-between bg-orange-50 rounded-lg px-3 py-2">
+                        <div class="min-w-0">
+                            <p class="font-medium truncate" x-text="s.title"></p>
+                            <p class="text-xs text-gray-500"><span x-text="s.sold"></span> <span data-i18n="reorder.sold">sold</span><span x-show="s.supplier_code"> · <span x-text="s.supplier_code"></span></span></p>
+                        </div>
+                        <button @click="addFromSuggestion(s)" class="btn-secondary flex-none text-sm" data-i18n="reorder.add_short">➕ Add</button>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- 📝 To order -->
+        <div class="card mb-4">
+            <h2 class="text-lg font-semibold mb-3">📝 <span data-i18n="reorder.to_order">To order</span>
+                <span class="text-gray-400 text-base" x-text="'(' + group('to_order').length + ')'"></span></h2>
+            <p x-show="!group('to_order').length" class="text-gray-400 text-sm" data-i18n="reorder.empty_to_order">Nothing waiting to order. Walk the floor and add what's low.</p>
+            <div class="space-y-3">
+                <template x-for="it in group('to_order')" :key="it.id">
+                    <div class="border border-gray-200 rounded-xl p-3">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="min-w-0">
+                                <p class="font-semibold text-gray-900" x-text="it.title"></p>
+                                <p class="text-xs text-gray-500">
+                                    <span x-text="reasonLabel(it.reason)"></span>
+                                    <span x-show="it.customer_note"> · 🙋 <span x-text="it.customer_note"></span></span>
+                                    · <span data-i18n="reorder.by">by</span> <span x-text="it.created_by"></span>
+                                </p>
+                            </div>
+                            <button x-show="user.isManager" @click="remove(it)" class="text-red-500 hover:text-red-700 text-xl flex-none" aria-label="Remove">✕</button>
+                        </div>
+                        <div class="flex items-center flex-wrap gap-2 mt-3">
+                            <label class="text-xs text-gray-500" data-i18n="reorder.qty">Qty</label>
+                            <input type="number" min="1" step="1" :value="it.qty" @change="setQty(it, $event.target.value)"
+                                   :disabled="!user.isManager" class="input-field w-16 h-10 text-center">
+                            <select :value="it.supplier_code || ''" @change="setSupplier(it, $event.target.value)"
+                                    :disabled="!user.isManager" class="input-field h-10 flex-1 min-w-[8rem]">
+                                <option value="" data-i18n="reorder.supplier_any">— supplier —</option>
+                                <template x-for="s in suppliers" :key="s.code || s.prefix">
+                                    <option :value="s.code || s.prefix" x-text="(s.code || s.prefix) + ' · ' + s.name"></option>
+                                </template>
+                            </select>
+                            <button x-show="user.isManager" @click="advance(it, 'on_order')" class="btn-primary h-10 flex-none" data-i18n="reorder.mark_ordered">🚚 Ordered</button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- 🚚 On order -->
+        <div class="card mb-4">
+            <h2 class="text-lg font-semibold mb-3">🚚 <span data-i18n="reorder.on_order">On order</span>
+                <span class="text-gray-400 text-base" x-text="'(' + group('on_order').length + ')'"></span></h2>
+            <p x-show="!group('on_order').length" class="text-gray-400 text-sm" data-i18n="reorder.empty_on_order">Nothing on order right now.</p>
+            <div class="space-y-3">
+                <template x-for="it in group('on_order')" :key="it.id">
+                    <div class="border border-blue-200 bg-blue-50/40 rounded-xl p-3">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="min-w-0">
+                                <p class="font-semibold text-gray-900" x-text="`${it.qty}× ${it.title}`"></p>
+                                <p class="text-xs text-gray-500">
+                                    <span x-show="it.supplier_code">📦 <span x-text="it.supplier_code"></span> · </span>
+                                    <span x-text="reasonLabel(it.reason)"></span>
+                                    <span x-show="it.customer_note"> · 🙋 <span x-text="it.customer_note"></span></span>
+                                </p>
+                            </div>
+                            <button x-show="user.isManager" @click="advance(it, 'received')" class="btn-success h-10 flex-none" data-i18n="reorder.mark_received">✅ Received</button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- ✅ Received (recent) -->
+        <div class="card mb-4" x-show="group('received').length">
+            <h2 class="text-lg font-semibold mb-3">✅ <span data-i18n="reorder.received">Received</span>
+                <span class="text-gray-400 text-base" x-text="'(' + group('received').length + ')'"></span></h2>
+            <div class="space-y-2">
+                <template x-for="it in group('received')" :key="it.id">
+                    <div class="flex items-center justify-between text-sm text-gray-600 px-1">
+                        <span x-text="`${it.qty}× ${it.title}`"></span>
+                        <span class="text-gray-400" x-show="it.supplier_code" x-text="it.supplier_code"></span>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function reorderData() {
+        return {
+            user: {},
+            items: [],
+            suggestions: [],
+            suppliers: [],
+            productMatches: [],
+            loading: false,
+            saving: false,
+            form: { title: '', product_id: null, qty: 1, reason: 'restock', supplier_code: '', customer_note: '' },
+
+            async init() {
+                const info = AuthHelper.getUserInfo();
+                if (!info) { window.location.href = '/pos'; return; }
+                this.user = { ...info, isManager: AuthHelper.isManager(), isAdmin: AuthHelper.isAdmin() };
+                try {
+                    this.suppliers = await API.get('/api/v1/pos/suppliers');
+                } catch (e) { console.warn('suppliers unavailable', e); }
+                await this.load();
+                try {
+                    const s = await API.get('/api/v1/pos/reorder/suggestions');
+                    this.suggestions = s.suggestions || [];
+                } catch (e) { console.warn('suggestions unavailable', e); }
+            },
+
+            async load() {
+                this.loading = true;
+                try {
+                    const data = await API.get('/api/v1/pos/reorder');
+                    this.items = data.items || [];
+                } catch (e) {
+                    showToast(t('reorder.toast_load_failed') || 'Could not load the Order Book', 'error');
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            group(status) { return this.items.filter(i => i.status === status); },
+
+            reasonLabel(r) {
+                return r === 'customer_request'
+                    ? (t('reorder.special') || '🙋 Customer order')
+                    : (t('reorder.restock') || '🔁 Restock');
+            },
+
+            // Live product match so a typed title can link to the catalog (and default its supplier).
+            async onTitleInput() {
+                this.form.product_id = null;
+                const q = (this.form.title || '').trim();
+                if (q.length < 2) { this.productMatches = []; return; }
+                try {
+                    const res = await API.get('/api/v1/pos/search?q=' + encodeURIComponent(q) + '&limit=8');
+                    this.productMatches = res.items || [];
+                    const exact = this.productMatches.find(p => p.name === this.form.title);
+                    if (exact) {
+                        this.form.product_id = exact.id;
+                        if (!this.form.supplier_code && exact.supplier_name) this.form.supplier_code = exact.supplier_name;
+                    }
+                } catch (e) { this.productMatches = []; }
+            },
+
+            async add() {
+                const title = (this.form.title || '').trim();
+                if (!title) { showToast(t('reorder.toast_need_item') || 'Type an item first', 'warning'); return; }
+                this.saving = true;
+                try {
+                    await API.post('/api/v1/pos/reorder', {
+                        product_id: this.form.product_id,
+                        title: title,
+                        qty: Math.max(1, parseInt(this.form.qty, 10) || 1),
+                        reason: this.form.reason,
+                        supplier_code: this.form.supplier_code || null,
+                        customer_note: this.form.reason === 'customer_request' ? (this.form.customer_note || null) : null,
+                    });
+                    this.form = { title: '', product_id: null, qty: 1, reason: 'restock', supplier_code: '', customer_note: '' };
+                    this.productMatches = [];
+                    showToast(t('reorder.toast_added') || 'Added to Order Book', 'success');
+                    await this.load();
+                } catch (e) {
+                    showToast((t('reorder.toast_add_failed') || 'Could not add') + ': ' + e.message, 'error');
+                } finally {
+                    this.saving = false;
+                }
+            },
+
+            addFromSuggestion(s) {
+                this.form.title = s.title;
+                this.form.product_id = s.product_id;
+                this.form.reason = 'restock';
+                if (s.supplier_code) this.form.supplier_code = s.supplier_code;
+                this.form.qty = 1;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            },
+
+            async patch(it, payload) {
+                try {
+                    const updated = await API.patch('/api/v1/pos/reorder/' + it.id, payload);
+                    Object.assign(it, updated);
+                } catch (e) {
+                    showToast((t('reorder.toast_save_failed') || 'Save failed') + ': ' + e.message, 'error');
+                    await this.load();
+                }
+            },
+            setQty(it, v) { const q = Math.max(1, parseInt(v, 10) || 1); this.patch(it, { qty: q }); },
+            setSupplier(it, v) { this.patch(it, { supplier_code: v || null }); },
+            async advance(it, status) {
+                await this.patch(it, { status });
+                showToast(t('reorder.toast_moved') || 'Updated', 'success');
+            },
+
+            async remove(it) {
+                if (!confirm((t('reorder.confirm_remove') || 'Remove this line?'))) return;
+                try {
+                    await API.delete('/api/v1/pos/reorder/' + it.id);
+                    this.items = this.items.filter(x => x.id !== it.id);
+                } catch (e) {
+                    showToast((t('reorder.toast_save_failed') || 'Failed') + ': ' + e.message, 'error');
+                }
+            },
+
+            goDashboard() { window.location.href = '/pos/dashboard'; },
+            goReports() { window.location.href = '/pos/reports'; },
+        }
+    }
+</script>
+{% endblock %}

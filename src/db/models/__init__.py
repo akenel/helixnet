@@ -95,6 +95,9 @@ from .backlog_model import BacklogItemModel, BacklogItemType, BacklogStatus, Bac
 # POS in-app notifications (Hypercare reporter bell)
 from .pos_notification_model import POSNotificationModel
 
+# BL-21/22 — the Order Book (reorder pencil-list + per-line supplier pick)
+from .reorder_item_model import ReorderItemModel, REORDER_REASONS, REORDER_STATUSES
+
 # LPCX -- La Piazza Compute Exchange (jobs + credit ledger + template catalog)
 from .compute_model import (
     ComputeJobModel, ComputeJobStatus, ComputeLedgerModel, ComputeLedgerKind,
