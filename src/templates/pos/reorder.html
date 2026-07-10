@@ -28,9 +28,13 @@
             <h2 class="text-lg font-semibold mb-3">➕ <span data-i18n="reorder.add_title">Add to Order Book</span></h2>
             <div class="grid gap-3">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="reorder.item">Item</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">🔫 <span data-i18n="reorder.item">Item</span></label>
+                    <!-- BL-27: a barcode gun is a keyboard wedge — it types the code here + Enter.
+                         onItemEnter() spots an all-digit barcode and looks it up; otherwise Enter/typing
+                         just searches by name. So scan OR type both add an item. -->
                     <input type="text" x-model="form.title" list="reorder-products" @input="onTitleInput()"
-                           placeholder="Type a product name, or anything not stocked yet"
+                           @keyup.enter="onItemEnter()"
+                           placeholder="Scan a barcode, or type a product name"
                            data-i18n-placeholder="reorder.item_ph" class="input-field">
                     <datalist id="reorder-products">
                         <template x-for="p in productMatches" :key="p.id"><option :value="p.name"></option></template>
@@ -236,6 +240,27 @@
                         if (!this.form.supplier_code && exact.supplier_name) this.form.supplier_code = exact.supplier_name;
                     }
                 } catch (e) { this.productMatches = []; }
+            },
+
+            // BL-27: a barcode gun (keyboard wedge) types the code here + Enter. If the value looks
+            // like a barcode (all digits, 8+), look it up and fill the item from the catalog; else
+            // Enter is a no-op (typing already searches by name via onTitleInput).
+            async onItemEnter() {
+                const v = (this.form.title || '').trim();
+                if (!/^\d{8,}$/.test(v)) return;
+                try {
+                    const p = await API.get('/api/v1/pos/products/barcode/' + encodeURIComponent(v));
+                    if (p && p.id) {
+                        this.form.title = p.name;
+                        this.form.product_id = p.id;
+                        if (!this.form.supplier_code && p.supplier_name) this.form.supplier_code = p.supplier_name;
+                        this.productMatches = [];
+                        showToast(t('reorder.scanned') || ('✓ ' + p.name), 'success');
+                    }
+                } catch (e) {
+                    // 404 = not in the catalog; keep the typed code so the manager can add it free-text.
+                    showToast(t('reorder.scan_miss') || 'Barcode not in catalog — type a name', 'warning');
+                }
             },
 
             async add() {
