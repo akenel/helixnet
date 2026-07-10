@@ -40,7 +40,9 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="reorder.qty">Qty</label>
-                        <input type="number" min="1" step="1" x-model.number="form.qty" class="input-field">
+                        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" x-model="form.qty"
+                               @input="$event.target.value = $event.target.value.replace(/[^0-9]/g,''); form.qty = $event.target.value"
+                               class="input-field">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="reorder.supplier">Supplier</label>
@@ -112,13 +114,18 @@
                         </div>
                         <div class="flex items-center flex-wrap gap-2 mt-3">
                             <label class="text-xs text-gray-500" data-i18n="reorder.qty">Qty</label>
-                            <input type="number" min="1" step="1" :value="it.qty" @change="setQty(it, $event.target.value)"
+                            <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" :value="it.qty"
+                                   @input="$event.target.value = $event.target.value.replace(/[^0-9]/g,'')"
+                                   @change="setQty(it, $event.target.value)"
                                    :disabled="!user.isManager" class="input-field w-16 h-10 text-center">
-                            <select :value="it.supplier_code || ''" @change="setSupplier(it, $event.target.value)"
+                            <!-- :selected on each option (not :value on the select) so the stored supplier
+                                 shows even though the options load async after first render. -->
+                            <select @change="setSupplier(it, $event.target.value)"
                                     :disabled="!user.isManager" class="input-field h-10 flex-1 min-w-[8rem]">
-                                <option value="" data-i18n="reorder.supplier_any">— supplier —</option>
+                                <option value="" :selected="!it.supplier_code" data-i18n="reorder.supplier_any">— supplier —</option>
                                 <template x-for="s in suppliers" :key="s.code || s.prefix">
-                                    <option :value="s.code || s.prefix" x-text="(s.code || s.prefix) + ' · ' + s.name"></option>
+                                    <option :value="s.code || s.prefix" :selected="(s.code || s.prefix) === it.supplier_code"
+                                            x-text="(s.code || s.prefix) + ' · ' + s.name"></option>
                                 </template>
                             </select>
                             <button x-show="user.isManager" @click="advance(it, 'on_order')" class="btn-primary h-10 flex-none" data-i18n="reorder.mark_ordered">🚚 Ordered</button>

@@ -267,7 +267,11 @@
                         <div class="flex justify-between py-2" x-show="detailProduct?.category"><dt class="text-gray-500" data-i18n="catalog.field_category">Category</dt><dd class="font-medium text-right" x-text="catLabel(detailProduct?.category)"></dd></div>
                         <div class="flex justify-between py-2" x-show="detailProduct?.product_class"><dt class="text-gray-500" data-i18n="catalog.field_class">Class</dt><dd class="font-medium text-right" x-text="detailProduct?.product_class"></dd></div>
                         <div class="flex justify-between py-2" x-show="detailProduct?.supplier_name"><dt class="text-gray-500" data-i18n="catalog.field_supplier">Supplier</dt><dd class="font-medium text-right" x-text="detailProduct?.supplier_name"></dd></div>
-                        <div class="flex justify-between py-2"><dt class="text-gray-500" data-i18n="catalog.field_stock">Stock</dt><dd class="font-medium text-right" x-text="(detailProduct?.stock_quantity ?? 0)"></dd></div>
+                        <!-- Zero-perpetual (2026-07-08): a bare stock count only makes a cashier hesitate,
+                             so the number is MANAGER-only; everyone sees a ⚠ reorder flag, but ONLY on a
+                             real low-stock signal (min_stock set AND stock at/under it). -->
+                        <div class="flex justify-between py-2" x-show="user.isManager"><dt class="text-gray-500" data-i18n="catalog.field_stock">Stock</dt><dd class="font-medium text-right" x-text="(detailProduct?.stock_quantity ?? 0)"></dd></div>
+                        <div class="flex justify-between py-2" x-show="detailProduct && detailProduct.min_stock != null && detailProduct.min_stock > 0 && (detailProduct.stock_quantity ?? 0) <= detailProduct.min_stock"><dt class="text-gray-500" data-i18n="catalog.field_reorder">Reorder</dt><dd class="font-medium text-right text-amber-600">⚠ <span data-i18n="catalog.low_stock">low — reorder</span></dd></div>
                     </dl>
                     <template x-if="detailProduct?.description">
                         <div class="mt-4">

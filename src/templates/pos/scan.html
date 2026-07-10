@@ -258,10 +258,14 @@
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center space-x-3">
                                         <button @click="decreaseQuantity(index)" class="bg-gray-200 hover:bg-gray-300 active:bg-gray-400 w-12 h-12 rounded-full text-2xl font-bold leading-none flex items-center justify-center" aria-label="Decrease quantity">−</button>
-                                        <!-- BL-16: type the count directly (scan once, type 6) — no more scanning water 6× -->
-                                        <input type="number" inputmode="numeric" min="1" step="1"
+                                        <!-- BL-16: type the count directly (scan once, type 6) — no more scanning water 6×.
+                                             type=text + inputmode=numeric = a numeric keypad on mobile with NO ▲▼ spinner
+                                             (those duplicated −/+). @input strips anything non-digit AS YOU TYPE so a letter
+                                             or a decimal can never land; @change finalises + clamps ≥1 (not a fat-finger trap). -->
+                                        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4"
                                                :value="item.quantity"
                                                @focus="$event.target.select()"
+                                               @input="$event.target.value = $event.target.value.replace(/[^0-9]/g,'')"
                                                @change="setQuantity(index, $event.target.value)"
                                                @keyup.enter="$event.target.blur()"
                                                class="font-bold text-xl w-16 h-12 text-center border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-0"
