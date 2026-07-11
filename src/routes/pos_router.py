@@ -575,6 +575,57 @@ async def search_reference_catalog(
     return {"items": items, "total": total, "skip": skip, "limit": limit}
 
 
+@router.get("/products/{product_id}/supplier-compare")
+async def supplier_compare(
+    product_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """Slice-3 price comparison. For a product, find the best reference-catalog match PER
+    SUPPLIER (fuzzy on name — Artemis products carry no EAN), so a manager can see what each
+    supplier charges and price to beat them. Display-only + computed fresh (never stored). The
+    match is a SUGGESTION — the operator confirms it by the title + similarity before trusting it.
+    Reuses the same trigram path as /reference/search (GIN index ix_reference_products_title_trgm)."""
+    from sqlalchemy import text
+    product = (await db.execute(
+        select(ProductModel).where(ProductModel.id == product_id))).scalar_one_or_none()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    name = (product.name or "").strip()
+    matches = []
+    if name:
+        rows = (await db.execute(text("""
+            SELECT DISTINCT ON (supplier)
+                   id, supplier, supplier_sku, barcode, title, suggested_price, cost,
+                   similarity(title, :q) AS sim
+            FROM reference_products
+            WHERE :q <> '' AND (title ILIKE '%' || :q || '%' OR similarity(title, :q) > 0.25)
+            ORDER BY supplier, similarity(title, :q) DESC, title
+        """), {"q": name})).fetchall()
+        matches = [
+            {
+                "supplier": r.supplier,
+                "ref_id": str(r.id),
+                "supplier_sku": r.supplier_sku,
+                "barcode": r.barcode,
+                "title": r.title,
+                "suggested_price": float(r.suggested_price) if r.suggested_price is not None else None,
+                "cost": float(r.cost) if r.cost is not None else None,
+                "similarity": round(float(r.sim), 2) if r.sim is not None else None,
+            }
+            for r in rows
+        ]
+        matches.sort(key=lambda m: (m["similarity"] or 0), reverse=True)
+    return {
+        "product": {
+            "id": str(product.id), "name": product.name,
+            "price": float(product.price) if product.price is not None else None,
+        },
+        "matches": matches,
+        "best": matches[0] if matches else None,
+    }
+
+
 class AdoptReferenceRequest(BaseModel):
     barcode: Optional[str] = None       # the scanned code to bind (usually the scan-miss)
     price: Optional[Decimal] = None     # cashier's price; falls back to suggested_price
