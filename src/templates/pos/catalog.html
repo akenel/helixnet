@@ -359,21 +359,33 @@
                             <span x-show="parseFloat(form.price) > 0 && parseFloat(form.price) < parseFloat(form.supplier_price)" data-i18n="catalog.beats_supplier">✓ you beat it</span>
                             <span x-show="parseFloat(form.price) > 0 && parseFloat(form.price) > parseFloat(form.supplier_price)" data-i18n="catalog.above_supplier">— above supplier price</span>
                         </p>
-                        <!-- Slice 3: live supplier price comparison (fuzzy name match vs the reference catalog;
-                             operator confirms by title + similarity). Display-only — never saved. -->
+                        <!-- Slice 3+: "found it on the supplier" — the source's FULL record (photo + description +
+                             price) with one-tap pull for each. Every pull auto-fills the supplier (the DB it was
+                             found in KNOWS who it is). Fuzzy name match — operator confirms. Display-only. -->
                         <template x-if="form.compare && form.compare.matches && form.compare.matches.length">
-                            <div class="mt-1 border-t border-gray-200 pt-1 space-y-1">
+                            <div class="mt-1.5 border-t border-gray-200 pt-1.5 space-y-2">
                                 <template x-for="m in form.compare.matches" :key="m.ref_id">
-                                    <p class="text-xs flex items-center gap-2 flex-wrap"
-                                       :class="parseFloat(form.price) > 0 && m.suggested_price && parseFloat(form.price) < parseFloat(m.suggested_price) ? 'text-green-600 font-semibold' : 'text-gray-500'">
-                                        <span class="font-semibold" x-text="m.supplier"></span>
-                                        <b x-text="formatPrice(m.suggested_price)"></b>
-                                        <span x-show="parseFloat(form.price) > 0 && m.suggested_price && parseFloat(form.price) < parseFloat(m.suggested_price)" data-i18n="catalog.beats_supplier">✓ you beat it</span>
-                                        <span x-show="parseFloat(form.price) > 0 && m.suggested_price && parseFloat(form.price) > parseFloat(m.suggested_price)" data-i18n="catalog.above_supplier">— above supplier price</span>
-                                        <span class="text-gray-400" x-show="m.similarity != null"><span x-text="Math.round(m.similarity*100)"></span>% match</span>
-                                        <button type="button" x-show="m.barcode && !form.barcode" @click="form.barcode = m.barcode"
-                                                class="text-blue-600 hover:underline" data-i18n="catalog.use_barcode">use barcode</button>
-                                    </p>
+                                    <div class="text-xs border border-gray-200 rounded-lg p-2 bg-gray-50">
+                                        <div class="flex items-center gap-2 flex-wrap"
+                                             :class="parseFloat(form.price) > 0 && m.suggested_price && parseFloat(form.price) < parseFloat(m.suggested_price) ? 'text-green-600 font-semibold' : 'text-gray-600'">
+                                            <span class="text-gray-400" data-i18n="catalog.found_on">Found on</span>
+                                            <span class="font-semibold" x-text="m.supplier"></span>
+                                            <b x-text="formatPrice(m.suggested_price)"></b>
+                                            <span x-show="parseFloat(form.price) > 0 && m.suggested_price && parseFloat(form.price) < parseFloat(m.suggested_price)" data-i18n="catalog.beats_supplier">✓ you beat it</span>
+                                            <span x-show="parseFloat(form.price) > 0 && m.suggested_price && parseFloat(form.price) > parseFloat(m.suggested_price)" data-i18n="catalog.above_supplier">— above supplier price</span>
+                                            <span class="text-gray-400" x-show="m.similarity != null"><span x-text="Math.round(m.similarity*100)"></span>%</span>
+                                        </div>
+                                        <div class="flex gap-2 mt-1.5" x-show="m.image_url || m.description">
+                                            <img x-show="m.image_url" :src="m.image_url" loading="lazy" alt="" class="w-14 h-14 rounded object-cover border flex-none bg-white">
+                                            <p class="text-gray-500 flex-1 min-w-0 line-clamp-3" x-show="m.description" x-text="m.description"></p>
+                                        </div>
+                                        <div class="flex items-center gap-3 mt-1.5 flex-wrap">
+                                            <button type="button" x-show="m.description" @click="pullFrom(m, 'desc')" class="text-blue-600 hover:underline" data-i18n="catalog.pull_desc">use description</button>
+                                            <button type="button" x-show="m.image_url" @click="pullFrom(m, 'photo')" class="text-blue-600 hover:underline" data-i18n="catalog.pull_photo">use photo</button>
+                                            <button type="button" x-show="m.barcode && !form.barcode" @click="pullFrom(m, 'barcode')" class="text-blue-600 hover:underline" data-i18n="catalog.use_barcode">use barcode</button>
+                                            <span class="text-gray-400" x-show="form.supplier_name === m.supplier" data-i18n="catalog.supplier_set">✓ supplier set</span>
+                                        </div>
+                                    </div>
                                 </template>
                                 <p class="text-gray-400 text-xs" data-i18n="catalog.compare_hint">Matched by name — confirm it's the same item before trusting the price.</p>
                             </div>
@@ -897,6 +909,16 @@
                     const cmp = await API.get(`/api/v1/pos/products/${p.id}/supplier-compare`);
                     this.form.compare = (cmp && cmp.matches && cmp.matches.length) ? cmp : null;
                 } catch (e) { this.form.compare = null; }
+            },
+
+            // Slice 3+: pull a field from a supplier match. Every pull ALSO sets the supplier — the DB
+            // it was found in knows exactly who it is, so the cashier never has to guess (Angel's point).
+            pullFrom(m, field) {
+                if (!m) return;
+                if (field === 'desc' && m.description) this.form.description = m.description;
+                if (field === 'photo' && m.image_url) this.form.image_url = m.image_url;
+                if (field === 'barcode' && m.barcode) this.form.barcode = m.barcode;
+                if (m.supplier) this.form.supplier_name = m.supplier;
             },
 
             _payload() {

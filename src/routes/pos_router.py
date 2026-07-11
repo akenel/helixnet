@@ -613,7 +613,8 @@ async def supplier_compare(
     if name:
         rows = (await db.execute(text("""
             SELECT DISTINCT ON (supplier)
-                   id, supplier, supplier_sku, barcode, title, suggested_price, cost,
+                   id, supplier, supplier_sku, barcode, title, description, image_url,
+                   suggested_price, cost,
                    similarity(title, :q) AS sim
             FROM reference_products
             WHERE :q <> '' AND (title ILIKE '%' || :q || '%' OR similarity(title, :q) > 0.25)
@@ -626,6 +627,8 @@ async def supplier_compare(
                 "supplier_sku": r.supplier_sku,
                 "barcode": r.barcode,
                 "title": r.title,
+                "description": r.description,          # the source's real copy (pull instead of AI make-up)
+                "image_url": r.image_url,              # the source's real photo (pull instead of phone shot)
                 "suggested_price": float(r.suggested_price) if r.suggested_price is not None else None,
                 "cost": float(r.cost) if r.cost is not None else None,
                 "similarity": round(float(r.sim), 2) if r.sim is not None else None,
