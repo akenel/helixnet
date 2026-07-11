@@ -497,6 +497,34 @@
         </div>
     </div>
 
+    <!-- BL-32: "you already have that one" — an enrich-the-existing dialog instead of a dead-end 409. -->
+    <div x-show="dup" x-transition class="fixed inset-0 z-[80] bg-black/60 flex items-center justify-center p-4" style="display:none;" @click.self="dup=null">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-5 space-y-4">
+            <div>
+                <h3 class="text-lg font-bold text-gray-900" data-i18n="catalog.dup_title">This item already exists</h3>
+                <p class="text-sm text-gray-600 mt-1" data-i18n="catalog.dup_msg">You weren't adding something new — you were enriching an item Banco already has. Apply your changes to the existing one?</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+                <div class="border rounded-lg p-3 bg-gray-50">
+                    <div class="text-xs font-semibold text-gray-500 mb-1" data-i18n="catalog.dup_existing">Existing</div>
+                    <div class="font-medium text-gray-900 break-words" x-text="dup && dup.existing ? dup.existing.name : ''"></div>
+                    <div class="text-gray-600 mt-1" x-text="dup && dup.existing ? formatPrice(dup.existing.price) : ''"></div>
+                    <div class="text-gray-400 text-xs mt-1 break-words" x-text="dup && dup.existing ? (dup.existing.description || '') : ''"></div>
+                </div>
+                <div class="border-2 border-green-400 rounded-lg p-3 bg-green-50">
+                    <div class="text-xs font-semibold text-green-700 mb-1" data-i18n="catalog.dup_yours">Your version</div>
+                    <div class="font-medium text-gray-900 break-words" x-text="form.name"></div>
+                    <div class="text-gray-600 mt-1" x-text="formatPrice(form.price)"></div>
+                    <div class="text-gray-400 text-xs mt-1 break-words" x-text="form.description || ''"></div>
+                </div>
+            </div>
+            <div class="flex flex-col gap-2">
+                <button @click="useMineOnExisting()" :disabled="saving" class="btn-success w-full" data-i18n="catalog.dup_use_mine">Update the existing with my details</button>
+                <button @click="dup=null" :disabled="saving" class="w-full text-gray-600 text-sm py-2 hover:underline" data-i18n="catalog.dup_keep">Keep the existing, discard mine</button>
+            </div>
+        </div>
+    </div>
+
     <!-- BL-89: barcode scanner overlay (shared PosScanner) for the create/edit form -->
     <div x-show="scanOpen" x-transition class="fixed inset-0 z-[70] bg-black flex flex-col" style="display:none;">
         <div class="flex justify-between items-center px-4 py-3 bg-black/80 text-white">
@@ -565,6 +593,7 @@
             modalOpen: false,
             editing: false,
             saving: false,
+            dup: null,            // BL-32: set when a create hits an existing product → {existing_id, existing, conflict}
             form: {},
             gallery: [],          // existing photos (edit mode): [{id, url, is_cover}]
             pendingPhotos: [],    // photos queued before the product exists (create): [{file, preview}]
@@ -922,6 +951,36 @@
                     showToast(this.editing ? t('catalog.saved') : t('catalog.product_created'), 'success');
                     this.modalOpen = false;
                     this.showDiscontinued ? this.loadDiscontinued() : this.search();
+                } catch (e) {
+                    // BL-32: a create that hit an existing product (409 duplicate barcode/SKU) is NOT a
+                    // dead-end — surface the existing one so the operator can apply their enrichment to it.
+                    if (!this.editing && e.status === 409 && e.detail && e.detail.existing_id) {
+                        try {
+                            const existing = await API.get(`/api/v1/pos/products/${e.detail.existing_id}`);
+                            this.dup = { existing_id: e.detail.existing_id, existing, conflict: e.detail.conflict };
+                        } catch (_) { showToast(e.message || t('catalog.save_failed'), 'error'); }
+                    } else {
+                        showToast(e.message || t('catalog.save_failed'), 'error');
+                    }
+                } finally { this.saving = false; }
+            },
+
+            // BL-32: apply the enriched form to the EXISTING product (keep its SKU; your data wins).
+            async useMineOnExisting() {
+                if (!this.dup || !this.dup.existing_id) return;
+                this.saving = true;
+                try {
+                    const payload = this._payload();
+                    delete payload.sku;   // keep the existing product's identity; apply only your enrichment
+                    if (!payload.barcode) delete payload.barcode;   // never wipe the existing barcode with an empty one
+                    await API.put(`/api/v1/pos/products/${this.dup.existing_id}`, payload);
+                    if (this.pendingPhotos.length) {
+                        for (const ph of this.pendingPhotos) { await this._uploadPhoto(this.dup.existing_id, ph.file); }
+                        this.pendingPhotos = [];
+                    }
+                    showToast(t('catalog.merged_into_existing'), 'success');
+                    this.dup = null; this.modalOpen = false;
+                    this.search();
                 } catch (e) {
                     showToast(e.message || t('catalog.save_failed'), 'error');
                 } finally { this.saving = false; }

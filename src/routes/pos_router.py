@@ -251,12 +251,29 @@ async def create_product(
     try:
         await db.commit()
     except IntegrityError:
-        # Duplicate barcode or SKU — return a clean 409, not a raw 500.
+        # BL-32: a duplicate barcode/SKU is NOT a dead-end — the operator was almost certainly
+        # enriching an item that already exists without knowing. Find the existing row and hand its
+        # id back in the 409 so the client can offer "apply your changes to the existing one".
         await db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="A product with this barcode or SKU already exists.",
-        )
+        existing = None
+        conflict = None
+        bc = (product.barcode or "").strip()
+        sku = (product.sku or "").strip()
+        if bc:
+            existing = (await db.execute(
+                select(ProductModel).where(ProductModel.barcode == bc))).scalar_one_or_none()
+            if existing is not None:
+                conflict = "barcode"
+        if existing is None and sku:
+            existing = (await db.execute(
+                select(ProductModel).where(ProductModel.sku == sku))).scalar_one_or_none()
+            if existing is not None:
+                conflict = "sku"
+        detail = {"message": "A product with this barcode or SKU already exists.", "conflict": conflict}
+        if existing is not None:
+            detail["existing_id"] = str(existing.id)
+            detail["existing_name"] = existing.name
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=detail)
     await db.refresh(new_product)
 
     logger.info(f"Product created: {new_product.sku} by user {current_user['username']}")

@@ -590,6 +590,7 @@
                         }
                         const err = new Error(detail || `Request failed with status ${response.status}`);
                         err.status = response.status;   // so callers can tell a 4xx rejection from a 5xx server blip
+                        err.detail = error.detail;      // raw structured detail (e.g. a 409 {existing_id,...}) for smart callers
                         throw err;
                     }
 
