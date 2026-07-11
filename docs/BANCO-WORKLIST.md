@@ -68,6 +68,20 @@ EAN-13→Code128, Puppeteer PDF, `brother_ql` → QL-820NWB). Bones are right; j
 (2) **Human-green BL-98 on sandbox** → say go and it ships the ladder. (3) Lightbox — buy (~CHF 40) or white
 paper + desk lamp first (CHF 0, recommended)?
 
+## ✅ SHIPPED PROD 2026-07-11 — BL-26 papers tier pricing (`daa3ab5` · b1645)
+Per-product quantity breaks (papers-first): buy N+ → that tier's unit price applies to the whole line (a
+PRICE, feeds VAT/totals). **A volume break (min_qty≥2) is FINAL** — no member/manual discount stacks (tiered
+line excluded from the discount base). Editor = repeatable qty→price rows in the catalog Edit modal (en/it/de).
+`price_tiers` JSONB + `tier_unit_price()`/`validate_price_tiers()` (16 unit tests). `make test` 1844 pass.
+Shipped sandbox→staging→prod, **backup-gated** (`banco_prod_20260711_0940`, restore-verified 39/5155/131),
+**re-probed** each rung (build · sw v70 · tier i18n · price_tiers column on prod). Sandbox tier-UAT green
+(GIZEH ladder 1/3/5/10). Detail: memory `banco-tier-pricing`.
+- ⚠️ **AI-VISION BRAIN COST (Angel flagged 2026-07-11):** the photo-lookup uses Google's free tier → caps ~10
+  scans → then metered. For the photo-first migration (2k+ scans) need unlimited/fixed. **Box is CPU-only
+  (2 cores / 7GB) → local vision NOT viable here.** Options: Ollama Turbo vision (flat-rate, if it has a VLM) ·
+  Gemini-Flash *paid* (~pennies for the whole migration, predictable) · Groq (free/fast, rate-limited). The AI
+  desc is only a SEARCH-SEED (human confirms) → cheaper is fine. Detail: memory `ai-backup-brain-plan`.
+
 ## ✅ SHIPPED PROD 2026-07-11 — non-destructive supplier price reference (`c0c2768` · b1637)
 **First "ON DECK" build off the price-comparison spec.** Adopting a reference (Mosey/420) item used to
 DISCARD the supplier's suggested price (folded into sale price, gone). Now it persists to
