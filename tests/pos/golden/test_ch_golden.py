@@ -37,6 +37,17 @@ STD = GOLDEN["rates"]["standard"]
 RED = GOLDEN["rates"]["reduced"]
 
 
+# The parent tests/pos/conftest.py has an autouse `_ensure_open_drawer` fixture that mints a
+# real Keycloak token + opens a cash drawer before every test — i.e. it needs a live server.
+# These golden tests are PURE (host .venv, no server), so no-op that fixture here.
+# NB: this override lives in the test MODULE, not a sibling conftest.py — a second conftest.py
+# would collide on the `conftest` module name in prepend import mode and break
+# `from conftest import ...` in every other tests/pos file (the old 28-error collection bug).
+@pytest.fixture(autouse=True)
+def _ensure_open_drawer():
+    yield
+
+
 def _D(s):  # exact money
     return Decimal(str(s))
 
