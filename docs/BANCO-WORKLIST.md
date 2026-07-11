@@ -10,7 +10,52 @@
 
 ---
 
-## ✅ SHIPPED PROD 2026-07-11 — non-destructive supplier price reference (`c0c2768` · b1637) ← START HERE
+## 🃏 ON DECK — 2026-07-11 · THE CATALOGUING WORKSTATION (spec written) ← START HERE
+
+**The rig + the method for getting Felix's ~2,000 items in properly.** Spec:
+**[docs/BANCO-CATALOGUING-WORKSTATION.md](BANCO-CATALOGUING-WORKSTATION.md)**.
+
+**THE DOCTRINE (the thing that changed today):** the ring-binder idea is OUT — **paper is a *render*
+of the DB, never a second source of truth.** A hand-filed binder rots the day a price changes. The three
+needs hiding inside it split cleanly: *"which items are done?"* → a **query** (BL-98) · *"a book on the
+counter"* → **`scripts/generate_catalog.py` already exists** — print it Friday, bin it, print a fresh one ·
+*"ring up the no-EAN stuff"* → **BL-97 House Scan Sheet** (the one thing that earns its paper).
+
+**🔫 SCANNER — RECONCILED.** The 2026-07-06 line *"DECIDED: Zebra DS8178"* is **superseded by the newer
+HARDWARE-KIT-MATRIX (2026-07-10)**: primary = *cheap wedge ~CHF 80*, DS8178 = the **upgrade path only if
+tiny codes fail**. → **Zebra DS2208-SR, WIRED USB, 1D+2D, ~CHF 88** (Digitec) lands exactly in that slot.
+- ⚠️ **BUY THE KIT WITH THE CABLE** (`DS2208-SR7U2100AZW`, not the `…00007ZZWW` scanner-only). Two Digitec
+  reviewers got a **cableless box**; a Zebra cable is ~CHF 30. **Check the "additional offers" before paying.**
+- ❌ **The cheap CHF 64 LS2208 is 1D → REJECTED.** A 1D laser **cannot read a barcode off a phone screen**
+  (needs ink-on-paper contrast). Member codes/vouchers on a phone = dead. 2D imager is non-negotiable.
+- 📵 DS2208 reportedly **can't read Swiss QR-bills** (Swiss-cross QR breaks spec). Irrelevant at the till;
+  matters only if we ever scan supplier invoices → that'd be Datalogic/Honeywell.
+- 🔵 Optional 2nd gun: **Inateck BT 1D+2D ~CHF 39** (stand incl.) as the **shelf-walking** gun (stock counts,
+  goods-in, BL-97). **Wired for the till** (no battery/pairing/dropped-char failures), **cordless for the floor.**
+- 📷 **No webcam.** Snap-&-fill is LIVE + mobile-camera-proven in prod — the "photo booth" is just a
+  **gooseneck phone mount over a lightbox** (start with white paper + a desk lamp, CHF 0).
+
+**🏷️ LABELS — sizes × flags, NOT 12 templates.** 3 physical sizes (S price-sticker / M shelf-talker /
+L box-card) × content flags (`show_price`, `show_photo`, `show_barcode`, `show_human_code`, `show_age`,
+`show_unit`, `show_desc`). "Big label with a picture + description" isn't a template — it's
+`size=L, show_photo=1, show_desc=1`. **One renderer reading data.** `show_human_code` always ON → a failed
+scan is never a dead end. `show_age` **always derived from `product_class`**, never hand-set.
+
+**🐯 THE BUILD QUEUE (both small, neither blocks anything):**
+- **BL-98 · Enrichment Queue** — *the only piece of software this whole rig is missing.* Hand me the next
+  20 items that are **not done** (objective gaps: photo · description · real category · cost · class), fix
+  inline, drops off when filled, **counter `1,247 / 2,000`**. That counter is what replaces the binder.
+  **Reuse `/pos/cleanup`** — same shape (manager-gated, gap-defined, inline-fix), different selector.
+  Strong prior: **a mode on the existing cockpit, not a new screen.** 18+ edits MUST go through the shared
+  `reconcile_age` seal (the 2026-07-06 catch — a bare column write is cosmetic and the gate won't fire).
+- **BL-99 · Label renderer size×flags** — widen `scripts/generate_label.py` (today: one fixed 62×37,
+  EAN-13→Code128, Puppeteer PDF, `brother_ql` → QL-820NWB). Bones are right; just needs the matrix.
+
+**🧍 ANGEL — 3 open decisions:** (1) **order the DS2208 — confirm the cable SKU first**; is the CHF 39
+Inateck BT in the order too? (2) lightbox — buy (~CHF 40) or white paper first (CHF 0, recommended)?
+(3) **BL-98: new screen or a mode on `/pos/cleanup`?** Say go and Tigs builds it.
+
+## ✅ SHIPPED PROD 2026-07-11 — non-destructive supplier price reference (`c0c2768` · b1637)
 **First "ON DECK" build off the price-comparison spec.** Adopting a reference (Mosey/420) item used to
 DISCARD the supplier's suggested price (folded into sale price, gone). Now it persists to
 `ProductModel.supplier_price` (no migration — column pre-existed) and the catalog EDIT view shows it as a
