@@ -25,6 +25,7 @@ from src.services.store_settings_seeding import get_active_store_settings
 from src.services.lp_publish import publish_product
 from src.services.square_bridge import SquareBridgeError
 from src.services.vat_resolver import line_vat, split_vat
+from src.services.pricing import tier_unit_price
 from src.db.models import (
     ProductModel,
     ProductBarcodeModel,
@@ -695,6 +696,13 @@ async def update_product(
 
     # Update only provided fields
     update_data = product_update.model_dump(exclude_unset=True)
+    # BL-26: validate + normalize quantity-break tiers before they land (ascending, first=1, positive).
+    if "price_tiers" in update_data:
+        from src.services.pricing import validate_price_tiers
+        try:
+            update_data["price_tiers"] = validate_price_tiers(update_data["price_tiers"])
+        except ValueError as e:
+            raise HTTPException(status_code=422, detail=f"Invalid price tiers: {e}")
     for field, value in update_data.items():
         setattr(product, field, value)
 
@@ -2525,6 +2533,10 @@ async def add_item_to_transaction(
         # A giveaway is a real product handed over free: zero revenue, but stock still
         # leaves (deducted at checkout) so it's tracked for COGS/tax.
         unit_price = Decimal("0.00") if item.is_giveaway else product.price
+        tier_final = False
+        if not item.is_giveaway:
+            # BL-26: a quantity-break tier price wins over the flat price for this qty.
+            unit_price, tier_final = tier_unit_price(product.price_tiers, unit_price, item.quantity)
         line_notes = ("🎁 Treat — on the house" if item.is_giveaway else item.notes)
     else:
         # Custom line (manual catalog entry / product-as-change treat): no catalog
@@ -2532,6 +2544,7 @@ async def add_item_to_transaction(
         if item.unit_price is None:
             raise HTTPException(status_code=422, detail="Custom line item requires unit_price")
         unit_price = item.unit_price
+        tier_final = False
         # Keep the name for the receipt -- stored in notes (the only free-text column).
         line_notes = item.name or item.notes
 
@@ -2562,6 +2575,12 @@ async def add_item_to_transaction(
             status_code=400,
             detail=f"Discounts aren't allowed on {class_meta(prod_class)['label']} — "
                    f"sales promotions on these are restricted by law.")
+
+    # BL-26: a quantity-break price is final — no further discount stacks on a tiered line.
+    if item.discount_percent and item.discount_percent > 0 and tier_final:
+        raise HTTPException(
+            status_code=400,
+            detail="No discount on a quantity-break price — the volume price is already the deal.")
 
     new_line_item = LineItemModel(
         transaction_id=transaction_id,
@@ -2911,6 +2930,7 @@ async def create_sale(
     eligible_subtotal = Decimal("0.00")  # non-promo-restricted lines only -> the member tier discount base
     cart_age_restricted = False  # set True by any 18+ line -> triggers the age gate below
     for ln in sale.lines:
+        tier_final = False  # BL-26: True once a volume break (min_qty>=2) sets the price → discount-final
         if ln.product_id is not None:
             product = (await db.execute(
                 select(ProductModel).where(ProductModel.id == ln.product_id))).scalar_one_or_none()
@@ -2919,6 +2939,9 @@ async def create_sale(
             if not product.is_active:
                 raise HTTPException(status_code=400, detail=f"Product is inactive: {product.name}")
             unit_price = Decimal("0.00") if ln.is_giveaway else product.price
+            if not ln.is_giveaway:
+                # BL-26: a quantity-break tier price wins over the flat price for this qty.
+                unit_price, tier_final = tier_unit_price(product.price_tiers, unit_price, ln.quantity)
             line_notes = ("🎁 Treat — on the house" if ln.is_giveaway else ln.notes)
             prod_class = product.product_class
         else:
@@ -2949,7 +2972,8 @@ async def create_sale(
         db.add(line)
         built_lines.append(line)
         subtotal += line_gross
-        if not class_promo_restricted(prod_class):
+        # BL-26: a volume-break line is discount-FINAL — keep it out of the discount base too.
+        if not class_promo_restricted(prod_class) and not tier_final:
             eligible_subtotal += line_gross   # only this portion can carry a discount (manual or member)
 
     # --- Cart totals (inclusive VAT; the EXACT formula the till displays, so charged == shown).

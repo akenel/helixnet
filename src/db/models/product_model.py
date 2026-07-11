@@ -168,6 +168,12 @@ class ProductModel(Base):
         nullable=True,
         comment="Last known supplier price (for change detection)"
     )
+    price_tiers: Mapped[list | None] = mapped_column(
+        JSONB,
+        nullable=True,
+        default=list,
+        comment="BL-26 quantity-break pricing: [{min_qty, unit_price}, ...] ascending; None/empty = flat price"
+    )
     last_sync_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
         nullable=True,
