@@ -1,6 +1,6 @@
 {% extends "pos/base.html" %}
 
-{% block title %}Cleanup Queue - HelixPOS - Artemis Store{% endblock %}
+{% block title %}Catalog Cockpit - HelixPOS - Artemis Store{% endblock %}
 
 {% block content %}
 <div class="min-h-screen bg-gray-50" x-data="cleanupData()" x-init="init()">
@@ -10,15 +10,13 @@
         <div class="flex justify-between items-center mb-2 flex-wrap gap-2">
             <div class="flex items-center gap-3">
                 <button @click="goDashboard()" class="btn-secondary flex-none" title="Dashboard" aria-label="Dashboard">🏠</button>
-                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900" data-i18n="cleanup.title">🧹 Cleanup Queue</h1>
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900" data-i18n="cleanup.title">🧹 Catalog Cockpit</h1>
             </div>
             <div class="flex flex-wrap gap-2">
                 <button @click="goCatalog()" class="btn-secondary" data-i18n="cleanup.catalog">📦 Catalog</button>
                 <button @click="goReports()" class="btn-secondary" data-i18n="cleanup.reports">📊 Reports</button>
             </div>
         </div>
-        <p class="text-gray-600 mb-4" data-i18n-html="cleanup.intro">Products that <b>sold</b> but still need setting up — a real category and a cost.
-            Busiest first. The cashier rings it in; you tidy it here. Nothing falls through.</p>
 
         <!-- Manager-only notice -->
         <div x-show="!user.isManager" class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4 text-sm text-yellow-800" data-i18n="cleanup.manager_notice">
@@ -27,8 +25,60 @@
 
         <template x-if="user.isManager">
             <div>
-                <!-- Summary -->
-                <div class="card mb-4 flex items-center justify-between">
+                <!-- Mode tabs: the reactive safety net vs the migration workbench (BL-98) -->
+                <div class="flex gap-2 mb-3 border-b border-gray-200">
+                    <button @click="setMode('sold')" class="px-4 py-2 -mb-px border-b-2 font-semibold text-sm"
+                            :class="mode === 'sold' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-gray-500 hover:text-gray-700'">
+                        🧹 <span data-i18n="cleanup.tab_sold">Sold &amp; unfinished</span>
+                    </button>
+                    <button @click="setMode('bench')" class="px-4 py-2 -mb-px border-b-2 font-semibold text-sm"
+                            :class="mode === 'bench' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-gray-500 hover:text-gray-700'">
+                        🛠️ <span data-i18n="cleanup.tab_bench">The Bench</span>
+                    </button>
+                </div>
+
+                <p x-show="mode === 'sold'" class="text-gray-600 mb-4" data-i18n-html="cleanup.intro">Products that <b>sold</b> but still need setting up — a real category and a cost.
+                    Busiest first. The cashier rings it in; you tidy it here. Nothing falls through.</p>
+                <p x-show="mode === 'bench'" style="display:none;" class="text-gray-600 mb-4" data-i18n-html="cleanup.intro_bench">The <b>migration workbench</b> — every product that isn't finished yet, sold or not.
+                    Needs a photo, a description, a real category and a cost. Ordered by category, so a batch is a <b>shelf</b>.</p>
+
+                <!-- BENCH: progress counter — the number that replaces the paper binder -->
+                <div x-show="mode === 'bench'" style="display:none;" class="card mb-4">
+                    <div class="flex items-end justify-between gap-3 flex-wrap">
+                        <div>
+                            <p class="text-gray-500 text-xs uppercase tracking-wide" data-i18n="cleanup.progress">Catalog complete</p>
+                            <p class="text-3xl font-bold text-gray-900">
+                                <span x-text="progress.done.toLocaleString()"></span><span class="text-gray-400 text-xl"> / </span><span class="text-gray-500 text-xl" x-text="progress.total.toLocaleString()"></span>
+                            </p>
+                            <p class="text-sm text-gray-500">
+                                <span class="font-semibold text-amber-600" x-text="progress.remaining.toLocaleString()"></span>
+                                <span data-i18n="cleanup.still_to_do">still to do</span>
+                            </p>
+                        </div>
+                        <button @click="load()" class="btn-secondary" :disabled="loading">
+                            <span x-show="!loading">🔄 <span data-i18n="cleanup.refresh">Refresh</span></span>
+                            <span x-show="loading" style="display:none;" data-i18n="cleanup.loading">Loading…</span>
+                        </button>
+                    </div>
+                    <!-- progress bar -->
+                    <div class="w-full bg-gray-200 rounded-full h-2.5 mt-3">
+                        <div class="bg-green-600 h-2.5 rounded-full transition-all" :style="'width: ' + pct + '%'"></div>
+                    </div>
+
+                    <!-- Work one shelf at a time -->
+                    <div class="flex gap-2 mt-3 flex-wrap items-end">
+                        <div class="flex-1 min-w-[180px]">
+                            <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="cleanup.f_shelf">Shelf (category) — blank = all</label>
+                            <input type="text" x-model="catFilter" list="bench-cats" @keydown.enter="applyShelf()"
+                                   placeholder="e.g. Bongs" data-i18n-placeholder="cleanup.ph_shelf" class="input-field">
+                            <datalist id="bench-cats"><template x-for="c in categories" :key="c.name"><option :value="c.name"></option></template></datalist>
+                        </div>
+                        <button @click="applyShelf()" class="btn-secondary" data-i18n="cleanup.apply_shelf">🔎 Work this shelf</button>
+                    </div>
+                </div>
+
+                <!-- SOLD: summary -->
+                <div x-show="mode === 'sold'" class="card mb-4 flex items-center justify-between">
                     <div>
                         <p class="text-gray-500 text-xs uppercase tracking-wide" data-i18n="cleanup.need_setup">Need setup</p>
                         <p class="text-3xl font-bold" :class="items.length ? 'text-amber-600' : 'text-green-600'" x-text="items.length"></p>
@@ -43,7 +93,8 @@
                 <div x-show="!loading && items.length === 0" class="card text-center py-10">
                     <p class="text-5xl mb-2">🎉</p>
                     <p class="text-lg font-semibold text-gray-800" data-i18n="cleanup.all_clear">All caught up</p>
-                    <p class="text-gray-500" data-i18n="cleanup.all_clear_sub">Every product that has sold is fully set up.</p>
+                    <p x-show="mode === 'sold'" class="text-gray-500" data-i18n="cleanup.all_clear_sub">Every product that has sold is fully set up.</p>
+                    <p x-show="mode === 'bench'" style="display:none;" class="text-gray-500" data-i18n="cleanup.all_clear_bench">Every product in this shelf is finished. Pick another shelf, or clear the filter.</p>
                 </div>
 
                 <!-- Queue -->
@@ -59,17 +110,19 @@
                                 <div class="flex-1 min-w-0">
                                     <p class="font-bold text-gray-900 truncate" x-text="p.name"></p>
                                     <p class="text-xs text-gray-400 truncate" x-text="p.sku"></p>
-                                    <p class="text-sm text-gray-600 mt-1">
+                                    <p x-show="mode === 'sold'" class="text-sm text-gray-600 mt-1">
                                         <span class="font-semibold text-indigo-600" x-text="'× ' + p.qty_sold"></span>
                                         <span data-i18n="cleanup.sold"> sold</span>
                                         <span x-show="p.revenue"> · <span x-text="formatPrice(p.revenue)"></span></span>
                                         <span x-show="p.last_sold" class="text-gray-400"> · <span data-i18n="cleanup.last"> last</span> <span x-text="shortDate(p.last_sold)"></span></span>
                                     </p>
+                                    <p x-show="mode === 'bench' && p.category" style="display:none;" class="text-sm text-gray-500 mt-1" x-text="p.category"></p>
                                     <!-- Gap chips -->
                                     <div class="flex flex-wrap gap-1 mt-2">
                                         <span x-show="p.gaps.category" class="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700" data-i18n="cleanup.chip_category">🏷️ no category</span>
                                         <span x-show="p.gaps.cost" class="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700" data-i18n="cleanup.chip_cost">💰 no cost</span>
-                                        <span x-show="p.gaps.photo" class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500" data-i18n="cleanup.chip_photo">📷 no photo</span>
+                                        <span x-show="p.gaps.description" style="display:none;" class="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700" data-i18n="cleanup.chip_desc">📝 no description</span>
+                                        <span x-show="p.gaps.photo" class="text-xs px-2 py-0.5 rounded-full" :class="mode === 'bench' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-500'" data-i18n="cleanup.chip_photo">📷 no photo</span>
                                         <span x-show="p.is_age_restricted" class="text-xs px-2 py-0.5 rounded-full bg-red-50 text-red-800">🔞 18+</span>
                                     </div>
                                 </div>
@@ -87,6 +140,20 @@
                                     <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="cleanup.f_cost">Cost (CHF)</label>
                                     <input type="number" step="0.05" min="0" x-model="p._cost" placeholder="0.00" class="input-field">
                                 </div>
+
+                                <!-- BENCH ONLY: description + photo (the other two master-data gaps) -->
+                                <div x-show="mode === 'bench'" style="display:none;" class="sm:col-span-2">
+                                    <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="cleanup.f_desc">Description</label>
+                                    <textarea x-model="p._description" rows="2" class="input-field"
+                                              placeholder="What is it? Two lines is plenty." data-i18n-placeholder="cleanup.ph_desc"></textarea>
+                                </div>
+                                <div x-show="mode === 'bench'" style="display:none;" class="sm:col-span-2">
+                                    <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="cleanup.f_photo">Photo</label>
+                                    <input type="file" accept="image/*" capture="environment"
+                                           @change="uploadPhoto(p, $event)" :disabled="p._uploading" class="input-field">
+                                    <p x-show="p._uploading" style="display:none;" class="text-xs text-gray-500 mt-1" data-i18n="cleanup.uploading">Uploading…</p>
+                                </div>
+
                                 <label class="sm:col-span-2 flex items-center gap-3 p-2 rounded-lg border-2 cursor-pointer select-none"
                                        :class="p._age ? 'bg-red-50 border-red-400' : 'bg-gray-50 border-gray-200'">
                                     <input type="checkbox" x-model="p._age" class="w-5 h-5 accent-red-600 flex-none">
@@ -103,6 +170,18 @@
                         </div>
                     </template>
                 </div>
+
+                <!-- BENCH: next batch -->
+                <div x-show="mode === 'bench' && items.length > 0" style="display:none;" class="flex justify-between items-center mt-4">
+                    <button @click="prevBatch()" class="btn-secondary" :disabled="offset === 0 || loading">← <span data-i18n="cleanup.prev_batch">Previous</span></button>
+                    <p class="text-sm text-gray-500">
+                        <span data-i18n="cleanup.batch">Batch</span>
+                        <span class="font-semibold" x-text="(offset + 1) + '–' + (offset + items.length)"></span>
+                        <span data-i18n="cleanup.of">of</span>
+                        <span class="font-semibold" x-text="progress.remaining.toLocaleString()"></span>
+                    </p>
+                    <button @click="nextBatch()" class="btn-secondary" :disabled="loading || (offset + items.length) >= progress.remaining"><span data-i18n="cleanup.next_batch">Next batch</span> →</button>
+                </div>
             </div>
         </template>
     </div>
@@ -117,14 +196,39 @@
             items: [],
             categories: [],
             loading: false,
+            // BL-98 — the bench (enrichment) mode. 'sold' = the original reactive safety net.
+            mode: 'sold',
+            offset: 0,
+            limit: 20,
+            catFilter: '',
+            progress: { done: 0, total: 0, remaining: 0 },
+
+            get pct() {
+                if (!this.progress.total) return 0;
+                return Math.round((this.progress.done / this.progress.total) * 100);
+            },
 
             async init() {
                 const info = AuthHelper.getUserInfo();
                 this.user = { ...info, isManager: AuthHelper.isManager(), isAdmin: AuthHelper.isAdmin() };
                 if (!this.user.isManager) return;
+                // Deep-link: /pos/cleanup?mode=bench lands straight on the workbench.
+                const qs = new URLSearchParams(window.location.search);
+                if (qs.get('mode') === 'bench') this.mode = 'bench';
                 await this.loadCategories();
                 await this.load();
             },
+
+            setMode(m) {
+                if (this.mode === m) return;
+                this.mode = m;
+                this.offset = 0;
+                this.load();
+            },
+
+            applyShelf() { this.offset = 0; this.load(); },
+            nextBatch() { this.offset += this.limit; this.load(); },
+            prevBatch() { this.offset = Math.max(0, this.offset - this.limit); this.load(); },
 
             async loadCategories() {
                 try {
@@ -139,23 +243,74 @@
             async load() {
                 this.loading = true;
                 try {
-                    const data = await API.get('/api/v1/pos/catalog/cleanup-queue');
+                    let url = '/api/v1/pos/catalog/cleanup-queue?mode=' + this.mode;
+                    if (this.mode === 'bench') {
+                        url += `&limit=${this.limit}&offset=${this.offset}`;
+                        const shelf = (this.catFilter || '').trim();
+                        if (shelf) url += `&category=${encodeURIComponent(shelf)}`;
+                    }
+                    const data = await API.get(url);
                     this.items = (data.items || []).map(p => ({
                         ...p,
                         // editable working copies — blank the placeholder so the manager types a real one
                         _category: (p.gaps.category ? '' : (p.category || '')),
                         _cost: (p.cost != null ? p.cost : ''),
+                        _description: (p.description || ''),
                         _age: !!p.is_age_restricted,
                         _saving: false,
+                        _uploading: false,
                     }));
+                    if (this.mode === 'bench') {
+                        this.progress = {
+                            done: data.done || 0,
+                            total: data.total || 0,
+                            remaining: data.remaining || 0,
+                        };
+                        // Worked the last item off the final batch? Step back so we're not on an empty page.
+                        if (!this.items.length && this.offset > 0) {
+                            this.offset = Math.max(0, this.offset - this.limit);
+                            return await this.load();
+                        }
+                    }
                 } catch (e) {
                     console.error('cleanup queue failed', e);
                     showToast(t('cleanup.toast_load_failed') || 'Could not load the queue', 'error');
                 } finally { this.loading = false; }
             },
 
+            async uploadPhoto(p, ev) {
+                const file = ev.target.files && ev.target.files[0];
+                if (!file) return;
+                p._uploading = true;
+                try {
+                    // Raw fetch, Authorization only: a multipart body needs the BROWSER to set
+                    // Content-Type (it carries the boundary). API.call() hard-sets application/json,
+                    // so it can't carry a file — same pattern catalog.html/scan.html already use.
+                    const fd = new FormData();
+                    fd.append('file', file);
+                    const r = await fetch(`/api/v1/pos/products/${p.product_id}/images`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${AuthHelper.getToken()}` },
+                        body: fd,
+                    });
+                    if (!r.ok) throw new Error('upload failed');
+                    // First photo becomes the cover (products.image_url) server-side.
+                    const res = await r.json();
+                    p.image_url = (res && (res.image_url || res.url)) || p.image_url;
+                    p.gaps.photo = !p.image_url;
+                    showToast(t('cleanup.toast_photo') || 'Photo added', 'success');
+                } catch (e) {
+                    console.error('photo upload failed', e);
+                    showToast(t('cleanup.toast_photo_failed') || 'Photo upload failed', 'error');
+                } finally {
+                    p._uploading = false;
+                    ev.target.value = '';   // let the same file be re-picked after a failure
+                }
+            },
+
             async save(p) {
                 const cat = (p._category || '').trim();
+                const desc = (p._description || '').trim();
                 const costRaw = (p._cost === '' || p._cost === null) ? null : parseFloat(p._cost);
                 if (costRaw !== null && (isNaN(costRaw) || costRaw < 0)) {
                     showToast(t('cleanup.toast_bad_cost') || 'Enter a valid cost', 'warning'); return;
@@ -163,18 +318,31 @@
                 const payload = { is_age_restricted: !!p._age };
                 if (cat) payload.category = cat;
                 if (costRaw !== null) payload.cost = costRaw;
+                if (this.mode === 'bench' && desc) payload.description = desc;
                 p._saving = true;
                 try {
                     await API.put(`/api/v1/pos/products/${p.product_id}`, payload);
-                    // Recompute the objective gaps; drop from the queue only when both are filled.
-                    const stillCat = !cat && p.gaps.category;    // was missing and still not provided
+                    // Recompute the objective gaps; an item leaves the queue only when they're ALL filled.
+                    // Bench gates on four (category, cost, description, photo); sold gates on two.
+                    const stillCat = !cat && p.gaps.category;
                     const stillCost = (costRaw === null) && p.gaps.cost;
+                    let cleared = !stillCat && !stillCost;
+                    if (this.mode === 'bench') {
+                        const stillDesc = !desc;
+                        const stillPhoto = !p.image_url;
+                        cleared = cleared && !stillDesc && !stillPhoto;
+                    }
                     showToast(t('cleanup.toast_saved') || 'Saved', 'success');
-                    if (!stillCat && !stillCost) {
+                    if (cleared) {
                         this.items = this.items.filter(x => x.product_id !== p.product_id);
+                        if (this.mode === 'bench') {
+                            // The counter is the point — keep it honest as items come off the bench.
+                            this.progress.done += 1;
+                            this.progress.remaining = Math.max(0, this.progress.remaining - 1);
+                            if (!this.items.length) await this.load();   // pull the next batch
+                        }
                     } else {
-                        // partial — keep it, refresh its live values
-                        await this.load();
+                        await this.load();   // partial — keep it, refresh its live values
                     }
                 } catch (e) {
                     console.error('save failed', e);

@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request, UploadFi
 from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_, update
+from sqlalchemy import select, func, and_, or_, update
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timezone, date, timedelta
 from decimal import Decimal, ROUND_HALF_UP
@@ -3682,17 +3682,63 @@ async def get_category_sales_detail(
 # cashier rings in a rush falls through permanently.
 _HALFBAKED_CATEGORIES = ("On the fly", "On The Fly", "on the fly")
 
+# BL-98 — the ENRICHMENT (bench) gaps. The cockpit has two MODES over the same shape:
+#
+#   mode=sold  — the original safety net: products that SOLD but are still half-baked.
+#                Reactive. Gates on category + cost (what a cashier's lean quick-add misses).
+#   mode=bench — the migration workbench: EVERY active product that isn't finished, sold or
+#                not. Proactive. Gates on the four things a master-data record needs to be
+#                real: a photo, a description, a true category, and a cost.
+#
+# NOTE we deliberately do NOT gate on `product_class`: it is NOT NULL with default "standard",
+# so every row always has one — gating on it would flag nothing. The class is decided by
+# `catalog_taxonomy.classify` at enrich time, and 18+ is surfaced here for REVIEW, not re-keyed.
+#
+# The gap clause lives in SQL (not a Python filter) so the batch, the "remaining" count and the
+# "done / total" progress counter are all computed from ONE definition and can never disagree.
+
+
+def _bench_category_expr():
+    """Trimmed category, '' when NULL — the value the gap test and the ordering both use."""
+    return func.coalesce(func.trim(ProductModel.category), "")
+
+
+def _bench_gap_clause():
+    """A product is UNFINISHED (on the bench) if it's missing any of the four. One definition,
+    reused by the item query AND the counts — so the counter can never drift from the list."""
+    cat = _bench_category_expr()
+    return or_(
+        func.coalesce(func.trim(ProductModel.image_url), "") == "",     # no photo
+        func.coalesce(func.trim(ProductModel.description), "") == "",   # no description
+        cat == "",                                                       # no category
+        func.lower(cat).in_([c.lower() for c in _HALFBAKED_CATEGORIES]),  # placeholder category
+        ProductModel.cost.is_(None),                                     # margin-blind
+    )
+
 
 @router.get("/catalog/cleanup-queue")
 async def get_cleanup_queue(
+    mode: str = "sold",
+    limit: int = 20,
+    offset: int = 0,
+    category: Optional[str] = None,
     db: AsyncSession = Depends(get_db_session),
     current_user: dict = Depends(require_manager_or_admin()),
 ):
-    """Sold-but-not-set-up cockpit (manager/admin): products that HAVE SOLD but are still
-    half-baked (placeholder/blank category or missing cost), prioritised by units sold — the
-    busiest gaps first. Read-only aggregate; the manager fixes each via PUT /products/{id}.
+    """The catalog cockpit — manager/admin. TWO MODES, same card, same inline fix:
 
-    Cashier never edits the catalog/cost — they ring it in; the manager cleans it up here."""
+    • mode=sold  (default) — SOLD-but-half-baked. The reactive safety net: nothing a cashier
+      rings in a rush falls through permanently. Busiest gaps first. Unpaginated (naturally small).
+
+    • mode=bench (BL-98) — the ENRICHMENT QUEUE. The migration workbench: hand me the next N
+      unfinished products (photo / description / category / cost), sold or not, ordered so you
+      work a SHELF at a time. Returns the done/total counter that replaces the paper binder.
+
+    Cashier never edits the catalog/cost — they ring it in; the manager sets it up here."""
+    if mode == "bench":
+        return await _bench_queue(db, limit=limit, offset=offset, category=category)
+
+    # ---- mode=sold (original) ------------------------------------------------------------
     # Units + revenue + last-sold per real product, over ALL completed sales (giveaways excluded).
     sold = (await db.execute(
         select(
@@ -3752,7 +3798,82 @@ async def get_cleanup_queue(
         })
     # Busiest gaps first: most units sold = most urgent to tidy.
     items.sort(key=lambda x: (x["qty_sold"], x["revenue"]), reverse=True)
-    return {"items": items, "count": len(items)}
+    return {"items": items, "count": len(items), "mode": "sold"}
+
+
+async def _bench_queue(db: AsyncSession, *, limit: int, offset: int, category: Optional[str]):
+    """BL-98 ENRICHMENT QUEUE — the migration workbench (back office, not the till).
+
+    Hands back the next `limit` UNFINISHED products plus the progress counter. Ordered by
+    category then name, so a batch is a SHELF: you pull twenty bongs off the shelf, work them,
+    and the queue hands you the next twenty from the same place. Uncategorised items sort first
+    (they need the most work). Optional `category` narrows it to one shelf.
+
+    The `done / total` counter this returns is the number that replaces the paper binder —
+    it is a QUERY, so it is always true, where a hand-filed binder rots the day a price changes.
+    """
+    limit = max(1, min(limit, 100))     # a bench holds a batch, not a catalog
+    offset = max(0, offset)
+
+    scope = [ProductModel.is_active == True]
+    if category:
+        scope.append(func.lower(_bench_category_expr()) == category.strip().lower())
+
+    gap = _bench_gap_clause()
+
+    total = (await db.execute(
+        select(func.count()).select_from(ProductModel).where(and_(*scope))
+    )).scalar_one()
+    remaining = (await db.execute(
+        select(func.count()).select_from(ProductModel).where(and_(*scope, gap))
+    )).scalar_one()
+
+    rows = (await db.execute(
+        select(ProductModel)
+        .where(and_(*scope, gap))
+        .order_by(_bench_category_expr().asc(), ProductModel.name.asc())
+        .limit(limit).offset(offset)
+    )).scalars().all()
+
+    items = []
+    for p in rows:
+        cat = (p.category or "").strip()
+        items.append({
+            "product_id": str(p.id),
+            "name": p.name,
+            "sku": p.sku,
+            "barcode": p.barcode,
+            "category": p.category,
+            "description": p.description,
+            "price": float(p.price) if p.price is not None else None,
+            "cost": float(p.cost) if p.cost is not None else None,
+            "is_age_restricted": bool(p.is_age_restricted),
+            "product_class": p.product_class,
+            "image_url": p.image_url,
+            # Same shape the sold-mode card already renders, so the UI reuses one template.
+            "qty_sold": 0,
+            "revenue": 0.0,
+            "txn_count": 0,
+            "last_sold": None,
+            "gaps": {
+                "category": (cat == "") or (cat in _HALFBAKED_CATEGORIES),
+                "cost": p.cost is None,
+                "photo": not (p.image_url or "").strip(),
+                "description": not (p.description or "").strip(),
+            },
+        })
+
+    return {
+        "items": items,
+        "count": len(items),
+        "mode": "bench",
+        "total": int(total),                        # every active product in scope
+        "remaining": int(remaining),                # still unfinished
+        "done": int(total) - int(remaining),        # the counter: done / total
+        "limit": limit,
+        "offset": offset,
+        "category": category,
+    }
 
 
 @router.get("/customers/{customer_id}/summary")

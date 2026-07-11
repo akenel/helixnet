@@ -58,8 +58,8 @@ something. Never have "some items, somewhere, partly done."
 | # | Part | Pick | ~CHF | Why / notes |
 |---|------|------|------|-------------|
 | 1 | **Screen** | Big-screen laptop (the salvaged ProBook) | — | Already have. Phone is a *fallback for a sale*, **never** for bulk migration. |
-| 2 | **Barcode gun (workhorse)** | **Zebra DS2208-SR — WIRED USB, 1D+2D** | ~88 | See §1.1. **Must be the kit WITH the cable.** |
-| 3 | **Gun (roaming / stock counts)** | Inateck Bluetooth 1D+2D, stand included | ~39 | Optional-but-useful. Cordless is the *right* tool for walking shelves (BL-97, receiving). **Not** the till gun — see §1.1. |
+| 2 | **Barcode gun ×2** | **NetumScan NSL8 — cable AND 2.4G dongle, 1D+2D** | **49 ea · 98** | **THE PICK — see §1.1.** One device does BOTH jobs: wired at the till, cordless on the shelves. Buy **two** (the spare is a drop-in). 2×49 = 98 → clears free shipping. |
+| 3 | **Gun — escalation only** | Honeywell Voyager 1470g "Cable · W. Stand" | ~81 | **Don't buy yet.** The named upgrade if the NSL8 fails the acceptance bar (§4). Cable + stand in the box; 0.5% defect, **1-day** warranty turnaround. |
 | 4 | **Label printer** | **Brother QL-820NWB** | ~200 | Already the decided pick. WiFi/USB, Debian-friendly via `brother_ql`. |
 | 5 | **Labels** | Brother DK **removable** rolls + spares | ~30/roll | **Removable adhesive is a hard requirement** — must peel clean off merchandise. |
 | 6 | **Phone mount** | Gooseneck / copy-stand clamp | ~20 | Holds the phone steady above the item. The whole "photo booth." |
@@ -70,40 +70,58 @@ something. Never have "some items, somewhere, partly done."
 **Case:** shoebox for now. Build the leather case (Sylvie) **after** the workflow has survived a few
 hundred items and you know what it actually has to hold. Don't tailor a case to a guess.
 
-### 1.1 The scanner decision — reconciled
+### 1.1 The scanner decision — DECIDED 2026-07-11: NetumScan NSL8 ×2 (CHF 98)
 
-There are two entries on record and they need squaring:
+**First, the reconciliation.** Two entries were on record: worklist **2026-07-06** *"DECIDED: Zebra DS8178"*
+(the premium cordless gun), vs **HARDWARE-KIT-MATRIX (2026-07-10, newer)** — *primary = cheap wedge ~CHF 80,
+DS8178 only if tiny codes fail*. **The matrix is newer and it wins**, and the pick below sits exactly in its
+"cheap gun" slot. The matrix's logic holds: **we print our own barcodes and read *those* ~100%**, so the gun
+is a commodity — buy it cheap, and let the **acceptance bar** (§4) decide whether it needs escalating.
 
-- Worklist **2026-07-06** says *"Scanner DECIDED: Zebra DS8178 (`DS8178-SR7U2100PFW`)"* — the premium **cordless** gun.
-- **HARDWARE-KIT-MATRIX (2026-07-10, newer)** says: *primary = **cheap wedge scanner ~CHF 80**, upgrade to
-  DS8178 **only if** tiny codes fail.*
+#### The pick: NetumScan NSL8 — CHF 49, buy TWO
 
-**The matrix is newer and it wins.** The **Zebra DS2208-SR at ~CHF 88, wired USB** lands exactly in the
-matrix's "cheap wedge" primary slot — same Zebra build quality, keyboard-wedge, no battery. DS8178 stays
-where the matrix put it: the **upgrade path if the acceptance bar fails** (gun must read ~99% of our own
-printed labels; 1-in-10 misses = escalate).
+The NSL8 collapses what looked like a two-gun problem into one device. Signal transmission on the spec sheet
+reads **"Cable, Radio Frequency (RF), Wireless"** — and the one detailed reviewer confirms it: *"operated
+either via a USB-C cable or a USB-A dongle."*
 
-**Three hard notes on the DS2208:**
+| What it does | Why it matters here |
+|---|---|
+| **Wired (USB-C) AND cordless (2.4G dongle)** | **Wired at the till** — it's a keyboard; no battery, nothing a cashier can break. **Cordless on the floor** — pull the cable, take the dongle, walk the shelves. One gun, both jobs. |
+| **CMOS imager — reads phone SCREENS** | The listing names it: *"an effective solution to the problem that laser scanners cannot identify screen code."* Member codes, vouchers, digital receipts. **This is the entire reason the 1D LS2208 was rejected.** |
+| **Stores 3,000 codes OFFLINE** | A true **batch mode** — scan a whole shelf out of range, come back, dump it. That's **BL-97 House Scan Sheet** and stock-counts, solved in hardware. Neither the Zebra nor the Honeywell does this. |
+| **Auto-sensing (presentation) mode** | Sits in a stand and scans hands-free as items pass over it — the Zebra DS9308 trick (CHF 128) for free. |
+| **2.4G dongle, NOT Bluetooth** | A 2.4G receiver presents as a **plain HID keyboard** — no pairing, so no "the pairing dropped after a reboot and the cashier can't fix it." This is what defused the cordless objection. |
 
-1. **⚠️ THE CABLE.** Two Digitec reviewers report the listing shipping **with no cable** — and a Zebra cable
-   is ~CHF 30. The scanner-only SKU (`DS2208-SR00007ZZWW`) is a brick; you want the **USB kit**
-   (`DS2208-SR7U2100AZW`). Check the "additional offers" on the product page for one that lists a cable in
-   the box. **Verify before ordering.**
-2. **⚠️ Swiss QR-bill: probably NOT supported.** A reviewer reports it can't read Swiss QR (the QR-bill puts a
-   Swiss cross in the middle, which technically breaks the QR spec). **Irrelevant for the till** — we scan
-   product codes and phone screens, not invoices. But if scanning supplier QR-bills into Banco ever becomes a
-   want, this gun won't do it, and Datalogic/Honeywell are the brands that advertise Swiss QR support.
-3. **1D is not enough — this is why the cheap CHF 64 LS2208 was rejected.** A 1D laser **cannot read a barcode
-   off a phone screen** (it needs ink-on-paper contrast; backlit glass defeats it). The moment a member shows a
-   loyalty code or voucher on their phone, a 1D gun is a paperweight. 2D imager is non-negotiable. It also gets
-   us QR/DataMatrix and omnidirectional reading (no lining up the laser line — real seconds saved per item).
+**Brand stats (Digitec's own):** NetumScan **0.6% defect** (better than Zebra's 0.7%), **0-day warranty
+turnaround** (better than Honeywell's 1 day), **1.7% return rate — 2nd best in the whole category.**
 
-**Why wired for the till, Bluetooth for the floor.** A USB gun is a keyboard: plug it in, it types the barcode,
-nothing a cashier can break. Bluetooth adds three failure modes that all land on Felix at the worst moment —
-battery dies mid-shift, pairing drops after a reboot and the cashier can't fix it, and BT HID can drop
-characters (a *partial* EAN is worse than a clean failure: Banco either says "not found" or matches the wrong
-item). Cordless is genuinely right for **walking the shelves** — stock counts, goods-in, BL-97. Different job,
-different tool.
+**Buy two (CHF 98).** Identical units mean the spare is a true drop-in, exactly as the matrix demands. It also
+clears Digitec's CHF 50 free-shipping line, which a single CHF 49 unit does not.
+
+> ⚠️ **Spec-sheet contradiction, resolved:** the table says *"Scanning method: Laser"* while the description
+> says CMOS imager. **The description is right** — a true laser physically *cannot* read QR or DataMatrix, and
+> this reads both. The page itself warns *"specifications may include unverified machine translations."*
+> Don't let the "Laser" field spook you.
+
+**What we give up:** consumer-grade build. The Honeywell is made for 8-hour days and drops onto tile. If the
+NSL8 dies in three months, that IS the answer — escalate. At CHF 49 a unit, it's a cheap experiment.
+
+#### Escalation path (do NOT buy yet)
+
+**Honeywell Voyager 1470g "Cable · W. Stand" — CHF 80.90.** Buy this only if the NSL8 fails the §4 acceptance
+bar. The listing *names* the cable and the stand, so there's no SKU roulette, and Honeywell is **0.5% defect
+with a 1-day warranty turnaround** — the best support combination in the category for a shop with one till.
+
+#### Rejected, and why (so we never re-litigate)
+
+| Candidate | CHF | Why not |
+|---|---|---|
+| **Zebra Symbol LS2208** | 64.72 | **1D laser.** Cannot read a barcode off a phone screen — a laser needs ink-on-paper contrast and backlit glass defeats it. Non-starter. |
+| **Zebra DS2208-SR** | 88.17 | Fine gun, but **two reviewers received it with no cable** (a Zebra cable is ~CHF 30) and the stand is extra → real cost ~120–150. Also reportedly **can't read Swiss QR-bills**. Beaten by the NSL8 on capability and by the Honeywell on support. |
+| **PhoneLook BT/2.4G** | 106.95 | **"Not enough data" on all three** of Digitec's warranty metrics — a phone-accessory reseller's rebrand. Costs *more* than the Honeywell for *less* pedigree, and is cordless-only. |
+| **Inateck BT (stand incl.)** | 39.35 | Right form factor, good price — but **zero ratings** on the SKU, and Bluetooth-only (no wired till mode). The NSL8 does its job *and* the till's for CHF 10 more. |
+| **Zebra DS9308** | 128.46 | Hands-free *presentation* scanner — genuinely nice at a fixed counter, but the NSL8's auto-sensing mode gets most of it for CHF 49. Revisit only if queue throughput proves to be the bottleneck. |
+| **Elcode Swiss QR Reader** | 278 | The **only** purpose-built Swiss QR-bill reader, and Elcode has the best defect rate in the category (0.2%). **Parked** — it solves scanning supplier *invoices*, a problem we don't have. Noted so it's findable if we ever do. |
 
 ---
 
@@ -198,7 +216,16 @@ barcode.**)
 
 ## 5. Backlog items
 
-### BL-98 — Enrichment Queue (the one piece of software that doesn't exist)
+### BL-98 — Enrichment Queue ✅ BUILT 2026-07-11 (a MODE on `/pos/cleanup`)
+
+**Shipped as `GET /catalog/cleanup-queue?mode=bench`** — the prior held: it's a second mode on the existing
+cockpit, not a new screen. Same card, same inline fix, same manager gate (**zero identity change**).
+`mode=sold` (default) is unchanged — the original reactive safety net. `mode=bench` is the workbench:
+`limit`/`offset` batching (default 20, capped 100), a `?category=` **shelf filter**, and the
+**`done / total / remaining` counter**. The gap clause lives in **one SQL expression** reused by both the item
+query and the counts, so the counter can never drift from the list. Gaps: **photo · description · category ·
+cost**. Tests: `tests/pos/test_pos_cleanup_queue.py` **12/12** (6 original + 6 bench).
+*Below is the original spec, kept for the reasoning.*
 
 **The spine of the whole migration.** Everything else in this doc is hardware, paper, or a script that
 already exists. This is the screen that makes 2,000 items tractable.
@@ -237,11 +264,17 @@ to the QL-820NWB. **Do NOT create per-category templates.**
 
 ## 6. Open decisions for Angel 🧍
 
-1. **Order the DS2208 — but confirm the SKU ships WITH THE CABLE** before paying. (And decide whether the
-   ~CHF 39 Inateck BT joins the order as the shelf-walking gun — it's cheap and it's the right tool for BL-97.)
-2. **Lightbox: buy one (~CHF 40) or start with white paper + desk lamp (CHF 0)?** Recommend paper first.
-3. **Enrichment Queue — new screen, or a mode on `/pos/cleanup`?** Tigs' prior is *mode on the existing one*.
-   Say the word and it gets built.
+1. **Order 2× NetumScan NSL8 (CHF 98).** Decided (§1.1) — free shipping at two units. Do **not** buy the
+   Honeywell until the acceptance bar (§4) says the cheap gun isn't good enough.
+2. **Lightbox: buy one (~CHF 40) or start with white paper + a desk lamp (CHF 0)?** Recommend paper first.
+3. **Label rolls** — order the **removable** DK rolls with the printer. Removable is a hard requirement (§1).
+
+**Settled, for the record:**
+- ✅ **Enrichment Queue = a MODE on `/pos/cleanup`, not a new screen** — BUILT 2026-07-11, see §5 / BL-98.
+- ✅ **Role = shop manager, not cashier** (Angel, 2026-07-11). It rides the existing `require_manager_or_admin()`
+  gate, so the build touches **zero identity surface** across the three realms. A dedicated `cataloguer` role
+  stays available as a later one-line change, if Felix ever puts a temp on the migration who shouldn't see
+  revenue or open a cash drawer.
 
 ---
 

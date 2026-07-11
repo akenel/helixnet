@@ -21,19 +21,26 @@ needs hiding inside it split cleanly: *"which items are done?"* → a **query** 
 counter"* → **`scripts/generate_catalog.py` already exists** — print it Friday, bin it, print a fresh one ·
 *"ring up the no-EAN stuff"* → **BL-97 House Scan Sheet** (the one thing that earns its paper).
 
-**🔫 SCANNER — RECONCILED.** The 2026-07-06 line *"DECIDED: Zebra DS8178"* is **superseded by the newer
-HARDWARE-KIT-MATRIX (2026-07-10)**: primary = *cheap wedge ~CHF 80*, DS8178 = the **upgrade path only if
-tiny codes fail**. → **Zebra DS2208-SR, WIRED USB, 1D+2D, ~CHF 88** (Digitec) lands exactly in that slot.
-- ⚠️ **BUY THE KIT WITH THE CABLE** (`DS2208-SR7U2100AZW`, not the `…00007ZZWW` scanner-only). Two Digitec
-  reviewers got a **cableless box**; a Zebra cable is ~CHF 30. **Check the "additional offers" before paying.**
-- ❌ **The cheap CHF 64 LS2208 is 1D → REJECTED.** A 1D laser **cannot read a barcode off a phone screen**
-  (needs ink-on-paper contrast). Member codes/vouchers on a phone = dead. 2D imager is non-negotiable.
-- 📵 DS2208 reportedly **can't read Swiss QR-bills** (Swiss-cross QR breaks spec). Irrelevant at the till;
-  matters only if we ever scan supplier invoices → that'd be Datalogic/Honeywell.
-- 🔵 Optional 2nd gun: **Inateck BT 1D+2D ~CHF 39** (stand incl.) as the **shelf-walking** gun (stock counts,
-  goods-in, BL-97). **Wired for the till** (no battery/pairing/dropped-char failures), **cordless for the floor.**
-- 📷 **No webcam.** Snap-&-fill is LIVE + mobile-camera-proven in prod — the "photo booth" is just a
-  **gooseneck phone mount over a lightbox** (start with white paper + a desk lamp, CHF 0).
+**🔫 SCANNER — DECIDED: 2× NetumScan NSL8, CHF 98 total.** (Supersedes both the 2026-07-06 *"DECIDED: DS8178"*
+line AND yesterday's DS2208 lean — Angel walked the whole Digitec bestseller list and found the better gun.)
+**The NSL8 does BOTH jobs in one CHF 49 device:** spec reads *"Cable, Radio Frequency (RF), Wireless"* and a
+reviewer confirms — *"operated either via a USB-C cable or a USB-A dongle."*
+- 🔌 **Wired at the till** (a keyboard — no battery, nothing a cashier can break) · 📡 **cordless on the floor**
+  (2.4G **dongle**, not Bluetooth → presents as plain HID, **no pairing to drop after a reboot**).
+- 📱 **CMOS imager reads phone SCREENS** — the listing names it: *"solves the problem that laser scanners
+  cannot identify screen code."* **This is exactly why the 1D LS2208 (CHF 64) was rejected.**
+- 📦 **Stores 3,000 codes OFFLINE** = a real batch mode → **BL-97 House Scan Sheet + stock counts, solved in
+  hardware.** Neither Zebra nor Honeywell does this. Plus **auto-sensing** (hands-free presentation) mode.
+- 📊 NetumScan: **0.6% defect** (beats Zebra 0.7%), **0-day warranty turnaround** (beats Honeywell 1 day),
+  **1.7% return rate = 2nd best in the category.** Buy **two** → drop-in spare + clears free shipping.
+- ⚠️ Spec table says *"Laser"* — **wrong** (machine-translated field). A laser physically can't read QR/DataMatrix
+  and this does. The description says CMOS imager; trust that.
+- 🪜 **Escalation only if it fails the acceptance bar** (must read ~99% of OUR printed labels): **Honeywell
+  Voyager 1470g "Cable · W. Stand" CHF 80.90** (cable+stand named in the listing; 0.5% defect, 1-day turnaround).
+- ❌ Rejected + why (don't re-litigate): **LS2208** 1D=can't read screens · **DS2208** two reviewers got it with
+  **no cable** (+CHF 30) + no Swiss-QR · **PhoneLook CHF 107** "not enough data" on ALL 3 warranty metrics ·
+  **Inateck BT** 0 ratings, BT-only · **DS9308** CHF 128 (NSL8 auto-sense gets most of it) · **Elcode Swiss QR
+  CHF 278** = the only real Swiss-QR-bill reader — **parked**, we don't scan invoices. Full table: spec §1.1.
 
 **🏷️ LABELS — sizes × flags, NOT 12 templates.** 3 physical sizes (S price-sticker / M shelf-talker /
 L box-card) × content flags (`show_price`, `show_photo`, `show_barcode`, `show_human_code`, `show_age`,
@@ -41,19 +48,25 @@ L box-card) × content flags (`show_price`, `show_photo`, `show_barcode`, `show_
 `size=L, show_photo=1, show_desc=1`. **One renderer reading data.** `show_human_code` always ON → a failed
 scan is never a dead end. `show_age` **always derived from `product_class`**, never hand-set.
 
-**🐯 THE BUILD QUEUE (both small, neither blocks anything):**
-- **BL-98 · Enrichment Queue** — *the only piece of software this whole rig is missing.* Hand me the next
-  20 items that are **not done** (objective gaps: photo · description · real category · cost · class), fix
-  inline, drops off when filled, **counter `1,247 / 2,000`**. That counter is what replaces the binder.
-  **Reuse `/pos/cleanup`** — same shape (manager-gated, gap-defined, inline-fix), different selector.
-  Strong prior: **a mode on the existing cockpit, not a new screen.** 18+ edits MUST go through the shared
-  `reconcile_age` seal (the 2026-07-06 catch — a bare column write is cosmetic and the gate won't fire).
-- **BL-99 · Label renderer size×flags** — widen `scripts/generate_label.py` (today: one fixed 62×37,
-  EAN-13→Code128, Puppeteer PDF, `brother_ql` → QL-820NWB). Bones are right; just needs the matrix.
+**🐯 BL-98 · ENRICHMENT QUEUE — ✅ BUILT (local, green) — the back-office migration cockpit.**
+Shipped as **a MODE on `/pos/cleanup`**, not a new screen (the prior held). `?mode=bench` →
+the workbench: **every** unfinished product (sold or not), gaps = **photo · description · category · cost**,
+batched (`limit`/`offset`, default 20), a **`?category=` shelf filter** (a batch = a *shelf*), and the
+**`done / total / remaining` counter — the number that replaces the paper binder.** ONE SQL gap-clause feeds
+both the list and the counts, so the counter can't drift from the list. `mode=sold` unchanged.
+- 🔐 **Role = shop manager** (Angel's call) → rides the existing `require_manager_or_admin()` gate ⇒ **zero
+  identity change** across the 3 realms. A `cataloguer` role stays a 1-line change if a temp ever does the migration.
+- 🧪 `tests/pos/test_pos_cleanup_queue.py` **12/12** (6 original + 6 new bench) · `make test` **1844 pass / 3
+  known-flaky** · POS suite baselined against clean HEAD → **0 new failures**. sw.js **v69→v70** (i18n keys!).
+- 🌍 i18n en/it/de — **45 keys each, parity-checked** (a missing key renders raw — the BL-28/29/30 bug class).
+- ▶ **NOT deployed** — needs Angel human-green on sandbox, then the gated ladder.
 
-**🧍 ANGEL — 3 open decisions:** (1) **order the DS2208 — confirm the cable SKU first**; is the CHF 39
-Inateck BT in the order too? (2) lightbox — buy (~CHF 40) or white paper first (CHF 0, recommended)?
-(3) **BL-98: new screen or a mode on `/pos/cleanup`?** Say go and Tigs builds it.
+**🐯 BL-99 · Label renderer size×flags** — widen `scripts/generate_label.py` (today: one fixed 62×37,
+EAN-13→Code128, Puppeteer PDF, `brother_ql` → QL-820NWB). Bones are right; just needs the matrix. Not started.
+
+**🧍 ANGEL — next:** (1) **order 2× NSL8 (CHF 98)** + the Brother QL-820NWB + **removable** DK rolls.
+(2) **Human-green BL-98 on sandbox** → say go and it ships the ladder. (3) Lightbox — buy (~CHF 40) or white
+paper + desk lamp first (CHF 0, recommended)?
 
 ## ✅ SHIPPED PROD 2026-07-11 — non-destructive supplier price reference (`c0c2768` · b1637)
 **First "ON DECK" build off the price-comparison spec.** Adopting a reference (Mosey/420) item used to

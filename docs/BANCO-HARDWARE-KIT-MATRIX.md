@@ -12,7 +12,7 @@
 | Role | Primary (quality) | Backup (cheap) | Emergency fallback | Consumables / needs |
 |------|-------------------|----------------|--------------------|---------------------|
 | **Screen** (runs Banco) | Big-screen laptop (the ~€40 salvaged ProBook) **or** a tablet | Cheap 2nd laptop | **Mobile phone** — works for a sale, **not** for bulk migration | Charger ×each + spare · counter **cradle/stand** |
-| **Barcode gun** | Cheap wedge scanner (~CHF 80) — upgrade to **Zebra DS8178** only if tiny codes fail | 2nd cheap gun | **Phone camera** (PosScanner — already built) | USB cable / wireless receiver |
+| **Barcode gun** | **NetumScan NSL8 (CHF 49)** — wired USB-C *and* 2.4G dongle, 1D+2D imager ✅ *decided 2026-07-11* | **2nd NSL8** (identical → drop-in spare; 2×49 = 98, free shipping) | **Phone camera** (PosScanner — already built) | USB-C cable + 2.4G dongle (both in box) |
 | **Label printer** | **Brother QL-820NWB** (mono) | Cheap 2nd label printer | Hand-write / skip the label | **Removable DK label rolls** (+ spares) · USB/network |
 | **Power** | Counter **power strip** | Spare cables | — | Chargers, spare USB-C / cables |
 | **Network** | Shop **Wi-Fi** (printer is NWB) | **Phone hotspot** | — | (offline mode = separate plan) |
@@ -34,7 +34,10 @@ doesn't tie up the screen. Camera = the emergency spare, never the workhorse. Ra
 
 ### Gun acceptance bar
 - **PASS** if the cheap gun reads ~**99%** of the small printed labels (1–3 misses / 100 = fine; it's designed for small codes).
-- **FAIL → upgrade to DS8178** if it's more like **1-in-10**.
+- **FAIL → escalate to the Honeywell Voyager 1470g "Cable · W. Stand" (CHF 80.90)** if it's more like **1-in-10**.
+  (Supersedes the old "upgrade to DS8178" line: Honeywell is 0.5% defect with a **1-day** warranty turnaround
+  vs Zebra's 0.7% / **6 days** — for a one-till shop, turnaround is the whole ballgame. Full rejected-candidates
+  table + the reasoning: [BANCO-CATALOGUING-WORKSTATION.md](BANCO-CATALOGUING-WORKSTATION.md) §1.1.)
 - **Failed scan is never a dead end:** a **human-readable number** prints beside the code → type it in · or search by name · or reprint our own label.
 
 ---
