@@ -18,9 +18,10 @@ grayed **"Supplier ref: CHF X · ✓ you beat it / — above supplier"** hint (e
 (3 known-flaky). Shipped sandbox→staging→prod via `deploy-banco.py`, **backup-gated**
 (`banco_prod_20260710_2216.sql.gz.gpg`, restore-verified 39/5155/131), **re-probed serving** each rung
 (build stamp · sw v68 · i18n keys). Human-green: Angel on sandbox ("its fine").
-- ⚠️ **FOUND (separate, pre-existing, app-wide):** prices render **"30,50 €"** on a CHF shop — global
-  `formatPrice` (`base.html:722`) uses `_cfg('currency')` = EUR/default. Affects EVERY price, not this
-  Block. Likely just sandbox's default — **verify PROD currency = CHF**; tiny config fix. Angel: "its fine" (not blocking).
+- ✅ **Currency check CLOSED (2026-07-11) — NOT a bug.** Verified: prod store = *Artemis Lucerne* **CHF/de-CH**
+  (correct); sandbox = *Artemis Roma* **EUR/it-IT** (the Italian demo instance — € by design). So sandbox
+  doubles as the multi-locale/currency test rig; the supplier-ref rendering "30,50 €" in it-IT was a real
+  i18n pass. No fix needed.
 - ▶ **NEXT slices** (same spec): the two-supplier side-by-side (Tamar vs 420) + the beat-the-online-price
   view; and BL-26 papers tier pricing. Detail: memory `banco-supplier-price-comparison-spec` / `banco-tier-pricing`.
 
