@@ -394,9 +394,19 @@
                                             <span x-show="parseFloat(form.price) > 0 && m.suggested_price && parseFloat(form.price) > parseFloat(m.suggested_price)" data-i18n="catalog.above_supplier">— above supplier price</span>
                                             <span class="text-gray-400" x-show="m.similarity != null"><span x-text="Math.round(m.similarity*100)"></span>%</span>
                                         </div>
+                                        <!-- BL-32+: the reference's own NAME (confirm it's the same item) + quick stats
+                                             (price delta vs your price · supplier cost); the photo enlarges on click. -->
+                                        <div class="text-gray-700 font-medium mt-1 truncate" x-show="m.title" x-text="m.title"></div>
+                                        <div class="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5" x-show="m.suggested_price != null || m.cost != null">
+                                            <span x-show="parseFloat(form.price) > 0 && m.suggested_price != null"
+                                                  :class="parseFloat(form.price) < parseFloat(m.suggested_price) ? 'text-green-600 font-semibold' : 'text-amber-600 font-semibold'"
+                                                  x-text="(parseFloat(form.price) < parseFloat(m.suggested_price) ? '▼ −' : '▲ +') + formatPrice(Math.abs(parseFloat(form.price) - parseFloat(m.suggested_price)))"></span>
+                                            <span class="text-gray-500" x-show="m.cost != null" x-text="t('catalog.cmp_cost') + ' ' + formatPrice(m.cost)"></span>
+                                        </div>
                                         <div class="flex gap-2 mt-1.5" x-show="m.image_url || m.description">
-                                            <img x-show="m.image_url" :src="m.image_url" loading="lazy" alt="" class="w-14 h-14 rounded object-cover border flex-none bg-white">
-                                            <p class="text-gray-500 flex-1 min-w-0 line-clamp-3" x-show="m.description" x-text="m.description"></p>
+                                            <img x-show="m.image_url" :src="m.image_url" @click="openLightbox(m.image_url, m.title || m.supplier)" loading="lazy" alt=""
+                                                 class="w-16 h-16 rounded object-cover border flex-none bg-white cursor-zoom-in hover:ring-2 hover:ring-blue-400" :title="t('catalog.cmp_enlarge')">
+                                            <p class="text-gray-500 flex-1 min-w-0 line-clamp-4" x-show="m.description" x-text="m.description"></p>
                                         </div>
                                         <div class="flex items-center gap-3 mt-1.5 flex-wrap">
                                             <button type="button" x-show="m.description" @click="pullFrom(m, 'desc')" class="text-blue-600 hover:underline" data-i18n="catalog.pull_desc">use description</button>
