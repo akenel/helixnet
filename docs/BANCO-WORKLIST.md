@@ -20,7 +20,7 @@ Add `"fr"` to POS_STRINGS (chrome then shows French instead of English fallback)
 nl/es/pl (same batch move per language). ~hundreds of keys → automate, don't hand-type. Parity gate:
 each key ×N langs. This is the "chrome follows" step of the language architecture [[lp-language-architecture]].
 
-**BL-36 multi-language DESCRIPTIONS ✅ WORKING on sandbox (`078be30`) — Angel FR-validated → ship prod.**
+**BL-36 multi-language DESCRIPTIONS ✅ SHIPPED PROD 2026-07-12 (`58fef52`, backup-gated, re-probed: native FR/DE/IT on real Artemis items).**
 Sign in a language → description follows: **Artemis serves DE/EN/FR/IT free** (native), else Ollama +
 cache. FR content-language switch fixed (isLang() at every gate). **→ Ship to prod (backup-gated) —
 Angel confirmed it works.** Follow-ups (memory `banco-catalog-content-translation`): fill-at-adopt +
