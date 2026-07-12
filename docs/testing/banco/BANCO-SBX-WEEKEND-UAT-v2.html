@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BANCO SBX — Weekend UAT v2 (tier fixes)</title>
+<style>
+  :root{
+    --bg:#05060a; --panel:#0b0e16; --panel2:#0e1220; --ink:#e2e8f0; --mut:#7688a6;
+    --line:#1c2436; --yellow:#facc15; --cyan:#22d3ee; --red:#ef4444; --lime:#a3e635; --ok:#4ade80;
+    --glowY:0 0 6px rgba(250,204,21,.7); --glowC:0 0 8px rgba(34,211,238,.6);
+    --font:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  }
+  *{ box-sizing:border-box; } html,body{ margin:0; }
+  body{ font-family:var(--font); color:var(--ink); line-height:1.55;
+    background: radial-gradient(1200px 600px at 50% -10%, #0d1224 0%, transparent 60%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,.015) 0 1px, transparent 1px 3px), var(--bg);
+    padding-bottom:90px; }
+  header{ position:sticky; top:0; z-index:20; background:linear-gradient(180deg,#0a0d17,#070911);
+    border-bottom:1px solid var(--cyan); box-shadow:0 0 18px rgba(34,211,238,.25); padding:12px 18px; }
+  .htop{ display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; max-width:840px; margin:0 auto; }
+  h1{ font-size:16px; margin:0; letter-spacing:.14em; color:var(--yellow); text-shadow:var(--glowY); text-transform:uppercase; }
+  h1 small{ display:block; margin-top:3px; font-size:11px; letter-spacing:.06em; color:var(--mut); text-shadow:none; text-transform:none; }
+  .meters{ display:flex; align-items:center; gap:16px; }
+  .meter{ text-align:center; min-width:44px; } .meter b{ display:block; font-size:20px; line-height:1; }
+  .meter.pass b{ color:var(--ok); text-shadow:0 0 6px rgba(74,222,128,.6); }
+  .meter.fail b{ color:var(--red); text-shadow:0 0 6px rgba(239,68,68,.6); }
+  .meter.left b{ color:var(--cyan); text-shadow:var(--glowC); }
+  .meter span{ font-size:9.5px; letter-spacing:.14em; color:var(--mut); text-transform:uppercase; }
+  .timer{ font-size:20px; font-weight:700; color:var(--yellow); text-shadow:var(--glowY); font-variant-numeric:tabular-nums; }
+  main{ max-width:840px; margin:0 auto; padding:20px 18px 40px; }
+  .coin{ text-align:center; color:var(--yellow); letter-spacing:.28em; font-size:12px; margin:2px 0 16px; animation:blink 1.1s steps(2) infinite; }
+  @keyframes blink{ 50%{ opacity:.25 } }
+  .lead{ background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--lime); border-radius:10px; padding:12px 15px; margin-bottom:14px; font-size:13px; }
+  .warn{ background:#1a0f0a; border:1px solid #7c2d12; border-left:3px solid var(--red); border-radius:10px; padding:11px 15px; margin-bottom:14px; font-size:12.5px; color:#fbbf9d; }
+  .warn b{ color:#fdba74; }
+  .fixtures{ background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:10px 14px; font-size:12px; margin-bottom:16px; }
+  .fixtures code{ background:#141a2b; color:var(--lime); padding:1px 7px; border-radius:4px; }
+  .fixtures b.p{ color:var(--yellow); }
+  .sect{ margin:20px 0 10px; padding:6px 12px; font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--cyan); border-left:3px solid var(--cyan); background:#0a1120; border-radius:0 8px 8px 0; }
+  .sect.fix{ color:var(--yellow); border-left-color:var(--yellow); background:#191405; }
+  ol.checks{ margin:0; padding:0; list-style:none; }
+  ol.checks li{ display:flex; gap:12px; padding:14px 14px; align-items:flex-start; background:var(--panel); border:1px solid var(--line); border-radius:12px; margin-bottom:10px; }
+  ol.checks li.pass{ border-color:rgba(74,222,128,.45); box-shadow:0 0 12px rgba(74,222,128,.10); }
+  ol.checks li.fail{ border-color:rgba(239,68,68,.5); box-shadow:0 0 12px rgba(239,68,68,.12); }
+  .verdict-btns{ display:flex; flex-direction:column; gap:5px; flex:none; }
+  .vb{ width:42px; height:36px; border:1px solid var(--line); background:#0c1120; color:var(--mut); border-radius:7px; font-size:17px; cursor:pointer; line-height:1; }
+  .vb.pass.on{ background:rgba(74,222,128,.16); border-color:var(--ok); color:var(--ok); box-shadow:0 0 8px rgba(74,222,128,.4); }
+  .vb.fail.on{ background:rgba(239,68,68,.16); border-color:var(--red); color:var(--red); box-shadow:0 0 8px rgba(239,68,68,.4); }
+  .cbody{ flex:1; min-width:0; } .q{ font-size:14.5px; } .q b{ color:var(--yellow); }
+  .tag{ font-size:10px; font-weight:700; padding:2px 8px; border-radius:99px; background:#12203c; color:var(--cyan); letter-spacing:.05em; margin-left:6px; }
+  .tag.new{ background:#3b2f05; color:var(--yellow); }
+  .go{ display:inline-block; margin-top:7px; background:var(--yellow); color:var(--bg); text-decoration:none; padding:5px 11px; border-radius:6px; font-size:11.5px; font-weight:700; box-shadow:var(--glowY); }
+  .exp{ margin-top:7px; font-size:12px; color:var(--lime); } .exp b{ color:var(--ok); }
+  .cm{ margin-top:9px; width:100%; border:1px solid var(--line); background:#0a0e19; color:var(--ink); border-radius:7px; padding:6px 9px; font:inherit; font-size:12px; resize:vertical; height:32px; }
+  .cm:focus{ outline:none; border-color:var(--cyan); box-shadow:var(--glowC); }
+  .final{ background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-top:18px; text-align:center; }
+  .final .ttl{ font-size:13px; color:var(--mut); letter-spacing:.1em; text-transform:uppercase; margin-bottom:10px; }
+  .final-btns{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+  .big{ font-size:14px; font-weight:800; letter-spacing:.1em; padding:11px 22px; border-radius:9px; border:1px solid var(--line); background:#0c1120; color:var(--ink); cursor:pointer; }
+  .big.ship.on{ background:rgba(74,222,128,.16); border-color:var(--ok); color:var(--ok); box-shadow:0 0 14px rgba(74,222,128,.4); }
+  .big.hold.on{ background:rgba(239,68,68,.16); border-color:var(--red); color:var(--red); box-shadow:0 0 14px rgba(239,68,68,.4); }
+  .bar{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:14px; }
+  .util{ border:1px solid var(--line); background:#0a0e19; color:var(--cyan); border-radius:8px; padding:8px 14px; font-size:12px; cursor:pointer; letter-spacing:.05em; }
+  .util:hover{ border-color:var(--cyan); box-shadow:var(--glowC); }
+  footer{ text-align:center; color:var(--mut); font-size:11px; padding:18px; letter-spacing:.06em; }
+</style>
+</head>
+<body>
+<header>
+  <div class="htop">
+    <h1>▚ Banco SBX · Weekend UAT <span style="color:var(--cyan)">v2</span><small>Round 2 — the two tier fixes + a clean re-run. ✓/✗, then SHIP.</small></h1>
+    <div class="meters">
+      <div class="meter pass"><b id="m-pass">0</b><span>Pass</span></div>
+      <div class="meter fail"><b id="m-fail">0</b><span>Fail</span></div>
+      <div class="meter left"><b id="m-left">0</b><span>Left</span></div>
+      <div class="meter"><span class="timer" id="timer">00:00</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="coin">◂ ◃ ◄  ROUND 2 · PROVE THE FIXES → THEN PROD  ► ▻ ▸</div>
+  <div class="lead">Round 1 came back <b>HOLD</b> — two real bugs (editor couldn't save a bundle; the detail page hid the tier ladder), plus a couple of tests hit the <i>wrong</i> Gizeh. Both bugs are fixed and the seeds are cleaned. This round proves the fixes and re-runs the tier flow on the <b>right</b> products.</div>
+  <div class="warn">⚠️ <b>DO THIS FIRST or numbers will lie:</b> ① Hard-refresh (<b>Ctrl+Shift+R</b>) — service worker bumped to <b>v76</b>. ② <b>Empty the cart</b> if anything's in it (a line added before the deploy has no tier data — that was the phantom "14,00"). Add everything <b>fresh</b>.</div>
+  <div class="fixtures">🎮 <code>sandbox-banco.lapiazza.app</code> · login <code>felix</code> · build <b>b1654</b> · <i>sandbox = Italian demo → prices show €</i><br>
+    🎯 seeds (cleaned) —<br>
+    &nbsp;&nbsp;<b class="p">BUNDLE</b> "Gizeh King Size" <code>2000000216690</code> · base <b>1,40</b> · <b>3 for 4,00</b> · <b>10 for 12,00</b><br>
+    &nbsp;&nbsp;<b class="p">PER-UNIT</b> "Elf Bar No Nic 0mg Strawberry" (search it, no barcode) · base <b>8,00</b> · <b>10+ → 6,50 ea</b> · 50+ → 5,50 ea<br>
+    &nbsp;&nbsp;<b class="p">DUP-TEST</b> "TEST DUplicate…" <code>9990000000032</code> · bundle 2,50 · 3 for 7,00 · 5 for 12,00 · 10 for 22,00</div>
+
+  <div class="sect fix">① The two fixes (the reason for round 2)</div>
+  <ol class="checks">
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="q"><b>🐛 FIX — the bundle editor SAVES now.</b> Catalog → "Gizeh King Size" → ✏️ Edit. The price-breaks show Type = <b>N for X total</b>, rows <b>"Buy 3 for 4,00 total"</b> / <b>"Buy 10 for 12,00 total"</b>. Change any price (e.g. 4,00 → 4,50) → <b>Save</b>. <span class="tag new">must not error</span></div>
+        <a class="go" href="https://sandbox-banco.lapiazza.app/pos/catalog" target="_blank">▶ Catalog</a>
+        <div class="exp">expect: <b>saves clean</b> — NO "first tier must start at min_qty 1". (Change 4,50 back to 4,00 after.)</div>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="q"><b>🔎 FIX — the detail page SHOWS the tier ladder.</b> Sell → add "Gizeh King Size" → tap the cart line (<b>tap for details</b>). The detail card shows a <b>"Quantity price breaks"</b> panel: <b>1 → 1,40</b> · <b>Buy 3 for 4,00</b> (≈ 1,33 ea) · <b>Buy 10 for 12,00</b> (≈ 1,20 ea). <span class="tag new">new</span></div>
+        <a class="go" href="https://sandbox-banco.lapiazza.app/pos/scan" target="_blank">▶ Sell</a>
+        <div class="exp">expect: the ladder is visible on the detail card — now you can SEE the deal, like the Artemis site.</div>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="q"><b>Per-unit ladder shows on the detail card too.</b> Edit "Elf Bar No Nic…" → confirm Type = <b>price EACH</b>. Then Sell → add it → tap for details → the ladder reads <b>10+ · 6,50 each</b> · <b>50+ · 5,50 each</b> (no "each" sub-line — that's bundle-only). <span class="tag new">new</span></div>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+  </ol>
+
+  <div class="sect">② Tier in the cart & at checkout — clean re-run (RIGHT products)</div>
+  <ol class="checks">
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="q"><b>BUNDLE shows live in the cart.</b> Fresh cart → add "Gizeh King Size" → qty <b>3</b> → line <b>4,00</b> + green <b>pack ✓</b>. qty <b>10</b> → <b>12,00</b>. <span class="tag">bundle</span></div>
+        <a class="go" href="https://sandbox-banco.lapiazza.app/pos/scan" target="_blank">▶ Sell</a>
+        <div class="exp">expect: 3 → <b>4,00</b> · 10 → <b>12,00</b> · both pack ✓  (qty 1 or 2 = plain 1,40 / 2,80, no badge)</div>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="q"><b>In-between quantities make sense.</b> Gizeh qty <b>7</b> → <b>9,33</b> (the 3-rate on all 7). qty <b>12</b> → <b>14,40</b> (the 10-rate holds above 10). <span class="tag">bundle</span></div>
+        <div class="exp">expect: 7 → <b>9,33</b> · 12 → <b>14,40</b> — "up to 9 the 3-rate, at 10 the new rate."</div>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="q"><b>Bundle rings correctly — shown == charged.</b> Gizeh qty 3 → Checkout → summary line + subtotal + total all <b>4,00</b> → pay cash → receipt total <b>4,00</b>. <span class="tag">bundle</span></div>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="q"><b>PER-UNIT rings correctly.</b> Fresh cart → add "Elf Bar No Nic…" → qty <b>10</b> → cart <b>65,00</b> (10 × 6,50, pack ✓) → checkout <b>65,00</b>. <span class="tag">per-unit</span></div>
+        <div class="exp">expect: qty 1 → <b>8,00</b> · qty 10 → <b>65,00</b></div>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="q"><b>A pack price is FINAL — no double-dip.</b> Cart with Gizeh qty 3 (4,00) <i>+</i> a normal item → attach a member (or a manual discount) → the <b>tiered Gizeh line stays 4,00</b> (no discount), the normal item DOES discount. <span class="tag">tier-final</span></div>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+  </ol>
+
+  <div class="sect">③ Already-on-prod — quick re-confirm (nothing regressed)</div>
+  <ol class="checks">
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="q"><b>Supplier ref + "Found on FourTwenty".</b> Edit "Gizeh King Size" → under Price a grayed <b>"Supplier ref: … · ✓ you beat it / — above supplier"</b>, and a <b>"Found on FourTwenty"</b> line with photo + description. <span class="tag">compare</span></div>
+        <a class="go" href="https://sandbox-banco.lapiazza.app/pos/catalog" target="_blank">▶ Catalog</a>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="q"><b>Duplicate isn't a dead-end (BL-32).</b> Catalog → <b>+ New product</b> → Name "test", Barcode <b>9990000000032</b> + a price → Save → the <b>"already exists"</b> dialog → <b>"Update the existing with my details"</b> enriches it, no duplicate created. <span class="tag">BL-32</span></div>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="q"><b>A plain sale still works + clean console.</b> Ring a normal item (no tiers) → Checkout → cash → receipt + totals + VAT correct, and the <b>console is clean</b> (no red, no missing-i18n-key). <span class="tag">no-regress</span></div>
+        <a class="go" href="https://sandbox-banco.lapiazza.app/pos/scan" target="_blank">▶ Sell</a>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="q"><b>📱 Mobile spot-check.</b> On your phone (hard-refresh + empty cart), do ONE bundle sale (Gizeh qty 3 → <b>4,00</b>) and tap for details → the <b>tier ladder</b> renders fine on the small screen. <span class="tag">mobile</span></div>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+  </ol>
+
+  <div class="final">
+    <div class="ttl">◆ All green on sandbox → ship tier v2 to prod?</div>
+    <div class="final-btns">
+      <button class="big ship" id="v-ship">✓ SHIP TO PROD</button>
+      <button class="big hold" id="v-hold">✗ HOLD</button>
+    </div>
+    <div class="bar">
+      <button class="util" id="copy">📋 Copy findings</button>
+      <button class="util" id="reset">↻ Reset</button>
+    </div>
+  </div>
+
+  <footer>🐯 Weekend UAT v2 · tier fixes · you steer, I row · <span id="stamp"></span></footer>
+</main>
+
+<script>
+  const KEY = 'banco-sbx-weekend-uat-v2';
+  const steps = [...document.querySelectorAll('li[data-step]')];
+  steps.forEach((li,i)=> li.dataset.id = 's'+i);
+  let state; try{ state = JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ state={}; }
+  const save = ()=> localStorage.setItem(KEY, JSON.stringify(state));
+  function apply(){
+    steps.forEach(li=>{
+      const s = state[li.dataset.id] || {};
+      li.classList.toggle('pass', s.v==='pass'); li.classList.toggle('fail', s.v==='fail');
+      li.querySelector('.vb.pass').classList.toggle('on', s.v==='pass');
+      li.querySelector('.vb.fail').classList.toggle('on', s.v==='fail');
+      li.querySelector('.cm').value = s.note || '';
+    });
+    document.getElementById('v-ship').classList.toggle('on', state.__v==='ship');
+    document.getElementById('v-hold').classList.toggle('on', state.__v==='hold');
+    let p=0,f=0; steps.forEach(li=>{ const v=(state[li.dataset.id]||{}).v; if(v==='pass')p++; else if(v==='fail')f++; });
+    document.getElementById('m-pass').textContent=p; document.getElementById('m-fail').textContent=f;
+    document.getElementById('m-left').textContent=steps.length-p-f;
+  }
+  steps.forEach(li=>{
+    const id=li.dataset.id;
+    li.querySelector('.vb.pass').onclick=()=>{ const s=state[id]||{}; state[id]={...s,v:s.v==='pass'?null:'pass'}; save(); apply(); };
+    li.querySelector('.vb.fail').onclick=()=>{ const s=state[id]||{}; state[id]={...s,v:s.v==='fail'?null:'fail'}; save(); apply(); };
+    li.querySelector('.cm').addEventListener('input', e=>{ state[id]={...(state[id]||{}),note:e.target.value}; save(); });
+  });
+  document.getElementById('v-ship').onclick=()=>{ state.__v = state.__v==='ship'?'':'ship'; save(); apply(); };
+  document.getElementById('v-hold').onclick=()=>{ state.__v = state.__v==='hold'?'':'hold'; save(); apply(); };
+  document.getElementById('reset').onclick=()=>{ if(confirm('Clear the whole sheet?')){ state={}; save(); state.__t0=Date.now(); save(); t0=state.__t0; apply(); } };
+  document.getElementById('copy').onclick=()=>{
+    let p=0,f=0; const lines=steps.map(li=>{
+      const s=state[li.dataset.id]||{}; if(s.v==='pass')p++; if(s.v==='fail')f++;
+      const mark=s.v==='pass'?'PASS':s.v==='fail'?'FAIL':'—';
+      return `[${mark}] ${li.querySelector('.q').innerText.trim()}${s.note?'  ↳ '+s.note:''}`;
+    }).join('\n');
+    const out=`BANCO SBX — WEEKEND UAT v2 (tier fixes)\nVerdict: ${(state.__v||'—').toUpperCase()} · Pass ${p} · Fail ${f} of ${steps.length}\n\n${lines}`;
+    navigator.clipboard.writeText(out).then(()=>{ const b=document.getElementById('copy'); b.textContent='✓ Copied'; setTimeout(()=>b.textContent='📋 Copy findings',1400); });
+  };
+  let t0 = state.__t0 || (state.__t0=Date.now(), save(), state.__t0);
+  setInterval(()=>{ const s=Math.floor((Date.now()-t0)/1000); document.getElementById('timer').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); },1000);
+  document.getElementById('stamp').textContent='built '+new Date().toISOString().slice(0,10);
+  apply();
+</script>
+</body>
+</html>
