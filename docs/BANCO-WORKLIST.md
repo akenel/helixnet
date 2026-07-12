@@ -68,6 +68,25 @@ EAN-13→Code128, Puppeteer PDF, `brother_ql` → QL-820NWB). Bones are right; j
 (2) **Human-green BL-98 on sandbox** → say go and it ships the ladder. (3) Lightbox — buy (~CHF 40) or white
 paper + desk lamp first (CHF 0, recommended)?
 
+## ✅ SHIPPED PROD 2026-07-12 — FIND-FIRST snap (the migration fix) (`c4ee6d2` · b1671)
+**The grinder lesson, solved.** Photo → the AI reads the item → Banco SEARCHES the real catalog
+(`products` = Artemis truth, already imported + `reference_products` = FourTwenty) and shows what's
+ALREADY there, ranked by an HONEST trigram match score — instead of INVENTING a product with the
+model's inflated self-confidence. The AI is a librarian, not an author. `GET /products/find-matches`
++ `POST /products/snap-find` + `_find_catalog_matches` helper (6/6 black-box tests). Catalog picker
+("Is it already in the shop?" — catalog rows open the existing product, no dupe; FourTwenty rows fill
+the add-form; "None → new item" fallback). Pick a reference → use the supplier's PRO photo (not the
+phone snap). Compare panel upgraded: reference name + price-delta + supplier cost + click-to-enlarge.
+Shipped sandbox→staging→prod, backup-gated (39/5157/131), re-probed. Detail: memory `banco-photo-to-product-ai`.
+- ▶ **NEXT (banked):** persisted comparison notes/comments (needs storage) · multi-image "grab them
+  all" from a supplier feed · finish the AL-scraper deepening (the reference already carries the data).
+
+## ✅ SHIPPED PROD 2026-07-12 — 4 hypercare fixes (tier-editor flood, BL-31, login leak, detail header)
+From Angel's prod hypercare capture sheet, all backup-gated + re-probed: **tier v2** (`dcacb03`) ·
+**BL-31** bundle-editor-save fold-qty1 (`579275a`) · **tier-editor Alpine `t()` scope collision** that
+flooded the console + clunky detail-ladder header (`8ef837f`) · **login demo-credential leak** env-gated
+to sandbox-only (`06c1aff`). Detail: memory `banco-tier-pricing` / `banco-photo-to-product-ai`.
+
 ## ✅ SHIPPED PROD 2026-07-12 — BL-26 tier pricing v2 (`dcacb03` · b1656)
 Two things the v1 UAT surfaced, both fixed + shipped: (1) **per-unit + BUNDLE modes** ("3 for 8,00" vs "10+ →
 4,50 each") — `tier_mode` column, mode-aware editor toggle, correct money math (bundle = pack_total/min_qty,
