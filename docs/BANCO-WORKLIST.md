@@ -10,17 +10,21 @@
 
 ---
 
-## 🃏 ON DECK — 2026-07-12 night · FIX THE STALE DATA, THEN BUILD LIVE SUPPLIER SEARCH ← START HERE
+## 🃏 ON DECK — 2026-07-12 night · ① STALE DATA ✅ FIXED → ② BUILD LIVE SUPPLIER SEARCH ← START HERE
 
 **The root cause of Felix's "I hold the product but Banco can't find it" frustration = STALE / INCOMPLETE data**
 (reference table missing common items like Tycoon Gas; Artemis rows use minted barcodes, not the real EANs on
 the cans). NOT bad luck. Full detail + the whole plan: memory **`banco-live-supplier-search`**.
 
-**① QUICK WIN FIRST (Angel's call — do this before the Block):** refresh the FourTwenty **reference feed**.
-`reference_products` has ~7,272 rows but the feed CSV `debllm/feeds/fourtwenty/products_latest.csv` reportedly
-has ~10,082 → re-import (`scripts/import_reference_catalog.py`) likely adds the Tycoon + ~2,800 current items
-**with real EANs** → barcode + name lookups start working TODAY. **Verify the Tycoon (EAN 4035687900004) is in
-the CSV first**, then backup-gated prod import. No new code.
+**① QUICK WIN — ✅ DONE 2026-07-12 (`50e6f2e`):** refreshed the FourTwenty **reference feed** on ALL 3 envs
+(sandbox/staging/prod), **7,272 → 10,282 rows (+3,010)**. Real root cause found: the original load applied a
+*headshop-only category filter* that silently dropped the whole **Indoorgrowing** group (2,593) — where FourTwenty
+files the **Tycoon Gas 250ml** (real EAN `4035687900004`). reference_products is the LOOKUP master → no category
+filter. Fixed `import_reference_catalog.py`: auto-detect `;` delimiter, `--sku-prefix FT-` (stable ref_key → upsert
+not duplicate), native supplier-feed header guesses, before→after counts. **Proven on prod:** name "tycoon" →
+Tycoon (0.412) ✓ ; barcode scan `4035687900004` → Tycoon exact ✓. Backup-gated (39/5157/131 restore drill passed).
+- ▶ The Nov-30 snapshot is 7 mo old — a periodic **live** dropship-feed pull (`dropship_productfeed_v2.csv`) belongs
+  in ② / the supplier-sync framework.
 
 **② THEN THE BLOCK — LIVE SUPPLIER SEARCH ("something really cool"):** when the local catalog+reference MISS,
 live-search the supplier sites → adopt + self-heal the DB. FourTwenty (JSON search API — cleaner than scrape;
