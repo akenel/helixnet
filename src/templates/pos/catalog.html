@@ -256,6 +256,27 @@
                               class="chip chip-class" x-text="classLabel(detailProduct?.product_class)"></span>
                         <span x-show="detailProduct?.promo_restricted" class="chip chip-nopromo">🚫 no promo</span>
                     </div>
+                    <!-- BL-26: quantity price breaks — the same ladder as the sell detail card, so the ladder is visible everywhere. -->
+                    <template x-if="detailProduct?.price_tiers && detailProduct.price_tiers.length">
+                        <div class="mt-4 border border-indigo-200 rounded-lg overflow-hidden text-sm">
+                            <div class="bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-800 flex items-center gap-2">
+                                <span>🏷️ <span data-i18n="scan.tier_heading">Quantity price breaks</span></span>
+                                <span class="ml-auto font-normal text-indigo-400 text-[11px]"
+                                      x-text="detailProduct.tier_mode === 'bundle' ? t('catalog.tiers_mode_bundle') : t('catalog.tiers_mode_perunit')"></span>
+                            </div>
+                            <ul class="divide-y divide-indigo-100">
+                                <li class="px-3 py-1.5 flex justify-between text-gray-500">
+                                    <span>1</span><span class="font-medium" x-text="formatPrice(detailProduct?.price)"></span>
+                                </li>
+                                <template x-for="(row, i) in detailProduct.price_tiers" :key="i">
+                                    <li class="px-3 py-1.5 flex justify-between items-baseline gap-2" x-show="Number(row.min_qty) >= 2">
+                                        <span class="text-gray-800 font-medium" x-text="tierRowLabel(detailProduct, row)"></span>
+                                        <span class="text-gray-400 text-xs flex-none" x-text="tierRowSub(detailProduct, row)"></span>
+                                    </li>
+                                </template>
+                            </ul>
+                        </div>
+                    </template>
                     <button x-show="user.isManager" @click="openEdit(detailProduct); detailProduct=null"
                             class="btn-primary w-full mt-4">✏️ <span data-i18n="catalog.edit_this_product">Edit this product</span></button>
                 </div>
