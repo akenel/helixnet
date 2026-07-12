@@ -615,6 +615,25 @@ async def adopt_live_reference(
     }
 
 
+@router.get("/products/{product_id}/i18n-description")
+async def product_i18n_description(
+    product_id: str,
+    lang: str = "en",
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """BL-36: the product's description in the operator's language, filled on demand. A
+    Tamar/Artemis product is fetched natively (DE/EN/FR/IT are published); anything else is
+    machine-translated from the base (Ollama) and cached in product_translations. Falls back
+    to the raw base description so the modal always shows something."""
+    from src.db.models.product_model import ProductModel
+    from src.services.product_translations import ensure_description
+    product = await db.get(ProductModel, product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return await ensure_description(db, product, lang)
+
+
 @router.get("/products", response_model=list[ProductRead])
 async def list_products(
     skip: int = 0,
