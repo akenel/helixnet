@@ -520,18 +520,20 @@ async def search_suppliers_live(
     q: str = "",
     limit: int = 4,
     suppliers: str = "",
+    db: AsyncSession = Depends(get_db_session),
     current_user: dict = Depends(require_any_pos_role()),
 ):
-    """Live fallback for find-first: when the local catalog + reference cache MISS, search
-    the supplier websites (FourTwenty / Artemis / Near Dark) live and return adoptable rows
-    (name / price / photo / real EAN / tier ladder). Deliberate action — the picker calls it
-    only when the local best match is weak. `suppliers` optionally restricts to adapter keys
-    (comma-separated). One slow supplier can't sink the batch (per-adapter deadline)."""
+    """Live fallback for find-first: when the local catalog + reference cache MISS, search the
+    shop's SUPPLIER WEBSITES live and return adoptable rows (name / price / photo / real EAN /
+    tier ladder). Supplier-list-driven — it iterates the active suppliers that have a website
+    (`source_url`) and dispatches each to its platform adapter (magento/tamar/shopware, or a
+    sniffed one). `suppliers` optionally restricts by supplier code/name (comma-separated).
+    One slow supplier can't sink the batch (per-adapter deadline)."""
     from src.services.supplier_search import search_suppliers
     keys = [s for s in (suppliers or "").split(",") if s.strip()] or None
-    out = await search_suppliers(q, suppliers=keys, limit=max(1, min(int(limit or 4), 8)))
-    logger.info("live supplier-search q=%r → %d results, errors=%s by %s",
-                q, len(out["results"]), out["errors"], current_user["username"])
+    out = await search_suppliers(q, db, suppliers=keys, limit=max(1, min(int(limit or 4), 8)))
+    logger.info("live supplier-search q=%r → %d results (%s), errors=%s by %s",
+                q, len(out["results"]), out.get("suppliers"), out["errors"], current_user["username"])
     return out
 
 

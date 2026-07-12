@@ -10,9 +10,15 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.services.supplier_search.base import parse_chf, score_title, money2
-from src.services.supplier_search.fourtwenty import FourTwentyAdapter
-from src.services.supplier_search.artemis import ArtemisAdapter
-from src.services.supplier_search.neardark import NearDarkAdapter
+from src.services.supplier_search.magento import MagentoAdapter
+from src.services.supplier_search.tamar import TamarAdapter
+from src.services.supplier_search.shopware import ShopwareAdapter
+from src.services.supplier_search import detect_platform
+
+# Platform adapters bound to a concrete supplier site (as the registry would build them).
+FourTwenty = MagentoAdapter("https://fourtwenty.ch", "FourTwenty")
+Artemis = TamarAdapter("https://www.artemisluzern.ch", "Artemis")
+NearDark = ShopwareAdapter("https://www.neardark.de", "Near Dark")
 
 
 # ---- base helpers -----------------------------------------------------------
@@ -49,7 +55,7 @@ FT_HTML = '''
 
 
 def test_fourtwenty_parse_product():
-    r = FourTwentyAdapter._parse_product(FT_HTML, "https://fourtwenty.ch/tycoon-gas-250ml-cs-gas250.html", "tycoon")
+    r = FourTwenty._parse_product(FT_HTML, "https://fourtwenty.ch/tycoon-gas-250ml-cs-gas250.html", "tycoon")
     assert r.title == "Tycoon Gas 250ml"
     assert r.price == 5.0 and r.currency == "CHF"
     assert r.barcode == "4035687900004"
@@ -65,13 +71,13 @@ def test_fourtwenty_parse_product():
 
 
 def test_fourtwenty_is_product_page():
-    assert FourTwentyAdapter._is_product_page(
+    assert FourTwenty._is_product_page(
         "https://fourtwenty.ch/x.html", 'data-ui-id="page-title-wrapper" data-role="priceBox"')
-    assert not FourTwentyAdapter._is_product_page("https://fourtwenty.ch/search/zippo", "grid")
+    assert not FourTwenty._is_product_page("https://fourtwenty.ch/search/zippo", "grid")
 
 
 def test_fourtwenty_no_title_returns_none():
-    assert FourTwentyAdapter._parse_product("<div>nothing</div>", "u", "q") is None
+    assert FourTwenty._parse_product("<div>nothing</div>", "u", "q") is None
 
 
 # ---- Artemis (Tamar) --------------------------------------------------------
@@ -91,7 +97,7 @@ ART_HTML = '''
 def test_artemis_build_from_detail():
     listed = {"name": "Feuerzeug Gas Tycoon 250ml", "salesPriceText": "CHF 6.90",
               "coverUrl": "/ProductImage.ashx?id=abc", "linkUrl": "/en/product/feuerzeug-gas-tycoon-250ml-5851"}
-    r = ArtemisAdapter._build(listed, ART_HTML, "tycoon")
+    r = Artemis._build(listed, ART_HTML, "tycoon")
     assert r.title == "Feuerzeug Gas Tycoon 250ml"
     assert r.price == 6.90 and r.currency == "CHF"
     assert r.barcode is None                       # Artemis publishes no EAN
@@ -107,7 +113,7 @@ def test_artemis_build_from_detail():
 
 def test_artemis_no_tiers_when_no_table():
     listed = {"name": "Thing", "salesPriceText": "CHF 5.–", "linkUrl": "/en/product/thing-1"}
-    r = ArtemisAdapter._build(listed, "<h1>Thing</h1>", "thing")
+    r = Artemis._build(listed, "<h1>Thing</h1>", "thing")
     assert r.price == 5.0 and r.price_tiers == []
 
 
@@ -124,7 +130,7 @@ ND_HTML = '''
 
 def test_neardark_parse_eur():
     url = "https://www.neardark.de/marken/sly-art/5561/black-leaf-cyber-skull-grinder-4-tlg.-rot"
-    r = NearDarkAdapter._parse(ND_HTML, url, "grinder")
+    r = NearDark._parse(ND_HTML, url, "grinder")
     assert r.title.startswith("Black Leaf Cyber Skull Grinder")
     assert r.price == 7.00 and r.currency == "EUR"
     assert r.barcode == "4250153632122"
@@ -132,3 +138,11 @@ def test_neardark_parse_eur():
     assert r.category == "Sly Art"                 # segment before the numeric id
     assert r.price_tiers == []                      # Near Dark publishes no breaks
     assert "grinder" in r.description.lower()
+
+
+# ---- platform sniffing ------------------------------------------------------
+def test_detect_platform_from_homepage_markers():
+    assert detect_platform('<input id="productsApiUrl" /> instantSearchText') == "tamar"
+    assert detect_platform('<form action="/search"><input name="sSearch"></form>') == "shopware"
+    assert detect_platform('data-role="catalogsearch" amasty') == "magento"
+    assert detect_platform("<html>plain wordpress blog</html>") is None

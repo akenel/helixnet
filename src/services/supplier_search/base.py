@@ -16,8 +16,14 @@ import re
 from dataclasses import asdict, dataclass, field
 from decimal import ROUND_HALF_UP, Decimal
 from typing import Optional
+from urllib.parse import urlparse
 
 import httpx
+
+
+def host_of(url: str) -> str:
+    """The bare host of a URL ('https://www.neardark.de/x' -> 'www.neardark.de')."""
+    return urlparse(url or "").netloc or (url or "").split("/")[0]
 
 _CENT = Decimal("0.01")
 
@@ -109,10 +115,19 @@ class SupplierResult:
 
 
 class BaseAdapter:
-    """One supplier site. ``search`` gets a shared client (cookies/session reused)."""
+    """One PLATFORM (Magento / Tamar / Shopware …), bound at construction to a specific
+    supplier's website + display name. The same platform adapter serves every supplier on
+    that platform — you point it at a different ``base_url`` and it just works.
 
-    supplier = "?"
-    supplier_key = "?"
+    ``platform`` is the key the supplier registry dispatches on (matches SupplierModel
+    ``adapter_type`` or a sniffed platform). ``search`` gets a shared client (session reused)."""
+
+    platform = "?"
+
+    def __init__(self, base_url: str, supplier_name: str):
+        self.base_url = (base_url or "").rstrip("/")
+        self.host = host_of(self.base_url)
+        self.supplier = supplier_name        # the supplier's display name (from the registry)
 
     async def search(self, client: httpx.AsyncClient, q: str, limit: int = 5) -> list[SupplierResult]:
         raise NotImplementedError
