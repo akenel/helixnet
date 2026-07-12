@@ -20,6 +20,8 @@ Add `"fr"` to POS_STRINGS (chrome then shows French instead of English fallback)
 nl/es/pl (same batch move per language). ~hundreds of keys → automate, don't hand-type. Parity gate:
 each key ×N langs. This is the "chrome follows" step of the language architecture [[lp-language-architecture]].
 
+**BL-38 — MULTILINGUAL SUPPLIER QUERY (queued 2026-07-13, Angel).** Live supplier search sends the query in each site's OWN language so an English/French-typed term still hits the German sites: auto-translate the query → German for FourTwenty (Magento German index); query Artemis in multiple languageIds (not just EN=3). Reuse the Ollama translate from BL-36 (`product_translations._translate`) or a tiny query-translate helper; cache per (term,lang). Login language is irrelevant — it's the QUERY word that matches. Ties [[banco-live-supplier-search]].
+
 **BL-36 multi-language DESCRIPTIONS ✅ SHIPPED PROD 2026-07-12 (`58fef52`, backup-gated, re-probed: native FR/DE/IT on real Artemis items).**
 Sign in a language → description follows: **Artemis serves DE/EN/FR/IT free** (native), else Ollama +
 cache. FR content-language switch fixed (isLang() at every gate). **→ Ship to prod (backup-gated) —
