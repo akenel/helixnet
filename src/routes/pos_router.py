@@ -366,6 +366,139 @@ async def ai_suggest_product(
     return result
 
 
+async def _find_catalog_matches(db: AsyncSession, q: str, limit: int = 6) -> dict:
+    """Find-first: given a NAME, search the LIVE catalog (`products`) AND the FourTwenty
+    reference (`reference_products`) by pg_trgm similarity and return the REAL matching
+    rows, best-first. This is the *librarian* half of snap-find — it FINDS what already
+    exists instead of drafting a new product. Reused by GET /products/find-matches (a
+    typed or AI-read name) and by POST /products/snap-find (photo → AI name → this).
+
+    HONEST confidence: each match carries its trigram similarity (0..1) — a *match* score,
+    not a model self-rating. `best_match_score` = the top catalog hit's similarity, so the
+    UI can say "found it" vs "no strong match → search or create new" (the grinder lesson:
+    never a confident wrong answer)."""
+    from sqlalchemy import text
+    from src.services.catalog_taxonomy import class_promo_restricted
+
+    q = (q or "").strip()
+    limit = max(1, min(int(limit or 6), 20))
+    empty = {"query": q, "product_matches": [], "reference_matches": [], "best_match_score": 0.0}
+    if not q:
+        return empty
+
+    # Live catalog = the Artemis-Luzern truth already imported into `products`. Prefix
+    # matches float first, then by trigram similarity (mirrors search_products_fast).
+    prod_rows = (await db.execute(text("""
+        SELECT id, sku, barcode, name, category, price, image_url, product_class,
+               is_age_restricted, price_tiers, tier_mode,
+               similarity(name, :q) AS score
+        FROM products
+        WHERE is_active = true
+          AND (name ILIKE '%' || :q || '%' OR similarity(name, :q) > 0.1)
+        ORDER BY CASE WHEN name ILIKE :q || '%' THEN 0 ELSE 1 END,
+                 similarity(name, :q) DESC, name
+        LIMIT :limit
+    """), {"q": q, "limit": limit})).fetchall()
+    product_matches = [{
+        "id": str(r.id), "sku": r.sku, "barcode": r.barcode, "name": r.name,
+        "category": r.category, "price": float(r.price) if r.price else 0,
+        "image_url": r.image_url, "product_class": r.product_class,
+        "is_age_restricted": bool(r.is_age_restricted),
+        "promo_restricted": class_promo_restricted(r.product_class),
+        "price_tiers": r.price_tiers, "tier_mode": r.tier_mode,
+        "score": round(float(r.score), 3) if r.score is not None else 0.0,
+    } for r in prod_rows]
+
+    # FourTwenty reference (adoptable — carries real supplier EANs when present).
+    ref_rows = (await db.execute(text("""
+        SELECT id, supplier, supplier_sku, barcode, title, description, image_url,
+               category, suggested_price, similarity(title, :q) AS score
+        FROM reference_products
+        WHERE title ILIKE '%' || :q || '%' OR similarity(title, :q) > 0.1
+        ORDER BY CASE WHEN title ILIKE :q || '%' THEN 0 ELSE 1 END,
+                 similarity(title, :q) DESC, title
+        LIMIT :limit
+    """), {"q": q, "limit": limit})).fetchall()
+    reference_matches = [{
+        "id": str(r.id), "supplier": r.supplier, "supplier_sku": r.supplier_sku,
+        "barcode": r.barcode, "title": r.title, "name": r.title,
+        "description": r.description, "image_url": r.image_url, "category": r.category,
+        "suggested_price": float(r.suggested_price) if r.suggested_price is not None else None,
+        "is_reference": True,
+        "score": round(float(r.score), 3) if r.score is not None else 0.0,
+    } for r in ref_rows]
+
+    best = product_matches[0]["score"] if product_matches else 0.0
+    return {"query": q, "product_matches": product_matches,
+            "reference_matches": reference_matches, "best_match_score": best}
+
+
+@router.get("/products/find-matches")
+async def find_product_matches(
+    q: str = "",
+    limit: int = 6,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """Find-first search: given a NAME (typed, or read off a photo by the AI), return the
+    REAL catalog + reference rows that match, ranked by trigram similarity with honest
+    scores. The librarian — it finds what already exists rather than inventing a new
+    product. Pairs with POST /products/snap-find (photo → AI name → this)."""
+    return await _find_catalog_matches(db, q, limit)
+
+
+@router.post("/products/snap-find")
+async def snap_find_product(
+    file: UploadFile = File(...),
+    hint: Optional[str] = None,
+    provider: Optional[str] = None,
+    limit: int = 6,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """Snap a photo → the AI reads the item → SEARCH the real catalog for it (find-first).
+
+    The librarian, not the author. Where /products/ai-suggest only DRAFTS a new product,
+    this reads the name off the photo and runs it through _find_catalog_matches so the
+    cashier can pick the item that ALREADY exists (in `products` or the FourTwenty
+    reference). The AI draft rides along as the fallback for a genuine new item.
+
+    Returns the ai-suggest envelope (`suggestion`/`provider`/`model`/`elapsed_ms`) PLUS
+    `query`, `product_matches`, `reference_matches`, `best_match_score`. Honest confidence
+    is the match score, not the model's self-rating — the grinder can't return a confident
+    wrong answer, because a low `best_match_score` means "not found → search or create"."""
+    raw = await file.read()
+    if len(raw) > _MAX_IMAGE_BYTES:
+        raise HTTPException(status_code=413, detail="Image too large (max 15 MB)")
+    if not (file.content_type or "").lower().startswith("image/"):
+        raise HTTPException(status_code=415, detail="Please upload an image")
+
+    from src.services.vision_product_analyzer import suggest_product_from_image
+    from src.services.image_intake import ImageIntakeError
+    try:
+        result = await suggest_product_from_image(
+            raw, file.content_type or "image/jpeg", hint=hint, provider=provider,
+        )
+    except ImageIntakeError:
+        raise HTTPException(status_code=400, detail="That doesn't look like a usable photo")
+
+    # Build the search from what the AI read: name is the strongest signal; fold in brand
+    # when the model split it out (so "Flower Mill" grinder still hits with brand=Next-Gen).
+    s = result.get("suggestion") or {}
+    name = (s.get("name") or "").strip()
+    brand = (s.get("brand") or "").strip()
+    q = f"{brand} {name}".strip() if (brand and brand.lower() not in name.lower()) else (name or brand)
+
+    matches = await _find_catalog_matches(db, q, limit)
+    logger.info(
+        "AI snap-find: provider=%s %dms q=%r → %d catalog + %d reference (best=%.2f) by %s",
+        result.get("provider"), result.get("elapsed_ms", 0), q,
+        len(matches["product_matches"]), len(matches["reference_matches"]),
+        matches["best_match_score"], current_user["username"],
+    )
+    return {**result, **matches}
+
+
 @router.get("/products", response_model=list[ProductRead])
 async def list_products(
     skip: int = 0,

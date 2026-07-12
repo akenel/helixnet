@@ -394,9 +394,19 @@
                                             <span x-show="parseFloat(form.price) > 0 && m.suggested_price && parseFloat(form.price) > parseFloat(m.suggested_price)" data-i18n="catalog.above_supplier">— above supplier price</span>
                                             <span class="text-gray-400" x-show="m.similarity != null"><span x-text="Math.round(m.similarity*100)"></span>%</span>
                                         </div>
+                                        <!-- BL-32+: the reference's own NAME (confirm it's the same item) + quick stats
+                                             (price delta vs your price · supplier cost); the photo enlarges on click. -->
+                                        <div class="text-gray-700 font-medium mt-1 truncate" x-show="m.title" x-text="m.title"></div>
+                                        <div class="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5" x-show="m.suggested_price != null || m.cost != null">
+                                            <span x-show="parseFloat(form.price) > 0 && m.suggested_price != null"
+                                                  :class="parseFloat(form.price) < parseFloat(m.suggested_price) ? 'text-green-600 font-semibold' : 'text-amber-600 font-semibold'"
+                                                  x-text="(parseFloat(form.price) < parseFloat(m.suggested_price) ? '▼ −' : '▲ +') + formatPrice(Math.abs(parseFloat(form.price) - parseFloat(m.suggested_price)))"></span>
+                                            <span class="text-gray-500" x-show="m.cost != null" x-text="t('catalog.cmp_cost') + ' ' + formatPrice(m.cost)"></span>
+                                        </div>
                                         <div class="flex gap-2 mt-1.5" x-show="m.image_url || m.description">
-                                            <img x-show="m.image_url" :src="m.image_url" loading="lazy" alt="" class="w-14 h-14 rounded object-cover border flex-none bg-white">
-                                            <p class="text-gray-500 flex-1 min-w-0 line-clamp-3" x-show="m.description" x-text="m.description"></p>
+                                            <img x-show="m.image_url" :src="m.image_url" @click="openLightbox(m.image_url, m.title || m.supplier)" loading="lazy" alt=""
+                                                 class="w-16 h-16 rounded object-cover border flex-none bg-white cursor-zoom-in hover:ring-2 hover:ring-blue-400" :title="t('catalog.cmp_enlarge')">
+                                            <p class="text-gray-500 flex-1 min-w-0 line-clamp-4" x-show="m.description" x-text="m.description"></p>
                                         </div>
                                         <div class="flex items-center gap-3 mt-1.5 flex-wrap">
                                             <button type="button" x-show="m.description" @click="pullFrom(m, 'desc')" class="text-blue-600 hover:underline" data-i18n="catalog.pull_desc">use description</button>
@@ -535,6 +545,68 @@
         </div>
     </div>
 
+    <!-- FIND-FIRST picker: snap → the AI reads it → these are the items ALREADY in the shop (or the
+         FourTwenty reference). Pick the real one instead of creating a duplicate; "new item" is the fallback. -->
+    <div x-show="snapOpen" x-transition class="fixed inset-0 z-[70] bg-black/60 flex items-center justify-center p-4" style="display:none;" @click.self="snapClose()">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-start p-5 border-b sticky top-0 bg-white">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900" data-i18n="catalog.snap_title">Is it already in the shop?</h3>
+                    <p class="text-xs text-gray-500 mt-1">
+                        <span data-i18n="catalog.snap_ai_saw">AI read</span>:
+                        <span class="font-medium text-gray-700" x-text="snap ? snap.query : ''"></span>
+                    </p>
+                </div>
+                <button @click="snapClose()" class="text-gray-400 hover:text-gray-700 text-3xl leading-none flex-none">&times;</button>
+            </div>
+            <div class="p-4 space-y-4">
+                <!-- In the live catalog: tap = open the existing one (no duplicate) -->
+                <div x-show="snap && snap.product_matches && snap.product_matches.length">
+                    <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2" data-i18n="catalog.snap_in_catalog">Already in your catalog</div>
+                    <template x-for="m in (snap ? snap.product_matches : [])" :key="m.id">
+                        <button @click="snapPickCatalog(m)" class="w-full flex items-center gap-3 p-2.5 mb-2 rounded-lg border border-gray-200 hover:border-indigo-400 hover:bg-indigo-50 text-left">
+                            <div class="w-12 h-12 flex-none bg-gray-50 rounded border flex items-center justify-center overflow-hidden">
+                                <img x-show="m.image_url" :src="m.image_url" class="w-full h-full object-contain" alt="" @error="$el.style.display='none'">
+                                <span x-show="!m.image_url" class="text-2xl">📦</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-medium text-gray-900 truncate" x-text="m.name"></div>
+                                <div class="text-xs text-gray-500 truncate"><span x-text="m.sku"></span> · <span x-text="formatPrice(m.price)"></span></div>
+                            </div>
+                            <span class="flex-none text-xs font-bold px-2 py-1 rounded-full"
+                                  :class="snapPct(m.score) >= 45 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'">
+                                <span x-text="snapPct(m.score)"></span>% <span data-i18n="catalog.snap_match">match</span>
+                            </span>
+                        </button>
+                    </template>
+                </div>
+                <!-- FourTwenty reference: tap = fill the add-form from the supplier master -->
+                <div x-show="snap && snap.reference_matches && snap.reference_matches.length">
+                    <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2" data-i18n="catalog.snap_from_supplier">From FourTwenty (supplier)</div>
+                    <template x-for="m in (snap ? snap.reference_matches : [])" :key="m.id">
+                        <button @click="snapPickReference(m)" class="w-full flex items-center gap-3 p-2.5 mb-2 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-left">
+                            <div class="w-12 h-12 flex-none bg-gray-50 rounded border flex items-center justify-center overflow-hidden">
+                                <img x-show="m.image_url" :src="m.image_url" class="w-full h-full object-contain" alt="" @error="$el.style.display='none'">
+                                <span x-show="!m.image_url" class="text-2xl">📦</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-medium text-gray-900 truncate" x-text="m.title"></div>
+                                <div class="text-xs text-gray-500 truncate" x-text="m.suggested_price != null ? formatPrice(m.suggested_price) : ''"></div>
+                            </div>
+                            <span class="flex-none text-xs font-bold px-2 py-1 rounded-full bg-blue-100 text-blue-700">
+                                <span x-text="snapPct(m.score)"></span>% <span data-i18n="catalog.snap_match">match</span>
+                            </span>
+                        </button>
+                    </template>
+                </div>
+                <!-- Fallback: it's genuinely new -->
+                <button @click="snapUseAiDraft()" class="w-full mt-1 py-3 rounded-lg border-2 border-dashed border-gray-300 text-gray-700 font-semibold hover:border-indigo-400 hover:text-indigo-700">
+                    <span data-i18n="catalog.snap_none_new">None of these — it's a new item</span> →
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- BL-32: "you already have that one" — an enrich-the-existing dialog instead of a dead-end 409. -->
     <div x-show="dup" x-transition class="fixed inset-0 z-[80] bg-black/60 flex items-center justify-center p-4" style="display:none;" @click.self="dup=null">
         <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-5 space-y-4">
@@ -638,6 +710,9 @@
             uploadingPhoto: false,
             aiBusy: false,        // photo→product AI suggest in flight
             aiNote: '',           // result line: confidence + ms, or a graceful fallback note
+            snap: null,           // find-first: {suggestion, product_matches, reference_matches, best_match_score, query}
+            snapOpen: false,      // the "is it already in the shop?" picker
+            snapFile: null,       // the snapped photo, kept if the cashier goes "new item"
 
             // BL-89: barcode scan on the form
             scanOpen: false,
@@ -818,36 +893,95 @@
             // ✨ Snap & fill: photograph an unmarked item → AI drafts the fields.
             // Only fills BLANK fields (never clobbers what the manager already typed),
             // and queues the same photo so it's saved as the product picture too.
+            // FIND-FIRST: snap → the AI reads the item → SEARCH the real catalog for it. If it's
+            // already in the shop (or the FourTwenty reference), show the picker so the cashier picks
+            // the existing row instead of creating a duplicate. No matches → straight to the AI draft.
             async aiSuggest(e) {
                 const f = e.target.files && e.target.files[0];
                 e.target.value = '';
                 if (!f) return;
                 if (!f.type.startsWith('image/')) { showToast(t('catalog.not_an_image'), 'warning'); return; }
-                this.aiBusy = true; this.aiNote = '';
+                this.aiBusy = true; this.aiNote = ''; this.snapFile = f;
                 try {
                     const fd = new FormData(); fd.append('file', f);
-                    const r = await fetch('/api/v1/pos/products/ai-suggest', {
+                    const r = await fetch('/api/v1/pos/products/snap-find', {
                         method: 'POST', headers: { 'Authorization': `Bearer ${AuthHelper.getToken()}` }, body: fd });
-                    if (!r.ok) throw new Error('AI suggest failed');
+                    if (!r.ok) throw new Error('snap-find failed');
                     const d = await r.json();
-                    const s = d.suggestion || {};
-                    const blank = v => v === '' || v === null || v === undefined;
-                    if (blank(this.form.name) && s.name) this.form.name = s.name;
-                    if (blank(this.form.category) && s.category) this.form.category = s.category;
-                    if (blank(this.form.description) && s.description) this.form.description = s.description;
-                    if (blank(this.form.price) && s.price_estimate != null) this.form.price = s.price_estimate;
-                    // Queue the shot as the product photo (reuse the same pending-photo path).
-                    const reader = new FileReader();
-                    reader.onload = () => { this.pendingPhotos.push({ file: f, preview: reader.result }); };
-                    reader.readAsDataURL(f);
-                    this.aiNote = d.note
-                        ? d.note
-                        : `Drafted by ${d.provider} in ${(d.elapsed_ms/1000).toFixed(1)}s · confidence ${Math.round((s.confidence||0)*100)}% · check the price.`;
+                    const hasMatches = (d.product_matches && d.product_matches.length) ||
+                                       (d.reference_matches && d.reference_matches.length);
+                    if (hasMatches) {
+                        this.snap = d;          // {suggestion, matches..., best_match_score, query}
+                        this.snapOpen = true;   // "is it already in the shop?" — cashier decides
+                    } else {
+                        // Nothing like it exists → it really is new: draft the fields.
+                        this._applyAiDraft(d.suggestion, f);
+                        this.aiNote = this._draftNote(d);
+                    }
                 } catch (err) {
-                    console.warn('ai suggest', err);
+                    console.warn('snap-find', err);
                     this.aiNote = t('catalog.ai_unavailable');
                 } finally { this.aiBusy = false; }
             },
+
+            // Fill the blank add-form fields from the AI's read + queue the shot as the photo.
+            _applyAiDraft(s, f) {
+                s = s || {};
+                const blank = v => v === '' || v === null || v === undefined;
+                if (blank(this.form.name) && s.name) this.form.name = s.name;
+                if (blank(this.form.category) && s.category) this.form.category = s.category;
+                if (blank(this.form.description) && s.description) this.form.description = s.description;
+                if (blank(this.form.price) && s.price_estimate != null) this.form.price = s.price_estimate;
+                if (f) this._queuePhoto(f);
+            },
+            _queuePhoto(f) {
+                const reader = new FileReader();
+                reader.onload = () => { this.pendingPhotos.push({ file: f, preview: reader.result }); };
+                reader.readAsDataURL(f);
+            },
+            _draftNote(d) {
+                return d && d.note ? d.note
+                    : `${t('catalog.ai_drafted_by')} ${d.provider} · ${(d.elapsed_ms/1000).toFixed(1)}s · ${t('catalog.ai_check_price')}`;
+            },
+
+            // Picker: it's ALREADY in the catalog → open the existing product (no duplicate).
+            snapPickCatalog(m) {
+                this.snapOpen = false; this.snap = null; this.snapFile = null;
+                this.modalOpen = false;   // leave the "new product" modal
+                this.openEdit(m);         // manage the one that already exists
+            },
+            // Picker: it's in the FourTwenty reference → fill the add-form from that master, keep the
+            // photo; the cashier reviews + prices + saves (the create path is dup-checked, BL-32).
+            snapPickReference(m) {
+                if (m) {
+                    if (m.name || m.title) this.form.name = m.name || m.title;
+                    if (m.description) this.form.description = m.description;
+                    if (m.barcode && !this.form.barcode) this.form.barcode = m.barcode;
+                    if (m.category && !this.form.category) this.form.category = m.category;
+                    if (m.suggested_price != null && (this.form.price === '' || this.form.price == null)) this.form.price = m.suggested_price;
+                    if (m.supplier) this.form.supplier_name = m.supplier;
+                    // Prefer the supplier's PROFESSIONAL photo over the cashier's snap (theirs is
+                    // better — proper lighting, white background). Only fall back to the snap if the
+                    // reference carries no image. (Reference has one image today; a multi-image
+                    // supplier feed → "grab them all" is a future enhancement.)
+                    if (m.image_url) {
+                        this.form.image_url = m.image_url;
+                    } else if (this.snapFile) {
+                        this._queuePhoto(this.snapFile);
+                    }
+                }
+                this.snapOpen = false; this.snap = null; this.snapFile = null;
+                this.aiNote = t('catalog.snap_from_ref_note');
+            },
+            // Picker: none of these → it's genuinely new. Use the AI draft.
+            snapUseAiDraft() {
+                const d = this.snap || {};
+                this._applyAiDraft(d.suggestion, this.snapFile);
+                this.aiNote = this._draftNote(d);
+                this.snapOpen = false; this.snap = null; this.snapFile = null;
+            },
+            snapClose() { this.snapOpen = false; },
+            snapPct(score) { return Math.round((Number(score) || 0) * 100); },
 
             // Add a photo. Editing an existing product → upload now (append to gallery).
             // Creating → queue it; it uploads when the product is saved.
