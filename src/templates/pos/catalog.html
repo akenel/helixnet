@@ -946,12 +946,19 @@
                 if (m) {
                     if (m.name || m.title) this.form.name = m.name || m.title;
                     if (m.description) this.form.description = m.description;
-                    if (m.image_url) this.form.image_url = m.image_url;
                     if (m.barcode && !this.form.barcode) this.form.barcode = m.barcode;
                     if (m.category && !this.form.category) this.form.category = m.category;
                     if (m.suggested_price != null && (this.form.price === '' || this.form.price == null)) this.form.price = m.suggested_price;
                     if (m.supplier) this.form.supplier_name = m.supplier;
-                    if (this.snapFile) this._queuePhoto(this.snapFile);
+                    // Prefer the supplier's PROFESSIONAL photo over the cashier's snap (theirs is
+                    // better — proper lighting, white background). Only fall back to the snap if the
+                    // reference carries no image. (Reference has one image today; a multi-image
+                    // supplier feed → "grab them all" is a future enhancement.)
+                    if (m.image_url) {
+                        this.form.image_url = m.image_url;
+                    } else if (this.snapFile) {
+                        this._queuePhoto(this.snapFile);
+                    }
                 }
                 this.snapOpen = false; this.snap = null; this.snapFile = null;
                 this.aiNote = t('catalog.snap_from_ref_note');
