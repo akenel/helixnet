@@ -32,6 +32,7 @@ from __future__ import annotations
 
 import asyncio
 import csv
+import io
 import os
 import re
 import sys
@@ -45,13 +46,15 @@ app = typer.Typer(add_completion=False, help="Reference catalog (product master)
 
 # Our canonical field -> the CSV headers we'll try if no explicit mapping is given.
 DEFAULT_HEADER_GUESSES = {
-    "title": ["title", "name", "product_name", "article", "bezeichnung", "designation"],
+    "title": ["title", "name", "product_name", "article", "bezeichnung", "designation",
+              "producttitle_de", "producttitle", "producttitle_en"],
     "barcode": ["barcode", "ean", "ean13", "upc", "gtin", "code"],
     "supplier_sku": ["supplier_sku", "sku", "article_no", "artikelnr", "art_nr", "ref", "item_no"],
     "description": ["description", "desc", "long_description", "beschreibung", "details"],
-    "image_url": ["image_url", "image", "img", "picture", "photo", "bild"],
-    "category": ["category", "cat", "group", "kategorie", "type"],
-    "suggested_price": ["suggested_price", "price", "rrp", "retail_price", "vk", "preis"],
+    "image_url": ["image_url", "image", "img", "picture", "photo", "bild", "mainimageurl"],
+    "category": ["category", "cat", "group", "kategorie", "type", "categorygroup_1", "productcategory"],
+    "suggested_price": ["suggested_price", "price", "rrp", "retail_price", "vk", "preis",
+                        "salespriceinclvat"],
     "cost": ["cost", "buy_price", "ek", "wholesale", "net_price"],
 }
 
@@ -100,7 +103,7 @@ def build_header_map(fieldnames: list[str], explicit: dict | None) -> dict:
     return resolved
 
 
-def normalize_row(raw: dict, header_map: dict, supplier: str) -> Optional[dict]:
+def normalize_row(raw: dict, header_map: dict, supplier: str, sku_prefix: str = "") -> Optional[dict]:
     """Turn one CSV row into a reference_products row dict, or None if it has no usable title."""
     def pick(field):
         h = header_map.get(field)
@@ -111,6 +114,10 @@ def normalize_row(raw: dict, header_map: dict, supplier: str) -> Optional[dict]:
         return None
     barcode = (pick("barcode") or "").strip() or None
     supplier_sku = (pick("supplier_sku") or "").strip() or None
+    # Namespace the supplier's raw sku (e.g. FT-) so ref_key stays stable + collision-free
+    # across suppliers, and re-imports UPSERT onto the same rows instead of duplicating.
+    if supplier_sku and sku_prefix and not supplier_sku.startswith(sku_prefix):
+        supplier_sku = sku_prefix + supplier_sku
     return {
         "supplier": supplier,
         "ref_key": compute_ref_key(supplier_sku, barcode, title),
@@ -126,25 +133,29 @@ def normalize_row(raw: dict, header_map: dict, supplier: str) -> Optional[dict]:
     }
 
 
-def parse_csv(path: Path, supplier: str, header_map_explicit: dict | None) -> tuple[list[dict], int]:
+def parse_csv(path: Path, supplier: str, header_map_explicit: dict | None,
+              sku_prefix: str = "") -> tuple[list[dict], int]:
     """Read + normalize the whole CSV. Returns (rows, skipped_count). De-dups within the
-    file on (supplier, ref_key) so a single import never self-conflicts (last row wins)."""
-    with path.open(newline="", encoding="utf-8-sig") as fh:
-        reader = csv.DictReader(fh)
-        header_map = build_header_map(reader.fieldnames or [], header_map_explicit)
-        if "title" not in header_map:
-            raise typer.BadParameter(
-                f"Could not find a title/name column. Headers were: {reader.fieldnames}. "
-                f"Pass --map to point 'title' at the right column."
-            )
-        by_key: dict[tuple, dict] = {}
-        skipped = 0
-        for raw in reader:
-            row = normalize_row(raw, header_map, supplier)
-            if row is None:
-                skipped += 1
-                continue
-            by_key[(row["supplier"], row["ref_key"])] = row
+    file on (supplier, ref_key) so a single import never self-conflicts (last row wins).
+    Auto-detects the delimiter (supplier feeds are commonly semicolon-separated)."""
+    text = path.read_text(encoding="utf-8-sig")
+    first_line = text.splitlines()[0] if text else ""
+    delimiter = ";" if first_line.count(";") > first_line.count(",") else ","
+    reader = csv.DictReader(io.StringIO(text), delimiter=delimiter)
+    header_map = build_header_map(reader.fieldnames or [], header_map_explicit)
+    if "title" not in header_map:
+        raise typer.BadParameter(
+            f"Could not find a title/name column. Headers were: {reader.fieldnames}. "
+            f"Pass --map to point 'title' at the right column."
+        )
+    by_key: dict[tuple, dict] = {}
+    skipped = 0
+    for raw in reader:
+        row = normalize_row(raw, header_map, supplier, sku_prefix)
+        if row is None:
+            skipped += 1
+            continue
+        by_key[(row["supplier"], row["ref_key"])] = row
     return list(by_key.values()), skipped
 
 
@@ -170,12 +181,17 @@ async def upsert_rows(rows: list[dict], db_url: str) -> dict:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     from src.db.models.reference_product_model import ReferenceProductModel
 
+    from sqlalchemy import func, select
     engine = create_async_engine(db_url)
     now = datetime.now(timezone.utc)
+    supplier = rows[0]["supplier"] if rows else None
     update_cols = ["supplier_sku", "barcode", "title", "description", "image_url",
                    "category", "suggested_price", "cost", "raw", "imported_at"]
     try:
         async with engine.begin() as conn:
+            before = await conn.scalar(
+                select(func.count()).select_from(ReferenceProductModel)
+                .where(ReferenceProductModel.supplier == supplier))
             for chunk_start in range(0, len(rows), 500):
                 chunk = rows[chunk_start:chunk_start + 500]
                 for r in chunk:
@@ -186,10 +202,15 @@ async def upsert_rows(rows: list[dict], db_url: str) -> dict:
                     set_={c: getattr(stmt.excluded, c) for c in update_cols},
                 )
                 await conn.execute(stmt)
+            after = await conn.scalar(
+                select(func.count()).select_from(ReferenceProductModel)
+                .where(ReferenceProductModel.supplier == supplier))
     finally:
         await engine.dispose()
     # Idempotent on (supplier, ref_key): existing rows are updated in place, new ones inserted.
-    return {"upserted": len(rows)}
+    inserted = (after or 0) - (before or 0)
+    return {"upserted": len(rows), "before": before or 0, "after": after or 0,
+            "inserted": inserted, "updated": len(rows) - inserted}
 
 
 @app.command("import-catalog")
@@ -197,6 +218,7 @@ def import_catalog(
     csv_path: Path = typer.Argument(..., exists=True, readable=True, help="Supplier CSV dump"),
     supplier: str = typer.Option(..., "--supplier", help="Source supplier tag, e.g. 420 / TMR"),
     map_file: Optional[Path] = typer.Option(None, "--map", help="YAML {our_field: csv_header}"),
+    sku_prefix: str = typer.Option("", "--sku-prefix", help="Namespace raw skus, e.g. FT- (keeps ref_key stable so re-imports upsert)"),
     db_url: Optional[str] = typer.Option(None, "--db-url", help="SQLAlchemy async URL (overrides env)"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Parse + report, do not write"),
 ):
@@ -206,7 +228,7 @@ def import_catalog(
         import yaml  # optional dep; only needed when --map is used
         explicit = yaml.safe_load(map_file.read_text()) or {}
 
-    rows, skipped = parse_csv(csv_path, supplier, explicit)
+    rows, skipped = parse_csv(csv_path, supplier, explicit, sku_prefix)
     typer.echo(f"Parsed {len(rows)} usable rows from {csv_path.name} "
                f"(supplier={supplier}, skipped {skipped} with no title).")
     with_barcode = sum(1 for r in rows if r["barcode"])
@@ -223,7 +245,8 @@ def import_catalog(
     target = resolve_db_url(db_url)
     typer.echo(f"Upserting into {target.split('@')[-1]} ...")
     result = asyncio.run(upsert_rows(rows, target))
-    typer.echo(f"Done. upserted={result['upserted']} (insert+update, idempotent on supplier,ref_key).")
+    typer.echo(f"Done. {supplier}: {result['before']} -> {result['after']} rows "
+               f"(+{result['inserted']} new, {result['updated']} updated, idempotent on supplier,ref_key).")
 
 
 if __name__ == "__main__":
