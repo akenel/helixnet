@@ -103,6 +103,7 @@ class SupplierResult:
     price_tiers: list = field(default_factory=list)   # [{"min_qty": int, "unit_price": "4.00"}]
     tier_mode: str = "per_unit"
     score: float = 0.0
+    role: str = "wholesale"               # 'wholesale' = your COST | 'retail' = the MARKET | 'both'
 
     def to_dict(self) -> dict:
         d = asdict(self)
@@ -124,10 +125,11 @@ class BaseAdapter:
 
     platform = "?"
 
-    def __init__(self, base_url: str, supplier_name: str):
+    def __init__(self, base_url: str, supplier_name: str, role: str = "wholesale"):
         self.base_url = (base_url or "").rstrip("/")
         self.host = host_of(self.base_url)
         self.supplier = supplier_name        # the supplier's display name (from the registry)
+        self.role = role                     # 'wholesale' (cost) | 'retail' (market) | 'both'
 
     async def search(self, client: httpx.AsyncClient, q: str, limit: int = 5) -> list[SupplierResult]:
         raise NotImplementedError

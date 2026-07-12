@@ -64,6 +64,14 @@ class SupplierModel(Base):
         nullable=True,
         comment="Import adapter: 'tamar' | 'magento' | 'csv' | 'manual'"
     )
+    supplier_role: Mapped[str] = mapped_column(
+        String(12),
+        nullable=False,
+        default="wholesale",
+        comment="What this site's price MEANS for pricing intel: 'wholesale' = your COST, "
+                "'retail' = a competitor's MARKET price, 'both' = a site that is both "
+                "(e.g. fourtwenty.ch = public retail shop AND our dropship supplier)."
+    )
     contact_name: Mapped[Optional[str]] = mapped_column(
         String(120),
         nullable=True,

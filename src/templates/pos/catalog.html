@@ -645,6 +645,7 @@
                                     <div class="font-medium text-gray-900 truncate" x-text="m.title"></div>
                                     <div class="text-xs text-gray-500 truncate">
                                         <span class="font-semibold text-teal-700" x-text="m.supplier"></span>
+                                        <span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-semibold" :class="roleClass(m.role)" x-text="roleLabel(m.role)"></span>
                                         <template x-if="m.price != null"> · <span x-text="m.currency + ' ' + m.price"></span></template>
                                         <template x-if="m.price_tiers && m.price_tiers.length"><span class="text-teal-600"> · 🏷️<span x-text="m.price_tiers.length"></span></span></template>
                                         <template x-if="m.barcode"><span class="text-gray-400"> · <span x-text="m.barcode"></span></span></template>
@@ -1159,6 +1160,17 @@
             },
             _resetLive() { this.liveResults = []; this.liveSearched = false; this.liveErrors = {}; this.liveBusy = false; },
             snapClose() { this.snapOpen = false; this._resetLive(); },
+            // BL-35 wholesale-vs-competitor labeling: what this site's price MEANS.
+            roleLabel(role) {
+                if (role === 'retail') return '🏪 ' + t('catalog.role_retail');
+                if (role === 'both') return '⚖️ ' + t('catalog.role_both');
+                return '💰 ' + t('catalog.role_wholesale');
+            },
+            roleClass(role) {
+                if (role === 'retail') return 'bg-orange-100 text-orange-700';
+                if (role === 'both') return 'bg-violet-100 text-violet-700';
+                return 'bg-emerald-100 text-emerald-700';
+            },
             snapPct(score) { return Math.round((Number(score) || 0) * 100); },
 
             // Add a photo. Editing an existing product → upload now (append to gallery).

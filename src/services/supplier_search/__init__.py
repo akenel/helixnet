@@ -74,7 +74,7 @@ async def _adapters_for_suppliers(db, client, suppliers: list[str] | None) -> li
                 platform = ""
         cls = PLATFORM_ADAPTERS.get(platform)
         if cls:
-            adapters.append(cls(url, s.name))
+            adapters.append(cls(url, s.name, getattr(s, "supplier_role", None) or "wholesale"))
         else:
             log.info("supplier %s has a website but no supported platform — skipped", s.name)
     return adapters
@@ -105,6 +105,8 @@ async def search_suppliers(q: str, db, suppliers: list[str] | None = None,
             log.warning("supplier-search %s failed for %r: %s", adapter.supplier, q, res)
             errors[adapter.supplier] = str(res) or res.__class__.__name__
             continue
+        for r in res:
+            r.role = adapter.role       # stamp what this site's price means (cost vs market)
         results.extend(res)
 
     results.sort(key=lambda r: r.score, reverse=True)

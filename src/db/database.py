@@ -165,6 +165,10 @@ _ADDITIVE_COLUMNS: list[str] = [
     "ALTER TABLE reference_products ADD COLUMN IF NOT EXISTS our_category VARCHAR(60)",
     "ALTER TABLE reference_products ADD COLUMN IF NOT EXISTS our_class VARCHAR(40)",
     "ALTER TABLE reference_products ADD COLUMN IF NOT EXISTS age_restricted BOOLEAN NOT NULL DEFAULT FALSE",
+    # BL-35 wholesale-vs-competitor labeling (2026-07-12): what a supplier site's price MEANS —
+    # 'wholesale' = your COST, 'retail' = a competitor's MARKET price, 'both'. Every existing
+    # supplier backfills to 'wholesale' (they're where you buy); tag the retail/both ones after.
+    "ALTER TABLE suppliers ADD COLUMN IF NOT EXISTS supplier_role VARCHAR(12) NOT NULL DEFAULT 'wholesale'",
     # Banco store profile (2026-06-22): hours + social links on store_settings.
     "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS opening_hours VARCHAR(500)",
     "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS facebook_url VARCHAR(255)",
