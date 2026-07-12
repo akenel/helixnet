@@ -603,7 +603,11 @@
                             </div>
                             <div class="flex-1 min-w-0">
                                 <div class="font-medium text-gray-900 truncate" x-text="m.title"></div>
-                                <div class="text-xs text-gray-500 truncate" x-text="m.suggested_price != null ? formatPrice(m.suggested_price) : ''"></div>
+                                <div class="text-xs text-gray-500 truncate">
+                                    <template x-if="m.supplier"><span class="font-semibold text-blue-600" x-text="m.supplier"></span></template>
+                                    <template x-if="m.supplier && m.suggested_price != null"><span> · </span></template>
+                                    <span x-text="m.suggested_price != null ? formatPrice(m.suggested_price) : ''"></span>
+                                </div>
                             </div>
                             <span class="flex-none text-xs font-bold px-2 py-1 rounded-full bg-blue-100 text-blue-700">
                                 <span x-text="snapPct(m.score)"></span>% <span data-i18n="catalog.snap_match">match</span>
