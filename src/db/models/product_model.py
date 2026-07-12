@@ -174,6 +174,11 @@ class ProductModel(Base):
         default=list,
         comment="BL-26 quantity-break pricing: [{min_qty, unit_price}, ...] ascending; None/empty = flat price"
     )
+    tier_mode: Mapped[str | None] = mapped_column(
+        String(12),
+        nullable=True,
+        comment="BL-26 tier interpretation: 'per_unit' (price EACH at qty>=N) | 'bundle' (N for X total). Default per_unit."
+    )
     last_sync_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
         nullable=True,

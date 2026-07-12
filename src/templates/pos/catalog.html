@@ -407,14 +407,19 @@
                             <label class="block text-sm font-medium text-gray-700" data-i18n="catalog.tiers_label">Quantity price breaks</label>
                             <button type="button" @click="addTier()" class="text-xs text-blue-600 hover:underline" data-i18n="catalog.tiers_add">+ Add break</button>
                         </div>
-                        <p class="text-xs text-gray-500 mb-2" x-show="(form.price_tiers||[]).length===0" data-i18n="catalog.tiers_hint">Optional. Buy more, pay less each — e.g. 1 → 4.90, 10 → 4.50. A break price is final (no extra discount).</p>
+                        <p class="text-xs text-gray-500 mb-2" x-show="(form.price_tiers||[]).length===0" data-i18n="catalog.tiers_hint">Optional. Buy more, pay less — a break price is final (no extra discount).</p>
+                        <div class="flex items-center gap-3 text-xs mb-2 flex-wrap" x-show="(form.price_tiers||[]).length > 0">
+                            <span class="text-gray-500 flex-none" data-i18n="catalog.tiers_mode">Type:</span>
+                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio" value="per_unit" x-model="form.tier_mode" class="w-3.5 h-3.5"><span data-i18n="catalog.tiers_mode_perunit">price EACH (10+ → 4.50 ea)</span></label>
+                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio" value="bundle" x-model="form.tier_mode" class="w-3.5 h-3.5"><span data-i18n="catalog.tiers_mode_bundle">N for X total (3 for 10)</span></label>
+                        </div>
                         <template x-for="(t, i) in (form.price_tiers||[])" :key="i">
                             <div class="flex items-center gap-2 mb-2">
-                                <span class="text-xs text-gray-500 flex-none" data-i18n="catalog.tiers_from">From</span>
+                                <span class="text-xs text-gray-500 flex-none" x-text="form.tier_mode === 'bundle' ? t('catalog.tiers_buy') : t('catalog.tiers_from')">From</span>
                                 <input type="number" step="1" min="1" x-model="t.min_qty" placeholder="qty" class="input-field w-20 text-sm">
-                                <span class="text-xs text-gray-500 flex-none">→</span>
+                                <span class="text-xs text-gray-500 flex-none" x-text="form.tier_mode === 'bundle' ? t('catalog.tiers_for') : '→'">→</span>
                                 <input type="number" step="0.05" min="0" x-model="t.unit_price" placeholder="0.00" class="input-field w-24 text-sm">
-                                <span class="text-xs text-gray-400 flex-none" data-i18n="catalog.tiers_each">each</span>
+                                <span class="text-xs text-gray-400 flex-none" x-text="form.tier_mode === 'bundle' ? t('catalog.tiers_total') : t('catalog.tiers_each')">each</span>
                                 <button type="button" @click="form.price_tiers.splice(i,1)" class="text-red-500 hover:text-red-700 flex-none text-lg leading-none" title="remove">×</button>
                             </div>
                         </template>
@@ -775,7 +780,7 @@
             _blankForm() {
                 return {
                     sku: 'SKU-' + Date.now(), barcode: '', name: '', description: '',
-                    price: '', cost: '', supplier_price: null, price_tiers: [], compare: null,
+                    price: '', cost: '', supplier_price: null, price_tiers: [], tier_mode: 'per_unit', compare: null,
                     category: '', product_class: 'standard', supplier_name: '', image_url: '',
                     is_age_restricted: false,
                 };
@@ -903,6 +908,7 @@
                     this.form = { ...this.form, ...full };
                 } catch (e) { /* keep row data */ }
                 this.form.price_tiers = Array.isArray(this.form.price_tiers) ? this.form.price_tiers : [];
+                this.form.tier_mode = this.form.tier_mode || 'per_unit';
                 this.loadGallery(p.id);
                 // Slice 3: live supplier price comparison (best FourTwenty match by name). Display-only.
                 try {
@@ -933,6 +939,7 @@
                     image_url: this.form.image_url || null,
                     is_age_restricted: !!this.form.is_age_restricted,
                     price_tiers: (this.form.price_tiers || []).filter(t => t.min_qty !== '' && t.min_qty != null && t.unit_price !== '' && t.unit_price != null).map(t => ({ min_qty: Number(t.min_qty), unit_price: String(t.unit_price) })),
+                    tier_mode: this.form.tier_mode || 'per_unit',
                 };
             },
 

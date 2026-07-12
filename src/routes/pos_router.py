@@ -2607,7 +2607,8 @@ async def add_item_to_transaction(
         tier_final = False
         if not item.is_giveaway:
             # BL-26: a quantity-break tier price wins over the flat price for this qty.
-            unit_price, tier_final = tier_unit_price(product.price_tiers, unit_price, item.quantity)
+            unit_price, tier_final = tier_unit_price(
+                product.price_tiers, unit_price, item.quantity, mode=product.tier_mode or "per_unit")
         line_notes = ("🎁 Treat — on the house" if item.is_giveaway else item.notes)
     else:
         # Custom line (manual catalog entry / product-as-change treat): no catalog
@@ -2623,7 +2624,7 @@ async def add_item_to_transaction(
     # at the transaction level below. (Per-line discounting + the running subtotal being
     # re-rounded on each item's commit drifted a cent vs the till's single-rounded total
     # on multi-item discounts.)
-    line_gross = unit_price * item.quantity
+    line_gross = (unit_price * item.quantity).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
     line_total = line_gross
 
     # Per-line Swiss VAT (cafe multi-line tax). The product's behaviour class drives the
@@ -3012,7 +3013,8 @@ async def create_sale(
             unit_price = Decimal("0.00") if ln.is_giveaway else product.price
             if not ln.is_giveaway:
                 # BL-26: a quantity-break tier price wins over the flat price for this qty.
-                unit_price, tier_final = tier_unit_price(product.price_tiers, unit_price, ln.quantity)
+                unit_price, tier_final = tier_unit_price(
+                    product.price_tiers, unit_price, ln.quantity, mode=product.tier_mode or "per_unit")
             line_notes = ("🎁 Treat — on the house" if ln.is_giveaway else ln.notes)
             prod_class = product.product_class
         else:
@@ -3030,7 +3032,7 @@ async def create_sale(
         # applies to the ELIGIBLE portion only, so tobacco always rings full price. No hard block,
         # no dead-end: a mixed cart discounts the rest and completes.
 
-        line_gross = unit_price * ln.quantity
+        line_gross = (unit_price * ln.quantity).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         line_total = line_gross
         line_rate, line_vat_amount = line_vat(prod_class, ln.consumption, line_total)
         line = LineItemModel(

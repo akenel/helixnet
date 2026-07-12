@@ -206,6 +206,7 @@ _ADDITIVE_COLUMNS: list[str] = [
     "ALTER TABLE products ADD COLUMN IF NOT EXISTS enrichment_meta JSONB",
     # BL-26: per-product quantity-break (tier) pricing — [{min_qty, unit_price}, ...].
     "ALTER TABLE products ADD COLUMN IF NOT EXISTS price_tiers JSONB",
+    "ALTER TABLE products ADD COLUMN IF NOT EXISTS tier_mode VARCHAR(12)",
     # BL-18: description-backfill rotation marker (stamped on every scrape attempt).
     "ALTER TABLE products ADD COLUMN IF NOT EXISTS description_checked_at TIMESTAMPTZ",
     # BL-17: image-backfill rotation marker (stamped on every hotlink-migration attempt).

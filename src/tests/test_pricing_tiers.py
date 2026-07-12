@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import pytest
 
-from src.services.pricing import tier_unit_price, validate_price_tiers
+from src.services.pricing import tier_unit_price, tier_line_total, validate_price_tiers
 
 # The real GIZEH tubes ladder from artemisluzern.ch.
 GIZEH = [
@@ -73,3 +73,40 @@ def test_validate_rejects_duplicate_and_negative():
         validate_price_tiers([{"min_qty": 1, "unit_price": "1.00"}, {"min_qty": 1, "unit_price": "2.00"}])
     with pytest.raises(ValueError):
         validate_price_tiers([{"min_qty": 1, "unit_price": "-1.00"}])
+
+
+# --- BUNDLE mode ("N for X total") — Felix's real case: Gizeh 1.40, "3 for 4.00, 10 for 12.00" -----
+BUNDLE = [
+    {"min_qty": 1, "unit_price": "1.40"},
+    {"min_qty": 3, "unit_price": "4.00"},
+    {"min_qty": 10, "unit_price": "12.00"},
+]
+
+
+@pytest.mark.parametrize("qty,line,brk", [
+    (1, "1.40", False),    # base
+    (2, "2.80", False),    # still base tier (1)
+    (3, "4.00", True),     # the "3 for 4.00" pack — line is EXACTLY 4.00 (line-level rounding)
+    (4, "5.33", True),     # 4 × (4.00/3)=5.333 → 5.33
+    (5, "6.67", True),     # 5 × 1.333 → 6.67
+    (9, "12.00", True),    # 9 × 1.333 → 12.00
+    (10, "12.00", True),   # the "10 for 12.00" pack — exact
+    (20, "24.00", True),   # 20 × (12/10)=1.20 → 24.00
+])
+def test_bundle_line_totals(qty, line, brk):
+    assert tier_line_total(BUNDLE, Decimal("1.40"), qty, mode="bundle") == Decimal(line)
+    _, volume_break = tier_unit_price(BUNDLE, Decimal("1.40"), qty, mode="bundle")
+    assert volume_break is brk
+
+
+def test_bundle_vs_per_unit_differ_on_same_data():
+    # Same rows, different meaning. per_unit "3 → 4.00" = 4.00 EACH = 12.00 for 3 (a price hike);
+    # bundle "3 for 4.00" = 4.00 total. This is exactly the bug Felix hit.
+    assert tier_line_total(BUNDLE, Decimal("1.40"), 3, mode="per_unit") == Decimal("12.00")
+    assert tier_line_total(BUNDLE, Decimal("1.40"), 3, mode="bundle") == Decimal("4.00")
+
+
+def test_per_unit_default_unchanged():
+    # No mode arg → per_unit (back-compat): GIZEH ladder still per-unit each.
+    assert tier_line_total(GIZEH, Decimal("4.90"), 10) == Decimal("45.00")   # 10 × 4.50
+    assert tier_unit_price(GIZEH, Decimal("4.90"), 10)[0] == Decimal("4.50")
