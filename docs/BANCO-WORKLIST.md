@@ -10,15 +10,21 @@
 
 ---
 
-## 🃏 ON DECK — 2026-07-13 · BL-36 ✅ BUILT ON SANDBOX → Angel FR UAT → prod ← START HERE
+## 🃏 ON DECK — 2026-07-13 · BL-37 FRENCH CHROME → then ship BL-36 prod ← START HERE
 
-**BL-36 multi-language descriptions BUILT + on sandbox (`daac61d`).** Sign in a language → the
-product description follows: **Artemis serves DE/EN/FR/IT free** (native fetch), everything else
-Ollama-translates + caches. **FR is now in the status-bar switcher** (as a content language — chrome
-stays English, descriptions come in French). Proven in-container. **→ NEXT: Angel runs the FR UAT
-(`docs/testing/banco/BANCO-SBX-MULTILANG-DESCRIPTIONS-UAT.html` on sandbox-banco.lapiazza.app), then
-ship to prod (backup-gated).** Follow-ups (memory `banco-catalog-content-translation`): fill-at-adopt +
-backfill script (on-demand only today); NL/ES; needs_review queue for machine translations; FR chrome.
+**BL-37 — FRENCH (+NL/ES) UI CHROME (queued 2026-07-13, Angel's ask).** BL-36 descriptions work in
+FR (Angel validated: *"Patch brodé Motörhead… idéal pour décorer vestes, sacs…"* + 🤖 badge). Now flip
+the BUTTONS/labels to French too. Approach: **batch-translate the `en` block of `src/static/pos/pos-i18n.js`
+→ a `fr` block via Ollama** (turbo_or_local — same brain as descriptions), then human-review + paste in.
+Add `"fr"` to POS_STRINGS (chrome then shows French instead of English fallback). This GENERALIZES to
+nl/es/pl (same batch move per language). ~hundreds of keys → automate, don't hand-type. Parity gate:
+each key ×N langs. This is the "chrome follows" step of the language architecture [[lp-language-architecture]].
+
+**BL-36 multi-language DESCRIPTIONS ✅ WORKING on sandbox (`078be30`) — Angel FR-validated → ship prod.**
+Sign in a language → description follows: **Artemis serves DE/EN/FR/IT free** (native), else Ollama +
+cache. FR content-language switch fixed (isLang() at every gate). **→ Ship to prod (backup-gated) —
+Angel confirmed it works.** Follow-ups (memory `banco-catalog-content-translation`): fill-at-adopt +
+backfill script (on-demand only today); needs_review queue for machine translations.
 
 ---
 ## 🃏 PREV DECK — 2026-07-12 · BL-36 MULTI-LANGUAGE DESCRIPTIONS (design)
