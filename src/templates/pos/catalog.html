@@ -415,11 +415,15 @@
                                                  class="w-16 h-16 rounded object-cover border flex-none bg-white cursor-zoom-in hover:ring-2 hover:ring-blue-400" :title="t('catalog.cmp_enlarge')">
                                             <p class="text-gray-500 flex-1 min-w-0 line-clamp-4" x-show="m.description" x-text="m.description"></p>
                                         </div>
-                                        <div class="flex items-center gap-3 mt-1.5 flex-wrap">
-                                            <button type="button" x-show="m.description" @click="pullFrom(m, 'desc')" class="text-blue-600 hover:underline" data-i18n="catalog.pull_desc">use description</button>
-                                            <button type="button" x-show="m.image_url" @click="pullFrom(m, 'photo')" class="text-blue-600 hover:underline" data-i18n="catalog.pull_photo">use photo</button>
-                                            <button type="button" x-show="m.barcode && !form.barcode" @click="pullFrom(m, 'barcode')" class="text-blue-600 hover:underline" data-i18n="catalog.use_barcode">use barcode</button>
-                                            <span class="text-gray-400" x-show="form.supplier_name === m.supplier" data-i18n="catalog.supplier_set">✓ supplier set</span>
+                                        <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+                                            <button type="button" @click="pullAll(m)" class="px-2.5 py-1 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700">
+                                                ⤵ <span data-i18n="catalog.use_all">Use all these details</span>
+                                            </button>
+                                            <span class="text-gray-300">·</span>
+                                            <button type="button" x-show="m.description" @click="pullFrom(m, 'desc')" class="text-blue-600 hover:underline" data-i18n="catalog.pull_desc">description</button>
+                                            <button type="button" x-show="m.image_url" @click="pullFrom(m, 'photo')" class="text-blue-600 hover:underline" data-i18n="catalog.pull_photo">photo</button>
+                                            <button type="button" x-show="m.barcode && !form.barcode" @click="pullFrom(m, 'barcode')" class="text-blue-600 hover:underline" data-i18n="catalog.use_barcode">barcode</button>
+                                            <span class="text-green-600" x-show="form.supplier_name === m.supplier" data-i18n="catalog.supplier_set">✓ supplier set</span>
                                         </div>
                                     </div>
                                 </template>
@@ -1254,6 +1258,24 @@
                 if (field === 'photo' && m.image_url) this.form.image_url = m.image_url;
                 if (field === 'barcode' && m.barcode) this.form.barcode = m.barcode;
                 if (m.supplier) this.form.supplier_name = m.supplier;
+                showToast(t('catalog.pulled_one'), 'success');
+            },
+            // One tap: bring in EVERYTHING from this supplier match (Angel's "why wouldn't we do
+            // both") — description + photo + barcode + tier ladder + supplier — then enrich any gap
+            // live. A toast confirms it, because the filled fields sit below the fold.
+            pullAll(m) {
+                if (!m) return;
+                if (m.description) this.form.description = m.description;
+                if (m.image_url) this.form.image_url = m.image_url;
+                if (m.barcode && !(this.form.barcode || '').trim()) this.form.barcode = m.barcode;
+                if (m.category && !(this.form.category || '').trim()) this.form.category = m.category;
+                if (Array.isArray(m.price_tiers) && m.price_tiers.length) {
+                    this.form.price_tiers = m.price_tiers.map(x => ({ min_qty: x.min_qty, unit_price: x.unit_price }));
+                    this.form.tier_mode = m.tier_mode || 'per_unit';
+                }
+                if (m.supplier) this.form.supplier_name = m.supplier;
+                showToast(t('catalog.pulled_all'), 'success');
+                this._maybeEnrich(m);   // thin match? pull the description/tiers it didn't carry, live
             },
 
             _payload() {
