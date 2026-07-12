@@ -22,6 +22,16 @@ each key ×N langs. This is the "chrome follows" step of the language architectu
 
 **BL-38 — MULTILINGUAL SUPPLIER QUERY (queued 2026-07-13, Angel).** Live supplier search sends the query in each site's OWN language so an English/French-typed term still hits the German sites: auto-translate the query → German for FourTwenty (Magento German index); query Artemis in multiple languageIds (not just EN=3). Reuse the Ollama translate from BL-36 (`product_translations._translate`) or a tiny query-translate helper; cache per (term,lang). Login language is irrelevant — it's the QUERY word that matches. Ties [[banco-live-supplier-search]].
 
+**BL-39 — KC LOGIN 4-LANGUAGE SELECTOR (queued 2026-07-13, Angel: "kc logins need 4 language selections too").**
+The Keycloak login page needs the EN/DE/IT/FR picker like the POS app. MOSTLY A REALM-CONFIG TOGGLE, not a
+translation job: the `lapiazza` login theme is `parent=keycloak.v2`, and Keycloak ships built-in login
+translations for en/de/it/fr — so the standard fields come FREE. Steps: (1) on each POS realm set
+`internationalizationEnabled=true` + `supportedLocales=[en,de,it,fr]` + a `defaultLocale` (kcadm or admin API;
+sandbox→staging→prod, verify login still works after each) → the language dropdown renders automatically;
+(2) check the custom `BorrowHood/keycloak/themes/lapiazza/login/error.ftl` for any HARDCODED English → move to
+message keys if so; (3) style the dropdown in `lapiazza.css` to match the branded wolf theme. Test login in each
+lang. Theme path `BorrowHood/keycloak/themes/lapiazza/login/`. Ties [[banco-kc-email-theme]] [[banco-catalog-content-translation]].
+
 **BL-36 multi-language DESCRIPTIONS ✅ SHIPPED PROD 2026-07-12 (`58fef52`, backup-gated, re-probed: native FR/DE/IT on real Artemis items).**
 Sign in a language → description follows: **Artemis serves DE/EN/FR/IT free** (native), else Ollama +
 cache. FR content-language switch fixed (isLang() at every gate). **→ Ship to prod (backup-gated) —
