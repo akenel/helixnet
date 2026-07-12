@@ -447,6 +447,58 @@ async def find_product_matches(
     return await _find_catalog_matches(db, q, limit)
 
 
+@router.post("/products/snap-find")
+async def snap_find_product(
+    file: UploadFile = File(...),
+    hint: Optional[str] = None,
+    provider: Optional[str] = None,
+    limit: int = 6,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """Snap a photo → the AI reads the item → SEARCH the real catalog for it (find-first).
+
+    The librarian, not the author. Where /products/ai-suggest only DRAFTS a new product,
+    this reads the name off the photo and runs it through _find_catalog_matches so the
+    cashier can pick the item that ALREADY exists (in `products` or the FourTwenty
+    reference). The AI draft rides along as the fallback for a genuine new item.
+
+    Returns the ai-suggest envelope (`suggestion`/`provider`/`model`/`elapsed_ms`) PLUS
+    `query`, `product_matches`, `reference_matches`, `best_match_score`. Honest confidence
+    is the match score, not the model's self-rating — the grinder can't return a confident
+    wrong answer, because a low `best_match_score` means "not found → search or create"."""
+    raw = await file.read()
+    if len(raw) > _MAX_IMAGE_BYTES:
+        raise HTTPException(status_code=413, detail="Image too large (max 15 MB)")
+    if not (file.content_type or "").lower().startswith("image/"):
+        raise HTTPException(status_code=415, detail="Please upload an image")
+
+    from src.services.vision_product_analyzer import suggest_product_from_image
+    from src.services.image_intake import ImageIntakeError
+    try:
+        result = await suggest_product_from_image(
+            raw, file.content_type or "image/jpeg", hint=hint, provider=provider,
+        )
+    except ImageIntakeError:
+        raise HTTPException(status_code=400, detail="That doesn't look like a usable photo")
+
+    # Build the search from what the AI read: name is the strongest signal; fold in brand
+    # when the model split it out (so "Flower Mill" grinder still hits with brand=Next-Gen).
+    s = result.get("suggestion") or {}
+    name = (s.get("name") or "").strip()
+    brand = (s.get("brand") or "").strip()
+    q = f"{brand} {name}".strip() if (brand and brand.lower() not in name.lower()) else (name or brand)
+
+    matches = await _find_catalog_matches(db, q, limit)
+    logger.info(
+        "AI snap-find: provider=%s %dms q=%r → %d catalog + %d reference (best=%.2f) by %s",
+        result.get("provider"), result.get("elapsed_ms", 0), q,
+        len(matches["product_matches"]), len(matches["reference_matches"]),
+        matches["best_match_score"], current_user["username"],
+    )
+    return {**result, **matches}
+
+
 @router.get("/products", response_model=list[ProductRead])
 async def list_products(
     skip: int = 0,
