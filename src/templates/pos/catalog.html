@@ -528,7 +528,10 @@
                                class="input-field mt-2 text-xs text-gray-500" placeholder="…or paste an image URL (https://…)" data-i18n-placeholder="catalog.image_url_placeholder">
                     </div>
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="catalog.form_description">Description</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <span data-i18n="catalog.form_description">Description</span>
+                            <span x-show="enriching" class="ml-2 text-xs text-teal-600 animate-pulse">🌐 <span data-i18n="catalog.enriching">pulling full details from the supplier…</span></span>
+                        </label>
                         <textarea x-model="form.description" rows="2" class="input-field" placeholder="(optional)" data-i18n-placeholder="catalog.optional_placeholder"></textarea>
                     </div>
                     <!-- No min/max/reorder thresholds: Banco runs zero perpetual inventory.
@@ -775,6 +778,7 @@
             liveBusy: false,
             liveSearched: false,
             liveErrors: {},
+            enriching: false,     // BL-35: pulling full description/tiers for a thin local pick
 
             // BL-89: barcode scan on the form
             scanOpen: false,
@@ -1044,24 +1048,27 @@
             // photo; the cashier reviews + prices + saves (the create path is dup-checked, BL-32).
             snapPickReference(m) {
                 if (m) {
-                    // Name: fill only when blank so a manual "search similar" from an EXISTING product
-                    // (edit mode) pulls the photo/details without renaming the product (BL-34).
-                    if ((m.name || m.title) && !(this.form.name || '').trim()) this.form.name = m.name || m.title;
-                    if (m.description) this.form.description = m.description;
-                    if (m.barcode && !this.form.barcode) this.form.barcode = m.barcode;
-                    if (m.category && !this.form.category) this.form.category = m.category;
-                    if (m.suggested_price != null && (this.form.price === '' || this.form.price == null)) this.form.price = m.suggested_price;
+                    // You EXPLICITLY chose this item → its details WIN when you're CREATING a product
+                    // (bring in the proper title/description/EAN/price/tiers, not your rough search seed).
+                    // When EDITING an existing product, stay conservative — fill only blanks so a
+                    // "search similar" grabs the photo/details without renaming/repricing it (BL-34).
+                    const take = !this.editing;
+                    const set = (field, val) => {
+                        if (val == null || val === '') return;
+                        if (take || !String(this.form[field] ?? '').trim()) this.form[field] = val;
+                    };
+                    set('name', m.name || m.title);
+                    set('description', m.description);
+                    set('barcode', m.barcode);
+                    set('category', m.category);
+                    if (m.suggested_price != null && (take || this.form.price === '' || this.form.price == null)) this.form.price = m.suggested_price;
                     if (m.supplier) this.form.supplier_name = m.supplier;
-                    // BL-35: a live/reference row can carry a tier ladder (Artemis + FourTwenty) —
-                    // fill it only when the form has none yet, so we never clobber hand-entered breaks.
-                    if (Array.isArray(m.price_tiers) && m.price_tiers.length && !(this.form.price_tiers || []).length) {
+                    // Tier ladder (Artemis + FourTwenty): take it when creating, else only if none yet.
+                    if (Array.isArray(m.price_tiers) && m.price_tiers.length && (take || !(this.form.price_tiers || []).length)) {
                         this.form.price_tiers = m.price_tiers.map(x => ({ min_qty: x.min_qty, unit_price: x.unit_price }));
                         this.form.tier_mode = m.tier_mode || 'per_unit';
                     }
-                    // Prefer the supplier's PROFESSIONAL photo over the cashier's snap (theirs is
-                    // better — proper lighting, white background). Only fall back to the snap if the
-                    // reference carries no image. (Reference has one image today; a multi-image
-                    // supplier feed → "grab them all" is a future enhancement.)
+                    // Always prefer the supplier's PROFESSIONAL photo; fall back to the cashier's snap.
                     if (m.image_url) {
                         this.form.image_url = m.image_url;
                     } else if (this.snapFile) {
@@ -1071,6 +1078,40 @@
                 this.snapOpen = false; this.snap = null; this.snapFile = null;
                 this.aiNote = t('catalog.snap_from_ref_note');
                 this._resetLive();
+                this._maybeEnrich(m);   // thin local match? pull the full description + tiers live
+            },
+            // A local match can be THIN (the FourTwenty feed carries no description/tiers). When we
+            // adopt one, quietly pull the full details from the live supplier pages and merge the
+            // gaps — preferring Artemis's ENGLISH description. Live picks already carry everything.
+            async _maybeEnrich(m) {
+                if (!m || m.is_live) return;
+                const needsDesc = !String(this.form.description ?? '').trim();
+                const needsTiers = !(this.form.price_tiers || []).length;
+                const needsImg = !String(this.form.image_url ?? '').trim();
+                if (!needsDesc && !needsTiers && !needsImg) return;
+                const q = (m.title || m.name || this.form.name || '').trim();
+                if (!q) return;
+                this.enriching = true;
+                try {
+                    const d = await API.get(`/api/v1/pos/products/search-suppliers-live?q=${encodeURIComponent(q)}&limit=3`);
+                    const rs = d.results || [];
+                    if (!rs.length) return;
+                    if (needsDesc) {
+                        const eng = rs.find(r => r.supplier === 'Artemis' && String(r.description ?? '').trim());
+                        const any = rs.find(r => String(r.description ?? '').trim());
+                        const desc = (eng && eng.description) || (any && any.description);
+                        if (desc) this.form.description = desc;
+                    }
+                    if (needsTiers) {
+                        const wt = rs.find(r => r.price_tiers && r.price_tiers.length);
+                        if (wt) { this.form.price_tiers = wt.price_tiers.map(x => ({ min_qty: x.min_qty, unit_price: x.unit_price })); this.form.tier_mode = wt.tier_mode || 'per_unit'; }
+                    }
+                    if (needsImg) {
+                        const wi = rs.find(r => String(r.image_url ?? '').trim());
+                        if (wi) this.form.image_url = wi.image_url;
+                    }
+                } catch (e) { /* enrich is best-effort — the form is already usable */ }
+                finally { this.enriching = false; }
             },
             // Picker: none of these → it's genuinely new. Use the AI draft.
             snapUseAiDraft() {
