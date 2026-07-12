@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Banco SBX — Multi-Language Descriptions UAT (BL-36)</title>
+<style>
+  :root{
+    --bg:#05060a; --panel:#0b0e16; --panel2:#0e1220; --ink:#e2e8f0; --mut:#7688a6;
+    --line:#1c2436; --yellow:#facc15; --cyan:#22d3ee; --red:#ef4444; --lime:#a3e635; --ok:#4ade80; --blue:#60a5fa;
+    --glowY:0 0 6px rgba(250,204,21,.7); --glowC:0 0 8px rgba(34,211,238,.6);
+    --font:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  }
+  *{ box-sizing:border-box; } html,body{ margin:0; }
+  body{ font-family:var(--font); color:var(--ink); line-height:1.55;
+    background: radial-gradient(1200px 600px at 50% -10%, #0d1224 0%, transparent 60%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,.015) 0 1px, transparent 1px 3px), var(--bg);
+    padding-bottom:90px; }
+  header{ position:sticky; top:0; z-index:20; background:linear-gradient(180deg,#0a0d17,#070911);
+    border-bottom:1px solid var(--blue); box-shadow:0 0 18px rgba(96,165,250,.25); padding:12px 18px; }
+  .htop{ display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; max-width:840px; margin:0 auto; }
+  h1{ font-size:16px; margin:0; letter-spacing:.12em; color:var(--yellow); text-shadow:var(--glowY); text-transform:uppercase; }
+  h1 small{ display:block; margin-top:3px; font-size:11px; letter-spacing:.05em; color:var(--mut); text-shadow:none; text-transform:none; }
+  .meters{ display:flex; align-items:center; gap:16px; }
+  .meter{ text-align:center; min-width:44px; } .meter b{ display:block; font-size:20px; line-height:1; }
+  .meter.pass b{ color:var(--ok); text-shadow:0 0 6px rgba(74,222,128,.6); }
+  .meter.fail b{ color:var(--red); text-shadow:0 0 6px rgba(239,68,68,.6); }
+  .meter.left b{ color:var(--cyan); text-shadow:var(--glowC); }
+  .meter span{ font-size:9.5px; letter-spacing:.14em; color:var(--mut); text-transform:uppercase; }
+  .timer{ font-size:20px; font-weight:700; color:var(--yellow); text-shadow:var(--glowY); font-variant-numeric:tabular-nums; }
+  main{ max-width:840px; margin:0 auto; padding:20px 18px 40px; }
+  .coin{ text-align:center; color:var(--blue); letter-spacing:.24em; font-size:12px; margin:2px 0 16px; animation:blink 1.1s steps(2) infinite; }
+  @keyframes blink{ 50%{ opacity:.25 } }
+  .lead{ background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--blue); border-radius:10px; padding:12px 15px; margin-bottom:14px; font-size:13px; }
+  .lead b{ color:var(--blue); }
+  .warn{ background:#0a1420; border:1px solid #1e3a5f; border-left:3px solid var(--cyan); border-radius:10px; padding:11px 15px; margin-bottom:14px; font-size:12.5px; }
+  .warn b{ color:var(--cyan); }
+  .fixtures{ background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:10px 14px; font-size:12px; margin-bottom:16px; }
+  .fixtures code{ background:#141a2b; color:var(--lime); padding:1px 7px; border-radius:4px; }
+  .sect{ margin:20px 0 10px; padding:6px 12px; font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--blue); border-left:3px solid var(--blue); background:#0a1424; border-radius:0 8px 8px 0; }
+  .sect.plain{ color:var(--cyan); border-left-color:var(--cyan); background:#0a1120; }
+  ol.checks{ margin:0; padding:0; list-style:none; }
+  ol.checks li{ display:flex; gap:12px; padding:14px 14px; align-items:flex-start; background:var(--panel); border:1px solid var(--line); border-radius:12px; margin-bottom:10px; }
+  ol.checks li.pass{ border-color:rgba(74,222,128,.45); box-shadow:0 0 12px rgba(74,222,128,.10); }
+  ol.checks li.fail{ border-color:rgba(239,68,68,.5); box-shadow:0 0 12px rgba(239,68,68,.12); }
+  .verdict-btns{ display:flex; flex-direction:column; gap:5px; flex:none; }
+  .vb{ width:42px; height:36px; border:1px solid var(--line); background:#0c1120; color:var(--mut); border-radius:7px; font-size:17px; cursor:pointer; line-height:1; }
+  .vb.pass.on{ background:rgba(74,222,128,.16); border-color:var(--ok); color:var(--ok); box-shadow:0 0 8px rgba(74,222,128,.4); }
+  .vb.fail.on{ background:rgba(239,68,68,.16); border-color:var(--red); color:var(--red); box-shadow:0 0 8px rgba(239,68,68,.4); }
+  .cbody{ flex:1; min-width:0; } .q{ font-size:14.5px; } .q b{ color:var(--yellow); }
+  .tag{ font-size:10px; font-weight:700; padding:2px 8px; border-radius:99px; background:#0c2440; color:var(--blue); letter-spacing:.05em; margin-left:6px; }
+  .tag.new{ background:#3b2f05; color:var(--yellow); }
+  .go{ display:inline-block; margin-top:7px; background:var(--yellow); color:var(--bg); text-decoration:none; padding:5px 11px; border-radius:6px; font-size:11.5px; font-weight:700; box-shadow:var(--glowY); }
+  .exp{ margin-top:7px; font-size:12px; color:var(--lime); } .exp b{ color:var(--ok); }
+  .cm{ margin-top:9px; width:100%; border:1px solid var(--line); background:#0a0e19; color:var(--ink); border-radius:7px; padding:6px 9px; font:inherit; font-size:12px; resize:vertical; height:32px; }
+  .cm:focus{ outline:none; border-color:var(--cyan); box-shadow:var(--glowC); }
+  .final{ background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-top:18px; text-align:center; }
+  .final .ttl{ font-size:13px; color:var(--mut); letter-spacing:.1em; text-transform:uppercase; margin-bottom:10px; }
+  .final-btns{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+  .big{ font-size:14px; font-weight:800; letter-spacing:.1em; padding:11px 22px; border-radius:9px; border:1px solid var(--line); background:#0c1120; color:var(--ink); cursor:pointer; }
+  .big.ship.on{ background:rgba(74,222,128,.16); border-color:var(--ok); color:var(--ok); box-shadow:0 0 14px rgba(74,222,128,.4); }
+  .big.hold.on{ background:rgba(239,68,68,.16); border-color:var(--red); color:var(--red); box-shadow:0 0 14px rgba(239,68,68,.4); }
+  .bar{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:14px; }
+  .util{ border:1px solid var(--line); background:#0a0e19; color:var(--cyan); border-radius:8px; padding:8px 14px; font-size:12px; cursor:pointer; letter-spacing:.05em; }
+  .util:hover{ border-color:var(--cyan); box-shadow:var(--glowC); }
+  footer{ text-align:center; color:var(--mut); font-size:11px; padding:18px; letter-spacing:.06em; }
+</style>
+</head>
+<body>
+<header>
+  <div class="htop">
+    <h1>🌍 Banco SBX · Multi-Language Descriptions<small>Sign in a language → the product description follows. Artemis free · Ollama for the rest.</small></h1>
+    <div class="meters">
+      <div class="meter pass"><b id="m-pass">0</b><span>Pass</span></div>
+      <div class="meter fail"><b id="m-fail">0</b><span>Fail</span></div>
+      <div class="meter left"><b id="m-left">0</b><span>Left</span></div>
+      <div class="meter"><span class="timer" id="timer">00:00</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="coin">◂ ◃ ◄  ENGLISH IS THE HUB · THE DESCRIPTION FOLLOWS THE OPERATOR  ► ▻ ▸</div>
+  <div class="lead">The German-description-for-an-English-operator fix. A product = one core + language "skins". Switch the status-bar language and the <b>description</b> comes in that language: <b>Artemis publishes DE/EN/FR/IT for free</b> (real native text), and anything else is <b>Ollama-translated</b> and cached. <b>Test your French</b>, Captain — flip to FR and read the shelf. (Buttons stay English for now — FR *chrome* is a later job; this is about the DATA.)</div>
+  <div class="warn">⚡ <b>Hard-refresh first</b> (Ctrl+Shift+R — sw <b>v89</b>). First open in a new language takes ~1–2s if it has to translate (then it's cached + instant). The 🌐 language switch is <b>top-right</b> in the status bar — now with <b>FR</b>.</div>
+  <div class="fixtures">🎮 <code>sandbox-banco.lapiazza.app</code> · login <code>felix</code> · <i>Catalog → tap a product for details</i><br>
+    🎯 Sandbox has ~140 real <b>Artemis</b> products (native DE/FR/IT). Good picks: search <code>hash</code>, <code>temple</code>, <code>CBD</code> — tap one, read the description.</div>
+
+  <div class="sect">① Your French — the star</div>
+  <ol class="checks">
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="q"><b>FR is in the status-bar switcher.</b> Top-right language dropdown (currently EN) now lists <b>EN · DE · IT · FR</b>. Pick <b>FR</b> — the page reloads. <span class="tag new">BL-36</span></div>
+        <a class="go" href="https://sandbox-banco.lapiazza.app/pos/catalog" target="_blank">▶ Catalog</a>
+        <div class="exp">expect: FR appears in the dropdown and is selectable.</div>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="q"><b>An Artemis product reads in FRENCH — native, not machine.</b> In FR, open a real Artemis item (search <b>hash</b> or <b>temple</b> → tap it). The description is proper French ("Le Temple Ball est l'un des meilleurs haschisch CBD…"), with <b>NO</b> 🤖 auto-translated badge (it's Artemis's own French). <span class="tag">native</span></div>
+        <div class="exp">expect: fluent French description, no robot badge — pulled live from Artemis /fr/.</div>
+        <textarea class="cm" placeholder="note — how's the French? (only if ✗)"></textarea>
+      </div>
+    </li>
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="q"><b>A non-Artemis product gets machine French + 🤖 badge.</b> Open a product that ISN'T from Artemis (a plain demo item with a description). The description shows in French with a small <b>🤖 auto-translated</b> hint next to "Description" — honest about which French is the robot's. <span class="tag">machine</span></div>
+        <div class="exp">expect: French text + the 🤖 badge (so you know it's Ollama, not a human).</div>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="q"><b>DE and IT work too.</b> Switch to <b>DE</b> → same product reads German; switch to <b>IT</b> → Italian. On Artemis items these are all native (no badge). <span class="tag">4 langs</span></div>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="q"><b>Back to EN → the English base.</b> Switch to <b>EN</b> → the description is the original English. This is the hub language. <span class="tag">hub</span></div>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="q"><b>Second open is instant (cached).</b> Re-open the same product in FR — it's immediate now (no 1–2s wait). The translation was stored the first time. <span class="tag">cache</span></div>
+        <div class="exp">expect: snappy — Banco remembered the French.</div>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+  </ol>
+
+  <div class="sect plain">② No dead-ends, no regress</div>
+  <ol class="checks">
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="q"><b>Buttons in FR fall back to English (expected).</b> In FR mode the button/label chrome is English — that's by design (FR chrome is a later job). Nothing is <b>blank</b> or shows a raw key like <code>catalog.foo</code>. <span class="tag">chrome-fallback</span></div>
+        <div class="exp">expect: readable English chrome + French descriptions. No blanks, no raw keys.</div>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="q"><b>A product with no description doesn't break.</b> Open an item that has no description at all → the modal just shows no description block (no error, no spinner stuck). <span class="tag">empty</span></div>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="q"><b>A plain sale still works.</b> Ring an item → Checkout → cash → receipt + totals correct, console clean. Language didn't touch the till. <span class="tag">no-regress</span></div>
+        <a class="go" href="https://sandbox-banco.lapiazza.app/pos/scan" target="_blank">▶ Sell</a>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="q"><b>📱 Mobile — flip a language on the phone.</b> Hard-refresh on your phone, switch to FR, open a product → French description renders on the small screen. <span class="tag">mobile</span></div>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+  </ol>
+
+  <div class="final">
+    <div class="ttl">◆ All green on sandbox → ship multi-language descriptions to prod?</div>
+    <div class="final-btns">
+      <button class="big ship" id="v-ship">✓ SHIP TO PROD</button>
+      <button class="big hold" id="v-hold">✗ HOLD</button>
+    </div>
+    <div class="bar">
+      <button class="util" id="copy">📋 Copy findings</button>
+      <button class="util" id="reset">↻ Reset</button>
+    </div>
+  </div>
+
+  <footer>🐯 Multi-Language Descriptions UAT · BL-36 · English is the hub, the description follows · <span id="stamp"></span></footer>
+</main>
+
+<script>
+  const KEY = 'banco-sbx-multilang-uat-v1';
+  const steps = [...document.querySelectorAll('li[data-step]')];
+  steps.forEach((li,i)=> li.dataset.id = 's'+i);
+  let state; try{ state = JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ state={}; }
+  const save = ()=> localStorage.setItem(KEY, JSON.stringify(state));
+  function apply(){
+    steps.forEach(li=>{
+      const s = state[li.dataset.id] || {};
+      li.classList.toggle('pass', s.v==='pass'); li.classList.toggle('fail', s.v==='fail');
+      li.querySelector('.vb.pass').classList.toggle('on', s.v==='pass');
+      li.querySelector('.vb.fail').classList.toggle('on', s.v==='fail');
+      li.querySelector('.cm').value = s.note || '';
+    });
+    document.getElementById('v-ship').classList.toggle('on', state.__v==='ship');
+    document.getElementById('v-hold').classList.toggle('on', state.__v==='hold');
+    let p=0,f=0; steps.forEach(li=>{ const v=(state[li.dataset.id]||{}).v; if(v==='pass')p++; else if(v==='fail')f++; });
+    document.getElementById('m-pass').textContent=p; document.getElementById('m-fail').textContent=f;
+    document.getElementById('m-left').textContent=steps.length-p-f;
+  }
+  steps.forEach(li=>{
+    const id=li.dataset.id;
+    li.querySelector('.vb.pass').onclick=()=>{ const s=state[id]||{}; state[id]={...s,v:s.v==='pass'?null:'pass'}; save(); apply(); };
+    li.querySelector('.vb.fail').onclick=()=>{ const s=state[id]||{}; state[id]={...s,v:s.v==='fail'?null:'fail'}; save(); apply(); };
+    li.querySelector('.cm').addEventListener('input', e=>{ state[id]={...(state[id]||{}),note:e.target.value}; save(); });
+  });
+  document.getElementById('v-ship').onclick=()=>{ state.__v = state.__v==='ship'?'':'ship'; save(); apply(); };
+  document.getElementById('v-hold').onclick=()=>{ state.__v = state.__v==='hold'?'':'hold'; save(); apply(); };
+  document.getElementById('reset').onclick=()=>{ if(confirm('Clear the whole sheet?')){ state={}; save(); state.__t0=Date.now(); save(); t0=state.__t0; apply(); } };
+  document.getElementById('copy').onclick=()=>{
+    let p=0,f=0; const lines=steps.map(li=>{
+      const s=state[li.dataset.id]||{}; if(s.v==='pass')p++; if(s.v==='fail')f++;
+      const mark=s.v==='pass'?'PASS':s.v==='fail'?'FAIL':'—';
+      return `[${mark}] ${li.querySelector('.q').innerText.trim()}${s.note?'  ↳ '+s.note:''}`;
+    }).join('\n');
+    const out=`BANCO SBX — MULTI-LANGUAGE DESCRIPTIONS UAT (BL-36)\nVerdict: ${(state.__v||'—').toUpperCase()} · Pass ${p} · Fail ${f} of ${steps.length}\n\n${lines}`;
+    navigator.clipboard.writeText(out).then(()=>{ const b=document.getElementById('copy'); b.textContent='✓ Copied'; setTimeout(()=>b.textContent='📋 Copy findings',1400); });
+  };
+  let t0 = state.__t0 || (state.__t0=Date.now(), save(), state.__t0);
+  setInterval(()=>{ const s=Math.floor((Date.now()-t0)/1000); document.getElementById('timer').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); },1000);
+  document.getElementById('stamp').textContent='built '+new Date().toISOString().slice(0,10);
+  apply();
+</script>
+</body>
+</html>
