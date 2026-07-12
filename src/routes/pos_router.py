@@ -388,14 +388,20 @@ async def _find_catalog_matches(db: AsyncSession, q: str, limit: int = 6) -> dic
 
     # Live catalog = the Artemis-Luzern truth already imported into `products`. Prefix
     # matches float first, then by trigram similarity (mirrors search_products_fast).
+    # BL-33: INCLUDE inactive products here (unlike the till search). Find-first exists to
+    # answer "does this already exist?" so we don't create a duplicate — and an INACTIVE
+    # product still exists AND still owns its barcode (so a create would 409). Hiding it made
+    # a dead-end: invisible in search + the picker, yet blocking the create. Surface it,
+    # flagged `is_active:false`, so the operator reactivates instead of hitting the wall.
+    # Active matches rank first.
     prod_rows = (await db.execute(text("""
         SELECT id, sku, barcode, name, category, price, image_url, product_class,
-               is_age_restricted, price_tiers, tier_mode,
+               is_age_restricted, price_tiers, tier_mode, is_active,
                similarity(name, :q) AS score
         FROM products
-        WHERE is_active = true
-          AND (name ILIKE '%' || :q || '%' OR similarity(name, :q) > 0.1)
-        ORDER BY CASE WHEN name ILIKE :q || '%' THEN 0 ELSE 1 END,
+        WHERE (name ILIKE '%' || :q || '%' OR similarity(name, :q) > 0.1)
+        ORDER BY is_active DESC,
+                 CASE WHEN name ILIKE :q || '%' THEN 0 ELSE 1 END,
                  similarity(name, :q) DESC, name
         LIMIT :limit
     """), {"q": q, "limit": limit})).fetchall()
@@ -406,6 +412,7 @@ async def _find_catalog_matches(db: AsyncSession, q: str, limit: int = 6) -> dic
         "is_age_restricted": bool(r.is_age_restricted),
         "promo_restricted": class_promo_restricted(r.product_class),
         "price_tiers": r.price_tiers, "tier_mode": r.tier_mode,
+        "is_active": bool(r.is_active),
         "score": round(float(r.score), 3) if r.score is not None else 0.0,
     } for r in prod_rows]
 

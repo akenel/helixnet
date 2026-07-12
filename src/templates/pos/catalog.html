@@ -352,6 +352,13 @@
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="catalog.form_name">Name *</label>
                         <input type="text" x-model="form.name" class="input-field" placeholder="Product name" data-i18n-placeholder="catalog.name_placeholder">
+                        <!-- BL-34: the "search similar" everywhere. Any create OR edit — find this item
+                             already in the catalog / at a supplier and grab the right photo + details. -->
+                        <button type="button" @click="searchSimilar()" :disabled="!(form.name||'').trim() || snapBusy"
+                                class="mt-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-800 disabled:text-gray-300 disabled:cursor-not-allowed">
+                            🔎 <span x-text="snapBusy ? t('catalog.search_similar_busy') : t('catalog.search_similar')">Search similar</span>
+                        </button>
+                        <p class="text-xs text-gray-400 mt-0.5" data-i18n="catalog.search_similar_hint">Find it in the catalog or at a supplier — grab the right photo &amp; details.</p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="catalog.form_sku">SKU *</label>
@@ -572,6 +579,11 @@
                             <div class="flex-1 min-w-0">
                                 <div class="font-medium text-gray-900 truncate" x-text="m.name"></div>
                                 <div class="text-xs text-gray-500 truncate"><span x-text="m.sku"></span> · <span x-text="formatPrice(m.price)"></span></div>
+                                <!-- BL-33: an inactive product still EXISTS + owns its barcode → surface it so the
+                                     operator reactivates instead of hitting the invisible-duplicate wall. -->
+                                <div class="text-[11px] text-amber-600 font-semibold mt-0.5" x-show="m.is_active === false">
+                                    ⏸ <span data-i18n="catalog.snap_inactive">Off — tap to reactivate</span>
+                                </div>
                             </div>
                             <span class="flex-none text-xs font-bold px-2 py-1 rounded-full"
                                   :class="snapPct(m.score) >= 45 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'">
@@ -713,6 +725,7 @@
             snap: null,           // find-first: {suggestion, product_matches, reference_matches, best_match_score, query}
             snapOpen: false,      // the "is it already in the shop?" picker
             snapFile: null,       // the snapped photo, kept if the cashier goes "new item"
+            snapBusy: false,      // BL-34: manual "🔎 Search similar" in flight
 
             // BL-89: barcode scan on the form
             scanOpen: false,
@@ -944,17 +957,51 @@
                     : `${t('catalog.ai_drafted_by')} ${d.provider} · ${(d.elapsed_ms/1000).toFixed(1)}s · ${t('catalog.ai_check_price')}`;
             },
 
+            // BL-34: manual "🔎 Search similar" — the find-first picker from ANY create/edit, not just a
+            // snap. Runs find-matches on the current name so you can grab the right photo/details or
+            // find the existing item (even inactive). No photo — it's a name search.
+            async searchSimilar() {
+                const q = (this.form.name || '').trim();
+                if (!q) { showToast(t('catalog.search_similar_need_name'), 'warning'); return; }
+                this.snapBusy = true;
+                try {
+                    const d = await API.get(`/api/v1/pos/products/find-matches?q=${encodeURIComponent(q)}&limit=6`);
+                    // never offer the product being edited as a "match" against itself
+                    if (this.editing && this.form.id && d.product_matches) {
+                        d.product_matches = d.product_matches.filter(m => m.id !== this.form.id);
+                    }
+                    if ((d.product_matches && d.product_matches.length) || (d.reference_matches && d.reference_matches.length)) {
+                        this.snap = d; this.snapFile = null; this.snapOpen = true;
+                    } else {
+                        showToast(t('catalog.search_similar_none'), 'info');
+                    }
+                } catch (e) {
+                    showToast(e.message || t('catalog.ai_unavailable'), 'error');
+                } finally { this.snapBusy = false; }
+            },
+
             // Picker: it's ALREADY in the catalog → open the existing product (no duplicate).
+            // BL-33: if it's OFF (inactive), reactivate it FIRST, then open it — an inactive
+            // product is invisible in search yet blocks a create, so tapping it here is the
+            // one-move escape from that dead-end.
             snapPickCatalog(m) {
                 this.snapOpen = false; this.snap = null; this.snapFile = null;
                 this.modalOpen = false;   // leave the "new product" modal
-                this.openEdit(m);         // manage the one that already exists
+                if (m && m.is_active === false) {
+                    API.put(`/api/v1/pos/products/${m.id}`, { is_active: true })
+                        .then(() => { showToast(t('catalog.reactivated_toast'), 'success'); m.is_active = true; this.openEdit(m); })
+                        .catch(e => { showToast(e.message || t('catalog.reactivate_failed'), 'error'); this.openEdit(m); });
+                } else {
+                    this.openEdit(m);     // manage the one that already exists
+                }
             },
             // Picker: it's in the FourTwenty reference → fill the add-form from that master, keep the
             // photo; the cashier reviews + prices + saves (the create path is dup-checked, BL-32).
             snapPickReference(m) {
                 if (m) {
-                    if (m.name || m.title) this.form.name = m.name || m.title;
+                    // Name: fill only when blank so a manual "search similar" from an EXISTING product
+                    // (edit mode) pulls the photo/details without renaming the product (BL-34).
+                    if ((m.name || m.title) && !(this.form.name || '').trim()) this.form.name = m.name || m.title;
                     if (m.description) this.form.description = m.description;
                     if (m.barcode && !this.form.barcode) this.form.barcode = m.barcode;
                     if (m.category && !this.form.category) this.form.category = m.category;
