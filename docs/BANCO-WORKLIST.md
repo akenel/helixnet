@@ -10,7 +10,32 @@
 
 ---
 
-## 🃏 ON DECK — 2026-07-11 · THE CATALOGUING WORKSTATION (spec written) ← START HERE
+## 🃏 ON DECK — 2026-07-12 night · FIX THE STALE DATA, THEN BUILD LIVE SUPPLIER SEARCH ← START HERE
+
+**The root cause of Felix's "I hold the product but Banco can't find it" frustration = STALE / INCOMPLETE data**
+(reference table missing common items like Tycoon Gas; Artemis rows use minted barcodes, not the real EANs on
+the cans). NOT bad luck. Full detail + the whole plan: memory **`banco-live-supplier-search`**.
+
+**① QUICK WIN FIRST (Angel's call — do this before the Block):** refresh the FourTwenty **reference feed**.
+`reference_products` has ~7,272 rows but the feed CSV `debllm/feeds/fourtwenty/products_latest.csv` reportedly
+has ~10,082 → re-import (`scripts/import_reference_catalog.py`) likely adds the Tycoon + ~2,800 current items
+**with real EANs** → barcode + name lookups start working TODAY. **Verify the Tycoon (EAN 4035687900004) is in
+the CSV first**, then backup-gated prod import. No new code.
+
+**② THEN THE BLOCK — LIVE SUPPLIER SEARCH ("something really cool"):** when the local catalog+reference MISS,
+live-search the supplier sites → adopt + self-heal the DB. FourTwenty (JSON search API — cleaner than scrape;
+or Google `site:` → scrape the page) + Artemis (/en/ pages) first = 90%; then Near Dark & the rest from Felix's
+supplier list, **each a once-tested adapter**. Full spec: memory `banco-live-supplier-search`.
+
+**✅ SHIPPED PROD TODAY 2026-07-12 (`41fc6d4` · all envs parity):** find-first snap (librarian) + BL-33/34
+(inactive items surfaced + reactivate) + 🔎 Search-similar everywhere + **language-agnostic match**
+(English can-read → German catalog via word_similarity on the English descriptions). Tier v2, BL-31, tier-editor
+console-flood, login-leak also shipped earlier today. Detail: memory `banco-photo-to-product-ai` / `banco-tier-pricing`.
+- ▶ Loose end: **BL-33 + BL-34 are FIXED in prod but still show `pending` in the cockpit** — mark them done.
+- ▶ Also banked: persisted comparison notes/comments · multi-image "grab them all" · FourTwenty-reference is the
+  cache (self-heals via live-search adopt).
+
+## 🃏 ON DECK — 2026-07-11 · THE CATALOGUING WORKSTATION (spec written)
 
 **The rig + the method for getting Felix's ~2,000 items in properly.** Spec:
 **[docs/BANCO-CATALOGUING-WORKSTATION.md](BANCO-CATALOGUING-WORKSTATION.md)**.
