@@ -888,22 +888,25 @@
         // primary subtag → 'en'. Every branch is guarded by `POS_STRINGS[lang]`, so an
         // unsupported locale (e.g. fr-CH until FR ships) can only ever fall back to English.
         (function () {
+            // A supported UI language: has full chrome (POS_STRINGS) OR is a CONTENT language
+            // (fr/nl/es) — valid as _posLang so descriptions localize while chrome falls back to EN.
+            function isLang(l) { return !!(l && ((window.POS_STRINGS && POS_STRINGS[l]) || ['fr', 'nl', 'es'].indexOf(l) >= 0)); }
             function primary(loc) {
                 if (!loc) return null;
                 var p = String(loc).toLowerCase().split(/[-_]/)[0];
-                return (window.POS_STRINGS && POS_STRINGS[p]) ? p : null;
+                return isLang(p) ? p : null;
             }
             var lang = null, source = 'default';
             var params = new URLSearchParams(location.search);
             var urlLang = params.get('lang');
             if (urlLang) {
-                if (window.POS_STRINGS && POS_STRINGS[urlLang]) {
+                if (isLang(urlLang)) {
                     lang = urlLang; source = 'url'; localStorage.setItem('pos_lang', urlLang);
                 } else { lang = 'en'; source = 'url-unsupported'; }   // explicit but unsupported → English
             }
             if (!lang) {
                 var stored = localStorage.getItem('pos_lang');
-                if (stored && window.POS_STRINGS && POS_STRINGS[stored]) { lang = stored; source = 'stored'; }
+                if (isLang(stored)) { lang = stored; source = 'stored'; }
             }
             if (!lang) {
                 // JWT 'locale' claim (Felix's de-CH → German). If the user's OWN locale is
@@ -932,7 +935,7 @@
             // A "content language" (fr/nl/es) has no full chrome yet but IS a valid _posLang:
             // buttons fall back to English (t() does that per-key) while DATA — product
             // descriptions — comes through in that language (BL-36). Chrome follows later.
-            window._posLang = ((window.POS_STRINGS && POS_STRINGS[lang]) || ['fr', 'nl', 'es'].indexOf(lang) >= 0) ? lang : 'en';
+            window._posLang = isLang(lang) ? lang : 'en';
             window._posLangSource = source;
             document.documentElement.lang = window._posLang;
         })();
