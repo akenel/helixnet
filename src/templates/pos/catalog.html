@@ -1265,6 +1265,9 @@
             // live. A toast confirms it, because the filled fields sit below the fold.
             pullAll(m) {
                 if (!m) return;
+                // "Use ALL" is an explicit "make this the supplier's item" → take its proper title too
+                // (replaces a rough seed like "tyc" with "Tycoon Gas 250ml"), not just the blank fields.
+                if (m.title || m.name) this.form.name = m.title || m.name;
                 if (m.description) this.form.description = m.description;
                 if (m.image_url) this.form.image_url = m.image_url;
                 if (m.barcode && !(this.form.barcode || '').trim()) this.form.barcode = m.barcode;
