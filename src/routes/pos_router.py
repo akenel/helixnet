@@ -1522,7 +1522,7 @@ async def search_products_fast(
     # and the LIST avatar then shows the placeholder. COALESCE to the product's FIRST
     # gallery image so the list renders the SAME picture the edit modal shows.
     query = text(f"""
-        SELECT id, sku, barcode, name, category, price, stock_quantity, image_url, updated_at,
+        SELECT id, sku, barcode, name, category, price, price_tiers, tier_mode, stock_quantity, image_url, updated_at,
                is_age_restricted, product_class,
                (SELECT pi.id FROM product_images pi
                   WHERE pi.product_id = products.id
@@ -1566,6 +1566,8 @@ async def search_products_fast(
             "is_age_restricted": bool(row.is_age_restricted),
             "product_class": row.product_class,
             "promo_restricted": class_promo_restricted(row.product_class),
+            "price_tiers": row.price_tiers,   # BL-26: so the cart can preview the tier line (shown==charged)
+            "tier_mode": row.tier_mode,
             "relevance": float(row.relevance) if row.relevance else 0,
         }
         for row in rows

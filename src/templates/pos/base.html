@@ -727,6 +727,34 @@
             }).format(amount);
         }
 
+        // BL-26: the effective LINE total for a cart item at its quantity, honouring quantity-break
+        // tiers + mode. MIRRORS the server's pricing.tier_line_total() so the cart shows EXACTLY what
+        // the till charges (per_unit = price each; bundle = pack_total/min_qty, rounded at the line).
+        function _tierBest(item) {
+            const qty = Number(item.quantity) || 0;
+            const tiers = item && item.price_tiers;
+            if (!Array.isArray(tiers) || !tiers.length) return null;
+            let bestQ = null, bestUp = null;
+            for (const t of tiers) {
+                const mq = parseInt(t.min_qty, 10), up = parseFloat(t.unit_price);
+                if (!(mq >= 1) || isNaN(up) || qty < mq) continue;
+                if (bestQ === null || mq > bestQ) { bestQ = mq; bestUp = up; }
+            }
+            return bestQ === null ? null : { mq: bestQ, up: bestUp };
+        }
+        function tierLineTotal(item) {
+            const qty = Number(item.quantity) || 0;
+            const base = Number(item.price) || 0;
+            const best = _tierBest(item);
+            const eff = best ? ((item.tier_mode === 'bundle') ? best.up / best.mq : best.up) : base;
+            return Math.round(eff * qty * 100) / 100;
+        }
+        // True when a genuine volume break (min_qty >= 2) set the line price — for the "pack ✓" badge.
+        function tierApplied(item) {
+            const best = _tierBest(item);
+            return !!best && best.mq >= 2;
+        }
+
         // Date/time locale seam — keyed off _cfg('locale') (de-CH default → Swiss
         // dd.mm.yyyy). The ONE date/time seam: every hardcoded toLocaleDateString/
         // toLocaleTimeString/toLocaleString routes through here so an IT till shows

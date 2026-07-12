@@ -272,7 +272,10 @@
                                                aria-label="Quantity">
                                         <button @click="increaseQuantity(index)" class="bg-gray-200 hover:bg-gray-300 active:bg-gray-400 w-12 h-12 rounded-full text-2xl font-bold leading-none flex items-center justify-center" aria-label="Increase quantity">+</button>
                                     </div>
-                                    <p class="text-lg font-bold text-indigo-600" x-text="formatPrice(item.price * item.quantity)"></p>
+                                    <p class="text-lg font-bold text-indigo-600">
+                                        <span x-text="formatPrice(tierLineTotal(item))"></span>
+                                        <span x-show="tierApplied(item)" class="text-xs text-green-600 font-semibold ml-1" data-i18n="scan.tier_badge">pack ✓</span>
+                                    </p>
                                 </div>
                             </div>
                         </template>
@@ -1379,7 +1382,7 @@
                 this.discountError = '';
 
                 // Get subtotal from cart
-                const subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                const subtotal = this.cart.reduce((sum, item) => sum + tierLineTotal(item), 0);
 
                 if (subtotal <= 0) {
                     this.discount = 0;
@@ -1431,7 +1434,7 @@
             },
 
             get totals() {
-                const subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                const subtotal = this.cart.reduce((sum, item) => sum + tierLineTotal(item), 0);
                 return calculateTotal(subtotal, this.discount);
             },
 

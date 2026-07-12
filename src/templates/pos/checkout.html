@@ -41,7 +41,10 @@
                                 <!-- 🔞 early warning for the cashier — same chip as the catalog -->
                                 <span x-show="isAgeLine(item)" class="chip chip-age">🔞 18+</span>
                             </span>
-                            <span x-text="formatPrice(item.price * item.quantity)"></span>
+                            <span>
+                                <span x-text="formatPrice(tierLineTotal(item))"></span>
+                                <span x-show="tierApplied(item)" class="text-xs text-green-600 font-semibold ml-1" data-i18n="scan.tier_badge">pack ✓</span>
+                            </span>
                         </div>
                     </template>
                 </div>
@@ -602,14 +605,14 @@
                 // Sum the lines, then split the contained VAT by each line's Swiss rate so the
                 // breakdown shows 8.1% vs 2.6% live as the cashier flips dine-in/takeaway.
                 const lineSum = this.cartData.cart.reduce(
-                    (s, it) => s + (it.price || 0) * (it.quantity || 0), 0);
+                    (s, it) => s + tierLineTotal(it), 0);
                 const subtotal = lineSum || this.cartData.totals.subtotal || 0;
                 // BOTH the manual and the member discount apply to the ELIGIBLE (non-promo-restricted)
                 // portion only — tobacco/alcohol never get a promo discount (Swiss law). Mirrors the
                 // server so the Dry Run Preview total matches the charge. Manual & member are mutually
                 // exclusive (a member hides the manual buttons), so they never double up.
                 const eligibleSum = this.cartData.cart.reduce(
-                    (s, it) => s + (this.isPromoRestricted(it) ? 0 : (it.price || 0) * (it.quantity || 0)), 0);
+                    (s, it) => s + ((this.isPromoRestricted(it) || tierApplied(it)) ? 0 : tierLineTotal(it)), 0);
                 this.discountAmount = eligibleSum * (this.discount / 100);   // manual, eligible items only
                 const afterDiscount = subtotal - this.discountAmount;
                 const memberPct = (this.member && this.member.tier_discount_percent) || 0;
