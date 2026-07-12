@@ -968,15 +968,12 @@
                     const d = await r.json();
                     const hasMatches = (d.product_matches && d.product_matches.length) ||
                                        (d.reference_matches && d.reference_matches.length);
-                    if (hasMatches) {
-                        this.snap = d;          // {suggestion, matches..., best_match_score, query}
-                        this._resetLive();
-                        this.snapOpen = true;   // "is it already in the shop?" — cashier decides
-                    } else {
-                        // Nothing like it exists → it really is new: draft the fields.
-                        this._applyAiDraft(d.suggestion, f);
-                        this.aiNote = this._draftNote(d);
-                    }
+                    // Open the picker EITHER way: even with no local match, the operator should
+                    // get the live supplier-search option before we assume it's a brand-new item
+                    // (BL-35 — this "in neither list" case is exactly what live search is for).
+                    this.snap = d;              // {suggestion, matches..., best_match_score, query}
+                    this._resetLive();
+                    this.snapOpen = true;       // "is it already in the shop?" — cashier decides
                 } catch (err) {
                     console.warn('snap-find', err);
                     this.aiNote = t('catalog.ai_unavailable');
@@ -1016,11 +1013,9 @@
                     if (this.editing && this.form.id && d.product_matches) {
                         d.product_matches = d.product_matches.filter(m => m.id !== this.form.id);
                     }
-                    if ((d.product_matches && d.product_matches.length) || (d.reference_matches && d.reference_matches.length)) {
-                        this.snap = d; this.snapFile = null; this._resetLive(); this.snapOpen = true;
-                    } else {
-                        showToast(t('catalog.search_similar_none'), 'info');
-                    }
+                    // Open the picker even with no local match — the operator can escalate to a
+                    // live supplier-site search from here (BL-35) instead of dead-ending on a toast.
+                    this.snap = d; this.snapFile = null; this._resetLive(); this.snapOpen = true;
                 } catch (e) {
                     showToast(e.message || t('catalog.ai_unavailable'), 'error');
                 } finally { this.snapBusy = false; }
@@ -1076,8 +1071,12 @@
             // Picker: none of these → it's genuinely new. Use the AI draft.
             snapUseAiDraft() {
                 const d = this.snap || {};
-                this._applyAiDraft(d.suggestion, this.snapFile);
-                this.aiNote = this._draftNote(d);
+                // Snap path has an AI draft to apply; the typed "search similar" path doesn't —
+                // there we just close and keep whatever the operator already typed.
+                if (d.suggestion) {
+                    this._applyAiDraft(d.suggestion, this.snapFile);
+                    this.aiNote = this._draftNote(d);
+                }
                 this.snapOpen = false; this.snap = null; this.snapFile = null;
                 this._resetLive();
             },
