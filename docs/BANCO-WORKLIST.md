@@ -10,9 +10,9 @@
 
 ---
 
-## 🃏 ON DECK — 2026-07-13 · BL-37 FRENCH CHROME → then ship BL-36 prod ← START HERE
+## 🃏 ON DECK — 2026-07-13 · BL-38 MULTILINGUAL SUPPLIER QUERY ← START HERE (BL-36 desc + BL-37 FR chrome ✅ PROD)
 
-**BL-37 — FRENCH (+NL/ES) UI CHROME (queued 2026-07-13, Angel's ask).** BL-36 descriptions work in
+**BL-37 — FRENCH UI CHROME ✅ SHIPPED PROD 2026-07-13 (`a7239a2`).** 1,513 strings Ollama-batch-translated (0 fallbacks, placeholders+brands preserved, en/fr/it/de parity). NL/ES/PL = same move on request.**|OLD:** BL-36 descriptions work in
 FR (Angel validated: *"Patch brodé Motörhead… idéal pour décorer vestes, sacs…"* + 🤖 badge). Now flip
 the BUTTONS/labels to French too. Approach: **batch-translate the `en` block of `src/static/pos/pos-i18n.js`
 → a `fr` block via Ollama** (turbo_or_local — same brain as descriptions), then human-review + paste in.
