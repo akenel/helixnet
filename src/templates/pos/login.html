@@ -70,10 +70,15 @@
 
             <div class="mt-6 text-center text-sm text-gray-600">
                 <p data-i18n="login.use_credentials">Use your Artemis Store credentials</p>
+                {# Demo logins are a convenience on the public sandbox/demo ONLY. NEVER on a real
+                   shop — staging + production carry live accounts, so printing working passwords
+                   on the public login page is a credential leak. Env-gate it. #}
+                {% if app_env not in ('staging', 'production') %}
                 <p class="mt-2 text-xs text-gray-500" data-i18n-html="login.demo_credentials">
                     Demo: pam / helix_pass (Cashier)<br>
                     felix / helix_pass (Admin)
                 </p>
+                {% endif %}
             </div>
         </div>
 
