@@ -10,7 +10,22 @@
 
 ---
 
-## 🃏 ON DECK — 2026-07-12 night · ① STALE DATA ✅ FIXED → ② BUILD LIVE SUPPLIER SEARCH ← START HERE
+## 🃏 ON DECK — 2026-07-13 · BL-36 MULTI-LANGUAGE DESCRIPTIONS ← START HERE
+
+**Live supplier search (BL-35) SHIPPED PROD ✅ — next up is multi-language product descriptions.**
+Full design + verified facts in memory **`banco-catalog-content-translation`** (updated 2026-07-12). Plan:
+1. **`ADD COLUMN products.description_i18n jsonb`** — a `{en,de,fr,it,nl,es,…}` map (adding a language later =
+   config + backfill, ZERO migration). Careful ALTER on sbx→stg→prod ([[schema-create-all-alembic-drift]] landmine).
+2. **Artemis serves DE/EN/FR/IT NATIVELY** (verified — fetch `/de/produkt/ /en/product/ /fr/produit/ /it/prodotto/`)
+   → the shop's own catalog gets 4 langs FREE, no LLM. Fill at adopt + a backfill script.
+3. **NL/ES (+PL?) & German-only suppliers (FourTwenty/Near Dark)** → Ollama-translate, **on-demand + cache**
+   (first view in a lang → 1 call → store in the map → instant after). Do NOT pre-blast 5,157 × N langs.
+4. **Display** `description_i18n[_posLang] || ['en'] || description`. (Chrome i18n has en/it/de; fr/nl/es = later, bigger.)
+Why now: adopting a FourTwenty item gave English-signed-in Felix a GERMAN description — the language gap is the
+last rough edge on the find-first/adopt flow.
+
+---
+## 🃏 PREV DECK — 2026-07-12 night · ① STALE DATA ✅ FIXED → ② LIVE SUPPLIER SEARCH ✅ SHIPPED PROD
 
 **The root cause of Felix's "I hold the product but Banco can't find it" frustration = STALE / INCOMPLETE data**
 (reference table missing common items like Tycoon Gas; Artemis rows use minted barcodes, not the real EANs on
@@ -26,10 +41,14 @@ Tycoon (0.412) ✓ ; barcode scan `4035687900004` → Tycoon exact ✓. Backup-g
 - ▶ The Nov-30 snapshot is 7 mo old — a periodic **live** dropship-feed pull (`dropship_productfeed_v2.csv`) belongs
   in ② / the supplier-sync framework.
 
-**② THEN THE BLOCK — LIVE SUPPLIER SEARCH ("something really cool"):** when the local catalog+reference MISS,
-live-search the supplier sites → adopt + self-heal the DB. FourTwenty (JSON search API — cleaner than scrape;
-or Google `site:` → scrape the page) + Artemis (/en/ pages) first = 90%; then Near Dark & the rest from Felix's
-supplier list, **each a once-tested adapter**. Full spec: memory `banco-live-supplier-search`.
+**② LIVE SUPPLIER SEARCH — ✅ SHIPPED PROD 2026-07-12 (`bedc44c`, BL-35):** local miss → 🌐 search
+FourTwenty (Magento page — their AJAX search WAF-blocks us) + Artemis (JSON `searchTerms` API, English) +
+Near Dark (Shopware 5, EUR) concurrently → adopt fills name/photo/EAN/price + **tier ladder** and self-heals
+`reference_products`. "⤵ Use all these details" on the compare panel; thin local picks auto-enrich live
+(English pref). Proven on prod (3 suppliers, 0 errors). `src/services/supplier_search/`, 9/9 unit tests,
+UAT `docs/testing/banco/BANCO-SBX-LIVE-SUPPLIER-SEARCH-UAT.html`. Full detail: memory `banco-live-supplier-search`.
+- ▶ Follow-ups: 💱 currency conversion (memory `banco-currency-conversion-plan` — flat plan-rates so Near Dark
+  EUR shows ≈ CHF); periodic LIVE dropship-feed pull; multi-image "grab them all"; ~7-8s latency (lazy-enrich).
 
 **✅ SHIPPED PROD TODAY 2026-07-12 (`41fc6d4` · all envs parity):** find-first snap (librarian) + BL-33/34
 (inactive items surfaced + reactivate) + 🔎 Search-similar everywhere + **language-agnostic match**
