@@ -68,6 +68,20 @@ EAN-13→Code128, Puppeteer PDF, `brother_ql` → QL-820NWB). Bones are right; j
 (2) **Human-green BL-98 on sandbox** → say go and it ships the ladder. (3) Lightbox — buy (~CHF 40) or white
 paper + desk lamp first (CHF 0, recommended)?
 
+## ✅ SHIPPED PROD 2026-07-12 — BL-26 tier pricing v2 (`dcacb03` · b1656)
+Two things the v1 UAT surfaced, both fixed + shipped: (1) **per-unit + BUNDLE modes** ("3 for 8,00" vs "10+ →
+4,50 each") — `tier_mode` column, mode-aware editor toggle, correct money math (bundle = pack_total/min_qty,
+line-level rounded so "3 for 4,00" == exactly 4,00); (2) the **live cart preview** (`tierLineTotal` mirrors the
+server → cart shows EXACTLY what the till charges, Felix's idiot-proof ask) + the **tier ladder on BOTH product
+detail cards** (sell + catalog — Felix asked 3× to SEE it, like the Artemis site). Fixed a mode-aware
+`validate_price_tiers` bug (bundle starts at qty≥2, not qty 1) that blocked the editor from saving bundles.
+2 UAT rounds (v1 HOLD → v2 10/0). sw v74→v77. `make test` 1856 pass. Backup-gated (`banco_prod_20260712_1230`,
+restore-verified 39/5156/131), re-probed serving each rung. Detail: memory `banco-tier-pricing`.
+- ▶ **NEXT-ROUND (banked, Angel deferred):** scan-cart manual-discount preview discounts the full subtotal while
+  checkout/server exclude tiered+promo lines (pre-existing shown≠charged in the SCAN preview only; charged is
+  right). Fix with the **double-dip override** (manager may stack a discount on a tier line — Felix's call) +
+  a **"tier 1/tier 2" line label**. Not a blocker.
+
 ## ✅ SHIPPED PROD 2026-07-11 — BL-26 papers tier pricing (`daa3ab5` · b1645)
 Per-product quantity breaks (papers-first): buy N+ → that tier's unit price applies to the whole line (a
 PRICE, feeds VAT/totals). **A volume break (min_qty≥2) is FINAL** — no member/manual discount stacks (tiered
