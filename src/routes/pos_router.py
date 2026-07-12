@@ -515,6 +515,104 @@ async def snap_find_product(
     return {**result, **matches}
 
 
+@router.get("/products/search-suppliers-live")
+async def search_suppliers_live(
+    q: str = "",
+    limit: int = 4,
+    suppliers: str = "",
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """Live fallback for find-first: when the local catalog + reference cache MISS, search
+    the supplier websites (FourTwenty / Artemis / Near Dark) live and return adoptable rows
+    (name / price / photo / real EAN / tier ladder). Deliberate action — the picker calls it
+    only when the local best match is weak. `suppliers` optionally restricts to adapter keys
+    (comma-separated). One slow supplier can't sink the batch (per-adapter deadline)."""
+    from src.services.supplier_search import search_suppliers
+    keys = [s for s in (suppliers or "").split(",") if s.strip()] or None
+    out = await search_suppliers(q, suppliers=keys, limit=max(1, min(int(limit or 4), 8)))
+    logger.info("live supplier-search q=%r → %d results, errors=%s by %s",
+                q, len(out["results"]), out["errors"], current_user["username"])
+    return out
+
+
+@router.post("/products/adopt-live-reference")
+async def adopt_live_reference(
+    payload: dict = Body(...),
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """SELF-HEAL: cache a chosen live supplier result into `reference_products` so the next
+    lookup is a local hit. Idempotent upsert on (supplier, ref_key) where ref_key is the real
+    EAN when present, else a slug of the product URL. Returns the reference row (with id) so
+    the picker can adopt it via the existing reference path. Non-CHF prices (Near Dark = EUR)
+    are kept out of `suggested_price` so the CHF compare panel never mixes currencies."""
+    import re
+    from sqlalchemy import text as _text
+
+    supplier = (payload.get("supplier") or "").strip()
+    title = (payload.get("title") or payload.get("name") or "").strip()
+    if not supplier or not title:
+        raise HTTPException(status_code=422, detail="supplier and title are required")
+    barcode = (payload.get("barcode") or "").strip() or None
+    product_url = (payload.get("product_url") or "").strip() or None
+    currency = (payload.get("currency") or "CHF").strip().upper()
+    price = payload.get("price")
+    suggested = None
+    if price is not None and currency == "CHF":
+        try:
+            suggested = round(float(price), 2)
+        except (TypeError, ValueError):
+            suggested = None
+
+    # Stable per-supplier key: prefer the real EAN, else a slug of the product URL.
+    ref_key = barcode
+    if not ref_key and product_url:
+        ref_key = re.sub(r"[^a-z0-9]+", "-", product_url.rsplit("/", 1)[-1].lower()).strip("-")[:150]
+    if not ref_key:
+        ref_key = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")[:150]
+
+    raw = {"product_url": product_url, "currency": currency,
+           "price_tiers": payload.get("price_tiers") or [], "tier_mode": payload.get("tier_mode") or "per_unit",
+           "adopted_live_by": current_user["username"], "is_live": True}
+
+    row = (await db.execute(_text("""
+        INSERT INTO reference_products
+            (id, supplier, ref_key, supplier_sku, barcode, title, description,
+             image_url, category, suggested_price, raw, imported_at)
+        VALUES
+            (gen_random_uuid(), :supplier, :ref_key, NULL, :barcode, :title, :description,
+             :image_url, :category, :suggested, CAST(:raw AS jsonb), now())
+        ON CONFLICT ON CONSTRAINT uq_reference_products_supplier_refkey DO UPDATE SET
+            barcode = EXCLUDED.barcode, title = EXCLUDED.title,
+            description = COALESCE(EXCLUDED.description, reference_products.description),
+            image_url = COALESCE(EXCLUDED.image_url, reference_products.image_url),
+            category = COALESCE(EXCLUDED.category, reference_products.category),
+            suggested_price = COALESCE(EXCLUDED.suggested_price, reference_products.suggested_price),
+            raw = EXCLUDED.raw, imported_at = now()
+        RETURNING id, supplier, supplier_sku, barcode, title, description, image_url,
+                  category, suggested_price
+    """), {
+        "supplier": supplier, "ref_key": ref_key, "barcode": barcode, "title": title[:255],
+        "description": (payload.get("description") or "").strip() or None,
+        "image_url": (payload.get("image_url") or "").strip()[:500] or None,
+        "category": (payload.get("category") or "").strip()[:100] or None,
+        "suggested": suggested, "raw": json.dumps(raw),
+    })).fetchone()
+    await db.commit()
+
+    logger.info("self-heal: adopted live %s %r → reference %s by %s",
+                supplier, title, row.id, current_user["username"])
+    return {
+        "healed": True,
+        "id": str(row.id), "supplier": row.supplier, "supplier_sku": row.supplier_sku,
+        "barcode": row.barcode, "title": row.title, "name": row.title,
+        "description": row.description, "image_url": row.image_url, "category": row.category,
+        "suggested_price": float(row.suggested_price) if row.suggested_price is not None else None,
+        "price_tiers": raw["price_tiers"], "tier_mode": raw["tier_mode"],
+        "currency": currency, "is_reference": True, "is_live": True,
+    }
+
+
 @router.get("/products", response_model=list[ProductRead])
 async def list_products(
     skip: int = 0,

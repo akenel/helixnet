@@ -611,6 +611,46 @@
                         </button>
                     </template>
                 </div>
+                <!-- BL-35: not in EITHER local list → search the supplier sites live, adopt + self-heal -->
+                <div class="pt-2 border-t">
+                    <button x-show="!liveBusy" @click="searchSuppliersLive()"
+                            class="w-full py-2.5 rounded-lg border-2 border-dashed border-teal-300 text-teal-700 font-semibold hover:border-teal-500 hover:bg-teal-50">
+                        🌐 <span data-i18n="catalog.snap_live_search">Not here? Search supplier sites live</span>
+                    </button>
+                    <div x-show="liveBusy" class="w-full py-2.5 text-center text-sm text-gray-500 animate-pulse">
+                        🌐 <span data-i18n="catalog.snap_live_busy">Searching FourTwenty · Artemis · Near Dark…</span>
+                    </div>
+                    <div x-show="liveResults.length" class="mt-2">
+                        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                            🌐 <span data-i18n="catalog.snap_live_results">Live from the supplier sites</span>
+                        </div>
+                        <template x-for="m in liveResults" :key="m.supplier + m.product_url">
+                            <button @click="snapPickLive(m)" class="w-full flex items-center gap-3 p-2.5 mb-2 rounded-lg border border-gray-200 hover:border-teal-400 hover:bg-teal-50 text-left">
+                                <div class="w-12 h-12 flex-none bg-gray-50 rounded border flex items-center justify-center overflow-hidden">
+                                    <img x-show="m.image_url" :src="m.image_url" class="w-full h-full object-contain" alt="" @error="$el.style.display='none'">
+                                    <span x-show="!m.image_url" class="text-2xl">📦</span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-medium text-gray-900 truncate" x-text="m.title"></div>
+                                    <div class="text-xs text-gray-500 truncate">
+                                        <span class="font-semibold text-teal-700" x-text="m.supplier"></span>
+                                        <template x-if="m.price != null"> · <span x-text="m.currency + ' ' + m.price"></span></template>
+                                        <template x-if="m.price_tiers && m.price_tiers.length"><span class="text-teal-600"> · 🏷️<span x-text="m.price_tiers.length"></span></span></template>
+                                        <template x-if="m.barcode"><span class="text-gray-400"> · <span x-text="m.barcode"></span></span></template>
+                                    </div>
+                                </div>
+                                <span class="flex-none text-xs font-bold px-2 py-1 rounded-full bg-teal-100 text-teal-700">
+                                    <span x-text="snapPct(m.score)"></span>%
+                                </span>
+                            </button>
+                        </template>
+                    </div>
+                    <div x-show="liveSearched && !liveBusy && !liveResults.length" class="mt-2 text-center text-xs text-gray-400" data-i18n="catalog.snap_live_none">No live matches on the supplier sites.</div>
+                    <div x-show="Object.keys(liveErrors).length" class="mt-1 text-center text-[11px] text-amber-500">
+                        <span data-i18n="catalog.snap_live_err">Didn't answer</span>: <span x-text="Object.keys(liveErrors).join(', ')"></span>
+                    </div>
+                </div>
+
                 <!-- Fallback: it's genuinely new -->
                 <button @click="snapUseAiDraft()" class="w-full mt-1 py-3 rounded-lg border-2 border-dashed border-gray-300 text-gray-700 font-semibold hover:border-indigo-400 hover:text-indigo-700">
                     <span data-i18n="catalog.snap_none_new">None of these — it's a new item</span> →
@@ -726,6 +766,11 @@
             snapOpen: false,      // the "is it already in the shop?" picker
             snapFile: null,       // the snapped photo, kept if the cashier goes "new item"
             snapBusy: false,      // BL-34: manual "🔎 Search similar" in flight
+            // BL-35: live supplier-site search fallback
+            liveResults: [],
+            liveBusy: false,
+            liveSearched: false,
+            liveErrors: {},
 
             // BL-89: barcode scan on the form
             scanOpen: false,
@@ -925,6 +970,7 @@
                                        (d.reference_matches && d.reference_matches.length);
                     if (hasMatches) {
                         this.snap = d;          // {suggestion, matches..., best_match_score, query}
+                        this._resetLive();
                         this.snapOpen = true;   // "is it already in the shop?" — cashier decides
                     } else {
                         // Nothing like it exists → it really is new: draft the fields.
@@ -971,7 +1017,7 @@
                         d.product_matches = d.product_matches.filter(m => m.id !== this.form.id);
                     }
                     if ((d.product_matches && d.product_matches.length) || (d.reference_matches && d.reference_matches.length)) {
-                        this.snap = d; this.snapFile = null; this.snapOpen = true;
+                        this.snap = d; this.snapFile = null; this._resetLive(); this.snapOpen = true;
                     } else {
                         showToast(t('catalog.search_similar_none'), 'info');
                     }
@@ -985,7 +1031,7 @@
             // product is invisible in search yet blocks a create, so tapping it here is the
             // one-move escape from that dead-end.
             snapPickCatalog(m) {
-                this.snapOpen = false; this.snap = null; this.snapFile = null;
+                this.snapOpen = false; this.snap = null; this.snapFile = null; this._resetLive();
                 this.modalOpen = false;   // leave the "new product" modal
                 if (m && m.is_active === false) {
                     API.put(`/api/v1/pos/products/${m.id}`, { is_active: true })
@@ -1007,6 +1053,12 @@
                     if (m.category && !this.form.category) this.form.category = m.category;
                     if (m.suggested_price != null && (this.form.price === '' || this.form.price == null)) this.form.price = m.suggested_price;
                     if (m.supplier) this.form.supplier_name = m.supplier;
+                    // BL-35: a live/reference row can carry a tier ladder (Artemis + FourTwenty) —
+                    // fill it only when the form has none yet, so we never clobber hand-entered breaks.
+                    if (Array.isArray(m.price_tiers) && m.price_tiers.length && !(this.form.price_tiers || []).length) {
+                        this.form.price_tiers = m.price_tiers.map(x => ({ min_qty: x.min_qty, unit_price: x.unit_price }));
+                        this.form.tier_mode = m.tier_mode || 'per_unit';
+                    }
                     // Prefer the supplier's PROFESSIONAL photo over the cashier's snap (theirs is
                     // better — proper lighting, white background). Only fall back to the snap if the
                     // reference carries no image. (Reference has one image today; a multi-image
@@ -1019,6 +1071,7 @@
                 }
                 this.snapOpen = false; this.snap = null; this.snapFile = null;
                 this.aiNote = t('catalog.snap_from_ref_note');
+                this._resetLive();
             },
             // Picker: none of these → it's genuinely new. Use the AI draft.
             snapUseAiDraft() {
@@ -1026,8 +1079,38 @@
                 this._applyAiDraft(d.suggestion, this.snapFile);
                 this.aiNote = this._draftNote(d);
                 this.snapOpen = false; this.snap = null; this.snapFile = null;
+                this._resetLive();
             },
-            snapClose() { this.snapOpen = false; },
+            // BL-35: local search missed → go look on the supplier websites live.
+            async searchSuppliersLive() {
+                const q = (this.snap && this.snap.query) || (this.form.name || '').trim();
+                if (!q) { showToast(t('catalog.search_similar_need_name'), 'warning'); return; }
+                this.liveBusy = true; this.liveSearched = true; this.liveErrors = {};
+                try {
+                    const d = await API.get(`/api/v1/pos/products/search-suppliers-live?q=${encodeURIComponent(q)}&limit=4`);
+                    this.liveResults = d.results || [];
+                    this.liveErrors = d.errors || {};
+                } catch (e) {
+                    showToast(e.message || t('catalog.snap_live_failed'), 'error');
+                    this.liveResults = [];
+                } finally { this.liveBusy = false; }
+            },
+            // Picker: adopt a LIVE supplier result. Self-heal reference_products first (so next
+            // lookup is a local hit), then fill the add-form from the healed row. If the heal call
+            // fails we still adopt from the in-memory result — but drop a non-CHF price so a EUR
+            // (Near Dark) number never lands in a CHF price field.
+            async snapPickLive(m) {
+                let row = null;
+                try { row = await API.post('/api/v1/pos/products/adopt-live-reference', m); }
+                catch (e) { /* self-heal best-effort — fall through to the in-memory result */ }
+                const adopt = row && row.healed
+                    ? { ...m, ...row }
+                    : { ...m, suggested_price: (m.currency === 'CHF' ? m.price : null) };
+                this.snapPickReference(adopt);
+                this._resetLive();
+            },
+            _resetLive() { this.liveResults = []; this.liveSearched = false; this.liveErrors = {}; this.liveBusy = false; },
+            snapClose() { this.snapOpen = false; this._resetLive(); },
             snapPct(score) { return Math.round((Number(score) || 0) * 100); },
 
             // Add a photo. Editing an existing product → upload now (append to gallery).
