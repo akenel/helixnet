@@ -767,11 +767,15 @@ async def update_product(
 
     # Update only provided fields
     update_data = product_update.model_dump(exclude_unset=True)
-    # BL-26: validate + normalize quantity-break tiers before they land (ascending, first=1, positive).
+    # BL-26: validate + normalize quantity-break tiers before they land (ascending, unique).
+    # The first-row rule is mode-aware: per_unit needs a qty-1 base row; bundle ("N for X")
+    # starts at qty>=2 (base = the product's own price). Use the incoming tier_mode if the edit
+    # sets one, else the product's current mode.
     if "price_tiers" in update_data:
         from src.services.pricing import validate_price_tiers
+        tier_mode = update_data.get("tier_mode") or product.tier_mode or "per_unit"
         try:
-            update_data["price_tiers"] = validate_price_tiers(update_data["price_tiers"])
+            update_data["price_tiers"] = validate_price_tiers(update_data["price_tiers"], tier_mode)
         except ValueError as e:
             raise HTTPException(status_code=422, detail=f"Invalid price tiers: {e}")
     for field, value in update_data.items():

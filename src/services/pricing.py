@@ -67,13 +67,19 @@ def tier_line_total(price_tiers, base_price, qty, mode="per_unit"):
     return (unit * Decimal(qty)).quantize(_CENT, rounding=ROUND_HALF_UP)
 
 
-def validate_price_tiers(raw):
+def validate_price_tiers(raw, mode="per_unit"):
     """Validate + normalize a tier list for storage (the editor path).
 
     Rules: each row is ``{min_qty (int >= 1), unit_price (>= 0)}``; ``min_qty`` values are
-    unique; the list is returned sorted ascending; the first tier must be ``min_qty == 1``
-    (the base price). ``None``/empty -> ``[]`` (tiers cleared, flat price). Raises
-    ``ValueError`` on bad input so the caller can 422 with the reason.
+    unique; the list is returned sorted ascending. ``None``/empty -> ``[]`` (tiers cleared,
+    flat price). Raises ``ValueError`` on bad input so the caller can 422 with the reason.
+
+    The FIRST-ROW rule depends on ``mode``:
+      - ``"per_unit"`` (Artemis ladder): the first tier must be ``min_qty == 1`` — it *is* the
+        single-unit base price, the rung every higher break is measured against.
+      - ``"bundle"`` ("N for X total"): there is no bundle of one — the base price is the
+        product's own ``price``. So the first break must be a real pack, ``min_qty >= 2``.
+        (Requiring a qty-1 row here was the bug that made the editor reject valid bundle data.)
     """
     if not raw:
         return []
@@ -96,6 +102,9 @@ def validate_price_tiers(raw):
         seen.add(mq)
         rows.append({"min_qty": mq, "unit_price": str(up)})
     rows.sort(key=lambda r: r["min_qty"])
-    if rows[0]["min_qty"] != 1:
+    if mode == "bundle":
+        if rows[0]["min_qty"] < 2:
+            raise ValueError("a bundle break must start at min_qty 2 or more (there is no bundle of one)")
+    elif rows[0]["min_qty"] != 1:
         raise ValueError("the first tier must start at min_qty 1 (the base price)")
     return rows

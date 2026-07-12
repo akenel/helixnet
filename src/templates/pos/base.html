@@ -754,6 +754,25 @@
             const best = _tierBest(item);
             return !!best && best.mq >= 2;
         }
+        // BL-26: human-readable ladder rows for the product DETAIL card, so the cashier SEES the
+        // deal (like the Artemis site) and can trust the till. Mode-aware, mirrors the editor labels.
+        //   per_unit → "10+ · 4,50 each"      bundle → "Buy 3 for 8,00" (+ a "≈ 2,67 each" sub)
+        function tierRowLabel(product, row) {
+            const mq = parseInt(row.min_qty, 10);
+            const price = parseFloat(row.unit_price);
+            if (product && product.tier_mode === 'bundle') {
+                return t('catalog.tiers_buy') + ' ' + mq + ' ' + t('catalog.tiers_for') + ' ' + formatPrice(price);
+            }
+            return mq + '+ · ' + formatPrice(price) + ' ' + t('catalog.tiers_each');
+        }
+        // Only bundle rows carry a sub-line: the per-unit equivalent (informational).
+        function tierRowSub(product, row) {
+            if (!product || product.tier_mode !== 'bundle') return '';
+            const mq = parseInt(row.min_qty, 10);
+            const price = parseFloat(row.unit_price);
+            if (!(mq >= 1)) return '';
+            return '≈ ' + formatPrice(price / mq) + ' ' + t('catalog.tiers_each');
+        }
 
         // Date/time locale seam — keyed off _cfg('locale') (de-CH default → Swiss
         // dd.mm.yyyy). The ONE date/time seam: every hardcoded toLocaleDateString/

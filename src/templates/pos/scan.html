@@ -397,6 +397,27 @@
                         <span x-show="detailProduct && detailProduct.product_class !== 'age_restricted'" class="text-sm font-medium px-2.5 py-1 rounded-full" :class="classInfo(detailProduct?.product_class).c"
                               x-text="classInfo(detailProduct?.product_class).e + ' ' + classInfo(detailProduct?.product_class).l"></span>
                     </div>
+                    <!-- BL-26: quantity price breaks — the ladder, so the cashier SEES the deal (like the Artemis site). -->
+                    <template x-if="detailProduct?.price_tiers && detailProduct.price_tiers.length">
+                        <div class="mt-4 border border-indigo-200 rounded-lg overflow-hidden text-sm">
+                            <div class="bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-800 flex items-center gap-2">
+                                <span>🏷️ <span data-i18n="scan.tier_heading">Quantity price breaks</span></span>
+                                <span class="ml-auto font-normal text-indigo-400 text-[11px]"
+                                      x-text="detailProduct.tier_mode === 'bundle' ? t('catalog.tiers_mode_bundle') : t('catalog.tiers_mode_perunit')"></span>
+                            </div>
+                            <ul class="divide-y divide-indigo-100">
+                                <li class="px-3 py-1.5 flex justify-between text-gray-500">
+                                    <span>1</span><span class="font-medium" x-text="formatPrice(detailProduct?.price)"></span>
+                                </li>
+                                <template x-for="(row, i) in detailProduct.price_tiers" :key="i">
+                                    <li class="px-3 py-1.5 flex justify-between items-baseline gap-2" x-show="Number(row.min_qty) >= 2">
+                                        <span class="text-gray-800 font-medium" x-text="tierRowLabel(detailProduct, row)"></span>
+                                        <span class="text-gray-400 text-xs flex-none" x-text="tierRowSub(detailProduct, row)"></span>
+                                    </li>
+                                </template>
+                            </ul>
+                        </div>
+                    </template>
                     <button @click="addToCart(detailProduct); detailProduct=null"
                             class="bg-green-500 hover:bg-green-600 text-white w-full mt-4 py-3 rounded-lg font-semibold">➕ <span data-i18n="scan.add_to_cart">Add to Cart</span></button>
                 </div>

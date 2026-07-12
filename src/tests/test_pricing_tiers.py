@@ -66,6 +66,26 @@ def test_validate_empty_clears():
 def test_validate_requires_first_tier_min_qty_1():
     with pytest.raises(ValueError):
         validate_price_tiers([{"min_qty": 10, "unit_price": "4.50"}])
+    # per_unit is the default → same rule when passed explicitly
+    with pytest.raises(ValueError):
+        validate_price_tiers([{"min_qty": 3, "unit_price": "4.00"}], mode="per_unit")
+
+
+def test_validate_bundle_allows_first_break_at_qty_2_plus():
+    # Felix's real case: a bundle "3 for 8.00, 10 for 25.00" has NO qty-1 row (base = product price).
+    # The old code rejected this ("first must be min_qty 1") — the editor-save bug. Now it's valid.
+    out = validate_price_tiers(
+        [{"min_qty": 3, "unit_price": "8.00"}, {"min_qty": 10, "unit_price": "25.00"}],
+        mode="bundle",
+    )
+    assert [r["min_qty"] for r in out] == [3, 10]
+    assert out[0]["unit_price"] == "8.00"
+
+
+def test_validate_bundle_rejects_qty_1_break():
+    # There is no bundle of one — a qty-1 first row in bundle mode is nonsense.
+    with pytest.raises(ValueError):
+        validate_price_tiers([{"min_qty": 1, "unit_price": "1.40"}], mode="bundle")
 
 
 def test_validate_rejects_duplicate_and_negative():

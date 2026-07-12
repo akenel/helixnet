@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"><!-- frame-runtime --><!-- base href="https://48796b41-a164-4c35-9e1b-eb904c02e1b0.frame.claudeusercontent.com/_f/1783761076-6daf/" --><script>window.__FRAME_PREAMBLE={"capabilities":{"downloads":"downloads.DUzXFHNF.js","mcp":"mcp.Djj5DQjZ.js","self":"self.DqF_PxOe.js"},"transforms":"_transforms.DYk1Ltlh.js"}</script><script>(function(){"use strict";const X="modulepreload",Y=function(e){return"/"+e},Z={},U=function(t,n,u){let o=Promise.resolve();function i(f){const a=new Event("vite:preloadError",{cancelable:!0});if(a.payload=f,window.dispatchEvent(a),!a.defaultPrevented)throw f}return o.then(f=>{for(const a of f||[])a.status==="rejected"&&i(a.reason);return t().catch(i)})},D=["light","dark","system"];function $(e){if(e==null||typeof e!="object")return!1;const t=e.__frame_init;return t!=null&&typeof t=="object"}function q(e){if(e==null||typeof e!="object")return!1;const t=e.__frame_theme;if(t==null||typeof t!="object")return!1;const n=t.theme;return typeof n=="string"&&D.includes(n)}function M(e){if(window===top||e.type==="auxclick"&&e.button!==1)return;const t=e.composedPath?e.composedPath():[e.target];let n=null;for(let f=0;f<t.length;f++){const a=t[f];if(a&&a.matches&&a.matches("a[href],area[href]")){n=a;break}}if(!n&&e.target&&e.target.closest&&(n=e.target.closest("a[href],area[href]")),!n)return;const u=n.getAttribute("href");if(!u)return;let o,i;try{o=new URL(u,document.baseURI),i=new URL(document.baseURI).origin}catch{return}(o.protocol==="http:"||o.protocol==="https:")&&o.origin!==i&&(e.preventDefault(),parent.postMessage({__frame_nav:!0,url:o.href},"*"))}const L={};function y(e){if(window===top)return;const t=Date.now();t-(L[e]||0)<500||(L[e]=t,parent.postMessage({__frame_engaged:!0,kind:e},"*"))}const F=2e3,T=["wheel","touchstart","touchmove","keydown","pointerdown"];let k=0;function B(e){e.isTrusted&&(k=Date.now())}function z(){addEventListener("click",M,!0),addEventListener("auxclick",M,!0)}function W(){for(let e=0;e<T.length;e++)addEventListener(T[e],B,{capture:!0,passive:!0});addEventListener("scroll",e=>{e.isTrusted&&Date.now()-k<F&&y("scroll")},{capture:!0,passive:!0}),addEventListener("pointermove",e=>{e.isTrusted&&y("pointer")},{capture:!0,passive:!0}),addEventListener("click",e=>{e.isTrusted&&y("click")},{capture:!0,passive:!0})}function x(e,t,n){const u=[...t.values()].filter(o=>o.targets.some(i=>i.startsWith(e+".")));return{wrap(o,i){const f=`${e}.${o}`,a=u.filter(s=>s.targets.includes(f));return a.length===0?(...s)=>{try{return i(...s)}catch(d){return Promise.reject(d)}}:(...s)=>{let d=s;for(const c of a){const l=c.module.parameters;if(l)try{d=l(d)}catch{return Promise.reject({code:"transform_error",id:c.id,scope:e,message:"parameters transform failed"})}}let m;try{m=i(...d)}catch(c){m=Promise.reject(c)}return m.then(c=>{for(let l=a.length-1;l>=0;l--){const h=a[l],p=h.module.returns;if(p)try{c=p(c)}catch{return n({id:h.id,scope:e,leg:"returns"}),c}}return c},c=>{for(let l=a.length-1;l>=0;l--){const h=a[l],p=h.module.throws;if(p)try{c=p(c)}catch{return n({id:h.id,scope:e,leg:"throws"}),Promise.reject(c)}}return Promise.reject(c)})}}}}function H(e,t,n,u=()=>{}){const o=new Set(e.changes??[]),i=new Map;for(const f of o){const a=t[f];a&&i.set(f,a)}return{contract:e.contract,changes:o,flags:new Set(e.flags??[]),capabilities:e.capabilities??{},transforms:i,shellOrigin:n.shellOrigin,mount:n.mount,pipe:f=>x(f,i,u)}}(function(){const e=Object.defineProperty,t=globalThis,n=["RTCPeerConnection","webkitRTCPeerConnection","RTCDataChannel","RTCIceCandidate","RTCSessionDescription","RTCRtpSender","RTCRtpReceiver"];let u=0;for(let o=0;o<n.length;o++){const i=n[o];try{e(t,i,{value:void 0,writable:!1,configurable:!1})}catch{try{delete t[i]}catch{}try{e(t,i,{value:void 0,writable:!1,configurable:!0})}catch{}}typeof t[i]=="function"&&u++}if(u&&window!==top)try{parent.postMessage({__frame_rtc_lockdown_failed:u},"*")}catch{}})();const K=1e4,G=Object.freeze([...window.__FRAME_PREAMBLE?.origins??["https://claude.ai","https://preview.claude.ai"]]);function J(e){for(const t of G)if(t.endsWith(":*"))try{const n=new URL(e);if(`${n.protocol}//${n.hostname}:*`===t)return!0}catch{}else if(e===t)return!0;return!1}const w=Object.freeze({...window.__FRAME_PREAMBLE?.capabilities??{}}),E=window.__FRAME_PREAMBLE?.transforms,C=/^[\w.-]+\.js$/,V=/^[a-z][a-z0-9_-]{0,63}$/;let A=null,g=null;function P(e,t,n){try{Object.defineProperty(e,t,{value:n,writable:!1,configurable:!1,enumerable:!0})}catch{try{Object.defineProperty(e,t,{value:n,writable:!1,configurable:!0,enumerable:!0})}catch{}}}let R=!1;function N(e){const t=document.documentElement;e==="light"||e==="dark"?(t.dataset.theme=e,t.style.colorScheme=e,R=!0):R&&(delete t.dataset.theme,t.style.colorScheme="",R=!1)}const _=new Map;function Q(e,t){const n=_.get(e);if(!n)return;Object.assign(n.impl,t),n.impl.__settled=()=>Promise.reject({code:"capability_removed",message:`${e}: method not in this runtime`});const u=n.queue;n.queue=[];for(const o of u){const i=t[o.method];i?i(...o.args).then(o.resolve,o.reject):o.reject({code:"capability_removed",message:`${e}.${o.method} is not in this runtime`})}}function O(e,t){const n=_.get(e);if(!n)return;n.impl.__settled=()=>Promise.reject(t);const u=n.queue;n.queue=[];for(const o of u)o.reject(t)}const j=Object.getOwnPropertyDescriptor(window,"claude");if(window!==top&&!(j&&j.writable===!1)){z(),W();const e=j?.value??{};P(window,"claude",e);const t=s=>{const d={impl:Object.create(null),queue:[]};_.set(s,d);const m=new Proxy(d.impl,{get:(c,l)=>{if(typeof l=="string"&&!(l==="then"||l==="toJSON"||l==="valueOf"))return l==="toString"?Object.prototype.toString:(...h)=>{const p=c[l]??c.__settled;return p?p(...h):new Promise((b,S)=>{d.queue.push({method:l,args:h,resolve:b,reject:S})})}},set:()=>!1});P(e,s,m)};for(const s of Object.keys(w)){if(e[s]!==void 0){P(e,s,e[s]);continue}t(s)}let n=null,u=null,o=0;const i=s=>{s.source!==parent||!J(s.origin)||$(s.data)&&(n=s.data.__frame_init,g=s.origin,removeEventListener("message",i),clearTimeout(o),u?.())};addEventListener("message",i),parent.postMessage({__frame_connect:!0},"*");const f=new Promise(s=>{u=s,o=setTimeout(()=>{removeEventListener("message",i),s()},K)}),a=document.readyState==="loading"?new Promise(s=>document.addEventListener("DOMContentLoaded",()=>s(),{once:!0})):Promise.resolve();f.then(async()=>{if(!n||!g){for(const r of _.keys())O(r,{code:"not_granted",message:"frame initialization did not arrive - capability unavailable"});return}N(n.theme);const s=g;addEventListener("message",r=>{r.source!==parent||r.origin!==s||q(r.data)&&N(r.data.__frame_theme.theme)});const d=r=>U(()=>import("/_runtime/"+r),void 0),m=Object.keys(n.capabilities??{});for(const r of m)Object.hasOwn(w,r)||V.test(r)&&e[r]===void 0&&(t(r),O(r,{code:"capability_disabled",message:"capability not in this runtime generation"}));const c=m.filter(r=>Object.hasOwn(w,r)).map(r=>[r,w[r]]).filter(r=>typeof r[1]=="string"&&C.test(r[1])),[l,...h]=await Promise.allSettled([E&&C.test(E)?d(E):Promise.resolve({}),...c.map(([,r])=>d(r))]),p=g;A=H(n,l.status==="fulfilled"&&l.value?.TRANSFORMS||{},{shellOrigin:p,mount:Q},r=>parent.postMessage({__frame_cap_telemetry:r},p));const b=r=>parent.postMessage({__frame_cap_telemetry:{kind:"cap-load-error",cap:r}},p),S=A;h.forEach((r,v)=>{const I=c[v][0];if(r.status!=="fulfilled"){b(I);return}try{r.value?.install?.(S)}catch{b(I)}});for(const[r,v]of _)v.queue.length===0&&Object.keys(v.impl).length>0||O(r,{code:m.includes(r)?"capability_disabled":"not_granted",message:"capability not available in this session"});await a,parent.postMessage({__frame_ready:!0},g)})}})();</script><!-- /frame-runtime --><meta charset="utf8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}</style></head><body>
+<title>The Cataloguing Workstation — Banco BL-98</title>
+<style>
+  :root {
+    --ink:        #1C2229;
+    --paper:      #F4F5F3;
+    --sheet:      #FCFCFB;
+    --graphite:   #8C97A1;
+    --hairline:   #C9D0D4;
+    --slate:      #2C3E50;
+    --red:        #C0392B;
+    --green:      #2E7D5B;
+    --amber:      #B26B12;
+    --muted:      #5C6771;
+
+    --grotesk: "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+    --serif:   Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+    --mono:    ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+    --s1: .35rem; --s2: .7rem; --s3: 1.1rem; --s4: 1.7rem; --s5: 2.6rem; --s6: 4rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink:      #E4E8EA;
+      --paper:    #101418;
+      --sheet:    #171C21;
+      --graphite: #6F7D88;
+      --hairline: #2E373E;
+      --slate:    #9FB4C7;
+      --red:      #E2705F;
+      --green:    #5FBF92;
+      --amber:    #D9973E;
+      --muted:    #93A0A9;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink:      #E4E8EA;
+    --paper:    #101418;
+    --sheet:    #171C21;
+    --graphite: #6F7D88;
+    --hairline: #2E373E;
+    --slate:    #9FB4C7;
+    --red:      #E2705F;
+    --green:    #5FBF92;
+    --amber:    #D9973E;
+    --muted:    #93A0A9;
+  }
+  :root[data-theme="light"] {
+    --ink:      #1C2229;
+    --paper:    #F4F5F3;
+    --sheet:    #FCFCFB;
+    --graphite: #8C97A1;
+    --hairline: #C9D0D4;
+    --slate:    #2C3E50;
+    --red:      #C0392B;
+    --green:    #2E7D5B;
+    --amber:    #B26B12;
+    --muted:    #5C6771;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--serif);
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .sheet {
+    max-width: 62rem;
+    margin: 0 auto;
+    padding: var(--s5) var(--s4) var(--s6);
+    position: relative;
+  }
+
+  /* Registration marks — the same ticks the postcard templates carry */
+  .sheet::before, .sheet::after {
+    content: "";
+    position: absolute;
+    width: 14px; height: 14px;
+    border-color: var(--graphite);
+    border-style: solid;
+    pointer-events: none;
+  }
+  .sheet::before { top: 14px; left: 10px;  border-width: 1px 0 0 1px; }
+  .sheet::after  { top: 14px; right: 10px; border-width: 1px 1px 0 0; }
+
+  /* ---------- title block ---------- */
+  .titleblock {
+    border: 1px solid var(--ink);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    margin-bottom: var(--s5);
+  }
+  .titleblock .main { padding: var(--s3) var(--s3) var(--s2); }
+  .eyebrow {
+    font-family: var(--grotesk);
+    font-size: .66rem;
+    font-weight: 700;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: var(--s1);
+  }
+  h1 {
+    font-family: var(--grotesk);
+    font-size: clamp(1.6rem, 4.4vw, 2.6rem);
+    font-weight: 800;
+    letter-spacing: -.015em;
+    line-height: 1.05;
+    text-wrap: balance;
+    margin: 0 0 var(--s2);
+  }
+  .standfirst {
+    max-width: 46ch;
+    color: var(--muted);
+    font-size: 1rem;
+    margin: 0;
+  }
+  .stamp {
+    border-left: 1px solid var(--ink);
+    font-family: var(--mono);
+    font-size: .7rem;
+    display: grid;
+    align-content: start;
+    min-width: 11rem;
+  }
+  .stamp div {
+    padding: .45rem .8rem;
+    border-bottom: 1px solid var(--hairline);
+    display: flex;
+    justify-content: space-between;
+    gap: var(--s3);
+  }
+  .stamp div:last-child { border-bottom: 0; }
+  .stamp b { font-weight: 700; }
+  .stamp .k { color: var(--graphite); }
+
+  /* ---------- section headings ---------- */
+  section { margin-bottom: var(--s5); }
+  h2 {
+    font-family: var(--grotesk);
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: var(--s2);
+    margin: 0 0 var(--s3);
+    padding-bottom: var(--s1);
+    border-bottom: 1px solid var(--ink);
+  }
+  h2 .no {
+    font-family: var(--mono);
+    color: var(--red);
+    font-weight: 700;
+  }
+  h2 .tail {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-weight: 400;
+    letter-spacing: .04em;
+    text-transform: none;
+    color: var(--graphite);
+    font-size: .72rem;
+  }
+
+  p { margin: 0 0 var(--s3); max-width: 66ch; }
+  .lede { font-size: 1.02rem; }
+  em { color: var(--slate); font-style: italic; }
+  strong { font-weight: 700; }
+
+  /* ---------- plan view ---------- */
+  .planwrap { overflow-x: auto; }
+  .plan {
+    min-width: 34rem;
+    background: var(--sheet);
+    border: 1px solid var(--hairline);
+    padding: var(--s4) var(--s3) var(--s3);
+    display: grid;
+    gap: var(--s2);
+    background-image:
+      linear-gradient(var(--hairline) 1px, transparent 1px),
+      linear-gradient(90deg, var(--hairline) 1px, transparent 1px);
+    background-size: 28px 28px;
+    background-position: -1px -1px;
+  }
+  .zone {
+    border: 1px dashed var(--graphite);
+    background: var(--sheet);
+    padding: var(--s2) var(--s3);
+    position: relative;
+    font-family: var(--grotesk);
+  }
+  .zone .label {
+    font-size: .74rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+  }
+  .zone .sub {
+    font-family: var(--mono);
+    font-size: .68rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .callout {
+    position: absolute;
+    top: -10px; left: -10px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--red);
+    color: #fff;
+    font-family: var(--mono);
+    font-size: .68rem;
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+  }
+  :root[data-theme="dark"] .callout,
+  .callout { color: #fff; }
+
+  .cam    { border-style: solid; border-color: var(--red); }
+  .bench  { display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: var(--s2); }
+  .desk   { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--s2); }
+  .tray   { text-align: center; background: transparent; }
+  .shoot  { text-align: center; border-width: 2px; }
+  .arrowrow {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr 1fr;
+    gap: var(--s2);
+    font-family: var(--mono);
+    font-size: .72rem;
+    color: var(--graphite);
+    text-align: center;
+  }
+
+  /* ---------- BOM table ---------- */
+  .tablewrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; min-width: 33rem; font-size: .86rem; }
+  caption {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: .72rem;
+    color: var(--graphite);
+    padding-bottom: var(--s2);
+  }
+  th {
+    font-family: var(--grotesk);
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    text-align: left;
+    padding: var(--s1) var(--s2);
+    border-bottom: 1px solid var(--ink);
+    color: var(--muted);
+  }
+  td {
+    padding: .55rem var(--s2);
+    border-bottom: 1px solid var(--hairline);
+    vertical-align: top;
+  }
+  td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.ref { font-family: var(--mono); color: var(--red); font-weight: 700; }
+  .part { font-family: var(--grotesk); font-weight: 700; display: block; }
+  .note { color: var(--muted); font-size: .84rem; }
+  tr.total td { border-bottom: 0; border-top: 2px solid var(--ink); font-weight: 700; }
+  tr.later td { opacity: .62; }
+
+  .pill {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: .62rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 1px 6px;
+    border: 1px solid currentColor;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+  .pill.buy   { color: var(--green); }
+  .pill.hold  { color: var(--amber); }
+  .pill.have  { color: var(--graphite); }
+
+  /* ---------- the loop ---------- */
+  ol.loop { list-style: none; padding: 0; margin: 0; display: grid; gap: 1px; background: var(--hairline); border: 1px solid var(--hairline); }
+  ol.loop li {
+    background: var(--sheet);
+    padding: var(--s2) var(--s3);
+    display: grid;
+    grid-template-columns: 2rem 1fr;
+    gap: var(--s2);
+    align-items: baseline;
+  }
+  ol.loop .step {
+    font-family: var(--mono);
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--red);
+    font-variant-numeric: tabular-nums;
+  }
+  ol.loop b { font-family: var(--grotesk); font-size: .92rem; display: block; }
+  ol.loop span { color: var(--muted); font-size: .9rem; }
+
+  /* ---------- modes ---------- */
+  .modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: var(--s3); }
+  .mode {
+    border: 1px solid var(--hairline);
+    border-top: 3px solid var(--graphite);
+    background: var(--sheet);
+    padding: var(--s3);
+  }
+  .mode.bench { border-top-color: var(--red); }
+  .mode code {
+    font-family: var(--mono);
+    font-size: .74rem;
+    color: var(--slate);
+    display: block;
+    margin-bottom: var(--s2);
+    word-break: break-all;
+  }
+  .mode h3 {
+    font-family: var(--grotesk);
+    font-size: .95rem;
+    margin: 0 0 var(--s1);
+    letter-spacing: -.01em;
+  }
+  .mode p { font-size: .9rem; margin-bottom: var(--s2); }
+  .gaps { display: flex; flex-wrap: wrap; gap: var(--s1); list-style: none; padding: 0; margin: 0; }
+  .gaps li {
+    font-family: var(--mono);
+    font-size: .68rem;
+    padding: 2px 7px;
+    border: 1px solid var(--hairline);
+    color: var(--muted);
+  }
+  .gaps li.on { border-color: var(--red); color: var(--red); }
+
+  /* ---------- counter ---------- */
+  .counter {
+    border: 1px solid var(--ink);
+    background: var(--sheet);
+    padding: var(--s3) var(--s4);
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--s4);
+    align-items: center;
+  }
+  .counter .big {
+    font-family: var(--mono);
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .counter .big .done { color: var(--green); }
+  .counter .big .sep, .counter .big .tot { color: var(--graphite); font-weight: 400; }
+  .bar { height: 8px; background: var(--hairline); margin-top: var(--s2); }
+  .bar i { display: block; height: 100%; width: 62%; background: var(--green); }
+  .counter p { margin: 0; font-size: .92rem; }
+
+  /* ---------- doctrine ---------- */
+  .doctrine {
+    border-left: 3px solid var(--red);
+    padding: var(--s2) 0 var(--s2) var(--s3);
+    margin: 0;
+  }
+  .doctrine p { font-size: 1.05rem; margin-bottom: var(--s2); }
+  .doctrine p:last-child { margin-bottom: 0; }
+  .doctrine cite {
+    font-family: var(--grotesk);
+    font-style: normal;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--graphite);
+  }
+
+  .foot {
+    border-top: 1px solid var(--ink);
+    padding-top: var(--s2);
+    font-family: var(--mono);
+    font-size: .68rem;
+    color: var(--graphite);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s3);
+    justify-content: space-between;
+  }
+
+  @media (max-width: 40rem) {
+    .titleblock { grid-template-columns: 1fr; }
+    .stamp { border-left: 0; border-top: 1px solid var(--ink); }
+    .bench, .desk, .arrowrow { grid-template-columns: 1fr; }
+    .counter { grid-template-columns: 1fr; gap: var(--s2); }
+  }
+</style>
+
+<div class="sheet">
+
+  <div class="titleblock">
+    <div class="main">
+      <div class="eyebrow">Banco · Back Office</div>
+      <h1>The Cataloguing Workstation</h1>
+      <p class="standfirst">The bench, the loop, and the cockpit that 
+gets ~2,000 items into Felix's shop as real master data — with a photo, a
+ description, a category, a cost, and a barcode a gun can read.</p>
+    </div>
+    <div class="stamp">
+      <div><span class="k">Sheet</span><b>BL-98 / 99</b></div>
+      <div><span class="k">Date</span><b>2026-07-11</b></div>
+      <div><span class="k">Gate</span><b>Manager</b></div>
+      <div><span class="k">Status</span><b>Built · local</b></div>
+    </div>
+  </div>
+
+  <section>
+    <h2><span class="no">01</span> Plan view <span class="tail">callouts keyed to the parts list</span></h2>
+    <div class="planwrap">
+      <div class="plan">
+        <div class="zone cam shoot">
+          <span class="callout">6</span>
+          <div class="label">Phone on gooseneck</div>
+          <div class="sub">shoots down · Snap-&amp;-fill already live</div>
+        </div>
+        <div class="arrowrow"><span></span><span>▼ shoots down onto</span><span></span></div>
+        <div class="bench">
+          <div class="zone tray">
+            <span class="callout">8</span>
+            <div class="label">In-tray</div>
+            <div class="sub">batch of 20</div>
+          </div>
+          <div class="zone shoot">
+            <span class="callout">7</span>
+            <div class="label">Lightbox</div>
+            <div class="sub">white sheet + desk lamp</div>
+          </div>
+          <div class="zone tray">
+            <span class="callout">8</span>
+            <div class="label">Out-tray</div>
+            <div class="sub">done · counter ticks</div>
+          </div>
+        </div>
+        <div class="arrowrow"><span>item enters ▶</span><span>▲ worked here</span><span>▶ item leaves</span></div>
+        <div class="desk">
+          <div class="zone">
+            <span class="callout">1</span>
+            <div class="label">Laptop</div>
+            <div class="sub">Banco · /pos/cleanup?mode=bench</div>
+          </div>
+          <div class="zone">
+            <span class="callout">2</span>
+            <div class="label">Scanner ×2</div>
+            <div class="sub">NSL8 · wired here, cordless on the floor</div>
+          </div>
+          <div class="zone">
+            <span class="callout">4</span>
+            <div class="label">Label printer</div>
+            <div class="sub">Brother QL-820NWB · removable roll</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="no">02</span> Parts list <span class="tail">CHF</span></h2>
+    <div class="tablewrap">
+      <table>
+        <caption>Buy the primaries now; the escalation gun waits on the acceptance bar.</caption>
+        <thead>
+          <tr>
+            <th class="n">Ref</th>
+            <th>Part</th>
+            <th>Status</th>
+            <th class="n">Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="ref n">1</td>
+            <td><span class="part">Big-screen laptop</span><span class="note">The salvaged ProBook. A phone is a fallback for a <em>sale</em> — never for bulk migration.</span></td>
+            <td><span class="pill have">Have</span></td>
+            <td class="n">—</td>
+          </tr>
+          <tr>
+            <td class="ref n">2</td>
+            <td><span class="part">NetumScan NSL8 × 2</span><span class="note">One
+ device, both jobs: wired USB-C at the bench, 2.4G dongle on the 
+shelves. Reads phone screens. Buffers 3,000 codes offline. Two identical
+ units = the spare is a drop-in.</span></td>
+            <td><span class="pill buy">Order</span></td>
+            <td class="n">98.00</td>
+          </tr>
+          <tr class="later">
+            <td class="ref n">3</td>
+            <td><span class="part">Honeywell Voyager 1470g</span><span class="note">Escalation only — if the NSL8 misses more than ~1 in 100 of our own printed labels. Cable and stand named in the listing.</span></td>
+            <td><span class="pill hold">Hold</span></td>
+            <td class="n">80.90</td>
+          </tr>
+          <tr>
+            <td class="ref n">4</td>
+            <td><span class="part">Brother QL-820NWB</span><span class="note">Runs all day and travels to other jobs. Driven from Python via <code>brother_ql</code>.</span></td>
+            <td><span class="pill buy">Order</span></td>
+            <td class="n">~200.00</td>
+          </tr>
+          <tr>
+            <td class="ref n">5</td>
+            <td><span class="part">Removable DK label rolls</span><span class="note">Peel-clean adhesive is a hard requirement — it's a property of the <em>roll</em>, not the printer.</span></td>
+            <td><span class="pill buy">Order</span></td>
+            <td class="n">~30.00</td>
+          </tr>
+          <tr>
+            <td class="ref n">6</td>
+            <td><span class="part">Gooseneck phone mount</span><span class="note">The entire camera rig. The phone beats any webcam, and the software already ships.</span></td>
+            <td><span class="pill buy">Order</span></td>
+            <td class="n">~20.00</td>
+          </tr>
+          <tr>
+            <td class="ref n">7</td>
+            <td><span class="part">Lightbox</span><span class="note">Start with a white sheet and a desk lamp. Buy the LED cube only if the shots come out inconsistent.</span></td>
+            <td><span class="pill hold">Paper first</span></td>
+            <td class="n">0–40</td>
+          </tr>
+          <tr>
+            <td class="ref n">8</td>
+            <td><span class="part">In-tray / out-tray</span><span class="note">Any two boxes. This is the batch discipline made physical.</span></td>
+            <td><span class="pill have">Have</span></td>
+            <td class="n">0.00</td>
+          </tr>
+          <tr>
+            <td class="ref n">9</td>
+            <td><span class="part">Counter power strip</span><span class="note">Chargers, spare cables. The quiet stopper.</span></td>
+            <td><span class="pill buy">Order</span></td>
+            <td class="n">~20.00</td>
+          </tr>
+          <tr class="total">
+            <td></td>
+            <td>To order now</td>
+            <td></td>
+            <td class="n">~368.00</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="no">03</span> The loop, per item <span class="tail">20 on the bench at a time</span></h2>
+    <ol class="loop">
+      <li><span class="step">1</span><span><b>Scan the barcode</b> A hit prefills from supplier data — confirm and move on. A miss means it's an enrichment item; keep going.</span></li>
+      <li><span class="step">2</span><span><b>Photograph it</b> Item under the phone. Snap-&amp;-fill does the rest — it's already live and camera-tested in production.</span></li>
+      <li><span class="step">3</span><span><b>Describe it</b> Pull from the web or from Artemis where it exists; voice-dictate otherwise. Two lines is plenty.</span></li>
+      <li><span class="step">4</span><span><b>Classify it</b> Category, and 18+ or not. <em>Verify the classifier — never re-key it.</em> The age flag is decided at enrich time and goes through the shared seal.</span></li>
+      <li><span class="step">5</span><span><b>Price it</b> Sale price and cost. No cost means margin-blind, so it counts as a gap.</span></li>
+      <li><span class="step">6</span><span><b>Print the label</b> No barcode of its own? The label carries a house code and the item joins the scan sheet.</span></li>
+      <li><span class="step">7</span><span><b>Out-tray</b> The counter ticks. That number is the only progress record that exists — and it cannot lie.</span></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="no">04</span> One cockpit, two modes <span class="tail">/pos/cleanup</span></h2>
+    <div class="modes">
+      <div class="mode">
+        <code>?mode=sold</code>
+        <h3>The safety net</h3>
+        <p>Reactive. Only shows products that <strong>sold</strong> while still half-baked — so nothing a cashier rings in a rush falls through permanently. Busiest first.</p>
+        <ul class="gaps">
+          <li class="on">category</li><li class="on">cost</li><li>photo</li><li>description</li>
+        </ul>
+      </div>
+      <div class="mode bench">
+        <code>?mode=bench</code>
+        <h3>The workbench</h3>
+        <p>Proactive. Shows <strong>every</strong> unfinished product, 
+sold or not — because the migration is about items nobody has rung up 
+yet. Ordered by category, so a batch is a <strong>shelf</strong>.</p>
+        <ul class="gaps">
+          <li class="on">category</li><li class="on">cost</li><li class="on">photo</li><li class="on">description</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="no">05</span> The counter <span class="tail">what replaces the binder</span></h2>
+    <div class="counter">
+      <div>
+        <div class="big"><span class="done">1,247</span><span class="sep"> / </span><span class="tot">2,000</span></div>
+        <div class="bar"><i></i></div>
+      </div>
+      <p>One SQL expression defines what "unfinished" means, and it feeds <em>both</em> the list and the count. So the number on this screen can never drift from the work in front of you.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="no">06</span> The rule <span class="tail">why there is no ring binder</span></h2>
+    <blockquote class="doctrine">
+      <p><strong>The paper is a render of the truth, never the truth.</strong></p>
+      <p>A hand-filed binder becomes a second source of truth, and it 
+starts rotting the day a price changes. Everything printed here is 
+generated from the database and thrown away: print the catalogue Friday,
+ bin it, print a fresh one next Friday. The only paper that earns 
+permanence is the scan sheet for items with no barcode of their own.</p>
+      <cite>Banco · cataloguing doctrine</cite>
+    </blockquote>
+  </section>
+
+  <div class="foot">
+    <span>docs/BANCO-CATALOGUING-WORKSTATION.md</span>
+    <span>BL-98 built · 12/12 tests · awaiting human-green</span>
+  </div>
+
+</div>
+
+</body></html>
