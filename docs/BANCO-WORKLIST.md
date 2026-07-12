@@ -10,7 +10,18 @@
 
 ---
 
-## 🃏 ON DECK — 2026-07-13 · BL-36 MULTI-LANGUAGE DESCRIPTIONS ← START HERE
+## 🃏 ON DECK — 2026-07-13 · BL-36 ✅ BUILT ON SANDBOX → Angel FR UAT → prod ← START HERE
+
+**BL-36 multi-language descriptions BUILT + on sandbox (`daac61d`).** Sign in a language → the
+product description follows: **Artemis serves DE/EN/FR/IT free** (native fetch), everything else
+Ollama-translates + caches. **FR is now in the status-bar switcher** (as a content language — chrome
+stays English, descriptions come in French). Proven in-container. **→ NEXT: Angel runs the FR UAT
+(`docs/testing/banco/BANCO-SBX-MULTILANG-DESCRIPTIONS-UAT.html` on sandbox-banco.lapiazza.app), then
+ship to prod (backup-gated).** Follow-ups (memory `banco-catalog-content-translation`): fill-at-adopt +
+backfill script (on-demand only today); NL/ES; needs_review queue for machine translations; FR chrome.
+
+---
+## 🃏 PREV DECK — 2026-07-12 · BL-36 MULTI-LANGUAGE DESCRIPTIONS (design)
 
 **Live supplier search (BL-35) SHIPPED PROD ✅ — next up is multi-language product descriptions.**
 Full design + verified facts in memory **`banco-catalog-content-translation`** (updated 2026-07-12). Plan:
