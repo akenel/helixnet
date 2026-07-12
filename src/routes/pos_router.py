@@ -386,23 +386,32 @@ async def _find_catalog_matches(db: AsyncSession, q: str, limit: int = 6) -> dic
     if not q:
         return empty
 
-    # Live catalog = the Artemis-Luzern truth already imported into `products`. Prefix
-    # matches float first, then by trigram similarity (mirrors search_products_fast).
-    # BL-33: INCLUDE inactive products here (unlike the till search). Find-first exists to
-    # answer "does this already exist?" so we don't create a duplicate — and an INACTIVE
-    # product still exists AND still owns its barcode (so a create would 409). Hiding it made
-    # a dead-end: invisible in search + the picker, yet blocking the create. Surface it,
-    # flagged `is_active:false`, so the operator reactivates instead of hitting the wall.
-    # Active matches rank first.
+    # Live catalog = the Artemis-Luzern truth already imported into `products`.
+    # BL-33: INCLUDE inactive products here (unlike the till search) — an inactive product
+    # still exists AND owns its barcode (a create would 409), so hiding it made a dead-end.
+    # Surface it flagged `is_active:false`; active matches rank first.
+    # LANGUAGE-AGNOSTIC MATCH (the migration unlock): the AI reads a photo in ENGLISH, but the
+    # Artemis catalog NAME is German ("Feuerzeug Gas Tycoon", "Mühle") — plain name-trigram
+    # misses (grinder↔Mühle = 0.00). The DESCRIPTION, however, is the English text Artemis
+    # already publishes on its /en/ pages (BL-18 scraped it — 96% populated). We score by the
+    # GREATEST of name-trigram AND word_similarity(query, name+description): word_similarity
+    # matches the query against the best SUBSTRING, so it's not diluted by a long description
+    # and English keywords hit German-named items. No translation, no new column — the English
+    # is already there.
     prod_rows = (await db.execute(text("""
         SELECT id, sku, barcode, name, category, price, image_url, product_class,
                is_age_restricted, price_tiers, tier_mode, is_active,
-               similarity(name, :q) AS score
+               GREATEST(
+                 similarity(name, :q),
+                 word_similarity(:q, coalesce(name,'') || ' ' || coalesce(description,''))
+               ) AS score
         FROM products
-        WHERE (name ILIKE '%' || :q || '%' OR similarity(name, :q) > 0.1)
+        WHERE name ILIKE '%' || :q || '%'
+           OR similarity(name, :q) > 0.15
+           OR word_similarity(:q, coalesce(name,'') || ' ' || coalesce(description,'')) > 0.45
         ORDER BY is_active DESC,
                  CASE WHEN name ILIKE :q || '%' THEN 0 ELSE 1 END,
-                 similarity(name, :q) DESC, name
+                 score DESC, name
         LIMIT :limit
     """), {"q": q, "limit": limit})).fetchall()
     product_matches = [{
