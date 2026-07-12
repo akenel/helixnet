@@ -82,10 +82,15 @@ def test_validate_bundle_allows_first_break_at_qty_2_plus():
     assert out[0]["unit_price"] == "8.00"
 
 
-def test_validate_bundle_rejects_qty_1_break():
-    # There is no bundle of one — a qty-1 first row in bundle mode is nonsense.
-    with pytest.raises(ValueError):
-        validate_price_tiers([{"min_qty": 1, "unit_price": "1.40"}], mode="bundle")
+def test_validate_bundle_drops_qty_1_row():
+    # BL-31: a qty-1 "bundle" is just the base price — FOLD it away, don't dead-end the save.
+    # A lone qty-1 row → tiers clear (flat price).
+    assert validate_price_tiers([{"min_qty": 1, "unit_price": "1.40"}], mode="bundle") == []
+    # Mixed: the real pack survives, the qty-1 base row is dropped.
+    out = validate_price_tiers(
+        [{"min_qty": 1, "unit_price": "1.40"}, {"min_qty": 3, "unit_price": "4.00"}], mode="bundle")
+    assert [r["min_qty"] for r in out] == [3]
+    assert out[0]["unit_price"] == "4.00"
 
 
 def test_validate_rejects_duplicate_and_negative():

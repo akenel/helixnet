@@ -103,8 +103,11 @@ def validate_price_tiers(raw, mode="per_unit"):
         rows.append({"min_qty": mq, "unit_price": str(up)})
     rows.sort(key=lambda r: r["min_qty"])
     if mode == "bundle":
-        if rows[0]["min_qty"] < 2:
-            raise ValueError("a bundle break must start at min_qty 2 or more (there is no bundle of one)")
+        # A "bundle of one" is just the base price (the product's own `price`), not a break.
+        # The editor seeds a qty-1 row for per_unit, and a per_unit→bundle switch (or legacy
+        # bundle data) can leave one behind — FOLD it away rather than dead-end the save
+        # (BL-31). If that leaves no real packs, tiers clear to a flat price.
+        rows = [r for r in rows if r["min_qty"] >= 2]
     elif rows[0]["min_qty"] != 1:
         raise ValueError("the first tier must start at min_qty 1 (the base price)")
     return rows
