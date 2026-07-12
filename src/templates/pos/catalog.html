@@ -294,7 +294,10 @@
                     </dl>
                     <template x-if="detailProduct?.description">
                         <div class="mt-4">
-                            <h3 class="font-semibold text-gray-900 mb-1" data-i18n="catalog.description_heading">Description</h3>
+                            <h3 class="font-semibold text-gray-900 mb-1">
+                                <span data-i18n="catalog.description_heading">Description</span>
+                                <span x-show="detailProduct?._descProvenance === 'machine'" class="ml-2 text-[11px] font-normal text-gray-400" title="machine-translated">🤖 <span data-i18n="catalog.auto_translated">auto-translated</span></span>
+                            </h3>
                             <p class="text-gray-700" x-text="detailProduct?.description"></p>
                         </div>
                     </template>
@@ -1240,6 +1243,21 @@
                         };
                     }
                 } catch (e) { /* keep the list-row data */ }
+                this._localizeDetail(p.id);
+            },
+            // BL-36: show the description in the operator's language. English is the base, so
+            // only non-English needs a lookup; the endpoint fills it on demand (Artemis native
+            // or Ollama) and caches. Best-effort — the base description stays if anything fails.
+            async _localizeDetail(id) {
+                const lang = (window._posLang || 'en');
+                if (lang === 'en') return;
+                try {
+                    const d = await API.get(`/api/v1/pos/products/${id}/i18n-description?lang=${encodeURIComponent(lang)}`);
+                    if (d && d.description && this.detailProduct && this.detailProduct.id === id) {
+                        this.detailProduct.description = d.description;
+                        this.detailProduct._descProvenance = d.provenance;
+                    }
+                } catch (e) { /* keep the base description */ }
             },
 
             async openEdit(p) {

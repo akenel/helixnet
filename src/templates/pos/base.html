@@ -929,7 +929,10 @@
                 if (cl) { lang = cl; source = 'config'; }
             }
             if (!lang) { lang = 'en'; source = 'fallback'; }
-            window._posLang = (window.POS_STRINGS && POS_STRINGS[lang]) ? lang : 'en';
+            // A "content language" (fr/nl/es) has no full chrome yet but IS a valid _posLang:
+            // buttons fall back to English (t() does that per-key) while DATA — product
+            // descriptions — comes through in that language (BL-36). Chrome follows later.
+            window._posLang = ((window.POS_STRINGS && POS_STRINGS[lang]) || ['fr', 'nl', 'es'].indexOf(lang) >= 0) ? lang : 'en';
             window._posLangSource = source;
             document.documentElement.lang = window._posLang;
         })();
@@ -967,7 +970,7 @@
 
         // Switch language and reload (cart survives in sessionStorage across the reload).
         function switchLanguage(newLang) {
-            if (window.POS_STRINGS && POS_STRINGS[newLang]) {
+            if ((window.POS_STRINGS && POS_STRINGS[newLang]) || ['fr', 'nl', 'es'].indexOf(newLang) >= 0) {
                 localStorage.setItem('pos_lang', newLang);
                 window.location.reload();
             }
@@ -1094,6 +1097,7 @@
                 <option value="en" style="background:#1e293b;">EN</option>
                 <option value="de" style="background:#1e293b;">DE</option>
                 <option value="it" style="background:#1e293b;">IT</option>
+                <option value="fr" style="background:#1e293b;">FR</option>
             </select>
             <a id="cockpit-link" href="/pos/hypercare" title="Cockpit — manage all reports" style="display:none;text-decoration:none;background:none;border:none;cursor:pointer;font-size:16px;padding:0 2px;line-height:1;color:inherit;">🎛️</a>
             <button id="bell-open" title="Notifications" style="position:relative;background:none;border:none;cursor:pointer;font-size:16px;padding:0 2px;line-height:1;color:inherit;">🔔<span id="bell-badge" style="display:none;position:absolute;top:-6px;right:-4px;background:#ef4444;color:#fff;font-size:9px;font-weight:700;min-width:14px;height:14px;line-height:14px;border-radius:7px;padding:0 3px;text-align:center;">0</span></button>
