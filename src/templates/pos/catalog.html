@@ -432,7 +432,7 @@
                         <div class="flex items-center gap-3 text-xs mb-2 flex-wrap" x-show="(form.price_tiers||[]).length > 0">
                             <span class="text-gray-500 flex-none" data-i18n="catalog.tiers_mode">Type:</span>
                             <label class="flex items-center gap-1 cursor-pointer"><input type="radio" value="per_unit" x-model="form.tier_mode" class="w-3.5 h-3.5"><span data-i18n="catalog.tiers_mode_perunit">price EACH (10+ → 4.50 ea)</span></label>
-                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio" value="bundle" x-model="form.tier_mode" class="w-3.5 h-3.5"><span data-i18n="catalog.tiers_mode_bundle">N for X total (3 for 10)</span></label>
+                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio" value="bundle" x-model="form.tier_mode" @change="onTierModeChange()" class="w-3.5 h-3.5"><span data-i18n="catalog.tiers_mode_bundle">N for X total (3 for 10)</span></label>
                         </div>
                         <template x-for="(t, i) in (form.price_tiers||[])" :key="i">
                             <div class="flex items-center gap-2 mb-2">
@@ -966,8 +966,20 @@
 
             addTier() {
                 if (!Array.isArray(this.form.price_tiers)) this.form.price_tiers = [];
-                if (this.form.price_tiers.length === 0) this.form.price_tiers.push({ min_qty: 1, unit_price: this.form.price || '' });
-                else this.form.price_tiers.push({ min_qty: '', unit_price: '' });
+                // per_unit's first row IS the single-unit base (qty 1); bundle has no "pack of
+                // one", so even its first row is a real pack the user types (qty >= 2). BL-31.
+                if (this.form.price_tiers.length === 0 && this.form.tier_mode !== 'bundle')
+                    this.form.price_tiers.push({ min_qty: 1, unit_price: this.form.price || '' });
+                else
+                    this.form.price_tiers.push({ min_qty: '', unit_price: '' });
+            },
+            // BL-31: switching to bundle drops any qty-1 "base" row (a bundle of one is
+            // meaningless = the product's own price), so the editor matches what the server
+            // stores — no confusing "Buy 1 for X" row and no save-time validation error.
+            onTierModeChange() {
+                if (this.form.tier_mode === 'bundle' && Array.isArray(this.form.price_tiers))
+                    this.form.price_tiers = this.form.price_tiers.filter(
+                        t => t.min_qty === '' || t.min_qty == null || Number(t.min_qty) >= 2);
             },
 
             markupPct() {

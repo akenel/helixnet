@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Banco PROD — Hypercare Capture</title>
+<style>
+  :root{
+    --bg:#05060a; --panel:#0b0e16; --panel2:#0e1220; --ink:#e2e8f0; --mut:#7688a6;
+    --line:#1c2436; --yellow:#facc15; --cyan:#22d3ee; --red:#ef4444; --lime:#a3e635; --ok:#4ade80; --violet:#a78bfa;
+    --glowY:0 0 6px rgba(250,204,21,.7); --glowC:0 0 8px rgba(34,211,238,.6);
+    --font:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  }
+  *{ box-sizing:border-box; } html,body{ margin:0; }
+  body{ font-family:var(--font); color:var(--ink); line-height:1.55;
+    background: radial-gradient(1200px 600px at 50% -10%, #0d1224 0%, transparent 60%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,.015) 0 1px, transparent 1px 3px), var(--bg);
+    padding-bottom:120px; }
+  header{ position:sticky; top:0; z-index:20; background:linear-gradient(180deg,#0a0d17,#070911);
+    border-bottom:1px solid var(--red); box-shadow:0 0 18px rgba(239,68,68,.25); padding:12px 18px; }
+  .htop{ display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; max-width:860px; margin:0 auto; }
+  h1{ font-size:16px; margin:0; letter-spacing:.12em; color:var(--yellow); text-shadow:var(--glowY); text-transform:uppercase; }
+  h1 small{ display:block; margin-top:3px; font-size:11px; letter-spacing:.05em; color:var(--mut); text-shadow:none; text-transform:none; }
+  .meters{ display:flex; align-items:center; gap:16px; }
+  .meter{ text-align:center; min-width:44px; } .meter b{ display:block; font-size:20px; line-height:1; }
+  .meter.log b{ color:var(--lime); text-shadow:0 0 6px rgba(163,230,53,.6); }
+  .meter.seen b{ color:var(--cyan); text-shadow:var(--glowC); }
+  .meter span{ font-size:9.5px; letter-spacing:.12em; color:var(--mut); text-transform:uppercase; }
+  .timer{ font-size:20px; font-weight:700; color:var(--yellow); text-shadow:var(--glowY); font-variant-numeric:tabular-nums; }
+  main{ max-width:860px; margin:0 auto; padding:18px 18px 40px; }
+  .warn{ background:#1a0f0a; border:1px solid #7c2d12; border-left:3px solid var(--red); border-radius:10px; padding:11px 15px; margin-bottom:14px; font-size:12.5px; color:#fbbf9d; }
+  .warn b{ color:#fdba74; }
+  .lead{ background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--lime); border-radius:10px; padding:12px 15px; margin-bottom:14px; font-size:13px; }
+  .sect{ margin:20px 0 10px; padding:6px 12px; font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--cyan); border-left:3px solid var(--cyan); background:#0a1120; border-radius:0 8px 8px 0; }
+  /* roam map */
+  .roam{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:6px; }
+  .chip{ border:1px solid var(--line); background:#0c1120; color:var(--mut); border-radius:99px; padding:7px 13px; font-size:12px; cursor:pointer; user-select:none; }
+  .chip.on{ background:rgba(34,211,238,.14); border-color:var(--cyan); color:var(--cyan); box-shadow:var(--glowC); }
+  .hint{ font-size:11px; color:var(--mut); margin:2px 0 4px; }
+  /* findings */
+  .finding{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:11px 12px; margin-bottom:10px; }
+  .frow{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px; }
+  select,.txt{ border:1px solid var(--line); background:#0a0e19; color:var(--ink); border-radius:7px; padding:7px 9px; font:inherit; font-size:12px; }
+  select:focus,.txt:focus{ outline:none; border-color:var(--cyan); box-shadow:var(--glowC); }
+  .txt{ width:100%; resize:vertical; min-height:46px; }
+  .sev-1{ color:var(--red); } .sev-2{ color:var(--yellow); } .sev-3{ color:var(--lime); }
+  .del{ margin-left:auto; border:1px solid var(--line); background:#0a0e19; color:var(--red); border-radius:7px; width:32px; height:32px; cursor:pointer; font-size:16px; line-height:1; }
+  .idx{ color:var(--violet); font-weight:700; font-size:12px; min-width:26px; }
+  .addbtn{ width:100%; border:1px dashed var(--cyan); background:#08131c; color:var(--cyan); border-radius:12px; padding:13px; font:inherit; font-size:13px; font-weight:700; cursor:pointer; letter-spacing:.04em; }
+  .addbtn:hover{ box-shadow:var(--glowC); }
+  .bar{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:16px; }
+  .util{ border:1px solid var(--line); background:#0a0e19; color:var(--cyan); border-radius:8px; padding:9px 16px; font:inherit; font-size:12.5px; cursor:pointer; letter-spacing:.04em; }
+  .util:hover{ border-color:var(--cyan); box-shadow:var(--glowC); }
+  .util.big{ background:rgba(163,230,53,.12); border-color:var(--lime); color:var(--lime); font-weight:700; }
+  footer{ text-align:center; color:var(--mut); font-size:11px; padding:18px; letter-spacing:.05em; }
+  .empty{ text-align:center; color:var(--mut); font-size:12px; padding:14px; font-style:italic; }
+</style>
+</head>
+<body>
+<header>
+  <div class="htop">
+    <h1>🔴 Banco PROD · Hypercare Capture<small>Free-roam the live till. Log anything rough → it becomes a BL ticket.</small></h1>
+    <div class="meters">
+      <div class="meter log"><b id="m-log">0</b><span>Logged</span></div>
+      <div class="meter seen"><b id="m-seen">0</b><span>Roamed</span></div>
+      <div class="meter"><span class="timer" id="timer">00:00</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="warn">⚠️ <b>This is the LIVE till</b> — real sales, real customer data. Ring only <b>test-ish carts you can cancel</b>, and if you complete a real-looking sale, note it so we don't confuse the numbers. You're hunting <b>friction</b>, not stress-testing payments.</div>
+  <div class="lead">Poke around like Felix would on a slow afternoon. See something clunky, broken, or "wouldn't it be nice if…" → hit <b>+ Add finding</b>, pick the type + how bad, one line of what happened. When you're done, <b>Copy findings</b> and send them to me — I run them through the cockpit into the backlog (BL-##).</div>
+
+  <div class="sect">① Roam map — tap each surface as you visit it</div>
+  <div class="hint">Not a checklist you must finish — just so you don't forget a corner. Tap = "I looked here."</div>
+  <div class="roam" id="roam"></div>
+
+  <div class="sect">② Findings — one per rough edge</div>
+  <div id="findings"></div>
+  <div id="empty" class="empty">No findings yet. Roam, then tap <b>+ Add finding</b> when something bugs you.</div>
+  <button class="addbtn" id="add">＋ Add finding</button>
+
+  <div class="bar">
+    <button class="util big" id="copy">📋 Copy findings → send to Tigs</button>
+    <button class="util" id="reset">↻ Reset sheet</button>
+  </div>
+
+  <footer>🐯 Prod hypercare · tickets ARE the knowledge base · you roam, I triage · <span id="stamp"></span></footer>
+</main>
+
+<script>
+  const KEY = 'banco-prod-hc-capture-v1';
+  const AREAS = ['Sell / Scan','Checkout (cash/TWINT/card)','Members / CRM','Catalog / Edit',
+    'Tier pricing','Snap & Fill (photo)','Order Book','Reports / Export','Settings','Login / PWA','Other'];
+  const TYPES = [['bug','🐛 Bug'],['friction','😖 Friction'],['wish','💡 Wish']];
+  const SEVS = [['1','S1 · blocker'],['2','S2 · annoying'],['3','S3 · nice-to-have']];
+
+  let state; try{ state = JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ state={}; }
+  state.roam = state.roam || {};
+  state.items = state.items || [];
+  if(!state.__t0){ state.__t0 = Date.now(); }
+  const save = ()=> localStorage.setItem(KEY, JSON.stringify(state));
+
+  // ---- roam map ----
+  const roamEl = document.getElementById('roam');
+  function renderRoam(){
+    roamEl.innerHTML = '';
+    AREAS.forEach(a=>{
+      const c = document.createElement('div');
+      c.className = 'chip' + (state.roam[a] ? ' on' : '');
+      c.textContent = a;
+      c.onclick = ()=>{ state.roam[a] = !state.roam[a]; save(); renderRoam(); meters(); };
+      roamEl.appendChild(c);
+    });
+  }
+
+  // ---- findings ----
+  const fEl = document.getElementById('findings');
+  const emptyEl = document.getElementById('empty');
+  function renderFindings(){
+    fEl.innerHTML = '';
+    emptyEl.style.display = state.items.length ? 'none' : 'block';
+    state.items.forEach((it, i)=>{
+      const wrap = document.createElement('div'); wrap.className = 'finding';
+      const row = document.createElement('div'); row.className = 'frow';
+      row.innerHTML =
+        `<span class="idx">#${i+1}</span>`+
+        `<select data-k="type">${TYPES.map(([v,l])=>`<option value="${v}" ${it.type===v?'selected':''}>${l}</option>`).join('')}</select>`+
+        `<select data-k="sev" class="sev-${it.sev||2}">${SEVS.map(([v,l])=>`<option value="${v}" ${String(it.sev)===v?'selected':''}>${l}</option>`).join('')}</select>`+
+        `<select data-k="area">${AREAS.map(a=>`<option ${it.area===a?'selected':''}>${a}</option>`).join('')}</select>`+
+        `<button class="del" title="remove">×</button>`;
+      const ta = document.createElement('textarea');
+      ta.className = 'txt'; ta.placeholder = 'what happened / what you wish it did…'; ta.value = it.text||'';
+      ta.addEventListener('input', ()=>{ it.text = ta.value; save(); });
+      row.querySelectorAll('select').forEach(sel=>{
+        sel.addEventListener('change', ()=>{ it[sel.dataset.k] = sel.value; save(); renderFindings(); meters(); });
+      });
+      row.querySelector('.del').onclick = ()=>{ state.items.splice(i,1); save(); renderFindings(); meters(); };
+      wrap.appendChild(row); wrap.appendChild(ta); fEl.appendChild(wrap);
+    });
+  }
+  document.getElementById('add').onclick = ()=>{
+    state.items.push({type:'bug', sev:'2', area:AREAS[0], text:''}); save(); renderFindings(); meters();
+    // focus the newest textarea
+    const tas = fEl.querySelectorAll('.txt'); if(tas.length) tas[tas.length-1].focus();
+  };
+
+  // ---- meters ----
+  function meters(){
+    document.getElementById('m-log').textContent = state.items.length;
+    document.getElementById('m-seen').textContent = Object.values(state.roam).filter(Boolean).length;
+  }
+
+  // ---- copy / reset ----
+  document.getElementById('copy').onclick = ()=>{
+    const tl = {'1':'S1','2':'S2','3':'S3'};
+    const ty = {bug:'BUG',friction:'FRICTION',wish:'WISH'};
+    const lines = state.items.map((it,i)=>
+      `${i+1}. [${ty[it.type]||'BUG'} · ${tl[it.sev]||'S2'} · ${it.area}] ${(it.text||'').trim()||'(no note)'}`).join('\n');
+    const roamed = Object.keys(state.roam).filter(a=>state.roam[a]);
+    const out = `BANCO PROD — HYPERCARE CAPTURE\n`+
+      `${state.items.length} finding(s) · roamed: ${roamed.join(', ')||'—'}\n\n${lines||'(no findings logged)'}`;
+    navigator.clipboard.writeText(out).then(()=>{
+      const b=document.getElementById('copy'); const o=b.textContent;
+      b.textContent='✓ Copied — paste to Tigs'; setTimeout(()=>b.textContent=o,1600);
+    });
+  };
+  document.getElementById('reset').onclick = ()=>{
+    if(confirm('Clear the whole capture sheet?')){ state={roam:{},items:[],__t0:Date.now()}; save(); renderRoam(); renderFindings(); meters(); }
+  };
+
+  // ---- timer ----
+  setInterval(()=>{ const s=Math.floor((Date.now()-state.__t0)/1000);
+    document.getElementById('timer').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); },1000);
+  document.getElementById('stamp').textContent='built '+new Date().toISOString().slice(0,10);
+
+  save(); renderRoam(); renderFindings(); meters();
+</script>
+</body>
+</html>
