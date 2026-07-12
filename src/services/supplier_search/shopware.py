@@ -26,8 +26,8 @@ _RE_DESC = re.compile(r'itemprop="description"[^>]*>(.*?)</div>', re.S)
 class ShopwareAdapter(BaseAdapter):
     platform = "shopware"
 
-    def __init__(self, base_url: str, supplier_name: str):
-        super().__init__(base_url, supplier_name)
+    def __init__(self, base_url: str, supplier_name: str, role: str = "wholesale"):
+        super().__init__(base_url, supplier_name, role)
         h = re.escape(self.host)
         # Product URLs: /<cat>/<sub>/<id>/<slug> — the numeric id before the slug is the tell.
         self._re_product_url = re.compile(

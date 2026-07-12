@@ -36,8 +36,8 @@ _RE_BREADCRUMB = re.compile(r'"@type":\s*"ListItem",\s*"position":\s*\d+,\s*"nam
 class MagentoAdapter(BaseAdapter):
     platform = "magento"
 
-    def __init__(self, base_url: str, supplier_name: str):
-        super().__init__(base_url, supplier_name)
+    def __init__(self, base_url: str, supplier_name: str, role: str = "wholesale"):
+        super().__init__(base_url, supplier_name, role)
         h = re.escape(self.host)
         # Host-specific: product-grid links + gallery image on THIS shop's domain.
         self._re_grid = re.compile(
