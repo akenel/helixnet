@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Banco — New Cashier: Start Here (ONBOARD-KIT-01)</title>
+<!-- SELF-DRIVE onboarding kit. Hand the phone + this sheet to the new cashier and go quiet.
+     They read a step, do it, tick it. Written for THEM to drive, not for you to present. -->
+<style>
+  :root { --red:#C0392B; --grn:#1a7f4b; --ink:#222; --head:#2C3E50; --line:#d9dee3; --shade:#f4f6f8; --gold:#b8860b; --blue:#3b73b9; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color: var(--ink); background:#eceff1; margin:0; padding:20px; line-height:1.55; }
+  .sheet { max-width: 720px; margin:0 auto; background:#fff; padding:0 0 30px; box-shadow:0 2px 14px rgba(0,0,0,.12); }
+  header { display:flex; align-items:center; justify-content:space-between; border-bottom:3px solid var(--grn); padding:16px 22px; gap:10px; }
+  header .brand { font-weight:bold; font-size:17px; color:var(--grn); letter-spacing:.5px; }
+  header .title { font-size:13px; color:var(--head); font-weight:bold; text-align:center; }
+  header .docid { font-size:11px; color:#777; font-family:monospace; }
+  .body { padding: 20px 22px; }
+  h1 { font-size:22px; color:var(--head); margin:0 0 6px; }
+  .sub { color:#556; font-size:14px; margin:0 0 16px; }
+  .operator { font-size:12.5px; background:#fff3f2; border:1px solid #f0c3bf; border-left:4px solid var(--red); border-radius:6px; padding:10px 13px; margin-bottom:14px; }
+  .operator b { color:var(--red); }
+  .welcome { font-size:14px; background:#f4fbf7; border:1px solid #bfe3cf; border-left:4px solid var(--grn); border-radius:6px; padding:12px 15px; margin-bottom:20px; }
+  .mod { margin:0 0 8px; }
+  .mod h2 { font-size:16px; color:#fff; background:var(--grn); border-radius:7px 7px 0 0; margin:22px 0 0; padding:9px 14px; }
+  .mod h2 .num { opacity:.7; font-weight:normal; }
+  .steps { border:1px solid var(--line); border-top:0; border-radius:0 0 7px 7px; overflow:hidden; }
+  .step { display:flex; gap:12px; padding:13px 14px; border-top:1px solid #eef1f4; }
+  .step:first-child { border-top:0; }
+  .step:nth-child(even) { background:#fafbfc; }
+  .step .n { flex:0 0 26px; height:26px; border-radius:50%; background:#eaf7ef; color:var(--grn); font-weight:bold; font-size:13px; display:flex; align-items:center; justify-content:center; }
+  .step .txt { flex:1; font-size:14px; }
+  .step .do { font-weight:bold; color:var(--head); }
+  .step .see { color:#556; font-size:13px; display:block; margin-top:2px; }
+  .step .see::before { content:"→ "; color:var(--grn); font-weight:bold; }
+  .step .tick { flex:0 0 26px; }
+  .step .tick input { appearance:none; -webkit-appearance:none; width:24px; height:24px; border:2px solid #99a; border-radius:5px; background:#fff; cursor:pointer; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+  .step .tick input:checked { background:var(--grn); border-color:var(--grn); }
+  .step .tick input:checked::after { content:"✓"; color:#fff; font-size:16px; font-weight:bold; display:flex; align-items:center; justify-content:center; height:100%; }
+  .stuck { font-size:12.5px; color:#7a5; background:#fbfdf6; border-left:3px solid var(--gold); border-radius:4px; padding:5px 9px; margin-top:6px; }
+  .stuck b { color:var(--gold); }
+  .win { font-size:14px; text-align:center; color:var(--grn); font-weight:bold; padding:12px; }
+  .rule { font-size:13px; background:#eef4fb; border-left:4px solid var(--blue); border-radius:5px; padding:8px 12px; margin:2px 14px 12px; color:#345; }
+  .final { margin-top:26px; border:2px solid var(--grn); border-radius:8px; padding:16px 18px; background:#f4fbf7; }
+  .final h3 { margin:0 0 10px; color:var(--head); font-size:17px; }
+  .final ul { margin:0 0 14px; padding-left:20px; font-size:13.5px; color:#445; }
+  .sign { display:flex; gap:24px; flex-wrap:wrap; margin-top:14px; }
+  .sign div { flex:1; min-width:200px; font-size:13px; }
+  .sign .line { border-bottom:1px solid #99a; height:26px; margin-top:4px; }
+  footer { border-top:1px solid var(--line); margin-top:24px; padding:12px 22px 0; font-size:11px; color:#8a93a0; display:flex; justify-content:space-between; }
+  .btns { max-width:720px; margin:0 auto 12px; text-align:right; }
+  .btns button { background:var(--grn); color:#fff; border:0; border-radius:5px; padding:8px 16px; font-size:13px; cursor:pointer; font-weight:bold; }
+  @media (max-width:560px){ body{padding:10px;} .step .see{font-size:13px;} }
+  @media print { body { background:#fff; padding:0; } .sheet { box-shadow:none; max-width:100%; } .btns, .no-print { display:none !important; } .step, .mod { break-inside:avoid; } .mod h2 { break-after:avoid; } }
+</style>
+</head>
+<body>
+<div class="btns no-print"><button onclick="window.print()">🖨️ Print</button></div>
+
+<div class="sheet">
+  <header>
+    <div class="brand">HelixNet · Banco</div>
+    <div class="title">New Cashier — Start Here<br>your first hour on the till</div>
+    <div class="docid">ONBOARD-KIT-01</div>
+  </header>
+
+  <div class="body">
+
+    <div class="operator no-print">👋 <b>Trainer:</b> hand over the phone + this sheet, say <b>“start at step 1.”</b> Then <b>hands in your pockets.</b> Don't touch, don't explain — let them drive. Every time they get stuck is something for us to fix, not for you to rescue. Watch their thumbs, not the clock.</div>
+
+    <h1>Welcome. Let's get you on the till.</h1>
+    <div class="welcome">📱 <b>Get your phone out.</b> Work top to bottom. Read a step, <b>do it</b>, then tick the box. Nobody's timing you, and you can't break anything. You do <b>not</b> need to know any prices — the till knows them. Your job is just to point, scan, and press buttons.</div>
+
+    <div class="mod">
+      <h2><span class="num">1 ·</span> Find your way in</h2>
+      <div class="steps">
+        <div class="step"><div class="n">1</div><div class="txt"><span class="do">Open the browser and go to <code>banco.lapiazza.app</code>.</span><span class="see">You see a wolf and a Login button.</span></div><div class="tick"><input type="checkbox"></div></div>
+        <div class="step"><div class="n">2</div><div class="txt"><span class="do">Tap Login and sign in with the account Felix gave you.</span><span class="see">You land on the till — a big <b>New Sale</b> button.</span><div class="stuck"><b>Stuck?</b> If it looks frozen, pull the screen down to refresh once, then try again.</div></div><div class="tick"><input type="checkbox"></div></div>
+      </div>
+    </div>
+
+    <div class="mod">
+      <h2><span class="num">2 ·</span> Ring your first sale</h2>
+      <div class="steps">
+        <div class="step"><div class="n">1</div><div class="txt"><span class="do">Tap New Sale.</span><span class="see">An empty basket (cart).</span></div><div class="tick"><input type="checkbox"></div></div>
+        <div class="step"><div class="n">2</div><div class="txt"><span class="do">Tap the 📷 camera, point it at a product's barcode.</span><span class="see">The item drops into the basket with its price. You typed nothing — the till knew the price.</span><div class="stuck"><b>Got the scanner gun?</b> Just point it and pull the trigger instead — same result.</div></div><div class="tick"><input type="checkbox"></div></div>
+        <div class="step"><div class="n">3</div><div class="txt"><span class="do">Buying more than one? Tap the quantity number and type it — say 15.</span><span class="see">The total updates. <b>Don't scan it 15 times</b> — just type 15.</span></div><div class="tick"><input type="checkbox"></div></div>
+        <div class="step"><div class="n">4</div><div class="txt"><span class="do">Tap Checkout. Turn the screen so the customer sees the total.</span><span class="see">They see the number and agree — no argument, just like the calculator.</span></div><div class="tick"><input type="checkbox"></div></div>
+        <div class="step"><div class="n">5</div><div class="txt"><span class="do">Tap how they're paying — Cash, Visa, or TWINT. For cash, type what they hand you.</span><span class="see">For cash it shows the change to give back. Sale done — a receipt number appears.</span></div><div class="tick"><input type="checkbox"></div></div>
+      </div>
+      <div class="win">🎉 That's a full sale — and you didn't know a single price.</div>
+    </div>
+
+    <div class="mod">
+      <h2><span class="num">3 ·</span> The bulk price (you do nothing)</h2>
+      <div class="steps">
+        <div class="step"><div class="n">1</div><div class="txt"><span class="do">Ask Felix for an item with a bulk deal (like papers). Scan it, then set the quantity to 3, then 5.</span><span class="see">Watch the price per item drop by itself.</span></div><div class="tick"><input type="checkbox"></div></div>
+      </div>
+      <div class="rule">💡 When someone buys a few, the cheaper price kicks in <b>automatically</b>. You never work it out — you just set the number.</div>
+    </div>
+
+    <div class="mod">
+      <h2><span class="num">4 ·</span> When the scan won't work (never stuck)</h2>
+      <div class="steps">
+        <div class="step"><div class="n">1</div><div class="txt"><span class="do">Barcode won't scan? Tap Search and type part of the name.</span><span class="see">Matches appear — tap the right one.</span></div><div class="tick"><input type="checkbox"></div></div>
+        <div class="step"><div class="n">2</div><div class="txt"><span class="do">Still nothing? Every shelf label has a short code printed on it. Type that in the barcode box.</span><span class="see">It finds the item.</span></div><div class="tick"><input type="checkbox"></div></div>
+        <div class="step"><div class="n">3</div><div class="txt"><span class="do">A weird one-off with no code? Tap 🆕 New item, type a name and the price Felix tells you.</span><span class="see">It rings like anything else.</span></div><div class="tick"><input type="checkbox"></div></div>
+      </div>
+      <div class="rule">💡 There is <b>always</b> a way to ring something. You are never stuck at the counter.</div>
+    </div>
+
+    <div class="mod">
+      <h2><span class="num">5 ·</span> Add a new product from a photo</h2>
+      <div class="steps">
+        <div class="step"><div class="n">1</div><div class="txt"><span class="do">New stock the till doesn't know yet? Tap 🆕 New item → tap the camera → photograph the product.</span><span class="see">The till reads the photo and looks for a match.</span></div><div class="tick"><input type="checkbox"></div></div>
+        <div class="step"><div class="n">2</div><div class="txt"><span class="do">Pick the match (or the supplier's version for a nicer photo). Check the price. Save.</span><span class="see">It's now in the till for next time.</span><div class="stuck"><b>Suppliers:</b> the till can look up products from the shop's suppliers and shows where each came from. Ask Felix which suppliers matter for your shelves.</div></div><div class="tick"><input type="checkbox"></div></div>
+      </div>
+    </div>
+
+    <div class="mod">
+      <h2><span class="num">6 ·</span> Members & discounts (know your limit)</h2>
+      <div class="steps">
+        <div class="step"><div class="n">1</div><div class="txt"><span class="do">A regular with a member card? At checkout tap “Add a member →” and find them.</span><span class="see">Their discount shows and comes off by itself. They always get it.</span></div><div class="tick"><input type="checkbox"></div></div>
+        <div class="step"><div class="n">2</div><div class="txt"><span class="do">Want to knock a little extra off? Type a discount %.</span><span class="see">You can go up to your limit. Past it, the screen says “ask a manager” — that's normal, not a mistake.</span></div><div class="tick"><input type="checkbox"></div></div>
+      </div>
+      <div class="rule">💡 The member's discount is <b>automatic</b>. Your own extra discount has a <b>limit</b> Felix sets. And the till will <b>never</b> let a price go below zero — you can't accidentally give money away.</div>
+    </div>
+
+    <div class="mod">
+      <h2><span class="num">7 ·</span> End of the day</h2>
+      <div class="steps">
+        <div class="step"><div class="n">1</div><div class="txt"><span class="do">At close, open the day's summary.</span><span class="see">Today's totals: cash, Visa, TWINT, and the grand total — added up for you.</span></div><div class="tick"><input type="checkbox"></div></div>
+      </div>
+      <div class="rule">💡 That's the one line Felix puts into his accounting. The till hands you the exact numbers — no adding up by hand.</div>
+    </div>
+
+    <div class="final">
+      <h3>🐺 You can run the counter</h3>
+      <p style="font-size:13.5px;color:#445;margin:0 0 8px;">Ticked every box above? Then you can:</p>
+      <ul>
+        <li>Ring a sale by scanning — without knowing prices</li>
+        <li>Type a quantity instead of scanning 15 times</li>
+        <li>Take cash, Visa or TWINT and give the right change</li>
+        <li>Ring anything even when the barcode won't scan</li>
+        <li>Add a new product from a photo</li>
+        <li>Attach a member and stay inside your discount limit</li>
+        <li>Read off the day's totals for Felix</li>
+      </ul>
+      <div class="sign">
+        <div><b>New cashier:</b> “I've done every step. I can run the counter.”<div class="line"></div><span style="font-size:12px;color:#778;">name &amp; date</span></div>
+        <div><b>Manager (Felix):</b> “Confirmed — counter-ready.”<div class="line"></div><span style="font-size:12px;color:#778;">signature &amp; date</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <span>Confidential — Internal Use Only · you can't break it, so try everything</span>
+    <span>ONBOARD-KIT-01 · Rev 1 · phone-first · Banco</span>
+  </footer>
+</div>
+</body>
+</html>
