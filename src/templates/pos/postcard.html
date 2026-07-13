@@ -100,6 +100,62 @@
     <div class="brand">Artemis Store · <b>Banco</b></div>
   </div>
 
+  {# Share — the whole UX for a non-techy maker: one tap → the phone's native share sheet
+     (SMS, WhatsApp, email, everything). Desktop falls back to explicit buttons. #}
+  <div class="share" id="share">
+    <button class="share-main" onclick="doShare()">📤 <span>{{ {'de':'Teilen','fr':'Partager','it':'Condividi'}.get(lang,'Share') }}</span></button>
+    <div class="share-alt" id="share-alt">
+      <a id="s-wa" target="_blank" rel="noopener">💬 WhatsApp</a>
+      <a id="s-sms">📱 SMS</a>
+      <a id="s-mail">✉️ Email</a>
+      <button onclick="copyLink()">🔗 <span id="copytxt">Copy</span></button>
+    </div>
+  </div>
+
+  <style>
+    .share{ width:100%; max-width:420px; margin-top:16px; text-align:center; }
+    .share-main{ width:100%; padding:14px; border:none; border-radius:12px; cursor:pointer;
+      font-size:16px; font-weight:800; color:#fff; background:var(--accent); font-family:inherit;
+      box-shadow:0 8px 22px {{ accent }}55; }
+    .share-alt{ display:none; gap:8px; margin-top:10px; flex-wrap:wrap; justify-content:center; }
+    .share-alt a, .share-alt button{ flex:1; min-width:120px; text-decoration:none; text-align:center;
+      font-size:13px; font-weight:600; color:var(--ink); background:#fff; border:1px solid var(--line);
+      border-radius:9px; padding:11px 8px; cursor:pointer; font-family:inherit; }
+    @media print{ .share{ display:none; } }
+  </style>
+
+  <script>
+    var SHARE_URL = {{ share_url|tojson }};
+    var SHARE_TITLE = {{ name|tojson }};
+    var _maker = {{ (supplier or '')|tojson }};
+    var _msg = {
+      de: " — handgemacht von " + _maker + ". Zeig diese Karte beim Kauf für einen Rabatt! ",
+      en: " — handmade by " + _maker + ". Show this card at checkout for a deal! ",
+      fr: " — fait main par " + _maker + ". Montre cette carte à la caisse pour une remise ! ",
+      it: " — fatto a mano da " + _maker + ". Mostra questa carta alla cassa per uno sconto! "
+    }[{{ lang|tojson }}] || " — ";
+    var SHARE_TEXT = SHARE_TITLE + _msg;
+    async function doShare(){
+      if (navigator.share){
+        try { await navigator.share({ title: SHARE_TITLE, text: SHARE_TEXT, url: SHARE_URL }); return; }
+        catch(e){ if (e && e.name === 'AbortError') return; }
+      }
+      document.getElementById('share-alt').style.display = 'flex';   // desktop / no native share
+    }
+    (function(){
+      var full = encodeURIComponent(SHARE_TEXT + SHARE_URL);
+      document.getElementById('s-wa').href = 'https://wa.me/?text=' + full;
+      document.getElementById('s-sms').href = 'sms:?&body=' + full;
+      document.getElementById('s-mail').href = 'mailto:?subject=' + encodeURIComponent(SHARE_TITLE) + '&body=' + full;
+    })();
+    function copyLink(){
+      navigator.clipboard.writeText(SHARE_URL).then(function(){
+        document.getElementById('copytxt').textContent = '✓ Copied';
+        setTimeout(function(){ document.getElementById('copytxt').textContent = 'Copy'; }, 1400);
+      });
+    }
+  </script>
+
   <script>
     try {
       new QRCode(document.getElementById('qr'), {
