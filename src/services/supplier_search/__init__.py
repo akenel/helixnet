@@ -98,16 +98,22 @@ async def search_suppliers(q: str, db, suppliers: list[str] | None = None,
         # Only the single-language (German) sites need it; Tamar multiplexes languages itself.
         variants = await query_variants(client, q, langs=("de",))
 
-        async def _run(adapter, qv):
-            return await asyncio.wait_for(adapter.search(client, qv, limit), timeout=timeout)
+        async def _run(adapter, qv, lim):
+            return await asyncio.wait_for(adapter.search(client, qv, lim), timeout=timeout)
 
-        jobs = [(a, qv) for a in adapters for qv in ([q] if a.multilingual else variants)]
-        settled = await asyncio.gather(*[_run(a, qv) for (a, qv) in jobs], return_exceptions=True)
+        # When a site is searched under several variants, split the fetch budget across them so
+        # the extra language pass doesn't double the wait — the union still covers the ground.
+        jobs = []
+        for a in adapters:
+            qs = [q] if a.multilingual else variants
+            lim = limit if len(qs) <= 1 else max(2, limit // len(qs))
+            jobs += [(a, qv, lim) for qv in qs]
+        settled = await asyncio.gather(*[_run(a, qv, lim) for (a, qv, lim) in jobs], return_exceptions=True)
 
     # Merge across (adapter × variant); dedupe the same product, keep its best score.
     by_key: dict[tuple, SupplierResult] = {}
     errors: dict[str, str] = {}
-    for (adapter, qv), res in zip(jobs, settled):
+    for (adapter, qv, _lim), res in zip(jobs, settled):
         if isinstance(res, Exception):
             log.warning("supplier-search %s failed for %r: %s", adapter.supplier, qv, res)
             errors.setdefault(adapter.supplier, str(res) or res.__class__.__name__)
