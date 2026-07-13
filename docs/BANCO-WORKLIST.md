@@ -10,15 +10,24 @@
 
 ---
 
-## 🃏 ON DECK — HC-PROD-01 DONE (9/10 green + row 10 fixed & shipped) → next = TEST LIBRARY, then LABEL DESIGN
+## 🃏 ON DECK — discount SHIPPED+PROD-GREEN · Test Library BUILT → next = FELIX DEMO (Littau AM), then LABEL DESIGN
 
-**✅ HC-PROD-01 run 2026-07-13 (Angel):** rows 1–9 PASS — the postcard maker on the whole catalog + Cynthia's
-7 balms + share-in-language + short-QR + 4-up + one-page print all confirmed on prod. **Row 10** (a discount
-didn't apply on a member sale) → triaged to the old "Option B" suppression → **redesigned to separate-lanes +
-role ladder + safety floor and SHIPPED PROD** (see the section below). Row 10 CLOSED.
-- **▶ NEXT (Angel picked, 2026-07-13):** build the **Test Script Library** = `docs/testing/INDEX.html` — a
-  catalog of the ~96 HTML test sheets (what/env/blank-vs-report/status) + consolidate to one GOLD template.
-  His "control file" for the test scripts. Then the LABEL DESIGN build (waits for the QL-820 printer ~end-July).
+**✅ HC-PROD-01 (2026-07-13):** rows 1–9 PASS (postcard maker on the whole catalog + Cynthia's 7 balms +
+share + short-QR + 4-up + one-page print). **Row 10** (discount didn't apply on a member) → old "Option B"
+suppression → **redesigned to separate-lanes + 15/70/100 ladder + safety floor, SHIPPED PROD + PROD-HUMAN-GREEN
+(DISC-PROD-01), tagged `verified/disc-prod-01`→85ee89a.** Row 10 CLOSED. (Detail in the shipped section below.)
+
+**✅ TEST SCRIPT LIBRARY BUILT (2026-07-13) — `docs/testing/INDEX.html`.** Catalogs ~90 sheets (env + type
+chips, every link verified). New **DISC-PROD-01** discount test sheet (`docs/testing/banco/`) is the flagship +
+the Felix demo script. **Housekeeping done:** `banco/Test-Scripts/` junk-drawer dissolved → HTML sheets to
+`banco/`, filled PDFs/evidence to `reports/`; `test-scripts/` is now the one canonical scripts folder (pure
+HTML); orphan space-name SBX files renamed clean. Convention: blank sheets tracked, filled `*-uat-report.html`
+gitignored (local). ⚠️ Loose end: `BANCO-SBX-HYPERCARE-BATCH-TEST.html` (358L) vs `…-TEMPEST.html` (505L) =
+two versions of one sheet, pick canonical when fresh.
+
+- **▶ NEXT: FELIX DEMO — Littau, AM 2026-07-14.** Angel sees Felix in the morning; walk DISC-PROD-01 on his
+  phone (already prod-rehearsed + passed). Then the **LABEL DESIGN** build (waits for the QL-820 printer ~end-July;
+  gun lands before Friday for real prod-migration testing).
 - Mobile note: login self-heals as the stale service worker updates (v99+); if a phone is still stuck, clear site data / incognito once.
 
 ---
