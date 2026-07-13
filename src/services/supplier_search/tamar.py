@@ -34,6 +34,7 @@ _RE_CRUMB = re.compile(r'class="Breadcrumps">(.*?)</p>', re.S)
 
 class TamarAdapter(BaseAdapter):
     platform = "tamar"
+    multilingual = True     # queries languageId 3 (EN) + 2 (DE) itself — no variant expansion needed
 
     async def search(self, client: httpx.AsyncClient, q: str, limit: int = 5) -> list[SupplierResult]:
         headers = {"Accept": "application/json", "X-Requested-With": "XMLHttpRequest"}

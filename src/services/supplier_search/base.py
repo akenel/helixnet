@@ -124,6 +124,10 @@ class BaseAdapter:
     ``adapter_type`` or a sniffed platform). ``search`` gets a shared client (session reused)."""
 
     platform = "?"
+    # A multilingual site indexes several languages itself (Tamar) — the orchestrator does NOT
+    # expand query-language variants for it (it would just multiply fetches). Single-language
+    # sites (Magento/Shopware = German) DO get the translated variants.
+    multilingual = False
 
     def __init__(self, base_url: str, supplier_name: str, role: str = "wholesale"):
         self.base_url = (base_url or "").rstrip("/")

@@ -26,9 +26,11 @@ async def translate_query(q: str, target: str, client=None) -> str | None:
         return _CACHE[key]
     from src.llm import run_llm, turbo_or_local
     system = (
-        f"You translate a short retail PRODUCT-SEARCH term into {_LANG_NAMES.get(target, target)}. "
-        "Output ONLY the translated search term (1-5 words) — no sentence, no quotes, no notes. "
-        "Keep brand and product names unchanged (Tycoon, Zippo, RAW, Vozol, etc.)."
+        f"You translate a short head-shop PRODUCT-SEARCH term into {_LANG_NAMES.get(target, target)} "
+        "as a customer of that country would actually type it. Output ONLY the search term (1-5 words) "
+        "— no sentence, no quotes, no notes. Keep brand/product names unchanged (Tycoon, Zippo, RAW, "
+        "Vozol). Keep common industry loanwords that shoppers use natively (e.g. in German: Grinder, "
+        "Vaporizer, Papers, Bong, Shisha stay as-is)."
     )
     out = None
     try:

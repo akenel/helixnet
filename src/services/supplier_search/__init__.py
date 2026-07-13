@@ -95,12 +95,13 @@ async def search_suppliers(q: str, db, suppliers: list[str] | None = None,
             return {"query": q, "results": [], "errors": {}, "suppliers": []}
 
         # BL-38: also search a German variant so an English/French term hits the German sites.
+        # Only the single-language (German) sites need it; Tamar multiplexes languages itself.
         variants = await query_variants(client, q, langs=("de",))
 
         async def _run(adapter, qv):
             return await asyncio.wait_for(adapter.search(client, qv, limit), timeout=timeout)
 
-        jobs = [(a, qv) for a in adapters for qv in variants]
+        jobs = [(a, qv) for a in adapters for qv in ([q] if a.multilingual else variants)]
         settled = await asyncio.gather(*[_run(a, qv) for (a, qv) in jobs], return_exceptions=True)
 
     # Merge across (adapter × variant); dedupe the same product, keep its best score.
