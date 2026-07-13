@@ -6269,6 +6269,28 @@ async def pos_catalog(request: Request):
     return templates.TemplateResponse("pos/catalog.html", {"request": request})
 
 
+def _postcard_store_footer(store, origin: str) -> dict | None:
+    """Flatten a StoreSettingsModel into the postcard's footer dict (name / hours / address /
+    phone / logo), or None if there's no store row. The card's CTA + this footer turn a
+    shared maker card into foot traffic back to the counter. Address is assembled from the
+    line/city/postal fields; a relative logo path is made absolute for the shared preview."""
+    if store is None:
+        return None
+    line1 = ", ".join(p for p in (store.address_line1, store.address_line2) if p)
+    citely = " ".join(x for x in (store.postal_code, store.city) if x)
+    address = ", ".join(x for x in (line1, citely) if x)
+    logo = store.receipt_logo_url or None
+    if logo and not logo.startswith(("http://", "https://")):
+        logo = origin + (logo if logo.startswith("/") else "/" + logo)
+    return {
+        "name": store.store_name,
+        "hours": store.opening_hours,
+        "address": address or None,
+        "phone": store.phone,
+        "logo": logo,
+    }
+
+
 @html_router.get("/pos/products/{product_id}/postcard", response_class=HTMLResponse, name="product_postcard")
 async def product_postcard(
     product_id: str,
@@ -6315,6 +6337,12 @@ async def product_postcard(
     body = (desc.get("description") or product.description or "").strip()
     og_description = (body[:277] + "…") if len(body) > 280 else body
 
+    # Store footer — the CLOSE: turn every shared card into a "come get it" at Felix's counter.
+    # Built from the shop's own store_settings (name/hours/address/phone/logo) so it's real data,
+    # never hardcoded. None → the card falls back to the plain brand line.
+    store = await get_active_store_settings(db)
+    store_ctx = _postcard_store_footer(store, origin)
+
     return templates.TemplateResponse("pos/postcard.html", {
         "request": request,
         "name": desc.get("name") or product.name,   # translated name → title matches the language
@@ -6331,6 +6359,7 @@ async def product_postcard(
         "lang": lang,
         "og_image": og_image,
         "og_description": og_description,
+        "store": store_ctx,
     })
 
 
