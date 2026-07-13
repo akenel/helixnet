@@ -82,14 +82,14 @@
           {% if image_url %}<img src="{{ image_url }}" alt="" onerror="this.style.display='none'">{% else %}<div class="noimg">🧴</div>{% endif %}
         </div>
         <h2>{{ name }}</h2>
-        {% if supplier %}<div class="tag">Handgemacht · {{ supplier }}</div>{% endif %}
+        {% if supplier %}<div class="tag">{{ {'de':'Handgemacht','fr':'Fait main','it':'Fatto a mano'}.get(lang,'Handmade') }} · {{ supplier }}</div>{% endif %}
         {% if description %}<p class="story">{{ description }}</p>{% endif %}
         {% if price %}<div class="price">{{ currency }} {{ price }}</div>{% endif %}
-        {% if supplier %}<div class="maker">made with love — {{ supplier }}</div>{% endif %}
+        {% if supplier %}<div class="maker">{{ {'de':'mit Liebe gemacht','fr':'fait avec amour','it':'fatto con amore'}.get(lang,'made with love') }} — {{ supplier }}</div>{% endif %}
         <div class="foot">
           <div class="qr" id="qr{{ c.n }}"></div>
           <div class="meta">
-            <div class="scan">📷 <span>Scan mich</span> — zeig die Karte beim Kauf.</div>
+            <div class="scan">📷 <span>{{ {'de':'Scan mich','fr':'Scanne-moi','it':'Scansiona'}.get(lang,'Scan me') }}</span> — {{ {'de':'zeig die Karte beim Kauf.','fr':'montre cette carte à la caisse.','it':'mostra la carta alla cassa.'}.get(lang,'show this card at checkout.') }}</div>
             <div class="serial">Nr. {{ c.serial }}</div>
           </div>
         </div>
