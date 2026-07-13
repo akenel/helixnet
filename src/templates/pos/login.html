@@ -95,25 +95,53 @@
 </div>
 
 <script>
-    // Check if already logged in
+    // Errors that mean "the Keycloak session went stale" (e.g. after a KC restart the browser
+    // still holds an identity cookie for a session KC no longer has → the code is rejected).
+    // These we RECOVER from automatically instead of making the operator hit Log Out by hand.
+    const KC_STALE_ERRORS = ['token_exchange_failed', 'no_token'];
+
     window.addEventListener('DOMContentLoaded', () => {
         const token = AuthHelper.getToken();
         if (token) {
             const user = AuthHelper.getUserInfo();
             if (user && user.posRoles.length > 0) {
-                // Already logged in, redirect to dashboard
+                sessionStorage.removeItem('kc_recover_attempt');   // a good session clears the counter
                 window.location.href = '/pos/dashboard';
+                return;
             }
         }
 
-        // Check for error in URL params (callback error from server)
         const urlParams = new URLSearchParams(window.location.search);
         const error = urlParams.get('error');
-        if (error) {
-            showToast(t('login.login_failed') + error, 'error');
-            // Clear URL params
-            window.history.replaceState({}, document.title, '/pos');
+
+        // STEP 2 of auto-recovery: we just cleared the dead session and came back clean →
+        // start a fresh login by ourselves (one shot), so the operator never sees a dead end.
+        if (!token && !error && sessionStorage.getItem('kc_recover_pending') === '1') {
+            sessionStorage.removeItem('kc_recover_pending');
+            loginWithKeycloak();
+            return;
         }
+
+        if (!error) return;
+        window.history.replaceState({}, document.title, '/pos');
+
+        // STEP 1 of auto-recovery: a stale-session error → clear the KC session and come back,
+        // but only ONCE (guarded) so a genuinely broken login can never loop.
+        const attempt = parseInt(sessionStorage.getItem('kc_recover_attempt') || '0', 10);
+        if (KC_STALE_ERRORS.includes(error) && attempt < 1) {
+            sessionStorage.setItem('kc_recover_attempt', String(attempt + 1));
+            sessionStorage.setItem('kc_recover_pending', '1');
+            const c = kcConfig();
+            try { AuthHelper.clearToken(); } catch (e) {}
+            window.location.href = `${c.keycloakUrl}/realms/${c.realm}/protocol/openid-connect/logout?` +
+                `post_logout_redirect_uri=${encodeURIComponent(window.location.origin + '/pos')}&client_id=${c.clientId}`;
+            return;
+        }
+
+        // Recovery already tried (or a different error) → show it + the manual escape hatch.
+        sessionStorage.removeItem('kc_recover_attempt');
+        sessionStorage.removeItem('kc_recover_pending');
+        showToast(t('login.login_failed') + error, 'error');
     });
 
     // One source of truth for the Keycloak endpoints.
