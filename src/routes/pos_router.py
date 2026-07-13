@@ -409,6 +409,7 @@ async def _find_catalog_matches(db: AsyncSession, q: str, limit: int = 6) -> dic
         WHERE name ILIKE '%' || :q || '%'
            OR similarity(name, :q) > 0.15
            OR word_similarity(:q, coalesce(name,'') || ' ' || coalesce(description,'')) > 0.45
+           OR supplier_name ILIKE '%' || :q || '%'
         ORDER BY is_active DESC,
                  CASE WHEN name ILIKE :q || '%' THEN 0 ELSE 1 END,
                  score DESC, name
@@ -1806,6 +1807,9 @@ async def search_products_fast(
           AND (
             :q = '' OR name ILIKE '%' || :q || '%' OR sku ILIKE '%' || :q || '%'
             OR barcode ILIKE '%' || :q || '%' OR similarity(name, :q) > 0.1
+            -- also match the SUPPLIER (find "Mama Cynthia" by her name) + the description text
+            OR supplier_name ILIKE '%' || :q || '%'
+            OR description ILIKE '%' || :q || '%'
           )
           AND (CAST(:category AS TEXT) IS NULL OR category ILIKE '%' || CAST(:category AS TEXT) || '%')
         ORDER BY {order_clause}
