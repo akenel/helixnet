@@ -6269,6 +6269,27 @@ async def pos_catalog(request: Request):
     return templates.TemplateResponse("pos/catalog.html", {"request": request})
 
 
+# Suppliers whose products wear the ARTISAN framing on the postcard ("Handmade",
+# "made with love"). A wholesale DISTRIBUTOR must never read "Handmade · FourTwenty" on a
+# pack of rolling papers. Signal = the supplier's adapter_type: local makers are hand-onboarded
+# ('manual', e.g. Ecolution) or authored in-system ('incms', e.g. Mama Cynthia); everything
+# imported (magento/tamar/csv) or a bare wholesale row is a distributor → neutral card.
+# TODO: promote to an explicit suppliers.is_maker flag when the schema next moves.
+_MAKER_ADAPTER_TYPES = {"manual", "incms"}
+
+
+async def _supplier_is_maker(db, supplier_name: str | None) -> bool:
+    """Does this product's supplier get the 'Handmade / made with love' framing? Matched by
+    NAME (product.supplier_name is denormalized; receiving mints LZ- SKUs so the prefix isn't
+    reliable). Unknown/missing supplier → False (neutral card — the safe default)."""
+    if not supplier_name:
+        return False
+    at = (await db.execute(
+        select(SupplierModel.adapter_type).where(SupplierModel.name == supplier_name)
+    )).scalar_one_or_none()
+    return (at or "").strip().lower() in _MAKER_ADAPTER_TYPES
+
+
 def _postcard_store_footer(store, origin: str) -> dict | None:
     """Flatten a StoreSettingsModel into the postcard's footer dict (name / hours / address /
     phone / logo), or None if there's no store row. The card's CTA + this footer turn a
@@ -6342,6 +6363,7 @@ async def product_postcard(
     # never hardcoded. None → the card falls back to the plain brand line.
     store = await get_active_store_settings(db)
     store_ctx = _postcard_store_footer(store, origin)
+    is_maker = await _supplier_is_maker(db, product.supplier_name)
 
     return templates.TemplateResponse("pos/postcard.html", {
         "request": request,
@@ -6360,6 +6382,7 @@ async def product_postcard(
         "og_image": og_image,
         "og_description": og_description,
         "store": store_ctx,
+        "is_maker": is_maker,
     })
 
 
@@ -6396,6 +6419,7 @@ async def product_postcard_sheet(
     qr_url = f"{origin}/p/{code}?lang={lang}" if code else share_url   # carry lang through the QR
     cards = [{"n": i, "serial": f"{product.sku}·{base_serial}·{run}-{i:02d}/04"} for i in range(1, 5)]
     store_ctx = _postcard_store_footer(await get_active_store_settings(db), origin)
+    is_maker = await _supplier_is_maker(db, product.supplier_name)
 
     return templates.TemplateResponse("pos/postcard-sheet.html", {
         "request": request,
@@ -6411,6 +6435,7 @@ async def product_postcard_sheet(
         "lang": lang,
         "cards": cards,
         "store": store_ctx,
+        "is_maker": is_maker,
     })
 
 

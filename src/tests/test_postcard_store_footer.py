@@ -6,7 +6,10 @@ flattening: address assembly, absolute logo URL, and graceful None.
 """
 from types import SimpleNamespace
 
-from src.routes.pos_router import _postcard_store_footer
+import pytest
+
+from src.db.models.supplier_model import SupplierModel
+from src.routes.pos_router import _postcard_store_footer, _supplier_is_maker
 
 
 def _store(**over):
@@ -58,3 +61,36 @@ def test_missing_optional_fields_degrade_gracefully():
     assert f["phone"] is None
     assert f["logo"] is None
     assert f["address"] is None
+
+
+# ---- maker gate: "Handmade / made with love" only for real makers, not distributors ----
+
+async def _seed_supplier(db, name, prefix, adapter_type):
+    db.add(SupplierModel(code=prefix, name=name, prefix=prefix,
+                         adapter_type=adapter_type, supplier_role="wholesale"))
+    await db.commit()
+
+
+@pytest.mark.asyncio
+async def test_manual_and_incms_suppliers_are_makers(db_session):
+    await _seed_supplier(db_session, "Ecolution GmbH — Sylvie Thiel", "ECO", "manual")
+    await _seed_supplier(db_session, "Mama Cynthia", "MC", "incms")
+    assert await _supplier_is_maker(db_session, "Ecolution GmbH — Sylvie Thiel") is True
+    assert await _supplier_is_maker(db_session, "Mama Cynthia") is True
+
+
+@pytest.mark.asyncio
+async def test_distributors_are_not_makers(db_session):
+    await _seed_supplier(db_session, "FourTwenty", "FTW", "magento")
+    await _seed_supplier(db_session, "Tamar Trade GmbH", "TAM", "tamar")
+    await _seed_supplier(db_session, "Edelweiss AG", "EDW", None)   # bare wholesale row
+    assert await _supplier_is_maker(db_session, "FourTwenty") is False
+    assert await _supplier_is_maker(db_session, "Tamar Trade GmbH") is False
+    assert await _supplier_is_maker(db_session, "Edelweiss AG") is False
+
+
+@pytest.mark.asyncio
+async def test_missing_or_unknown_supplier_is_not_a_maker(db_session):
+    assert await _supplier_is_maker(db_session, None) is False
+    assert await _supplier_is_maker(db_session, "") is False
+    assert await _supplier_is_maker(db_session, "Nobody Ltd") is False

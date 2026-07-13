@@ -118,7 +118,6 @@
 </head>
 <body>
   <div class="toolbar">
-    <a href="javascript:history.back()">← back</a>
     <span class="lang">
       <a href="?lang=de" class="{{ 'on' if lang=='de' else '' }}">DE</a>·<a href="?lang=en" class="{{ 'on' if lang=='en' else '' }}">EN</a>·<a href="?lang=fr" class="{{ 'on' if lang=='fr' else '' }}">FR</a>·<a href="?lang=it" class="{{ 'on' if lang=='it' else '' }}">IT</a>
     </span>
@@ -133,13 +132,13 @@
     </div>
     <div class="body">
       <h1>{{ name }}</h1>
-      {% if supplier %}<div class="tagline">{{ {'de':'Handgemacht','fr':'Fait main','it':'Fatto a mano'}.get(lang,'Handmade') }} · {{ supplier }}</div>{% endif %}
+      {% if supplier and is_maker %}<div class="tagline">{{ {'de':'Handgemacht','fr':'Fait main','it':'Fatto a mano'}.get(lang,'Handmade') }} · {{ supplier }}</div>{% endif %}
       {% if description %}<p class="story">{{ description }}</p>{% endif %}
       {% if provenance == 'machine' %}<span class="machine">🤖 {{ {'de':'übersetzt','fr':'traduit','it':'tradotto'}.get(lang,'translated') }}</span>{% endif %}
       <div class="pricerow">
         {% if price %}<span class="price">{{ currency }} {{ price }}</span>{% endif %}
       </div>
-      {% if supplier %}<div class="maker">{{ {'de':'mit Liebe gemacht','fr':'fait avec amour','it':'fatto con amore'}.get(lang,'made with love') }} — {{ supplier }}</div>{% endif %}
+      {% if supplier and is_maker %}<div class="maker">{{ {'de':'mit Liebe gemacht','fr':'fait avec amour','it':'fatto con amore'}.get(lang,'made with love') }} — {{ supplier }}</div>{% endif %}
     </div>
 
     <div class="foot">
@@ -153,7 +152,7 @@
     <div class="storefoot">
       <div class="pickup">🛍️ {{ {'de':'Heute abholen — solange der Vorrat reicht','fr':'À retirer aujourd’hui — jusqu’à épuisement','it':'Ritira oggi — fino a esaurimento'}.get(lang,'Pick up today — while supplies last') }}</div>
       <div class="storeid">
-        {% if store.logo %}<img class="storelogo" src="{{ store.logo }}" alt="{{ store.name }}" onerror="this.style.display='none'">{% endif %}
+        {% if store.logo %}<img class="storelogo" src="{{ store.logo }}" alt="" onerror="this.style.display='none'">{% endif %}
         <span class="storename">{{ store.name }}</span>
       </div>
       <div class="storelines">

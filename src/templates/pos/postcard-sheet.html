@@ -87,10 +87,10 @@
           {% if image_url %}<img src="{{ image_url }}" alt="" onerror="this.style.display='none'">{% else %}<div class="noimg">🧴</div>{% endif %}
         </div>
         <h2>{{ name }}</h2>
-        {% if supplier %}<div class="tag">{{ {'de':'Handgemacht','fr':'Fait main','it':'Fatto a mano'}.get(lang,'Handmade') }} · {{ supplier }}</div>{% endif %}
+        {% if supplier and is_maker %}<div class="tag">{{ {'de':'Handgemacht','fr':'Fait main','it':'Fatto a mano'}.get(lang,'Handmade') }} · {{ supplier }}</div>{% endif %}
         {% if description %}<p class="story">{{ description }}</p>{% endif %}
         {% if price %}<div class="price">{{ currency }} {{ price }}</div>{% endif %}
-        {% if supplier %}<div class="maker">{{ {'de':'mit Liebe gemacht','fr':'fait avec amour','it':'fatto con amore'}.get(lang,'made with love') }} — {{ supplier }}</div>{% endif %}
+        {% if supplier and is_maker %}<div class="maker">{{ {'de':'mit Liebe gemacht','fr':'fait avec amour','it':'fatto con amore'}.get(lang,'made with love') }} — {{ supplier }}</div>{% endif %}
         <div class="foot">
           <div class="qr" id="qr{{ c.n }}"></div>
           <div class="meta">
