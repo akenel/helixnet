@@ -10,7 +10,18 @@
 
 ---
 
-## 🃏 ON DECK — 2026-07-13 · FOLLOW-UPS (BL-36/37/38 ✅ PROD · BL-39 KC login ✅ LIVE) ← PICK NEXT
+## 🃏 ON DECK — 2026-07-13 · 📇 POSTCARD MAKER awaiting Angel's SANDBOX sign-off ← TOP
+
+**THE GATE:** Postcard maker + Mama Cynthia's 7 balms are BUILT + LIVE ON SANDBOX (`sandbox-banco.lapiazza.app`), NOT prod.
+Angel runs the e2e sign-off sheet → **`docs/testing/banco/BANCO-POSTCARD-MAKER-TEST-SHEET.html` (TEST-PC1)** → on ✅ PASS, promote to prod.
+- **Promote = TWO steps:** (1) deploy code to banco prod (`scripts/ops/deploy-banco.py prod`), (2) `python scripts/import/mama_cynthia.py --env prod` (seeds supplier + 7 balms). Backup gates prod; re-probe after restart (prove, don't assume).
+- **What shipped to sandbox:** any product → single postcard (colour-themed, QR, Banksy serial, share button) + 4-up Format-C sheet + per-product 4-flag description picker + product search now hits supplier name/description + Mama Cynthia juiced EN-source stories w/ her authentic German seeded. All committed to `main`, pushed.
+- **Focus line (Angel, 2026-07-13):** "don't get carried away — basic mechanics end to end, best value, not bells & whistles." Postcard maker = the LABEL/shelf-talker Felix prints anyway, done multilingual + scannable. **La Piazza storefront/claim/worldwide loop stays PARKED.** Do NOT build shelf-label size or storefront unless Angel says.
+- Detail: [[banco-mama-cynthia-artisan-loop]].
+
+---
+
+## FOLLOW-UPS (BL-36/37/38 ✅ PROD · BL-39 KC login ✅ LIVE)
 
 **✅ DONE 2026-07-13 (`a459d65`, prod):** 💱 currency conversion (Near Dark EUR → ≈ CHF, plan rates, `store_settings.fx_rates` per-tenant) · 🏷️ French category labels (53 entries, fr/it/de parity) · 🔧 BH reconcile (theme source pushed to origin branch `banco-kc-login-themes`; Angel's working tree untouched; full main-merge = clean-tree follow-up).
 

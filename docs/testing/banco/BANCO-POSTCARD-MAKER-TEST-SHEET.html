@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Postcard Maker + Mama Cynthia — Sign-Off Sheet (TEST-PC1)</title>
+<!-- Sandbox sign-off gate BEFORE promoting the postcard maker + Mama Cynthia set to prod.
+     Fill on screen (type + tick), THEN Print → Save as PDF. Fields freeze on print. -->
+<style>
+  :root { --red:#C0392B; --plum:#7c3aed; --ink:#222; --head:#2C3E50; --line:#d9dee3; --shade:#f4f6f8; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color: var(--ink); background:#eceff1;
+         margin:0; padding:24px; line-height:1.5; }
+  .sheet { max-width: 920px; margin:0 auto; background:#fff; padding:0 0 32px;
+           box-shadow:0 2px 14px rgba(0,0,0,.12); }
+  header { display:flex; align-items:center; justify-content:space-between;
+           border-bottom:3px solid var(--plum); padding:18px 28px; }
+  header .brand { font-weight:bold; font-size:18px; color:var(--plum); letter-spacing:.5px; }
+  header .title { font-size:14px; color:var(--head); font-weight:bold; text-align:center; }
+  header .docid { font-size:12px; color:#777; font-family:monospace; }
+  .body { padding: 22px 28px; }
+  h1 { font-size:20px; color:var(--head); margin:0 0 4px; }
+  h2.sec { font-size:14px; color:var(--plum); margin:24px 0 8px; padding-bottom:4px;
+           border-bottom:1px solid #e6ddf7; letter-spacing:.3px; }
+  .sub { color:#667; font-size:13px; margin:0 0 14px; }
+  .howto { font-size:12px; color:#555; background:#eef4fb; border:1px solid #c5d8ee;
+           border-left:4px solid #3b73b9; border-radius:6px; padding:9px 13px; margin-bottom:18px; }
+  .meta { display:grid; grid-template-columns:1fr 1fr; gap:10px 24px; font-size:13px;
+          background:var(--shade); border:1px solid var(--line); border-radius:6px;
+          padding:14px 16px; margin-bottom:20px; }
+  .meta b { color:var(--head); }
+  .pre { background:#fff7e6; border:1px solid #f0d089; border-left:4px solid #e0a800;
+         border-radius:6px; padding:10px 14px; font-size:13px; margin-bottom:8px; }
+  .pre a { color:var(--plum); font-weight:bold; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { border:1px solid var(--line); padding:9px 10px; vertical-align:top; text-align:left; }
+  th { background:var(--head); color:#fff; font-size:12px; }
+  td.n { text-align:center; font-weight:bold; color:var(--plum); width:28px; }
+  td.chk { text-align:center; width:46px; }
+  td.notes { width:150px; padding:4px; }
+  tr:nth-child(even) td { background:#fafbfc; }
+  .step b { color:var(--head); }
+  .exp { color:#445; }
+  .big td { background:#f3ecff !important; }
+  .kbd, code { font-family:monospace; background:#eef1f4; border:1px solid #cdd3da; border-radius:3px;
+         padding:1px 5px; font-size:12px; }
+  input.txt { border:0; border-bottom:1px solid #99a; background:transparent; font:inherit;
+              color:var(--ink); padding:2px 4px; width:100%; min-width:60px; }
+  input.txt:focus { outline:none; border-bottom:2px solid var(--plum); background:#fffce8; }
+  td.notes input.txt { border-bottom:0; }
+  input[type=checkbox], input[type=radio] {
+    appearance:none; -webkit-appearance:none; width:18px; height:18px; border:1.6px solid #667;
+    background:#fff; cursor:pointer; vertical-align:middle; print-color-adjust:exact;
+    -webkit-print-color-adjust:exact; }
+  input[type=checkbox] { border-radius:3px; }
+  input[type=radio] { border-radius:50%; }
+  input[type=checkbox]:checked { background:var(--plum); border-color:var(--plum); }
+  input[type=checkbox]:checked::after { content:"✓"; color:#fff; font-size:13px; font-weight:bold;
+    display:flex; align-items:center; justify-content:center; height:100%; }
+  input[type=radio]:checked { background:var(--plum); border-color:var(--plum);
+    box-shadow:inset 0 0 0 3px #fff; }
+  .result { margin-top:22px; border:2px solid var(--plum); border-radius:6px; padding:14px 16px; background:#faf7ff; }
+  .result h3 { margin:0 0 10px; color:var(--head); font-size:15px; }
+  .result label { font-size:14px; margin-right:22px; cursor:pointer; }
+  .gate { font-size:12px; color:#664; margin-top:8px; }
+  .sig { margin-top:14px; font-size:13px; color:#445; display:flex; gap:28px; }
+  .sig span { flex:1; }
+  .polish { margin-top:22px; border:1px dashed #b08; border-radius:6px; padding:14px 16px; background:#fdf4fb; }
+  .polish h3 { margin:0 0 4px; color:#922; font-size:14px; }
+  .polish .hint { font-size:12px; color:#967; margin:0 0 12px; }
+  .polish ol { margin:0; padding-left:22px; }
+  .polish li { margin-bottom:9px; }
+  .polish li input.txt { border-bottom:1px solid #c9a; }
+  footer { border-top:1px solid var(--line); margin-top:26px; padding:12px 28px 0;
+           font-size:11px; color:#8a93a0; display:flex; justify-content:space-between; }
+  .btns { max-width:920px; margin:0 auto 14px; text-align:right; }
+  .btns button { background:var(--plum); color:#fff; border:0; border-radius:5px;
+                 padding:8px 16px; font-size:13px; cursor:pointer; font-weight:bold; }
+  @media print {
+    body { background:#fff; padding:0; }
+    .sheet { box-shadow:none; max-width:100%; }
+    .btns, .no-print { display:none !important; }
+    input.txt:focus { background:transparent; }
+    h2.sec { break-after:avoid; }
+    tr { break-inside:avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="btns no-print">
+  <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+</div>
+
+<div class="sheet">
+  <header>
+    <div class="brand">HelixNet · Banco</div>
+    <div class="title">Postcard Maker + Mama Cynthia<br>Sandbox Sign-Off — the prod gate</div>
+    <div class="docid">TEST-PC1</div>
+  </header>
+
+  <div class="body">
+    <h1>Postcard Maker — end-to-end sandbox review</h1>
+    <p class="sub">Confirms: any product → a beautiful, multilingual, shareable, printable card (single + 4-up),
+      built on Mama Cynthia's 7 real balms. <b>This sheet is the gate — a PASS here is your GO to promote to prod.</b></p>
+
+    <div class="howto">📝 <b>How to use:</b> fill in <b>on screen</b> (type the notes, tick the boxes),
+      <b>then</b> <span class="kbd">🖨️ Print / Save as PDF</span> to archive. A browser PDF locks the fields, so fill it in <b>first</b>.</div>
+
+    <div class="meta">
+      <div><b>Environment:</b> <input class="txt" type="text" value="https://sandbox-banco.lapiazza.app"></div>
+      <div><b>Build:</b> <input class="txt" type="text" placeholder="sandbox commit / sw v"></div>
+      <div><b>Tester:</b> <input class="txt" type="text" placeholder="Angel"></div>
+      <div><b>Date:</b> <input class="txt" type="text" placeholder="dd/mm/yyyy"></div>
+    </div>
+
+    <div class="pre"><b>Pre-flight:</b> log into <a href="https://sandbox-banco.lapiazza.app/pos">sandbox-banco.lapiazza.app/pos</a>,
+      land on the <b>Catalog</b>. Have your phone ready (the SMS + native-share checks need it — use your own number
+      <code>079 828 28 41</code> as "Cynthia"). Nothing here touches prod.</div>
+
+    <table>
+      <thead>
+        <tr><th class="n">#</th><th>Step</th><th>Expected result</th><th class="chk">Pass</th><th class="notes">Notes</th></tr>
+      </thead>
+      <tbody>
+
+        <!-- ============ FIND HER ============ -->
+        <tr><td colspan="5"><h2 class="sec" style="margin:2px 0;">1 · Find her — search works</h2></td></tr>
+        <tr class="step">
+          <td class="n">1</td>
+          <td><b>Search</b> <code>cynthia</code> in the catalog search box.</td>
+          <td class="exp">Her <b>7 balms</b> appear (was broken — supplier name wasn't searched).</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr class="step">
+          <td class="n">2</td>
+          <td>Search <code>mama</code>, then <code>salbe</code>, then <code>MC-</code>.</td>
+          <td class="exp">Each finds her set (supplier / German word / SKU all hit).</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr class="step">
+          <td class="n">3</td>
+          <td>Eyeball the 7 tiles: names, prices, her round colour label as the photo.</td>
+          <td class="exp">Lavendel CHF 30, hemp/head/joint/warmth CHF 35/30, each its own colour + real label image.</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+
+        <!-- ============ DESCRIPTIONS / LANGUAGES ============ -->
+        <tr><td colspan="5"><h2 class="sec" style="margin:2px 0;">2 · Read in any language</h2></td></tr>
+        <tr class="step">
+          <td class="n">4</td>
+          <td>Open <b>Lavendel</b> → the detail modal. Find the <b>4 flags</b> by the Description (🇩🇪 🇬🇧 🇫🇷 🇮🇹).</td>
+          <td class="exp">Flag row is there; tapping a flag re-reads the description in that language, regardless of login language.</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr class="step">
+          <td class="n">5</td>
+          <td>Tap 🇬🇧 <b>English</b>, then 🇩🇪 <b>German</b>.</td>
+          <td class="exp">EN = the rich "juiced" story (olive oil, coconut, beeswax, true lavender, 30 ml, made with love).
+            DE = Cynthia's <b>own</b> words, not robot German.</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr class="step">
+          <td class="n">6</td>
+          <td>Tap 🇫🇷 and 🇮🇹.</td>
+          <td class="exp">Both read cleanly; a small 🤖 "translated" mark is honest about the auto ones.</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+
+        <!-- ============ THE POSTCARD ============ -->
+        <tr><td colspan="5"><h2 class="sec" style="margin:2px 0;">3 · The postcard — the heart of it</h2></td></tr>
+        <tr class="step big">
+          <td class="n">7</td>
+          <td><b>The big one:</b> in the detail modal tap <b>📇 Postcard</b>.</td>
+          <td class="exp">A full-page card opens: hero label, name, "Handgemacht · Mama Cynthia", the juiced story,
+            price in the product's colour, a QR, a serial "Nr. …", brand "Artemis Store · Banco".</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr class="step">
+          <td class="n">8</td>
+          <td>Check the <b>colour</b>: lavender card = purple. Open a couple more (hemp = blue, warmth = red).</td>
+          <td class="exp">Each card is themed to that product's own colour. No white space gaps — the card reads full.</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr class="step">
+          <td class="n">9</td>
+          <td>Use the card's own <b>DE·EN·FR·IT</b> toolbar (top of the card).</td>
+          <td class="exp">Card text + share message switch language. Anyone reads it in their tongue.</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr class="step big">
+          <td class="n">10</td>
+          <td><b>Scan the QR with your phone.</b></td>
+          <td class="exp">It opens this same card on your phone (the sandbox URL). This is the shelf-label promise: scan → story in any language.</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+
+        <!-- ============ SHARE ============ -->
+        <tr><td colspan="5"><h2 class="sec" style="margin:2px 0;">4 · Share — for a non-techy maker</h2></td></tr>
+        <tr class="step">
+          <td class="n">11</td>
+          <td><b>On your phone</b>, open a postcard and tap <b>📤 Share</b>.</td>
+          <td class="exp">The phone's <b>native share sheet</b> opens (WhatsApp, SMS, email — everything). No app to learn.</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr class="step big">
+          <td class="n">12</td>
+          <td><b>SMS the card to yourself</b> at <code>079 828 28 41</code> — the "send it to Cynthia" moment.</td>
+          <td class="exp">Text arrives with the card link + "show this card at checkout for a deal"; tapping opens the card.</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr class="step">
+          <td class="n">13</td>
+          <td>On <b>desktop</b> (no native share), tap Share.</td>
+          <td class="exp">Falls back to explicit WhatsApp / SMS / Email / Copy buttons — nothing dead-ends.</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+
+        <!-- ============ 4-UP SHEET ============ -->
+        <tr><td colspan="5"><h2 class="sec" style="margin:2px 0;">5 · 4-up print sheet (the Banksy beat)</h2></td></tr>
+        <tr class="step">
+          <td class="n">14</td>
+          <td>On a postcard, tap <b>🖨️ 4-up</b>.</td>
+          <td class="exp">One A4 page, <b>2×2 = four cards</b> (Format C: 3 mm frame, 6 mm gap, 99×142.5 mm).</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr class="step">
+          <td class="n">15</td>
+          <td>Check the <b>serials</b> under each QR.</td>
+          <td class="exp">Banksy serials <code>…-01/04 … 04/04</code> — same run code, four numbered cards (can't be photocopied blind).</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr class="step">
+          <td class="n">16</td>
+          <td><b>Print preview</b> the sheet (turn ON "background graphics").</td>
+          <td class="exp">Exactly <b>1 A4 page</b>, cut ticks at the edges, one ⬍ + one ⬌ cut = 4 clean cards. No blank 2nd page.</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+
+        <!-- ============ NO REGRESSION ============ -->
+        <tr><td colspan="5"><h2 class="sec" style="margin:2px 0;">6 · Nothing else broke</h2></td></tr>
+        <tr class="step">
+          <td class="n">17</td>
+          <td>Do a normal <b>sale</b> of any product (scan/add → checkout).</td>
+          <td class="exp">Checkout works as before; the till is unaffected by any of the above.</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+        <tr class="step">
+          <td class="n">18</td>
+          <td>Open a <b>non-Cynthia</b> product's postcard (any Artemis item).</td>
+          <td class="exp">Postcard maker works generically — this is a Felix feature for the whole catalog, not just her.</td>
+          <td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td>
+        </tr>
+
+      </tbody>
+    </table>
+
+    <div class="result">
+      <h3>Overall — is this the GO to promote to prod?</h3>
+      <label><input type="radio" name="overall"> ✅ PASS — promote the postcard maker + Mama Cynthia set to prod</label>
+      <label><input type="radio" name="overall"> ❌ FAIL — fix first (see notes)</label>
+      <div class="gate">Prod promotion = deploy the code (banco prod) <b>+</b> run <code>python scripts/import/mama_cynthia.py --env prod</code>
+        to seed her supplier + 7 balms. Backup gates prod; re-probe after restart (prove, don't assume).</div>
+      <div class="sig">
+        <span>Signature: <input class="txt" type="text"></span>
+        <span>Date: <input class="txt" type="text"></span>
+      </div>
+    </div>
+
+    <div class="polish">
+      <h3>✍️ Polish notes for the next batch (cosmetic — works ≠ perfect)</h3>
+      <p class="hint">The little things to make it <i>really</i> good before Felix sees it. Be specific (where + what).</p>
+      <ol>
+        <li><input class="txt" type="text" placeholder="e.g. <card> — <change>"></li>
+        <li><input class="txt" type="text"></li>
+        <li><input class="txt" type="text"></li>
+        <li><input class="txt" type="text"></li>
+        <li><input class="txt" type="text"></li>
+      </ol>
+    </div>
+  </div>
+
+  <footer>
+    <span>Confidential — Internal Use Only</span>
+    <span>TEST-PC1 · Rev 1 · Postcard Maker sandbox sign-off</span>
+  </footer>
+</div>
+
+</body>
+</html>
