@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ name }} · Postcard</title>
+{# Colour the whole card to the product's own colour (Mama Cynthia's balms are colour-coded). #}
+{% set _c = {
+  'violett':'#7c3aed','lila':'#7c3aed','purple':'#7c3aed',
+  'blau':'#2563eb','blue':'#2563eb','hellblau':'#38bdf8',
+  'grün':'#16a34a','gruen':'#16a34a','green':'#16a34a',
+  'gelb':'#ca8a04','yellow':'#ca8a04','gold':'#ca8a04',
+  'orange':'#ea580c','rot':'#dc2626','red':'#dc2626'
+} %}
+{% set accent = _c.get(colour, '#0d9488') %}
+<script src="/static/vendor/qrcode.min.js"></script>
+<style>
+  :root{ --accent:{{ accent }}; --ink:#1c1917; --mut:#78716c; --paper:#fbfaf7; --line:#e7e5e4; }
+  *{ box-sizing:border-box; } html,body{ margin:0; }
+  body{ font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;
+    background:#efece6; color:var(--ink); display:flex; flex-direction:column; align-items:center;
+    padding:22px 14px 60px; min-height:100vh; }
+  .toolbar{ width:100%; max-width:420px; display:flex; gap:10px; justify-content:space-between; align-items:center; margin-bottom:16px; }
+  .toolbar a, .toolbar button{ font-size:13px; border:1px solid var(--line); background:#fff; color:var(--ink);
+    border-radius:8px; padding:8px 14px; cursor:pointer; text-decoration:none; font-family:inherit; }
+  .toolbar .print{ background:var(--accent); color:#fff; border-color:var(--accent); font-weight:700; }
+  .lang{ color:var(--mut); font-size:12px; }
+  .lang a{ color:var(--mut); text-decoration:none; padding:0 3px; } .lang a.on{ color:var(--accent); font-weight:700; }
+
+  /* the postcard — A6-ish, prints one clean card */
+  .card{ width:100%; max-width:420px; background:var(--paper); border-radius:18px; overflow:hidden;
+    box-shadow:0 18px 50px rgba(0,0,0,.18); position:relative;
+    border-top:6px solid var(--accent); }
+  .card::before{ /* soft flower-of-life halo behind the hero */
+    content:''; position:absolute; top:-40px; left:50%; transform:translateX(-50%);
+    width:340px; height:340px; border-radius:50%;
+    background:radial-gradient(circle, {{ accent }}22 0%, transparent 62%); pointer-events:none; }
+  .hero{ position:relative; padding:26px 24px 8px; text-align:center; }
+  .hero img{ width:190px; height:190px; object-fit:contain; filter:drop-shadow(0 10px 22px rgba(0,0,0,.18)); }
+  .hero .noimg{ font-size:96px; }
+  .body{ padding:6px 26px 20px; text-align:center; position:relative; }
+  h1{ font-size:24px; margin:6px 0 2px; letter-spacing:.2px; text-wrap:balance; }
+  .tagline{ color:var(--accent); font-weight:700; font-size:13px; letter-spacing:.06em; text-transform:uppercase; }
+  .story{ color:#44403c; font-size:14.5px; line-height:1.62; margin:14px 4px 0; text-align:left; }
+  .machine{ display:inline-block; margin-top:8px; font-size:10.5px; color:var(--mut); }
+  .pricerow{ display:flex; align-items:center; justify-content:center; gap:10px; margin:18px 0 4px; }
+  .price{ font-size:30px; font-weight:800; color:var(--accent); font-variant-numeric:tabular-nums; }
+  .price small{ font-size:14px; font-weight:600; color:var(--mut); }
+  .maker{ font-size:13px; color:var(--mut); font-style:italic; margin-top:2px; }
+
+  .foot{ display:flex; align-items:center; gap:14px; border-top:1px dashed var(--line); margin:18px 22px 0; padding:16px 0 20px; }
+  #qr{ background:#fff; padding:6px; border-radius:10px; line-height:0; box-shadow:0 2px 8px rgba(0,0,0,.08); flex:none; }
+  .foot .meta{ flex:1; min-width:0; text-align:left; }
+  .foot .scan{ font-size:12px; color:var(--ink); font-weight:600; }
+  .foot .scan span{ color:var(--accent); }
+  .foot .serial{ font-size:10.5px; color:var(--mut); font-variant-numeric:tabular-nums; margin-top:3px; word-break:break-all; }
+  .brand{ text-align:center; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--mut);
+    padding:0 0 18px; margin-top:-4px; }
+  .brand b{ color:var(--accent); }
+
+  @media print{
+    @page{ size:A6 portrait; margin:8mm; }
+    body{ background:#fff; padding:0; } .toolbar{ display:none; }
+    .card{ box-shadow:none; border:1px solid var(--line); max-width:none; width:auto; }
+  }
+</style>
+</head>
+<body>
+  <div class="toolbar">
+    <a href="javascript:history.back()">← back</a>
+    <span class="lang">
+      <a href="?lang=de" class="{{ 'on' if lang=='de' else '' }}">DE</a>·<a href="?lang=en" class="{{ 'on' if lang=='en' else '' }}">EN</a>·<a href="?lang=fr" class="{{ 'on' if lang=='fr' else '' }}">FR</a>·<a href="?lang=it" class="{{ 'on' if lang=='it' else '' }}">IT</a>
+    </span>
+    <button class="print" onclick="window.print()">🖨️ Print / PDF</button>
+  </div>
+
+  <div class="card">
+    <div class="hero">
+      {% if image_url %}<img src="{{ image_url }}" alt="{{ name }}" onerror="this.style.display='none'">
+      {% else %}<div class="noimg">🧴</div>{% endif %}
+    </div>
+    <div class="body">
+      <h1>{{ name }}</h1>
+      {% if supplier %}<div class="tagline">Handgemacht · {{ supplier }}</div>{% endif %}
+      {% if description %}<p class="story">{{ description }}</p>{% endif %}
+      {% if provenance == 'machine' %}<span class="machine">🤖 übersetzt</span>{% endif %}
+      <div class="pricerow">
+        {% if price %}<span class="price">{{ currency }} {{ price }}</span>{% endif %}
+      </div>
+      {% if supplier %}<div class="maker">made with love — {{ supplier }}</div>{% endif %}
+    </div>
+
+    <div class="foot">
+      <div id="qr" title="Scan"></div>
+      <div class="meta">
+        <div class="scan">📷 <span>Scan mich</span> — und zeig die Karte beim Kauf.</div>
+        <div class="serial">Nr. {{ serial }}</div>
+      </div>
+    </div>
+    <div class="brand">Artemis Store · <b>Banco</b></div>
+  </div>
+
+  <script>
+    try {
+      new QRCode(document.getElementById('qr'), {
+        text: {{ share_url|tojson }}, width: 74, height: 74,
+        colorDark: '{{ accent }}', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M
+      });
+    } catch (e) { document.getElementById('qr').textContent = 'QR'; }
+  </script>
+</body>
+</html>

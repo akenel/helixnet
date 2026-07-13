@@ -275,8 +275,15 @@
                             </ul>
                         </div>
                     </template>
-                    <button x-show="user.isManager" @click="openEdit(detailProduct); detailProduct=null"
-                            class="btn-primary w-full mt-4">✏️ <span data-i18n="catalog.edit_this_product">Edit this product</span></button>
+                    <div class="flex gap-2 mt-4">
+                        <button x-show="user.isManager" @click="openEdit(detailProduct); detailProduct=null"
+                                class="btn-primary flex-1">✏️ <span data-i18n="catalog.edit_this_product">Edit this product</span></button>
+                        <!-- Postcard maker: any product → a beautiful shareable card in the current language -->
+                        <a :href="'/pos/products/' + (detailProduct?.id) + '/postcard?lang=' + (detailProduct?._descLang || window._posLang || 'de')"
+                           target="_blank" x-show="detailProduct?.id"
+                           class="flex-none inline-flex items-center gap-1 px-3 rounded-lg border-2 border-indigo-200 text-indigo-700 font-semibold hover:border-indigo-400 hover:bg-indigo-50"
+                           :title="t('catalog.make_postcard')">📇 <span data-i18n="catalog.postcard">Postcard</span></a>
+                    </div>
                 </div>
                 <div class="text-sm">
                     <h3 class="font-semibold text-gray-900 mb-2" data-i18n="catalog.details_heading">Details</h3>
@@ -294,9 +301,17 @@
                     </dl>
                     <template x-if="detailProduct?.description">
                         <div class="mt-4">
-                            <h3 class="font-semibold text-gray-900 mb-1">
+                            <h3 class="font-semibold text-gray-900 mb-1 flex items-center gap-2 flex-wrap">
                                 <span data-i18n="catalog.description_heading">Description</span>
-                                <span x-show="detailProduct?._descProvenance === 'machine'" class="ml-2 text-[11px] font-normal text-gray-400" title="machine-translated">🤖 <span data-i18n="catalog.auto_translated">auto-translated</span></span>
+                                <span x-show="detailProduct?._descProvenance === 'machine'" class="text-[11px] font-normal text-gray-400" title="machine-translated">🤖 <span data-i18n="catalog.auto_translated">auto-translated</span></span>
+                                <!-- Read the description in ANY language, whatever you're logged in as (Swiss polyglots + everyone else) -->
+                                <span class="ml-auto flex items-center gap-0.5 text-base leading-none">
+                                    <template x-for="fl in [['de','🇩🇪'],['en','🇬🇧'],['fr','🇫🇷'],['it','🇮🇹']]" :key="fl[0]">
+                                        <button type="button" @click="setDescLang(fl[0])" :title="fl[0].toUpperCase()"
+                                            :class="(detailProduct?._descLang || (window._posLang||'en')) === fl[0] ? 'ring-2 ring-indigo-400 rounded' : 'opacity-45 hover:opacity-100'"
+                                            class="px-0.5 rounded transition" x-text="fl[1]"></button>
+                                    </template>
+                                </span>
                             </h3>
                             <p class="text-gray-700" x-text="detailProduct?.description"></p>
                         </div>
@@ -1263,8 +1278,23 @@
                     if (d && d.description && this.detailProduct && this.detailProduct.id === id) {
                         this.detailProduct.description = d.description;
                         this.detailProduct._descProvenance = d.provenance;
+                        this.detailProduct._descLang = lang;
                     }
                 } catch (e) { /* keep the base description */ }
+            },
+            // Read this product's description in ANY language on demand (the four flags), no matter
+            // the signed-in language. Fills via BL-36 (Artemis-native or Ollama) and caches.
+            async setDescLang(lang) {
+                const id = this.detailProduct && this.detailProduct.id;
+                if (!id) return;
+                this.detailProduct._descLang = lang;   // highlight the flag immediately
+                try {
+                    const d = await API.get(`/api/v1/pos/products/${id}/i18n-description?lang=${encodeURIComponent(lang)}`);
+                    if (d && this.detailProduct && this.detailProduct.id === id && this.detailProduct._descLang === lang) {
+                        if (d.description) this.detailProduct.description = d.description;
+                        this.detailProduct._descProvenance = d.provenance;
+                    }
+                } catch (e) { showToast(t('catalog.snap_live_failed') || 'translate failed', 'error'); }
             },
 
             async openEdit(p) {

@@ -6211,6 +6211,50 @@ async def pos_catalog(request: Request):
     return templates.TemplateResponse("pos/catalog.html", {"request": request})
 
 
+@html_router.get("/pos/products/{product_id}/postcard", response_class=HTMLResponse, name="product_postcard")
+async def product_postcard(
+    product_id: str,
+    request: Request,
+    lang: str = "de",
+    db: AsyncSession = Depends(get_db_session),
+):
+    """The postcard maker: any product → a beautiful, printable, SHAREABLE card — its image,
+    story (in `lang`, via BL-36), price, maker, a QR to itself, and a serial that can't be
+    copied. Public by design (the whole point is to share it). The card themes to the product's
+    own colour when it carries one (Mama Cynthia's balms are colour-coded)."""
+    import hashlib
+    from src.db.models.product_model import ProductModel
+    from src.services.product_translations import ensure_description
+
+    product = await db.get(ProductModel, product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    desc = await ensure_description(db, product, lang)
+    attrs = product.attributes or {}
+    # A serial that's stable per product+revision and looks official — Angel's "can't be copied".
+    serial = product.sku + "-" + hashlib.sha1(
+        f"{product.sku}|{product.updated_at}".encode()).hexdigest()[:6].upper()
+    proto = request.headers.get("x-forwarded-proto", "https")
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host", "")
+    share_url = f"{proto}://{host}/pos/products/{product_id}/postcard"
+
+    return templates.TemplateResponse("pos/postcard.html", {
+        "request": request,
+        "name": product.name,
+        "description": desc.get("description") or product.description or "",
+        "provenance": desc.get("provenance"),
+        "price": f"{float(product.price):.2f}" if product.price is not None else None,
+        "currency": "CHF",
+        "image_url": product.image_url,
+        "supplier": product.supplier_name,
+        "colour": (attrs.get("colour") or "").lower(),
+        "serial": serial,
+        "share_url": share_url,
+        "lang": lang,
+    })
+
+
 @html_router.get("/pos/receiving", response_class=HTMLResponse, name="pos_receiving")
 async def pos_receiving(request: Request):
     """Receiving / goods-in (BL-91) — scan an item, type the count, stock goes up.
