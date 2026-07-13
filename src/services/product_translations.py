@@ -112,7 +112,15 @@ async def _translate_name(name: str, tgt_lang: str, src_lang: str = "en") -> str
     try:
         res = await run_llm(name, target=turbo_or_local("gpt-oss:120b"), system=system)
         out = (res.text or "").strip().strip('"').strip()
-        return out or None
+        if not out:
+            return None
+        # Guard: if the name was ALREADY in the target language, the model tends to just re-punctuate
+        # it ("Rips Kingsize" -> "Rips King-Size"). Compare alphanumerics only — if unchanged, it was
+        # NOT a real translation, so keep the original verbatim (return None → caller keeps the name).
+        norm = lambda s: "".join(ch for ch in s.lower() if ch.isalnum())
+        if norm(out) == norm(name):
+            return None
+        return out
     except Exception as e:  # noqa: BLE001
         log.warning("translate name ->%s failed: %s", tgt_lang, e)
         return None
