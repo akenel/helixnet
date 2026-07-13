@@ -96,36 +96,6 @@ async def _translate(text: str, tgt_lang: str, src_lang: str = "en") -> str | No
         return None
 
 
-async def _translate_name(name: str, tgt_lang: str, src_lang: str = "en") -> str | None:
-    """Translate a product NAME (e.g. Mama Cynthia's descriptive 'Kopfbalsam — mit Pfefferminze &
-    Hanf'). Keeps BRAND/proper names, units, and numbers unchanged so 'Motörhead Patch' stays put
-    while descriptive words translate. Prevents the 'German title, French description' split on a
-    shared postcard. Returns None on failure (caller keeps the source name)."""
-    from src.llm import run_llm, turbo_or_local
-    tgt = LANG_NAMES.get(tgt_lang, tgt_lang)
-    system = (
-        f"Translate the following retail PRODUCT NAME into {tgt}. Auto-detect the source language "
-        f"(it may differ from the product's description language). Translate the descriptive words; "
-        f"keep BRAND and proper names, units, and numbers unchanged. If the name is already in {tgt}, "
-        f"return it unchanged. Output ONLY the name — no quotes, no notes."
-    )
-    try:
-        res = await run_llm(name, target=turbo_or_local("gpt-oss:120b"), system=system)
-        out = (res.text or "").strip().strip('"').strip()
-        if not out:
-            return None
-        # Guard: if the name was ALREADY in the target language, the model tends to just re-punctuate
-        # it ("Rips Kingsize" -> "Rips King-Size"). Compare alphanumerics only — if unchanged, it was
-        # NOT a real translation, so keep the original verbatim (return None → caller keeps the name).
-        norm = lambda s: "".join(ch for ch in s.lower() if ch.isalnum())
-        if norm(out) == norm(name):
-            return None
-        return out
-    except Exception as e:  # noqa: BLE001
-        log.warning("translate name ->%s failed: %s", tgt_lang, e)
-        return None
-
-
 async def ensure_description(db, product, lang: str) -> dict:
     """Best description for `lang`, filling `product_translations` on demand.
 
@@ -137,21 +107,12 @@ async def ensure_description(db, product, lang: str) -> dict:
     )).scalars().all()
     existing = {t.lang: t for t in rows}
 
-    src_lang = _norm(product.source_lang or "en")
-
     hit = existing.get(lang)
     if hit and (hit.description or "").strip():
-        # Backfill a translated NAME if we never stored one (rows from before name-translation, or
-        # non-Tamar machine rows). Without this the title stays in the source language while the
-        # description is translated — the "German title / French body" split on a shared card.
-        if not (hit.name or "").strip() and lang != src_lang and (product.name or "").strip():
-            translated = await _translate_name(product.name, lang, src_lang)
-            if translated:
-                hit.name = translated
-                await db.commit()
         return {"lang": lang, "description": hit.description, "name": hit.name,
                 "provenance": hit.provenance}
 
+    src_lang = _norm(product.source_lang or "en")
     base = (product.description or "").strip()
     name = desc = None
     provenance = "machine"
@@ -164,15 +125,10 @@ async def ensure_description(db, product, lang: str) -> dict:
 
     if not desc and base:
         if lang == src_lang:
-            # Source language: keep the name EXACTLY as stored (don't let the LLM reword a native
-            # name on the card — "Rips Kingsize" must stay "Rips Kingsize"). Name only gets
-            # translated for the OTHER languages below, where a translated card is expected anyway.
             desc, provenance = base, "source"
         else:
             desc = await _translate(base, lang, src_lang)
             provenance = "machine"
-            if not name and (product.name or "").strip():
-                name = await _translate_name(product.name, lang, src_lang)
 
     if desc:
         if hit:
