@@ -46,10 +46,15 @@
   .card h2{ font-size:4.4mm; margin:1mm 4mm 0; text-align:center; line-height:1.15; text-wrap:balance; }
   .card .tag{ text-align:center; color:var(--accent); font-weight:700; font-size:2.6mm; letter-spacing:.04em; text-transform:uppercase; margin-top:.6mm; }
   .card .story{ color:#44403c; font-size:2.9mm; line-height:1.4; margin:2mm 5mm 0; text-align:left;
-    display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; }
+    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
   .card .price{ text-align:center; color:var(--accent); font-weight:800; font-size:6mm; margin-top:auto; padding-top:2mm; }
   .card .maker{ text-align:center; color:var(--mut); font-style:italic; font-size:2.6mm; margin-top:.4mm; }
-  .card .foot{ display:flex; align-items:center; gap:2.4mm; border-top:.3mm dashed var(--line); margin:2mm 4mm 0; padding:2mm 0 3mm; }
+  .card .foot{ display:flex; align-items:center; gap:2.4mm; border-top:.3mm dashed var(--line); margin:2mm 4mm 0; padding:1.6mm 0 1.4mm; }
+  /* compact store close on each cut card (QR carries hours/directions; keep name + phone) */
+  .card .storefoot{ border-top:.4mm solid #8B0000; margin:0 4mm; padding:1.2mm 0 2mm; text-align:center; }
+  .card .storefoot .pickup{ display:block; font-size:2.3mm; font-weight:800; color:#8B0000; text-transform:uppercase; letter-spacing:.02em; line-height:1.15; }
+  .card .storefoot .sline{ display:block; font-size:2.3mm; color:var(--mut); margin-top:.5mm; line-height:1.15; }
+  .card .storefoot .sline b{ color:#8B0000; }
   .card .qr{ background:#fff; padding:.8mm; border-radius:1.4mm; line-height:0; flex:none; }
   .card .meta{ flex:1; min-width:0; }
   .card .scan{ font-size:2.5mm; font-weight:700; color:var(--ink); }
@@ -93,6 +98,12 @@
             <div class="serial">Nr. {{ c.serial }}</div>
           </div>
         </div>
+        {% if store %}
+        <div class="storefoot">
+          <span class="pickup">🛍️ {{ {'de':'Heute abholen — solange Vorrat reicht','fr':'À retirer aujourd’hui','it':'Ritira oggi — fino a esaurimento'}.get(lang,'Pick up today — while supplies last') }}</span>
+          <span class="sline">{{ store.name }}{% if store.phone %} · <b>{{ store.phone }}</b>{% endif %}</span>
+        </div>
+        {% endif %}
       </div>
       {% endfor %}
     </div>

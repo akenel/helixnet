@@ -6395,6 +6395,7 @@ async def product_postcard_sheet(
     code = await ensure_short_code(db, product_id)        # short QR → scannable printed small
     qr_url = f"{origin}/p/{code}?lang={lang}" if code else share_url   # carry lang through the QR
     cards = [{"n": i, "serial": f"{product.sku}·{base_serial}·{run}-{i:02d}/04"} for i in range(1, 5)]
+    store_ctx = _postcard_store_footer(await get_active_store_settings(db), origin)
 
     return templates.TemplateResponse("pos/postcard-sheet.html", {
         "request": request,
@@ -6409,6 +6410,7 @@ async def product_postcard_sheet(
         "qr_url": qr_url,
         "lang": lang,
         "cards": cards,
+        "store": store_ctx,
     })
 
 
