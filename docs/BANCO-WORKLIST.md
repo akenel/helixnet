@@ -10,7 +10,18 @@
 
 ---
 
-## 🃏 ON DECK — 2026-07-13 · 📇 POSTCARD MAKER ✅ SHIPPED PROD · next = LABEL DESIGN (manager-gated)
+## 🃏 ON DECK — next round = 🧪 HC TESTING FIRST (Angel drives, reports to Tigs)
+
+**▶ TOP / START HERE: run HC-PROD-01 on prod.** Open `docs/testing/banco/BANCO-PROD-HYPERCARE-SHEET.html`,
+run it against `https://banco.lapiazza.app` (desktop till), and report rows + PASS/FAIL to Tigs. This is
+the first actionable item next session — Tigs: state it and wait for Angel's results, triage from there.
+- Covers the 2026-07-13 prod ship: postcards on any product, Cynthia's 7 balms, share-in-language, short-QR, 4-up, one-page print.
+- Mobile note: login self-heals as the stale service worker updates (v99); if a phone is still stuck, clear site data / incognito once.
+- After HC: pick up the queued items below (label maker waits for the printer ~end-July).
+
+---
+
+## ✅ SHIPPED PROD 2026-07-13 · next build = LABEL DESIGN (manager-gated, waits for printer)
 
 **✅ POSTCARD MAKER SHIPPED PROD 2026-07-13 (`ad22a0f`, b1728).** Backup-gated (`banco_prod-prepostcardmaker`), re-probed on a REAL Felix product: any product → shareable card, OG unfurl, short-QR `/p/{code}` (low-density, scannable small), trackable scan count, share-in-chosen-language. Works across Felix's whole live catalog. TEST-PC1 = Angel-signed ("platinum gold"). Sandbox-proven: single card + 4-up Format-C sheet + 4-flag desc picker + search-by-supplier + juiced EN-source/authentic-DE + one-page print.
 
