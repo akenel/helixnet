@@ -4,6 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{ name }} · Postcard</title>
+{# Open Graph + Twitter Card — the rich preview WhatsApp / iMessage / Telegram / email unfurl.
+   Without these a shared link is a bare URL; with them it's the photo, name + story. #}
+<meta property="og:type" content="product">
+<meta property="og:site_name" content="Artemis Store · Banco">
+<meta property="og:title" content="{{ name }}{% if supplier %} — {{ supplier }}{% endif %}">
+{% if og_description %}<meta property="og:description" content="{{ og_description }}">{% endif %}
+<meta property="og:url" content="{{ share_url }}">
+{% if og_image %}<meta property="og:image" content="{{ og_image }}">
+<meta property="og:image:alt" content="{{ name }}">
+<meta name="twitter:image" content="{{ og_image }}">{% endif %}
+{% if price %}<meta property="product:price:amount" content="{{ price }}">
+<meta property="product:price:currency" content="{{ currency }}">{% endif %}
+<meta name="twitter:card" content="{{ 'summary_large_image' if og_image else 'summary' }}">
+<meta name="twitter:title" content="{{ name }}{% if supplier %} — {{ supplier }}{% endif %}">
+{% if og_description %}<meta name="twitter:description" content="{{ og_description }}">{% endif %}
 {# Colour the whole card to the product's own colour (Mama Cynthia's balms are colour-coded). #}
 {% set _c = {
   'violett':'#7c3aed','lila':'#7c3aed','purple':'#7c3aed',

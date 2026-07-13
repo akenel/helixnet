@@ -6237,7 +6237,18 @@ async def product_postcard(
         f"{product.sku}|{product.updated_at}".encode()).hexdigest()[:6].upper()
     proto = request.headers.get("x-forwarded-proto", "https")
     host = request.headers.get("x-forwarded-host") or request.headers.get("host", "")
-    share_url = f"{proto}://{host}/pos/products/{product_id}/postcard"
+    origin = f"{proto}://{host}"
+    share_url = f"{origin}/pos/products/{product_id}/postcard"
+
+    # og:image must be an ABSOLUTE, publicly-fetchable URL — the WhatsApp/iMessage/Telegram
+    # scraper fetches it server-side to build the rich share preview. Mama Cynthia's photos are
+    # already absolute (hotlinked from her site); Banco-hosted images get the origin prefixed.
+    img = product.image_url or ""
+    if img and not img.startswith(("http://", "https://")):
+        img = origin + (img if img.startswith("/") else "/" + img)
+    og_image = img or None
+    body = (desc.get("description") or product.description or "").strip()
+    og_description = (body[:277] + "…") if len(body) > 280 else body
 
     return templates.TemplateResponse("pos/postcard.html", {
         "request": request,
@@ -6252,6 +6263,8 @@ async def product_postcard(
         "serial": serial,
         "share_url": share_url,
         "lang": lang,
+        "og_image": og_image,
+        "og_description": og_description,
     })
 
 
