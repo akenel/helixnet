@@ -1,8 +1,11 @@
 <!DOCTYPE html>
-<html lang="{{ lang }}">
+<html lang="{{ lang }}" translate="no">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- The card is ALREADY in the language the viewer picked — tell Chrome/Google not to
+     auto-translate it back to the phone's language (mobile Google Translate override). -->
+<meta name="google" content="notranslate">
 <title>{{ name }} · Postcard</title>
 {# Open Graph + Twitter Card — the rich preview WhatsApp / iMessage / Telegram / email unfurl.
    Without these a shared link is a bare URL; with them it's the photo, name + story. #}

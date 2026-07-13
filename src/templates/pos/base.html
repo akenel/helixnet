@@ -1,8 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" translate="no">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <!-- The app has its OWN language picker (pos-i18n) — tell Chrome/Google NOT to auto-translate,
+         or mobile "translate to English" stomps on the language the user actually chose. -->
+    <meta name="google" content="notranslate">
     <title>{% block title %}HelixPOS{% endblock %} - Artemis Store</title>
 
     <!-- PWA (Phase 0): installable, standalone, phone-first. Service worker registered below. -->
