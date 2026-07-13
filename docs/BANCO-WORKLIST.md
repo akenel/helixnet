@@ -32,6 +32,10 @@ prod (build stamp b1740 + separate-lanes/safety-floor markers present in the run
 suppression gone). **Manager cap set to 70 on all 3 envs** (cashier 15 / manager 70 / owner 100). Sandbox
 human-green (Angel: fat-finger target auto-clamps at checkout, "this is perfect"). 7/7 stacking tests +
 1856 in-container (3 known-flaky).
+- **✅ PROD HUMAN-GREEN 2026-07-13 20:05** — Angel ran **DISC-PROD-01** on the live till: 9/10 ✓ (row 7
+  George-Clooney-solo covered by row 5), overall "good on prod". Report committed + tied to the SHA:
+  `docs/testing/reports/prod/disc-prod-01-2026-07-13-85ee89a.pdf` (build stamp in-doc + in the filename).
+  **Convention set: a filled prod report lands in `reports/prod/` named `<id>-<date>-<sha>.pdf` — self-tying to the code it validated.**
 
 - **Two lanes, two pockets:** member TIER = the shop's loyalty promise, automatic, ALWAYS applies, stacks on
   top, UNCAPPED by role. Cashier MANUAL = discretion / rounding room, bounded by a per-role **fat-finger cap:
