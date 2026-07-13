@@ -16,7 +16,7 @@ import re
 from urllib.parse import urlparse
 
 import httpx
-from sqlalchemy import select
+from sqlalchemy import delete, select
 
 from src.db.models.product_model import ProductTranslationModel
 
@@ -94,6 +94,23 @@ async def _translate(text: str, tgt_lang: str, src_lang: str = "en") -> str | No
     except Exception as e:  # noqa: BLE001
         log.warning("translate ->%s failed: %s", tgt_lang, e)
         return None
+
+
+async def invalidate_translations(db, product_id) -> int:
+    """Drop the cached per-language skins for a product so ``ensure_description`` refills
+    them from the CURRENT base text on the next view.
+
+    Call this whenever the base name/description changes. The stored translations are
+    DERIVED text — machine-translated (or fetched) from the base at first view — and go
+    stale silently otherwise: a manager rewrites a description, but the postcard keeps
+    serving the old wording because ``ensure_description`` returns the first stored hit
+    forever. Clearing the rows is cheap (they refill on demand, only for the languages
+    actually viewed) and needs no schema change. Returns the number of rows cleared."""
+    res = await db.execute(
+        delete(ProductTranslationModel).where(ProductTranslationModel.product_id == product_id)
+    )
+    await db.commit()
+    return res.rowcount or 0
 
 
 async def ensure_description(db, product, lang: str) -> dict:

@@ -1047,8 +1047,18 @@ async def update_product(
             update_data["price_tiers"] = validate_price_tiers(update_data["price_tiers"], tier_mode)
         except ValueError as e:
             raise HTTPException(status_code=422, detail=f"Invalid price tiers: {e}")
+
+    # Snapshot the text fields that DRIVE the translation cache before we overwrite them.
+    # If a manager rewrites the name/description, the cached per-language skins
+    # (product_translations) are now derived from stale text — the postcard would keep
+    # serving the old translated wording. We compare after the setattr loop and, if either
+    # changed, invalidate the cache so ensure_description regenerates on next view.
+    _text_before = (product.name, product.description)
+
     for field, value in update_data.items():
         setattr(product, field, value)
+
+    _text_changed = (product.name, product.description) != _text_before
 
     # If this edit touched the 18+ toggle or the class, reconcile them so product_class (which
     # the checkout gate reads) and the is_age_restricted flag can never drift — a manager flipping
@@ -1068,6 +1078,14 @@ async def update_product(
             detail="A product with this barcode or SKU already exists.",
         )
     await db.refresh(product)
+
+    # A rewritten name/description makes the cached translations stale — clear them so the
+    # postcard and multilingual views regenerate from the new base text (BL: stale-translation fix).
+    if _text_changed:
+        from src.services.product_translations import invalidate_translations
+        cleared = await invalidate_translations(db, product.id)
+        if cleared:
+            logger.info(f"Cleared {cleared} stale translation(s) for {product.sku} after text edit")
 
     logger.info(f"Product updated: {product.sku} by user {current_user['username']}")
     return product
