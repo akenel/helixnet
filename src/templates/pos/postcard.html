@@ -74,9 +74,26 @@
   .brand b{ color:var(--accent); }
 
   @media print{
-    @page{ size:A6 portrait; margin:8mm; }
-    body{ background:#fff; padding:0; } .toolbar{ display:none; }
-    .card{ box-shadow:none; border:1px solid var(--line); max-width:none; width:auto; }
+    /* ONE A6 page — the screen card is tall, so shrink internals to mm and keep it whole. */
+    @page{ size:A6 portrait; margin:5mm; }
+    html,body{ margin:0; min-height:0; }
+    body{ background:#fff; padding:0; display:block; }
+    .toolbar, .share{ display:none !important; }
+    .card{ box-shadow:none; border:none; border-radius:0; max-width:100%; width:100%;
+      page-break-inside:avoid; break-inside:avoid; }
+    .card::before{ display:none; }
+    .hero{ padding:4mm 5mm 1mm; } .hero img{ width:36mm; height:36mm; }
+    .body{ padding:1mm 6mm 2mm; }
+    h1{ font-size:15pt; margin:2mm 0 1mm; }
+    .tagline{ font-size:8pt; }
+    .story{ font-size:9.5pt; line-height:1.36; margin:2mm 2mm 0;
+      display:-webkit-box; -webkit-line-clamp:7; -webkit-box-orient:vertical; overflow:hidden; }
+    .machine{ display:none; }
+    .pricerow{ margin:3mm 0 1mm; } .price{ font-size:18pt; }
+    .maker{ font-size:8pt; }
+    .foot{ margin:3mm 5mm 0; padding:3mm 0 2mm; }
+    .foot .scan{ font-size:8pt; } .foot .serial{ font-size:7pt; }
+    .brand{ font-size:7pt; padding-bottom:1mm; margin-top:-1mm; }
   }
 </style>
 </head>
