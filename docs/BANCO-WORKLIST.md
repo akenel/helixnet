@@ -10,7 +10,11 @@
 
 ---
 
-## 🃏 ON DECK — 2026-07-13 · BL-38 MULTILINGUAL SUPPLIER QUERY ← START HERE (BL-36/37 ✅ PROD · BL-39 KC login themes ✅ LIVE)
+## 🃏 ON DECK — 2026-07-13 · FOLLOW-UPS (BL-36/37/38 ✅ PROD · BL-39 KC login ✅ LIVE) ← PICK NEXT
+
+**Candidates (pick one):** 💱 currency conversion (memory `banco-currency-conversion-plan`) · 🌍 NL/ES/PL chrome (rerun the BL-37 batch-translate) · French category labels (POS_CATEGORY_LABELS, ~5 min) · BL-36 fill-at-adopt + backfill script · Hemag login-suppliers (stored creds) · reconcile BorrowHood remote divergence + push theme source.
+
+**BL-38 — MULTILINGUAL SUPPLIER QUERY ✅ SHIPPED PROD 2026-07-13 (`05bfcd0`).** Live search auto-translates the query to German (Ollama, cached, keeps loanwords) so English/French terms hit the German sites; Tamar queries languageId 3+2; per-adapter variant expansion (multilingual sites skip it) + split fetch budget to stay snappy. Proven prod: "lighter gas"→"Butan"→German butane products. Picker shows "· also searched X".
 
 **BL-37 — FRENCH UI CHROME ✅ SHIPPED PROD 2026-07-13 (`a7239a2`).** 1,513 strings Ollama-batch-translated (0 fallbacks, placeholders+brands preserved, en/fr/it/de parity). NL/ES/PL = same move on request.**|OLD:** BL-36 descriptions work in
 FR (Angel validated: *"Patch brodé Motörhead… idéal pour décorer vestes, sacs…"* + 🤖 badge). Now flip
