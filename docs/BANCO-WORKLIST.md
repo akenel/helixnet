@@ -12,7 +12,9 @@
 
 ## 🃏 ON DECK — 2026-07-13 · FOLLOW-UPS (BL-36/37/38 ✅ PROD · BL-39 KC login ✅ LIVE) ← PICK NEXT
 
-**Candidates (pick one):** 💱 currency conversion (memory `banco-currency-conversion-plan`) · 🌍 NL/ES/PL chrome (rerun the BL-37 batch-translate) · French category labels (POS_CATEGORY_LABELS, ~5 min) · BL-36 fill-at-adopt + backfill script · Hemag login-suppliers (stored creds) · reconcile BorrowHood remote divergence + push theme source.
+**✅ DONE 2026-07-13 (`a459d65`, prod):** 💱 currency conversion (Near Dark EUR → ≈ CHF, plan rates, `store_settings.fx_rates` per-tenant) · 🏷️ French category labels (53 entries, fr/it/de parity) · 🔧 BH reconcile (theme source pushed to origin branch `banco-kc-login-themes`; Angel's working tree untouched; full main-merge = clean-tree follow-up).
+
+**Candidates (pick next):** 🌍 NL/ES/PL chrome (rerun BL-37 batch-translate) · 💱 currency SETTINGS UI + more pairs (rates editable in-app, not just DB) · BL-36 fill-at-adopt + backfill script · Hemag login-suppliers (stored creds) · compare-panel role split (Your cost vs The market).
 
 **BL-38 — MULTILINGUAL SUPPLIER QUERY ✅ SHIPPED PROD 2026-07-13 (`05bfcd0`).** Live search auto-translates the query to German (Ollama, cached, keeps loanwords) so English/French terms hit the German sites; Tamar queries languageId 3+2; per-adapter variant expansion (multilingual sites skip it) + split fetch budget to stay snappy. Proven prod: "lighter gas"→"Butan"→German butane products. Picker shows "· also searched X".
 
