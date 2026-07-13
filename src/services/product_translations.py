@@ -102,10 +102,12 @@ async def _translate_name(name: str, tgt_lang: str, src_lang: str = "en") -> str
     while descriptive words translate. Prevents the 'German title, French description' split on a
     shared postcard. Returns None on failure (caller keeps the source name)."""
     from src.llm import run_llm, turbo_or_local
+    tgt = LANG_NAMES.get(tgt_lang, tgt_lang)
     system = (
-        f"You translate short retail PRODUCT NAMES from {LANG_NAMES.get(src_lang, src_lang)} to "
-        f"{LANG_NAMES.get(tgt_lang, tgt_lang)}. Translate the descriptive words; keep BRAND and proper "
-        f"names, units, and numbers unchanged. Output ONLY the translated name — no quotes, no notes."
+        f"Translate the following retail PRODUCT NAME into {tgt}. Auto-detect the source language "
+        f"(it may differ from the product's description language). Translate the descriptive words; "
+        f"keep BRAND and proper names, units, and numbers unchanged. If the name is already in {tgt}, "
+        f"return it unchanged. Output ONLY the name — no quotes, no notes."
     )
     try:
         res = await run_llm(name, target=turbo_or_local("gpt-oss:120b"), system=system)
@@ -155,6 +157,11 @@ async def ensure_description(db, product, lang: str) -> dict:
     if not desc and base:
         if lang == src_lang:
             desc, provenance = base, "source"
+            # The description is native to `lang`, but the NAME may be in another language (Mama
+            # Cynthia: German name, English-source description). Translate the name so an EN card
+            # doesn't title in German. Auto-detect handles the name/description language mismatch.
+            if not name and (product.name or "").strip():
+                name = await _translate_name(product.name, lang, src_lang)
         else:
             desc = await _translate(base, lang, src_lang)
             provenance = "machine"
