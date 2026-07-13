@@ -6255,6 +6255,50 @@ async def product_postcard(
     })
 
 
+@html_router.get("/pos/products/{product_id}/postcard-sheet", response_class=HTMLResponse, name="product_postcard_sheet")
+async def product_postcard_sheet(
+    product_id: str,
+    request: Request,
+    lang: str = "de",
+    db: AsyncSession = Depends(get_db_session),
+):
+    """4-UP print sheet (Angel's Format C standard): four of the product's postcard on one A4,
+    cut marks + a Banksy-beat serial per card (01/04 … 04/04, each tied to a per-sheet run id so
+    no two prints are ever the same — provenance, not surveillance). One horizontal + one
+    vertical cut = four cards."""
+    import hashlib
+    import secrets
+    from src.db.models.product_model import ProductModel
+    from src.services.product_translations import ensure_description
+
+    product = await db.get(ProductModel, product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    desc = await ensure_description(db, product, lang)
+    attrs = product.attributes or {}
+    run = secrets.token_hex(2).upper()                    # per-sheet run id (Banksy provenance)
+    base_serial = hashlib.sha1(f"{product.sku}|{product.updated_at}".encode()).hexdigest()[:4].upper()
+    proto = request.headers.get("x-forwarded-proto", "https")
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host", "")
+    share_url = f"{proto}://{host}/pos/products/{product_id}/postcard"
+    cards = [{"n": i, "serial": f"{product.sku}·{base_serial}·{run}-{i:02d}/04"} for i in range(1, 5)]
+
+    return templates.TemplateResponse("pos/postcard-sheet.html", {
+        "request": request,
+        "name": product.name,
+        "description": desc.get("description") or product.description or "",
+        "price": f"{float(product.price):.2f}" if product.price is not None else None,
+        "currency": "CHF",
+        "image_url": product.image_url,
+        "supplier": product.supplier_name,
+        "colour": (attrs.get("colour") or "").lower(),
+        "share_url": share_url,
+        "lang": lang,
+        "cards": cards,
+    })
+
+
 @html_router.get("/pos/receiving", response_class=HTMLResponse, name="pos_receiving")
 async def pos_receiving(request: Request):
     """Receiving / goods-in (BL-91) — scan an item, type the count, stock goes up.

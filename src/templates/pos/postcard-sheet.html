@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ name }} · 4-up sheet</title>
+{% set _c = {
+  'violett':'#7c3aed','lila':'#7c3aed','purple':'#7c3aed',
+  'blau':'#2563eb','blue':'#2563eb','hellblau':'#38bdf8',
+  'grün':'#16a34a','gruen':'#16a34a','green':'#16a34a',
+  'gelb':'#ca8a04','yellow':'#ca8a04','gold':'#ca8a04',
+  'orange':'#ea580c','rot':'#dc2626','red':'#dc2626'
+} %}
+{% set accent = _c.get(colour, '#0d9488') %}
+<script src="/static/vendor/qrcode.min.js"></script>
+<style>
+  :root{ --accent:{{ accent }}; --ink:#1c1917; --mut:#78716c; --paper:#fbfaf7; --line:#e7e5e4; }
+  *{ box-sizing:border-box; } html,body{ margin:0; }
+  body{ font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;
+    background:#d8d5cf; color:var(--ink); display:flex; flex-direction:column; align-items:center; padding:16px 10px 40px; }
+  .toolbar{ width:210mm; max-width:96vw; display:flex; gap:10px; justify-content:space-between; align-items:center; margin-bottom:14px; }
+  .toolbar .print{ background:var(--accent); color:#fff; border:none; border-radius:8px; padding:10px 18px; font-weight:800; cursor:pointer; font-size:14px; font-family:inherit; }
+  .toolbar a, .toolbar .note{ font-size:12.5px; color:#3f3f46; text-decoration:none; }
+  .toolbar .note{ color:var(--mut); }
+
+  /* A4 portrait sheet — Format C: 3mm frame, 6mm gap, 2x2 of 99 x 142.5mm cards */
+  .sheet{ width:210mm; height:297mm; background:#fff; position:relative;
+    padding:3mm; box-shadow:0 10px 40px rgba(0,0,0,.25); }
+  .grid{ display:grid; grid-template-columns:99mm 99mm; grid-template-rows:142.5mm 142.5mm;
+    gap:6mm; width:100%; height:100%; }
+
+  /* cut guides — ticks at the sheet edges pointing to the single H + V centre cuts */
+  .cut{ position:absolute; background:#111; opacity:.5; }
+  .cut.v{ width:.3mm; height:3mm; left:calc(50% - .15mm); }
+  .cut.v.top{ top:0; } .cut.v.bot{ bottom:0; }
+  .cut.h{ height:.3mm; width:3mm; top:calc(50% - .15mm); }
+  .cut.h.left{ left:0; } .cut.h.right{ right:0; }
+
+  /* one card */
+  .card{ background:var(--paper); border:.3mm solid var(--line); border-top:2mm solid var(--accent);
+    border-radius:3mm; overflow:hidden; position:relative; display:flex; flex-direction:column; }
+  .card .img{ text-align:center; padding:5mm 4mm 1mm; }
+  .card .img img{ width:34mm; height:34mm; object-fit:contain; }
+  .card .img .noimg{ font-size:30mm; line-height:1; }
+  .card h2{ font-size:4.4mm; margin:1mm 4mm 0; text-align:center; line-height:1.15; text-wrap:balance; }
+  .card .tag{ text-align:center; color:var(--accent); font-weight:700; font-size:2.6mm; letter-spacing:.04em; text-transform:uppercase; margin-top:.6mm; }
+  .card .story{ color:#44403c; font-size:2.9mm; line-height:1.4; margin:2mm 5mm 0; text-align:left;
+    display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; }
+  .card .price{ text-align:center; color:var(--accent); font-weight:800; font-size:6mm; margin-top:auto; padding-top:2mm; }
+  .card .maker{ text-align:center; color:var(--mut); font-style:italic; font-size:2.6mm; margin-top:.4mm; }
+  .card .foot{ display:flex; align-items:center; gap:2.4mm; border-top:.3mm dashed var(--line); margin:2mm 4mm 0; padding:2mm 0 3mm; }
+  .card .qr{ background:#fff; padding:.8mm; border-radius:1.4mm; line-height:0; flex:none; }
+  .card .meta{ flex:1; min-width:0; }
+  .card .scan{ font-size:2.5mm; font-weight:700; color:var(--ink); }
+  .card .scan span{ color:var(--accent); }
+  .card .serial{ font-size:2.2mm; color:var(--mut); font-variant-numeric:tabular-nums; margin-top:.4mm; word-break:break-all; }
+
+  @media print{
+    @page{ size:A4 portrait; margin:0; }
+    body{ background:#fff; padding:0; } .toolbar{ display:none; }
+    .sheet{ box-shadow:none; margin:0; }
+    html,body{ width:210mm; height:297mm; }
+  }
+  @media screen{ .sheet{ transform-origin:top center; } }
+</style>
+</head>
+<body>
+  <div class="toolbar">
+    <a href="/pos/products/{{ request.path_params.product_id }}/postcard?lang={{ lang }}">← single card</a>
+    <span class="note">Format C · 4-up A4 · one ⬍ + one ⬌ cut = four cards · turn ON “background graphics”</span>
+    <button class="print" onclick="window.print()">🖨️ Print sheet</button>
+  </div>
+
+  <div class="sheet">
+    <span class="cut v top"></span><span class="cut v bot"></span>
+    <span class="cut h left"></span><span class="cut h right"></span>
+    <div class="grid">
+      {% for c in cards %}
+      <div class="card">
+        <div class="img">
+          {% if image_url %}<img src="{{ image_url }}" alt="" onerror="this.style.display='none'">{% else %}<div class="noimg">🧴</div>{% endif %}
+        </div>
+        <h2>{{ name }}</h2>
+        {% if supplier %}<div class="tag">Handgemacht · {{ supplier }}</div>{% endif %}
+        {% if description %}<p class="story">{{ description }}</p>{% endif %}
+        {% if price %}<div class="price">{{ currency }} {{ price }}</div>{% endif %}
+        {% if supplier %}<div class="maker">made with love — {{ supplier }}</div>{% endif %}
+        <div class="foot">
+          <div class="qr" id="qr{{ c.n }}"></div>
+          <div class="meta">
+            <div class="scan">📷 <span>Scan mich</span> — zeig die Karte beim Kauf.</div>
+            <div class="serial">Nr. {{ c.serial }}</div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <script>
+    var url = {{ share_url|tojson }};
+    for (var i = 1; i <= 4; i++) {
+      try { new QRCode(document.getElementById('qr' + i), {
+        text: url, width: 42, height: 42, colorDark: '{{ accent }}', colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M }); } catch(e){}
+    }
+  </script>
+</body>
+</html>

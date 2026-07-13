@@ -71,6 +71,7 @@
     <span class="lang">
       <a href="?lang=de" class="{{ 'on' if lang=='de' else '' }}">DE</a>·<a href="?lang=en" class="{{ 'on' if lang=='en' else '' }}">EN</a>·<a href="?lang=fr" class="{{ 'on' if lang=='fr' else '' }}">FR</a>·<a href="?lang=it" class="{{ 'on' if lang=='it' else '' }}">IT</a>
     </span>
+    <a class="sheet" href="/pos/products/{{ request.path_params.product_id }}/postcard-sheet?lang={{ lang }}">🖨️ 4-up</a>
     <button class="print" onclick="window.print()">🖨️ Print / PDF</button>
   </div>
 
