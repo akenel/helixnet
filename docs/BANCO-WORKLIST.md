@@ -10,18 +10,25 @@
 
 ---
 
-## 🃏 ON DECK — NEXT BUILD = 🧶 ECOLUTION SUPPLIER ONBOARDING (sandbox) · spec written
+## 🃏 ON DECK — 🧶 ECOLUTION SUPPLIER ONBOARDING (sandbox) · IN FLIGHT · 4 maker-flow fixes SHIPPED PROD
 
-**▶ TOP / START HERE (next working session): the Ecolution onboarding build.** Full spec:
-**[docs/BANCO-ECOLUTION-ONBOARDING-SPEC.md](BANCO-ECOLUTION-ONBOARDING-SPEC.md)** · store facts in memory
-`banco-ecolution-sylvie-supplier`. Angel plays **manager Ralph** receiving a simulated delivery from **Sylvie
-(Ecolution, her Etsy shop)** and enters the goods himself ("here's a box, figure it out"). **Sandbox ONLY,
-manual-first.** Working method: Angel copy-pastes the Etsy item info → Tigs sets up the item → Angel adds pics →
-postcard renders perfectly. Pilot = the Merino-felt **glasses case** (start with ONE colour, gray).
-- **Open design Qs to hit fresh:** supplier-create UI · Etsy as a SOURCE-TYPE · **variants/colours** (a display
-  box = an assortment, ~8 colours — model it right) · receiving a no-EAN new product · wholesale→margin. Detail in the spec.
+**✅ 2026-07-13 — Ecolution onboarding proved END-TO-END in sandbox** (Angel=Ralph): created supplier
+**ECO · Ecolution — Sylvie Thiel** (manual, wholesale), received 2 no-EAN items (glasses case + card wallet),
+clean SKUs, postcards render in 4 languages with the maker story + QR + store footer. **Trade discount = 30% OFF
+RETAIL** (not 50% — protects Sylvie's margin); shelf = her Etsy price, cost = retail×0.70. The drive surfaced +
+shipped **4 fixes sandbox→staging→prod** (backup-gated, live-request re-probed, tag `verified/ecolution-maker-2026-07-13`→68ee69c, b1752):
+1. **stale-translation** — editing a description now clears the cached per-lang skins (was: postcard served old text)
+2. **barcode-box trap** — a NAME can't become the barcode/immutable SKU (client guard + server backstop, all create paths)
+3. **postcard German** — all card chrome localized (Scan me / Handmade / made with love) on card + 4-up sheet
+4. **store footer** — pickup CTA + store name/hours/address/phone/logo from `store_settings` (prod = "Artemis Lucerne")
+
+**▶ REMAINING Ecolution work (next session):** curate more pilot items + real photos · the **variants/colours**
+question (a display box = ~8-colour assortment — model it) · **per-supplier `trade_discount_%` config** so receiving
+auto-fills cost from retail (banked seam) · supplier-prefixed auto-SKU (`ECO-####`) · get Sylvie's wholesale list.
+Spec: **[docs/BANCO-ECOLUTION-ONBOARDING-SPEC.md](BANCO-ECOLUTION-ONBOARDING-SPEC.md)** · memory `banco-ecolution-sylvie-supplier`.
 - **Real-world parallel (2026-07-14 AM):** Angel's at Felix's shop in Littau — Felix demo (walk DISC-PROD-01 on
-  the phone) + help cover + the new-hire onboarding (kid starts Thu; self-drive kit ONBOARD-KIT-01 is ready).
+  the phone) + help cover + the new-hire onboarding (kid starts Thu; self-drive kit ONBOARD-KIT-01 is ready). The
+  barcode-trap fix now protects that new hire on the live till.
 
 ## ✅ 2026-07-13 SHIPPED — discount SEPARATE-LANES (prod-green, tagged) · Test Library BUILT · onboarding kit ready
 
