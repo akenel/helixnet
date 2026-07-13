@@ -25,43 +25,81 @@ HETZNER = "root@46.62.138.218"
 DB_FOR = {"sandbox": "banco_sandbox", "staging": "banco_staging", "prod": "banco_prod"}
 IMG_BASE = "https://www.mama-cynthia.ch/incms_files/filebrowser/cache"
 
-# name / price / German subtitle+description / colour / label-image / scent-ingredients
+# One dict per balm. `en` = the juiced SOURCE description (English is the hub — every other
+# language flows from it); `de` = her own authentic German (seeded as a 'source' translation so
+# German customers get her real voice, not a back-translation). Both are GROUNDED in her card +
+# her website (benefits + Zusammensetzung/ingredients + 30 ml + handmade in CH) — nothing invented.
 CREAMS = [
-    ("MC-LAVENDEL", "Lavendelsalbe", 30.0, "violett",
-     "beruhigend & entspannend",
-     "Für die tägliche Anwendung. Beruhigt und entspannt Körper & Geist. Auch als Gesichtspflege geeignet.",
-     "Lavendel",
-     "Etikette_Lavendelsalbe_violett_rund_979975349a44a29ac921921200691127.png"),
-    ("MC-HANF-BLUMIG", "Hanfsalbe (blumig)", 35.0, "blau",
-     "blumig duftend",
-     "Für die tägliche Anwendung. Verbessert das Hautbild und verwöhnt mit seinem blumigen Duft.",
-     "Hanf",
-     "Etikette_Hanfsalbe_blau_rund_da272317cdadbb80d6579b45b5cc0ee8.png"),
-    ("MC-KOPFBALSAM", "Kopfbalsam", 35.0, "hellblau",
-     "mit Pfefferminze & Hanf",
-     "Beruhigend und erfrischend bei Kopfschmerzen. Belebt den Geist.",
-     "Pfefferminze, Hanf",
-     "Etikette_Kopfbalsam_hellblau_rund_48b9a472a2f8f7368c00d0d5ddb06e0c.png"),
-    ("MC-HANF-BERUHIGEND", "Hanfsalbe (beruhigend)", 35.0, "grün",
-     "lindernd & beruhigend",
-     "Für die tägliche Anwendung. Hilft bei trockener, juckender Haut, verbessert das Hautbild & hebt die Stimmung.",
-     "Hanf",
-     "Etikette_Hanfsalbe_gruen_rund_f4df3112d5219cb96e722cea763454ef.png"),
-    ("MC-GELENK", "Gelenkbalsam", 35.0, "gelb",
-     "mit Weihrauch & Hanf",
-     "Wohltuend bei Gelenkschmerzen, entzündungshemmend und verbessert das Hautbild.",
-     "Weihrauch, Hanf",
-     "Etikette_Gelenkbalsam_gelb_rund_1f7cdde0e14516d97b2f203a6c35b8f9.png"),
-    ("MC-RINGELBLUMEN", "Ringelblumensalbe", 30.0, "orange",
-     "Alltags-Pflege",
-     "Alltags-Pflege für trockene Haut oder bei kleinen Wunden und Schürfungen. Geeignet für Babys.",
-     "Ringelblume",
-     "Etikette_Ringelblumensalbe_orange_rund_9bac9e2e7cb32b36b2d019275e80a88f.png"),
-    ("MC-WAERME", "Wärmebalsam", 30.0, "rot",
-     "mit Thymian & Rosmarin",
-     "Wärmt bei Erkältung, befreit die Nase und wirkt vitalisierend auf Körper und Seele.",
-     "Thymian, Rosmarin",
-     "Etikette_Waermebalsam_rot_rund_a4d427d1a7a828e9cc132f7ca6d92364.png"),
+    {"sku": "MC-LAVENDEL", "name": "Lavendelsalbe", "sub": "beruhigend & entspannend",
+     "price": 30.0, "colour": "violett", "scent": "Lavendel",
+     "ingredients": "Olivenöl, Kokosöl, Bienenwachs, Lavendel",
+     "img": "Etikette_Lavendelsalbe_violett_rund_979975349a44a29ac921921200691127.png",
+     "en": "A calming, grounding balm for everyday care. It gently soothes and relaxes body and "
+           "mind, and is mild enough to use on the face. Handmade in Switzerland from olive oil, "
+           "coconut oil, beeswax and true lavender. 30 ml — made with love by Mama Cynthia.",
+     "de": "Eine beruhigende Salbe für die tägliche Pflege. Sie beruhigt und entspannt sanft "
+           "Körper & Geist und ist mild genug für die Gesichtspflege. Von Hand in der Schweiz "
+           "gemacht aus Olivenöl, Kokosöl, Bienenwachs und echtem Lavendel. 30 ml — mit viel Liebe."},
+    {"sku": "MC-HANF-BLUMIG", "name": "Hanfsalbe (blumig)", "sub": "blumig duftend",
+     "price": 35.0, "colour": "blau", "scent": "Hanf, Lavendel, Geranium, Jasmin, Rose",
+     "ingredients": "Hanföl, Kokosöl, Bienenwachs, Hanfextrakt, Lavendel, Geranium, Jasmin, Rosmarin & Rosen",
+     "img": "Etikette_Hanfsalbe_blau_rund_da272317cdadbb80d6579b45b5cc0ee8.png",
+     "en": "A daily hemp balm that improves the skin and pampers with a soft, floral scent. Rich "
+           "with hemp oil, coconut oil and beeswax, blended with hemp extract, lavender, geranium, "
+           "jasmine, rosemary and rose. Handmade in Switzerland, 30 ml — made with love by Mama Cynthia.",
+     "de": "Eine Hanfsalbe für jeden Tag, die das Hautbild verbessert und mit ihrem zarten, "
+           "blumigen Duft verwöhnt. Reich an Hanföl, Kokosöl & Bienenwachs, verfeinert mit "
+           "Hanfextrakt, Lavendel, Geranium, Jasmin, Rosmarin & Rosen. Handgemacht in der Schweiz, 30 ml."},
+    {"sku": "MC-KOPFBALSAM", "name": "Kopfbalsam", "sub": "mit Pfefferminze & Hanf",
+     "price": 35.0, "colour": "hellblau", "scent": "Pfefferminze, Hanf",
+     "ingredients": "Hanföl, Kokosöl, Bienenwachs, Pfefferminze",
+     "img": "Etikette_Kopfbalsam_hellblau_rund_48b9a472a2f8f7368c00d0d5ddb06e0c.png",
+     "en": "A cooling head balm with peppermint and hemp — calming and refreshing when a headache "
+           "sets in, and it wakes up a tired mind. Made from hemp oil, coconut oil, beeswax and "
+           "real peppermint. Handmade in Switzerland, 30 ml — made with love by Mama Cynthia.",
+     "de": "Ein kühlender Kopfbalsam mit Pfefferminze & Hanf — beruhigend und erfrischend bei "
+           "Kopfschmerzen und belebend für den Geist. Aus Hanföl, Kokosöl, Bienenwachs und echter "
+           "Pfefferminze. Handgemacht in der Schweiz, 30 ml."},
+    {"sku": "MC-HANF-BERUHIGEND", "name": "Hanfsalbe (beruhigend)", "sub": "lindernd & beruhigend",
+     "price": 35.0, "colour": "grün", "scent": "Hanf, Lavendel, Geranium",
+     "ingredients": "Hanföl, Kokosöl, Bienenwachs, Hanfextrakt, Lavendel & Geranium",
+     "img": "Etikette_Hanfsalbe_gruen_rund_f4df3112d5219cb96e722cea763454ef.png",
+     "en": "A soothing, calming hemp balm for daily care — it relieves dry, itchy skin, improves "
+           "the skin's look and gently lifts the mood. Made from hemp oil, coconut oil, beeswax, "
+           "hemp extract, lavender and geranium. Handmade in Switzerland, 30 ml — made with love by Mama Cynthia.",
+     "de": "Eine lindernde, beruhigende Hanfsalbe für die tägliche Pflege — sie hilft bei "
+           "trockener, juckender Haut, verbessert das Hautbild und hebt sanft die Stimmung. Aus "
+           "Hanföl, Kokosöl, Bienenwachs, Hanfextrakt, Lavendel & Geranium. Handgemacht in der Schweiz, 30 ml."},
+    {"sku": "MC-GELENK", "name": "Gelenkbalsam", "sub": "mit Weihrauch & Hanf",
+     "price": 35.0, "colour": "gelb", "scent": "Weihrauch, Hanf",
+     "ingredients": "Hanföl, Kokosöl, Bienenwachs, Weihrauch, Hanfextrakt",
+     "img": "Etikette_Gelenkbalsam_gelb_rund_1f7cdde0e14516d97b2f203a6c35b8f9.png",
+     "en": "A comforting balm for aching joints, with frankincense and hemp. Soothing and "
+           "anti-inflammatory, it eases joint pain while it improves the skin. Made from hemp oil, "
+           "coconut oil, beeswax, frankincense and hemp extract. Handmade in Switzerland, 30 ml — made with love by Mama Cynthia.",
+     "de": "Ein wohltuender Balsam für schmerzende Gelenke, mit Weihrauch & Hanf. Beruhigend und "
+           "entzündungshemmend lindert er Gelenkschmerzen und verbessert dabei das Hautbild. Aus "
+           "Hanföl, Kokosöl, Bienenwachs, Weihrauch & Hanfextrakt. Handgemacht in der Schweiz, 30 ml."},
+    {"sku": "MC-RINGELBLUMEN", "name": "Ringelblumensalbe", "sub": "Alltags-Pflege",
+     "price": 30.0, "colour": "orange", "scent": "Ringelblume, Hanf",
+     "ingredients": "Hanföl, Kokosöl, Bienenwachs, Hanfextrakt, Lavendel & Geranium",
+     "img": "Etikette_Ringelblumensalbe_orange_rund_9bac9e2e7cb32b36b2d019275e80a88f.png",
+     "en": "A gentle everyday balm of calendula for dry skin and little cuts and grazes — mild "
+           "enough for babies. Made from hemp oil, coconut oil, beeswax, hemp extract, lavender "
+           "and geranium. Handmade in Switzerland, 30 ml — made with love by Mama Cynthia.",
+     "de": "Eine sanfte Alltags-Salbe mit Ringelblume für trockene Haut, kleine Wunden und "
+           "Schürfungen — mild genug für Babys. Aus Hanföl, Kokosöl, Bienenwachs, Hanfextrakt, "
+           "Lavendel & Geranium. Handgemacht in der Schweiz, 30 ml."},
+    {"sku": "MC-WAERME", "name": "Wärmebalsam", "sub": "mit Thymian & Rosmarin",
+     "price": 30.0, "colour": "rot", "scent": "Thymian, Rosmarin",
+     "ingredients": "Olivenöl, Kokosöl, Bienenwachs, Thymian & Rosmarin",
+     "img": "Etikette_Waermebalsam_rot_rund_a4d427d1a7a828e9cc132f7ca6d92364.png",
+     "en": "A warming balm with thyme and rosemary for cold days — it warms you through a cold, "
+           "helps clear a stuffy nose and leaves body and soul feeling revived. Made from olive "
+           "oil, coconut oil, beeswax, thyme and rosemary. Handmade in Switzerland, 30 ml — made with love by Mama Cynthia.",
+     "de": "Ein wärmender Balsam mit Thymian & Rosmarin für kalte Tage — er wärmt bei Erkältung, "
+           "befreit die Nase und wirkt vitalisierend auf Körper und Seele. Aus Olivenöl, Kokosöl, "
+           "Bienenwachs, Thymian & Rosmarin. Handgemacht in der Schweiz, 30 ml."},
 ]
 
 CATEGORY = "Creams & Topicals"
@@ -82,23 +120,26 @@ def q(v) -> str:
 
 
 def build_sql() -> str:
+    import json
     stmts = []
-    for i, (sku, name, price, colour, subtitle, desc, scent, img) in enumerate(CREAMS):
+    for i, c in enumerate(CREAMS):
         barcode = ean13("20" + str(700000 + i).rjust(10, "0")[:10])
-        full = f"{name} — {subtitle}"                       # display name carries the flavour
-        image_url = f"{IMG_BASE}/{img}"
-        # attributes (colour/scent) kept for the variant family + the postcard maker later
-        attrs = ("{" + f'"colour":"{colour}","scent":"{scent}","family":"Mama Cynthia Salben"' + "}")
+        full = f"{c['name']} — {c['sub']}"                   # display name carries the flavour
+        image_url = f"{IMG_BASE}/{c['img']}"
+        attrs = json.dumps({"colour": c["colour"], "scent": c["scent"],
+                            "ingredients": c["ingredients"], "size": "30 ml",
+                            "family": "Mama Cynthia Salben"}, ensure_ascii=False)
+        # THE PRODUCT — English is the SOURCE description (the hub every language flows from).
         stmts.append(
             "INSERT INTO products (id, sku, barcode, barcode_is_internal, name, description, "
             "price, cost, category, product_group, product_class, is_age_restricted, "
             "supplier_sku, supplier_name, supplier_price, image_url, attributes, "
             "source_system, source_url, source_lang, needs_translation, "
             "is_active, stock_quantity, vending_compatible, sync_override, created_at, updated_at) VALUES ("
-            f"gen_random_uuid(), {q(sku)}, {q(barcode)}, true, {q(full)}, {q(desc)}, "
-            f"{price}, NULL, {q(CATEGORY)}, {q(GROUP)}, 'standard', false, "
-            f"{q(sku)}, 'Mama Cynthia', {price}, {q(image_url)}, {q(attrs)}::jsonb, "
-            f"'mama-cynthia', 'https://www.mama-cynthia.ch', 'de', true, "
+            f"gen_random_uuid(), {q(c['sku'])}, {q(barcode)}, true, {q(full)}, {q(c['en'])}, "
+            f"{c['price']}, NULL, {q(CATEGORY)}, {q(GROUP)}, 'standard', false, "
+            f"{q(c['sku'])}, 'Mama Cynthia', {c['price']}, {q(image_url)}, {q(attrs)}::jsonb, "
+            f"'mama-cynthia', 'https://www.mama-cynthia.ch', 'en', true, "
             "true, 0, false, false, now(), now()) "
             "ON CONFLICT (sku) DO UPDATE SET "
             "barcode=EXCLUDED.barcode, barcode_is_internal=EXCLUDED.barcode_is_internal, "
@@ -108,6 +149,16 @@ def build_sql() -> str:
             "image_url=EXCLUDED.image_url, attributes=EXCLUDED.attributes, "
             "source_system=EXCLUDED.source_system, source_lang=EXCLUDED.source_lang, "
             "needs_translation=EXCLUDED.needs_translation, is_active=true, updated_at=now();"
+        )
+        # HER AUTHENTIC GERMAN — seeded as a 'source' translation so German customers read her
+        # real voice, not a machine back-translation. FR/IT still flow from the English via BL-36.
+        stmts.append(
+            "INSERT INTO product_translations (id, product_id, lang, name, description, provenance, "
+            "needs_review, created_at, updated_at) "
+            f"SELECT gen_random_uuid(), p.id, 'de', NULL, {q(c['de'])}, 'source', false, now(), now() "
+            f"FROM products p WHERE p.sku = {q(c['sku'])} "
+            "ON CONFLICT ON CONSTRAINT uq_product_translations_product_lang DO UPDATE SET "
+            "description=EXCLUDED.description, provenance='source', needs_review=false, updated_at=now();"
         )
     return "\n".join(stmts) + "\n"
 
