@@ -156,12 +156,10 @@ async def ensure_description(db, product, lang: str) -> dict:
 
     if not desc and base:
         if lang == src_lang:
+            # Source language: keep the name EXACTLY as stored (don't let the LLM reword a native
+            # name on the card — "Rips Kingsize" must stay "Rips Kingsize"). Name only gets
+            # translated for the OTHER languages below, where a translated card is expected anyway.
             desc, provenance = base, "source"
-            # The description is native to `lang`, but the NAME may be in another language (Mama
-            # Cynthia: German name, English-source description). Translate the name so an EN card
-            # doesn't title in German. Auto-detect handles the name/description language mismatch.
-            if not name and (product.name or "").strip():
-                name = await _translate_name(product.name, lang, src_lang)
         else:
             desc = await _translate(base, lang, src_lang)
             provenance = "machine"
