@@ -234,6 +234,22 @@ async def get_pos_config(db: AsyncSession = Depends(get_db_session)):
 # PRODUCT ENDPOINTS
 # ================================================================
 
+def _sanitize_product_codes(data: dict) -> dict:
+    """Guard the immutable identity against NAME-shaped SKUs/barcodes — the receiving
+    "typed the product name into the scan box" trap. A barcode/SKU is a code: no
+    whitespace, sane length. A product NAME has spaces. When the incoming code looks like
+    a name we drop the barcode and mint a clean internal SKU, so the catalogue key and the
+    postcard serial are never born polluted (SKU is immutable — the pollution can't be
+    edited out later). Backstop to the receiving-screen client guard; protects every caller."""
+    def _is_code(s: str) -> bool:
+        return bool(s) and len(s) <= 40 and not any(c.isspace() for c in s)
+    bc = (data.get("barcode") or "").strip()
+    data["barcode"] = bc if _is_code(bc) else None
+    sku = (data.get("sku") or "").strip()
+    data["sku"] = sku if _is_code(sku) else f"LZ-{uuid4().hex[:10]}"
+    return data
+
+
 @router.post("/products", response_model=ProductRead, status_code=status.HTTP_201_CREATED)
 async def create_product(
     product: ProductCreate,
@@ -246,7 +262,7 @@ async def create_product(
     on the floor grows the catalog by selling). Destructive edits stay manager-only: changing
     price/details (PUT) and deleting (DELETE) still require a manager/admin."""
 
-    new_product = ProductModel(**product.model_dump())
+    new_product = ProductModel(**_sanitize_product_codes(product.model_dump()))
     db.add(new_product)
     try:
         await db.commit()
@@ -293,7 +309,7 @@ async def quick_create_product(
     cups) without a manager. Minimal fields; auto-filed under "On the fly" if no
     category is given, so a manager can enhance or discontinue it later.
     """
-    data = product.model_dump()
+    data = _sanitize_product_codes(product.model_dump())
     if not (data.get("name") or "").strip():
         raise HTTPException(status_code=422, detail="Name is required")
     if data.get("price") is None:

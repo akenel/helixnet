@@ -397,16 +397,31 @@
             },
             async stopScan() { await window.PosScanner.stop(); this.scanOpen = false; this.scanFallback = false; this.scanLive = ''; },
 
+            // A real barcode has no spaces and a sane length (EAN 8-14 digits, or a short
+            // internal code). A product NAME has spaces / is long. The receiving box says
+            // "scan or type a barcode", so a new hire naturally types the NAME there — and
+            // it must NOT become the barcode (and, via 'LZ-'+bc, the immutable SKU).
+            looksLikeBarcode(s) {
+                s = (s || '').trim();
+                return !!s && s.length <= 24 && !/\s/.test(s);
+            },
+
             // ---- lazy create ----
-            openNew(barcode) {
-                this.newBarcode = barcode || '';
-                this.newName = ''; this.newPrice = ''; this.newCost = '';
+            openNew(seed) {
+                seed = (seed || '').trim();
+                const isBarcode = this.looksLikeBarcode(seed);
+                // A code seeds the barcode field; a name-shaped seed seeds the NAME field
+                // (empty barcode → a clean 'LZ-<timestamp>' SKU is minted instead of 'LZ-<name>').
+                this.newBarcode = isBarcode ? seed : '';
+                this.newName = isBarcode ? '' : seed;
+                this.newPrice = ''; this.newCost = '';
                 this.boxCost = ''; this.boxUnits = ''; this.newSaving = false;
                 this.refQuery = ''; this.refMatches = []; this.selectedRef = null;
                 this.newOpen = true;
-                // Auto-look up the scanned code in the 7k reference catalogue — if it's on file,
-                // a tap fills name+price+photo (adopt) instead of typing it all by hand.
-                if (barcode) this.searchRef('', barcode);
+                // Auto-look up in the 7k reference catalogue — by code if it's a barcode,
+                // else by the typed name — so a tap can fill name+price+photo (adopt).
+                if (isBarcode) this.searchRef('', seed);
+                else if (seed) this.searchRef(seed, '');
             },
 
             // Search the reference catalogue (by typed name, or by the scanned barcode).
