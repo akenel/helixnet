@@ -21,6 +21,36 @@ the first actionable item next session — Tigs: state it and wait for Angel's r
 
 ---
 
+## 🃏 IN FLIGHT 2026-07-13 — DISCOUNT MODEL: member tier + manual = SEPARATE LANES (branch `feat/member-manual-discount-stack`)
+
+**From HC-PROD-01 row 10** (bronze member + a manual discount → nothing came off = the old "Option B"
+suppression). Redesigned WITH Angel/Felix to the simplest SAFE rule. **Sandbox-green (b1739, 97fcde4),
+7/7 stacking tests + 1856 in-container (3 known-flaky). Manager cap set to 70 on sandbox. NOT shipped —
+holding for Angel's sandbox human-green, then staging → backup-gated prod (+ set prod manager cap 70, today 25).**
+
+- **Two lanes, two pockets:** member TIER = the shop's loyalty promise, automatic, ALWAYS applies, stacks on
+  top, UNCAPPED by role. Cashier MANUAL = discretion / rounding room, bounded by a per-role **fat-finger cap:
+  cashier 15 / manager 70 / owner 100** (lives in Settings → Discounts, not code).
+- **George Clooney:** a platinum member (20%) is served SOLO by a 15%-capped cashier and still gets his full
+  20% — the cap never touches the tier. **Layla:** a manager can run a big clearance markdown on a scratched
+  display unit (up to 70%) that a cashier can't, with the tier still riding on top.
+- **🛡️ SAFETY FLOOR (Angel caught the footgun):** lanes stack, so 100% owner + 25% tier = 125% would go
+  NEGATIVE ("pay the customer"). Clamped at the point money is decided: combined discount can never exceed the
+  discountable items → total floors at the tobacco/alcohol portion, **≥ 0 ALWAYS**, whatever/however settings
+  are (fat-)fingered. Both server paths + client preview enforce it; a test literally tries to make it pay out.
+- **◻ BANKED — Treuhänder question (VAT on giveaways/on-the-house):** confirm Swiss MWST treatment of FREE
+  items (deemed-supply / Eigenverbrauch) — do we accrue VAT on giveaways, and should it show on the Banana
+  export? *Motivating story: the smorgasbord restaurant that died on 500 untracked free birthday meals — the
+  killer was INVISIBILITY, not generosity. Our giveaways ARE tracked (is_giveaway → daily summary), so the
+  data is airtight; the tax-law call is Felix's tax advisor's, we wire whatever he says.*
+- **◻ BANKED — audit the custom-line backdoor:** a cashier can ring an on-the-fly custom line ("Scratch tray,
+  CHF 1") at ANY price — a useful oddball escape hatch, but an **uncapped discount by another name** (the 15%
+  cap can't fire on a hand-priced item). It's already RECORDED (name/price/cashier/time on the day's tape).
+  Future: **flag custom / below-normal-price lines for the manager's end-of-day review** so the backdoor is
+  *audited*, not just recorded. Belt + suspenders vs. sweethearting/shrinkage.
+
+---
+
 ## ✅ SHIPPED PROD 2026-07-13 · next build = LABEL DESIGN (manager-gated, waits for printer)
 
 **✅ POSTCARD MAKER SHIPPED PROD 2026-07-13 (`ad22a0f`, b1728).** Backup-gated (`banco_prod-prepostcardmaker`), re-probed on a REAL Felix product: any product → shareable card, OG unfurl, short-QR `/p/{code}` (low-density, scannable small), trackable scan count, share-in-chosen-language. Works across Felix's whole live catalog. TEST-PC1 = Angel-signed ("platinum gold"). Sandbox-proven: single card + 4-up Format-C sheet + 4-flag desc picker + search-by-supplier + juiced EN-source/authentic-DE + one-page print.
