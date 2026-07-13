@@ -15,8 +15,11 @@ import httpx
 
 from .base import BaseAdapter, SupplierResult, clean_text, money2, parse_chf, score_title
 
-# languageId 3 = English; loadingType 79 = the instant-search list.
-_SEARCH_QS = "/api/shop/products?loadingType=79&languageId=3&displayType=3&page=1&searchTerms="
+# loadingType 79 = instant-search list. languageId: 3=EN, 2=DE, 4=FR — Artemis indexes per
+# language, so we query BOTH the English and German indexes (BL-38) and merge, letting an
+# English OR German search term find the item.
+_SEARCH_QS = "/api/shop/products?loadingType=79&languageId=%d&displayType=3&page=1&searchTerms="
+_SEARCH_LANG_IDS = (3, 2)
 
 _RE_H1 = re.compile(r"<h1[^>]*>(.*?)</h1>", re.S)
 _RE_SALES = re.compile(r'class="SalesPrice">\s*([^<]+?)\s*</span>')
@@ -33,13 +36,24 @@ class TamarAdapter(BaseAdapter):
     platform = "tamar"
 
     async def search(self, client: httpx.AsyncClient, q: str, limit: int = 5) -> list[SupplierResult]:
-        r = await client.get(self.base_url + _SEARCH_QS + q,
-                             headers={"Accept": "application/json", "X-Requested-With": "XMLHttpRequest"})
-        try:
-            listing = r.json().get("products", [])
-        except (json.JSONDecodeError, ValueError):
-            return []
-        listing = [p for p in listing if p.get("linkUrl")][:limit]
+        headers = {"Accept": "application/json", "X-Requested-With": "XMLHttpRequest"}
+        reqs = await asyncio.gather(
+            *[client.get(self.base_url + (_SEARCH_QS % lid) + q, headers=headers) for lid in _SEARCH_LANG_IDS],
+            return_exceptions=True)
+        listing, seen = [], set()
+        for r in reqs:
+            if isinstance(r, Exception):
+                continue
+            try:
+                products = r.json().get("products", [])
+            except (json.JSONDecodeError, ValueError):
+                continue
+            for p in products:
+                lk = p.get("linkUrl")
+                if lk and lk not in seen:
+                    seen.add(lk)
+                    listing.append(p)
+        listing = listing[:limit]
         if not listing:
             return []
         pages = await asyncio.gather(

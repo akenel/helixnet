@@ -19,6 +19,7 @@ from sqlalchemy import select
 
 from .base import BaseAdapter, SupplierResult, make_client
 from .magento import MagentoAdapter
+from .query_i18n import query_variants
 from .shopware import ShopwareAdapter
 from .tamar import TamarAdapter
 
@@ -93,25 +94,33 @@ async def search_suppliers(q: str, db, suppliers: list[str] | None = None,
         if not adapters:
             return {"query": q, "results": [], "errors": {}, "suppliers": []}
 
-        async def _run(adapter):
-            return await asyncio.wait_for(adapter.search(client, q, limit), timeout=timeout)
+        # BL-38: also search a German variant so an English/French term hits the German sites.
+        variants = await query_variants(client, q, langs=("de",))
 
-        settled = await asyncio.gather(*[_run(a) for a in adapters], return_exceptions=True)
+        async def _run(adapter, qv):
+            return await asyncio.wait_for(adapter.search(client, qv, limit), timeout=timeout)
 
-    results: list[SupplierResult] = []
+        jobs = [(a, qv) for a in adapters for qv in variants]
+        settled = await asyncio.gather(*[_run(a, qv) for (a, qv) in jobs], return_exceptions=True)
+
+    # Merge across (adapter × variant); dedupe the same product, keep its best score.
+    by_key: dict[tuple, SupplierResult] = {}
     errors: dict[str, str] = {}
-    for adapter, res in zip(adapters, settled):
+    for (adapter, qv), res in zip(jobs, settled):
         if isinstance(res, Exception):
-            log.warning("supplier-search %s failed for %r: %s", adapter.supplier, q, res)
-            errors[adapter.supplier] = str(res) or res.__class__.__name__
+            log.warning("supplier-search %s failed for %r: %s", adapter.supplier, qv, res)
+            errors.setdefault(adapter.supplier, str(res) or res.__class__.__name__)
             continue
         for r in res:
             r.role = adapter.role       # stamp what this site's price means (cost vs market)
-        results.extend(res)
+            key = (r.supplier, r.product_url)
+            if key not in by_key or r.score > by_key[key].score:
+                by_key[key] = r
 
-    results.sort(key=lambda r: r.score, reverse=True)
+    results = sorted(by_key.values(), key=lambda r: r.score, reverse=True)
     return {
         "query": q,
+        "variants": variants,
         "results": [r.to_dict() for r in results],
         "errors": errors,
         "suppliers": [a.supplier for a in adapters],
