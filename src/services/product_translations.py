@@ -96,6 +96,26 @@ async def _translate(text: str, tgt_lang: str, src_lang: str = "en") -> str | No
         return None
 
 
+async def _translate_name(name: str, tgt_lang: str, src_lang: str = "en") -> str | None:
+    """Translate a product NAME (e.g. Mama Cynthia's descriptive 'Kopfbalsam — mit Pfefferminze &
+    Hanf'). Keeps BRAND/proper names, units, and numbers unchanged so 'Motörhead Patch' stays put
+    while descriptive words translate. Prevents the 'German title, French description' split on a
+    shared postcard. Returns None on failure (caller keeps the source name)."""
+    from src.llm import run_llm, turbo_or_local
+    system = (
+        f"You translate short retail PRODUCT NAMES from {LANG_NAMES.get(src_lang, src_lang)} to "
+        f"{LANG_NAMES.get(tgt_lang, tgt_lang)}. Translate the descriptive words; keep BRAND and proper "
+        f"names, units, and numbers unchanged. Output ONLY the translated name — no quotes, no notes."
+    )
+    try:
+        res = await run_llm(name, target=turbo_or_local("gpt-oss:120b"), system=system)
+        out = (res.text or "").strip().strip('"').strip()
+        return out or None
+    except Exception as e:  # noqa: BLE001
+        log.warning("translate name ->%s failed: %s", tgt_lang, e)
+        return None
+
+
 async def ensure_description(db, product, lang: str) -> dict:
     """Best description for `lang`, filling `product_translations` on demand.
 
@@ -107,12 +127,21 @@ async def ensure_description(db, product, lang: str) -> dict:
     )).scalars().all()
     existing = {t.lang: t for t in rows}
 
+    src_lang = _norm(product.source_lang or "en")
+
     hit = existing.get(lang)
     if hit and (hit.description or "").strip():
+        # Backfill a translated NAME if we never stored one (rows from before name-translation, or
+        # non-Tamar machine rows). Without this the title stays in the source language while the
+        # description is translated — the "German title / French body" split on a shared card.
+        if not (hit.name or "").strip() and lang != src_lang and (product.name or "").strip():
+            translated = await _translate_name(product.name, lang, src_lang)
+            if translated:
+                hit.name = translated
+                await db.commit()
         return {"lang": lang, "description": hit.description, "name": hit.name,
                 "provenance": hit.provenance}
 
-    src_lang = _norm(product.source_lang or "en")
     base = (product.description or "").strip()
     name = desc = None
     provenance = "machine"
@@ -129,6 +158,8 @@ async def ensure_description(db, product, lang: str) -> dict:
         else:
             desc = await _translate(base, lang, src_lang)
             provenance = "machine"
+            if not name and (product.name or "").strip():
+                name = await _translate_name(product.name, lang, src_lang)
 
     if desc:
         if hit:

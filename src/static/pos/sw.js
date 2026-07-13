@@ -11,7 +11,7 @@
  * Phases 1–2 build on this: P1 adds an IndexedDB catalog read-cache; P2 adds the
  * offline sales OUTBOX + background sync. Bump CACHE_NAME on any shell change.
  */
-const CACHE_NAME = 'banco-pos-v98';
+const CACHE_NAME = 'banco-pos-v99';
 
 // The shell we want available instantly / offline. Kept small + safe (GET, same-origin).
 const SHELL = [
@@ -34,8 +34,12 @@ self.addEventListener('install', (event) => {
       Promise.all(SHELL.map((url) => cache.add(url).catch(() => null)))
     )
   );
-  // BL-011: do NOT skipWaiting automatically — let the new SW WAIT so the page can show a
-  // "New version — tap to update" nudge; the cashier picks the moment (never mid-sale).
+  // 2026-07-13: auto-activate new workers. A stale SW from BEFORE the /pos/callback bypass was
+  // trapping mobile users on the "login bounces back" bug, and BL-011's wait-for-tap meant the fix
+  // never reached them (the old worker kept control). skipWaiting activates the new SW on next load
+  // WITHOUT reloading an in-progress page — it only changes which worker serves future fetches. A
+  // broken login is worse than a silent asset swap. The manual SKIP_WAITING message below still works.
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {

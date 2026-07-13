@@ -5989,23 +5989,6 @@ async def pos_oauth_callback(request: Request, code: str = None, error: str = No
     import httpx
     from fastapi.responses import RedirectResponse
 
-    # [LOGIN-DIAG 2026-07-13 · TEMP — REMOVE after the staging/prod mobile-login bug is pinned]
-    # Log-only. Fingerprints EVERY callback hit so we can see WHO fires the 2nd request with the
-    # same code: a real navigation (sec-fetch-user=?1), a browser prefetch / link-scanner
-    # (sec-purpose=prefetch / purpose=prefetch / x-moz=prefetch, often a different IP/UA), or a
-    # service worker (sec-fetch-mode=navigate but no sec-fetch-user, same IP). No behaviour change.
-    _h = request.headers
-    _fp = (code or error or "-")
-    logger.info(
-        "[LOGIN-DIAG] callback code=%s ua=%r xff=%s fwd_host=%s proto=%s "
-        "sf_dest=%s sf_mode=%s sf_user=%s sf_site=%s sec_purpose=%s purpose=%s x_moz=%s ref=%s",
-        _fp[:10], _h.get("user-agent", "-"), _h.get("x-forwarded-for", "-"),
-        _h.get("x-forwarded-host") or _h.get("host", "-"), _h.get("x-forwarded-proto", "-"),
-        _h.get("sec-fetch-dest", "-"), _h.get("sec-fetch-mode", "-"), _h.get("sec-fetch-user", "-"),
-        _h.get("sec-fetch-site", "-"), _h.get("sec-purpose", "-"), _h.get("purpose", "-"),
-        _h.get("x-moz", "-"), _h.get("referer", "-"),
-    )
-
     if error:
         logger.error(f"OAuth callback error: {error}")
         return RedirectResponse(url="/pos?error=" + error)
@@ -6051,12 +6034,9 @@ async def pos_oauth_callback(request: Request, code: str = None, error: str = No
             )
 
             if response.status_code != 200:
-                logger.error(
-                    "[LOGIN-DIAG] exchange FAIL code=%s status=%s body=%s redirect_uri=%s",
-                    (code[:10] if code else "-"), response.status_code, response.text, redirect_uri)
+                logger.error(f"Token exchange failed: {response.status_code} - {response.text}")
                 return RedirectResponse(url="/pos?error=token_exchange_failed")
 
-            logger.info("[LOGIN-DIAG] exchange OK code=%s redirect_uri=%s", (code[:10] if code else "-"), redirect_uri)
             tokens = response.json()
             access_token = tokens.get("access_token")
 
@@ -6279,7 +6259,7 @@ async def product_postcard(
 
     return templates.TemplateResponse("pos/postcard.html", {
         "request": request,
-        "name": product.name,
+        "name": desc.get("name") or product.name,   # translated name → title matches the language
         "description": desc.get("description") or product.description or "",
         "provenance": desc.get("provenance"),
         "price": f"{float(product.price):.2f}" if product.price is not None else None,
@@ -6331,7 +6311,7 @@ async def product_postcard_sheet(
 
     return templates.TemplateResponse("pos/postcard-sheet.html", {
         "request": request,
-        "name": product.name,
+        "name": desc.get("name") or product.name,   # translated name → title matches the language
         "description": desc.get("description") or product.description or "",
         "price": f"{float(product.price):.2f}" if product.price is not None else None,
         "currency": "CHF",
