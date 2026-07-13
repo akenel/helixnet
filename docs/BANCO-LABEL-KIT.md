@@ -51,27 +51,32 @@ product/shelf tags — note it and decide later.
 Off-brand rolls skip the calibration chip → mis-feed and wrong sizing. Genuine Brother, always
 (same "no shortcut subsets" rule as the code).
 
-### Your criterion = REMOVABLE / peelable
+### ⚠️ The part number IS the adhesive — read it before you buy
+| Prefix | Adhesive | Form |
+|---|---|---|
+| **DK-44xxx** | **REMOVABLE** ✅ buy these | continuous (cut-to-length) |
+| DK-22xxx | permanent | continuous |
+| DK-11xxx | permanent | die-cut (pre-shaped) |
+
+**Brother makes NO die-cut removable label** — removable exists **only as continuous rolls**. So peel-clean
+= continuous DK-44xxx, and the printer's **auto-cutter cuts each label to length.** You trade pre-shaped
+corners for peel-clean; peel-clean wins (Felix's requirement).
+
+### Your criterion = REMOVABLE / peelable → these two rolls
 | Roll | Size | Use |
 |---|---|---|
-| **DK-44205** ⭐ | 62 mm continuous **white, REMOVABLE** (30.48 m) | THE workhorse — cut to any length, peels clean. Shelf tags, promo, QR+barcode+name+price. |
-| **DK-44605** | 62 mm continuous **yellow, removable** | Sale / NEU / attention tags. |
+| **DK-44205** ⭐ | 62 mm × 30.48 m continuous, **white, REMOVABLE** | THE workhorse — cut to any length, peels clean. Product tags, shelf tags, QR+barcode+name+price. |
+| **DK-44605** | 62 mm × 30.48 m continuous, **yellow, REMOVABLE** | Sale / NEU / attention tags. |
 
-### Permanent die-cut (stickers that stay on the product)
-| Roll | Size | Use |
-|---|---|---|
-| **DK-11201** | 29 × 90 mm die-cut (400/roll) | Standard product label: name + QR + barcode + SKU. |
-| **DK-11209** | 29 × 62 mm die-cut (800/roll) | Small product / price sticker. |
-| **DK-11240** | 102 × 51 mm barcode (600/roll) | Barcode labels — *needs the wide QL-1110NWB.* |
-
-> **Skip the black/red roll (DK-22251)** — our `brother_ql`/Linux path prints **mono only**; red needs
-> Windows/P-touch. Do emphasis in grayscale/bold instead. (Only buy red if you'll print from a Windows box.)
+> **Do NOT buy** the permanent lookalikes that dominate search results: **DK-22205** (62 mm white
+> *permanent* continuous) or **DK-22251** (62 mm black/red 15.24 m — permanent *and* red, which our
+> mono Linux path can't print anyway). If the listing says "Adhesive property: Permanent" → **wrong roll.**
 
 ### Recommended starter bundle
 - QL-820NWB **× 2** (one spare)
-- DK-44205 (removable 62 mm) **× 3** — everyday shelf/QR tag
-- DK-11201 (29 × 90) **× 2** — product stickers
-- DK-11209 (29 × 62) **× 1** — small stickers
+- **DK-44205** (removable white 62 mm) **× 3** — the everyday product/shelf/QR tag
+- **DK-44605** (removable yellow 62 mm) **× 1** — sale/NEU tags
+- *(optional, only if some labels should stay PERMANENTLY put — e.g. our own packaging):* DK-11201 die-cut ×1
 
 ---
 
@@ -149,9 +154,8 @@ piece worth building *now* (independent, and it also sharpens the postcard QR).
 ## 8. Buy list (tl;dr)
 
 - [ ] Brother **QL-820NWB × 2**
-- [ ] **DK-44205** removable 62 mm × 3
-- [ ] **DK-11201** 29×90 die-cut × 2
-- [ ] **DK-11209** 29×62 die-cut × 1
+- [ ] **DK-44205** removable white 62 mm × 3  ← *the roll; anything marked "Permanent" is wrong*
+- [ ] **DK-44605** removable yellow 62 mm × 1
 - [ ] 99 % isopropyl + lint-free swabs, compressed air, spare spool
 - [ ] *(optional)* QL-1110NWB if you want 4" wide shelf-talkers/mini-postcards
 
