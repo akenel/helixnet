@@ -6225,6 +6225,7 @@ async def product_postcard(
     import hashlib
     from src.db.models.product_model import ProductModel
     from src.services.product_translations import ensure_description
+    from src.services.short_links import ensure_short_code
 
     product = await db.get(ProductModel, product_id)
     if not product:
@@ -6239,6 +6240,10 @@ async def product_postcard(
     host = request.headers.get("x-forwarded-host") or request.headers.get("host", "")
     origin = f"{proto}://{host}"
     share_url = f"{origin}/pos/products/{product_id}/postcard"
+    # The QR encodes the SHORT url (/p/{code}) so it stays low-density → scannable printed small.
+    # Falls back to the full url if a code couldn't be minted. (Share + QR use it; og:url stays full.)
+    code = await ensure_short_code(db, product_id)
+    qr_url = f"{origin}/p/{code}" if code else share_url
 
     # og:image must be an ABSOLUTE, publicly-fetchable URL — the WhatsApp/iMessage/Telegram
     # scraper fetches it server-side to build the rich share preview. Mama Cynthia's photos are
@@ -6262,6 +6267,7 @@ async def product_postcard(
         "colour": (attrs.get("colour") or "").lower(),
         "serial": serial,
         "share_url": share_url,
+        "qr_url": qr_url,
         "lang": lang,
         "og_image": og_image,
         "og_description": og_description,
@@ -6283,6 +6289,7 @@ async def product_postcard_sheet(
     import secrets
     from src.db.models.product_model import ProductModel
     from src.services.product_translations import ensure_description
+    from src.services.short_links import ensure_short_code
 
     product = await db.get(ProductModel, product_id)
     if not product:
@@ -6294,7 +6301,10 @@ async def product_postcard_sheet(
     base_serial = hashlib.sha1(f"{product.sku}|{product.updated_at}".encode()).hexdigest()[:4].upper()
     proto = request.headers.get("x-forwarded-proto", "https")
     host = request.headers.get("x-forwarded-host") or request.headers.get("host", "")
-    share_url = f"{proto}://{host}/pos/products/{product_id}/postcard"
+    origin = f"{proto}://{host}"
+    share_url = f"{origin}/pos/products/{product_id}/postcard"
+    code = await ensure_short_code(db, product_id)        # short QR → scannable printed small
+    qr_url = f"{origin}/p/{code}" if code else share_url
     cards = [{"n": i, "serial": f"{product.sku}·{base_serial}·{run}-{i:02d}/04"} for i in range(1, 5)]
 
     return templates.TemplateResponse("pos/postcard-sheet.html", {
@@ -6307,9 +6317,24 @@ async def product_postcard_sheet(
         "supplier": product.supplier_name,
         "colour": (attrs.get("colour") or "").lower(),
         "share_url": share_url,
+        "qr_url": qr_url,
         "lang": lang,
         "cards": cards,
     })
+
+
+@html_router.get("/p/{code}", name="short_link")
+async def short_link(code: str, db: AsyncSession = Depends(get_db_session)):
+    """Short QR target: /p/{code} → the product's postcard. The QR encodes THIS (few characters →
+    low-density → scans reliably printed small on a label). Each hit bumps the product's scan counter
+    (the QR is trackable — free analytics), then 302s to the full card. Public by design."""
+    from fastapi.responses import RedirectResponse
+    from src.services.short_links import resolve_and_bump
+
+    product_id = await resolve_and_bump(db, code)
+    if not product_id:
+        raise HTTPException(status_code=404, detail="Unknown code")
+    return RedirectResponse(url=f"/pos/products/{product_id}/postcard", status_code=302)
 
 
 @html_router.get("/pos/receiving", response_class=HTMLResponse, name="pos_receiving")

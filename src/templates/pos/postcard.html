@@ -158,7 +158,7 @@
   </style>
 
   <script>
-    var SHARE_URL = {{ share_url|tojson }};
+    var SHARE_URL = {{ (qr_url or share_url)|tojson }};
     var SHARE_TITLE = {{ name|tojson }};
     var _maker = {{ (supplier or '')|tojson }};
     var _msg = {
@@ -192,7 +192,7 @@
   <script>
     try {
       new QRCode(document.getElementById('qr'), {
-        text: {{ share_url|tojson }}, width: 74, height: 74,
+        text: {{ (qr_url or share_url)|tojson }}, width: 74, height: 74,
         colorDark: '{{ accent }}', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M
       });
     } catch (e) { document.getElementById('qr').textContent = 'QR'; }

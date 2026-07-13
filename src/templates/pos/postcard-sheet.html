@@ -98,7 +98,7 @@
   </div>
 
   <script>
-    var url = {{ share_url|tojson }};
+    var url = {{ (qr_url or share_url)|tojson }};
     for (var i = 1; i <= 4; i++) {
       try { new QRCode(document.getElementById('qr' + i), {
         text: url, width: 42, height: 42, colorDark: '{{ accent }}', colorLight: '#ffffff',

@@ -193,6 +193,15 @@ _ADDITIVE_COLUMNS: list[str] = [
     # currency.DEFAULT_FX, so a shop is byte-identical until it sets its own plan rates. Same
     # additive TEXT-JSON idiom as vat_rates.
     "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS fx_rates TEXT",
+    # Short links for scannable QR (2026-07-13): the postcard QR encodes /p/{short_code} instead of
+    # the full /pos/products/{uuid}/postcard so the QR stays low-density → scans reliably even printed
+    # ~20mm on a label. short_code minted lazily on first postcard render, unique among non-nulls
+    # (Postgres counts NULLs distinct → backfill is a no-op). qr_scan_count/qr_last_scanned_at make the
+    # QR trackable (a scan bumps the counter) — free analytics off every label.
+    "ALTER TABLE products ADD COLUMN IF NOT EXISTS short_code VARCHAR(16)",
+    "ALTER TABLE products ADD COLUMN IF NOT EXISTS qr_scan_count INTEGER NOT NULL DEFAULT 0",
+    "ALTER TABLE products ADD COLUMN IF NOT EXISTS qr_last_scanned_at TIMESTAMPTZ",
+    "CREATE UNIQUE INDEX IF NOT EXISTS ix_products_short_code ON products (short_code)",
     # Offline outbox idempotency (P2.1, 2026-06-29): the atomic create-sale endpoint keys
     # on a client-generated UUID so a replayed sale (network retry / offline outbox sync)
     # is adopted exactly once, never double-rung. Nullable (legacy 3-step sales have none);
