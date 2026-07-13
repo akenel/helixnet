@@ -3093,6 +3093,9 @@ async def checkout_transaction(
             raise HTTPException(status_code=404, detail="Customer (loyalty member) not found")
         transaction.customer_id = customer.id
         tier_pct = int(customer.tier_discount_percent or 0)
+        # Separate lanes: the member's tier stacks on any manual discount already on the txn.
+        # The manual was capped at the cashier's own limit when it was applied (the /items
+        # endpoint); the tier is the shop's loyalty promise and rides on top, uncapped by role.
         if tier_pct > 0:
             # Member discount applies ONLY to the eligible (non-promo-restricted) portion —
             # tobacco/alcohol never get a promo discount (Swiss law). Same rule as the atomic
@@ -3108,6 +3111,12 @@ async def checkout_transaction(
                 Decimal("0.01"), rounding=ROUND_HALF_UP)
             transaction.total = Decimal(str(transaction.total)) - tier_disc
             transaction.discount_amount = Decimal(str(transaction.discount_amount or 0)) + tier_disc
+
+    # --- SAFETY FLOOR (parity with the atomic /sales path): the total can never go negative,
+    # whatever caps/tiers are configured. Clamp so the customer is never owed money. ---
+    if Decimal(str(transaction.total)) < 0:
+        transaction.discount_amount = Decimal(str(transaction.subtotal))
+        transaction.total = Decimal("0.00")
 
     # --- Age gate (18+): does this cart hold any age-restricted line? The class is the source
     # of truth (products.product_class -> taxonomy), joined via the staged line items. Reject
@@ -3239,14 +3248,23 @@ async def create_sale(
         logger.info(f"Idempotent replay adopted: client_uuid={sale.client_uuid} -> {existing.transaction_number}")
         return existing
 
-    # --- Option B: a member's earned tier rate is the ONLY discount. When a loyalty member is
-    # attached, a manual cashier discount is SUPPRESSED (no stacking) — the member paid their way
-    # to the rate, the cashier doesn't add to it. Walk-ins keep the manual path. So the effective
-    # manual % is 0 the instant a member is on the sale (this is why Pam's cap never fights a
-    # member's tier: they're different lanes — the cap governs manual only). ---
-    manual_pct = Decimal("0") if sale.customer_id is not None else (sale.discount_percent or Decimal("0"))
+    # --- SEPARATE LANES (Felix's call 2026-07-13, superseding the old "Option B" suppression).
+    # Two independent discounts, two different pockets:
+    #   • the member's earned TIER rate — the shop's loyalty promise, automatic, ALWAYS applies;
+    #   • the cashier's MANUAL discount — their own discretion / rounding room.
+    # The role cap is a fat-finger guard on the CASHIER'S OWN manual number only — it never
+    # touches the member's tier. So a platinum member (20%) served by a cashier (cap 15%) still
+    # gets their full 20% automatically, and the cashier may round down up to 15% MORE on top.
+    # Damaged-goods / clearance markdowns ride the ladder: cashier 15 / manager 70 / owner 100. ---
+    manual_pct = sale.discount_percent or Decimal("0")
 
-    # --- Discount cap by role, once, cart-wide (same ceiling the legacy /items enforces per line). ---
+    # Fetch the attached loyalty member up-front — reused for the tier discount applied later.
+    customer = None
+    if sale.customer_id is not None:
+        customer = await db.get(CustomerModel, sale.customer_id)
+        if customer is None:
+            raise HTTPException(status_code=404, detail="Customer (loyalty member) not found")
+
     cap = await _max_discount_pct(db, current_user)
     if manual_pct and manual_pct > cap:
         raise HTTPException(status_code=403,
@@ -3335,24 +3353,30 @@ async def create_sale(
     txn.total = subtotal - manual_disc
     txn.discount_amount = manual_disc
 
-    # --- Member tier discount + attach (before the cash check, so the member pays discounted). ---
-    customer = None
-    if sale.customer_id is not None:
-        customer = await db.get(CustomerModel, sale.customer_id)
-        if customer is None:
-            raise HTTPException(status_code=404, detail="Customer (loyalty member) not found")
+    # --- Member tier discount + attach (before the cash check, so the member pays discounted).
+    # `customer` was already fetched up-front for the combined-cap check — reuse it here. ---
+    if customer is not None:
         txn.customer_id = customer.id
         tier_pct = int(customer.tier_discount_percent or 0)
         if tier_pct > 0:
             # Member discount applies ONLY to the eligible (non-promo-restricted) portion — tobacco
             # and alcohol never get a promotional discount (Swiss law), the SAME per-line rule the
             # manual discount follows. One receipt: cigarettes ring full price, the lighter gets the
-            # member rate. (A member suppresses the manual discount, so the base is the full eligible
-            # subtotal — manual_disc is 0 here.)
+            # member rate. The manual discount STACKS on top (separate lane): both come off the same
+            # eligible base, so a Silver 5% member + a 15% cashier manual = 20% off the eligible items.
             tier_base = eligible_subtotal
             tier_disc = (tier_base * Decimal(tier_pct) / Decimal("100")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
             txn.total = Decimal(str(txn.total)) - tier_disc
             txn.discount_amount = Decimal(str(txn.discount_amount)) + tier_disc
+
+    # --- SAFETY FLOOR (the "never pay the customer" guard). No matter what caps or tiers are
+    # configured — even fat-fingered (a 100% owner cap + a 25% tier = 125%, or a mistyped setting) —
+    # the combined discount can NEVER exceed the value of the discountable items. The sale floors
+    # at the non-discountable (tobacco/alcohol) portion: total >= 0, always. This lives at the
+    # point money is decided, so bad settings upstream can't ever produce a refund/negative total. ---
+    if Decimal(str(txn.discount_amount)) > eligible_subtotal:
+        txn.discount_amount = eligible_subtotal
+        txn.total = subtotal - eligible_subtotal   # = the promo-restricted portion, guaranteed >= 0
 
     # --- Age gate (18+): reject the sale unless an of-age member is attached OR the cashier
     # attested a walk-in. cart_age_restricted was set from each line's class in the loop above. ---

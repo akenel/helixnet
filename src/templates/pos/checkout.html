@@ -74,24 +74,26 @@
                 <p class="text-sm text-gray-500 mt-2">🇨🇭 <span data-i18n="checkout.swiss_law_note">Swiss law: a café seat makes the same item two prices. Alcohol & tobacco stay 8.1%.</span></p>
             </div>
 
-            <!-- 🏷️ Quick Discount (Pam's Rounding) — HIDDEN when a member is attached: the member's
-                 earned tier rate is the only discount (no stacking a manual % on top of it). -->
-            <div class="mb-6" x-show="!member">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">🏷️ <span data-i18n="checkout.discount">Discount</span></h2>
-                <div class="grid grid-cols-3 md:grid-cols-5 gap-3">
-                    <button @click="applyDiscount(0)" :class="discount === 0 ? 'bg-gray-300' : 'bg-gray-100'" class="btn-secondary py-3" data-i18n="checkout.none">None</button>
-                    <button @click="applyDiscount(5)" :class="discount === 5 ? 'bg-green-300' : 'bg-green-100'" class="btn-secondary py-3">5%</button>
-                    <button @click="applyDiscount(10)" :class="discount === 10 ? 'bg-green-300' : 'bg-green-100'" class="btn-secondary py-3">10%</button>
-                    <button @click="applyDiscount(15)" :class="discount === 15 ? 'bg-yellow-300' : 'bg-yellow-100'" class="btn-secondary py-3">15%</button>
-                    <button @click="customDiscount()" class="btn-secondary py-3 bg-blue-100" data-i18n="checkout.custom">Custom</button>
-                </div>
-                <p class="text-sm text-gray-500 mt-2">💡 <span x-text="t('checkout.your_max_note', {n: maxDiscount})"></span></p>
-            </div>
-            <!-- Member on the sale: the tier rate replaces manual discounts (eligible items only). -->
+            <!-- Member on the sale: their earned tier rate applies automatically to the eligible
+                 items. A manual discount STACKS on top (Felix's call) — see the Discount panel below. -->
             <div class="mb-6" x-show="member && member.tier_discount_percent > 0">
                 <div class="rounded-lg p-3 bg-indigo-50 text-indigo-800 text-sm">
                     🏅 <span x-text="t('checkout.member_rate_note', {tier: member ? member.loyalty_tier : '', n: member ? member.tier_discount_percent : 0})"></span>
                 </div>
+            </div>
+            <!-- 🏷️ Quick Discount (Pam's Rounding) — always available, even on a member sale. The
+                 manual % STACKS on the member's tier rate; presets over the remaining room (role cap
+                 minus the member's earned rate) are disabled so the combined total can't exceed the cap. -->
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">🏷️ <span data-i18n="checkout.discount">Discount</span></h2>
+                <div class="grid grid-cols-3 md:grid-cols-5 gap-3">
+                    <button @click="applyDiscount(0)" :class="discount === 0 ? 'bg-gray-300' : 'bg-gray-100'" class="btn-secondary py-3" data-i18n="checkout.none">None</button>
+                    <button @click="applyDiscount(5)" :disabled="5 > manualCap()" :class="discount === 5 ? 'bg-green-300' : (5 > manualCap() ? 'bg-gray-100 opacity-40 cursor-not-allowed' : 'bg-green-100')" class="btn-secondary py-3">5%</button>
+                    <button @click="applyDiscount(10)" :disabled="10 > manualCap()" :class="discount === 10 ? 'bg-green-300' : (10 > manualCap() ? 'bg-gray-100 opacity-40 cursor-not-allowed' : 'bg-green-100')" class="btn-secondary py-3">10%</button>
+                    <button @click="applyDiscount(15)" :disabled="15 > manualCap()" :class="discount === 15 ? 'bg-yellow-300' : (15 > manualCap() ? 'bg-gray-100 opacity-40 cursor-not-allowed' : 'bg-yellow-100')" class="btn-secondary py-3">15%</button>
+                    <button @click="customDiscount()" class="btn-secondary py-3 bg-blue-100" data-i18n="checkout.custom">Custom</button>
+                </div>
+                <p class="text-sm text-gray-500 mt-2">💡 <span x-text="t('checkout.your_max_note', {n: manualCap()})"></span></p>
             </div>
 
             <!-- Price Breakdown -->
@@ -303,8 +305,8 @@
          @click.self="showDiscountModal = false" @keydown.escape.window="showDiscountModal = false" style="display:none;">
         <div class="card w-full max-w-sm">
             <h3 class="text-xl font-bold text-gray-900 mb-1">🏷️ <span data-i18n="checkout.custom_discount_title">Custom discount</span></h3>
-            <p class="text-sm text-gray-500 mb-4" x-text="t('checkout.custom_discount_hint_dyn', {n: maxDiscount})">Enter a percentage.</p>
-            <input type="number" min="0" :max="maxDiscount" step="1" x-ref="discountInput" x-model="discountInput"
+            <p class="text-sm text-gray-500 mb-4" x-text="t('checkout.custom_discount_hint_dyn', {n: manualCap()})">Enter a percentage.</p>
+            <input type="number" min="0" :max="manualCap()" step="1" x-ref="discountInput" x-model="discountInput"
                    @keyup.enter="applyCustomDiscount()" placeholder="e.g. 12" data-i18n-placeholder="checkout.custom_discount_placeholder" class="input-field text-2xl font-bold text-center mb-4">
             <div class="flex gap-3">
                 <button @click="showDiscountModal = false" class="btn-secondary flex-1" data-i18n="common.cancel">Cancel</button>
@@ -437,9 +439,10 @@
                     const m = sessionStorage.getItem('checkout_customer');
                     if (m) this.member = JSON.parse(m);
                 } catch (e) { this.member = null; }
-                // Option B: a member's earned tier rate is the only discount — clear any manual
-                // discount the instant a member is on the sale (mirrors the server, which ignores it).
-                if (this.member) { this.discount = 0; this.cartData.discount = 0; }
+                // Separate lanes (Felix's call 2026-07-13): the manual discount is independent of
+                // the member's tier, which stacks on top automatically. No member-based clamp — the
+                // manual was already bounded by the role cap on the scan page, and the tier applies
+                // regardless (a platinum member's 20% still lands even with a 15%-capped cashier).
                 this.recalculateTotals();
 
                 // Load the treats catalog (real products) for the "give a treat" picker.
@@ -561,11 +564,19 @@
                 } catch (e) { /* keep default */ }
             },
 
+            // The cashier's manual-discount ceiling — a fat-finger guard on their OWN entry only,
+            // independent of any member. The member's tier is the shop's loyalty promise and stacks
+            // on top automatically (uncapped by role). Cashier 15 / manager 70 / owner 100.
+            manualCap() {
+                return this.maxDiscount;
+            },
+
             applyDiscount(percent) {
                 // Respect the live per-role cap (the server rejects over-cap anyway; this is the UX).
-                if (percent > this.maxDiscount) {
-                    showToast(t('checkout.err_max_discount', {n: this.maxDiscount}), 'warning');
-                    percent = this.maxDiscount;
+                const cap = this.manualCap();
+                if (percent > cap) {
+                    showToast(t('checkout.err_max_discount', {n: cap}), 'warning');
+                    percent = cap;
                 }
                 this.discount = percent;
                 this.cartData.discount = percent;
@@ -581,7 +592,7 @@
                 this.$nextTick(() => { if (this.$refs.discountInput) this.$refs.discountInput.focus(); });
             },
             applyCustomDiscount() {
-                const percent = Math.min(this.maxDiscount, Math.max(0, parseFloat(this.discountInput) || 0));
+                const percent = Math.min(this.manualCap(), Math.max(0, parseFloat(this.discountInput) || 0));
                 this.applyDiscount(percent);
                 this.showDiscountModal = false;
             },
@@ -609,15 +620,18 @@
                 const subtotal = lineSum || this.cartData.totals.subtotal || 0;
                 // BOTH the manual and the member discount apply to the ELIGIBLE (non-promo-restricted)
                 // portion only — tobacco/alcohol never get a promo discount (Swiss law). Mirrors the
-                // server so the Dry Run Preview total matches the charge. Manual & member are mutually
-                // exclusive (a member hides the manual buttons), so they never double up.
+                // server so the Dry Run Preview total matches the charge. Manual & member STACK off the
+                // same eligible base as separate lanes (member tier auto + cashier manual = summed).
                 const eligibleSum = this.cartData.cart.reduce(
                     (s, it) => s + ((this.isPromoRestricted(it) || tierApplied(it)) ? 0 : tierLineTotal(it)), 0);
                 this.discountAmount = eligibleSum * (this.discount / 100);   // manual, eligible items only
                 const afterDiscount = subtotal - this.discountAmount;
                 const memberPct = (this.member && this.member.tier_discount_percent) || 0;
                 this.memberDiscountAmount = eligibleSum * (memberPct / 100); // member, eligible items only
-                const gross = afterDiscount - this.memberDiscountAmount;  // gross paid
+                // Safety floor (mirrors the server): the combined discount can never exceed the
+                // eligible items — the total floors at the non-discountable portion, never negative.
+                const floorTotal = subtotal - eligibleSum;   // promo-restricted (tobacco/alcohol) portion
+                const gross = Math.max(floorTotal, afterDiscount - this.memberDiscountAmount);  // gross paid
                 // Spread the discount evenly across lines so each line's contained VAT
                 // reflects its share of the discounted gross.
                 const factor = subtotal > 0 ? gross / subtotal : 1;
