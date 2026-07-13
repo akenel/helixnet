@@ -10,23 +10,28 @@
 
 ---
 
-## 🃏 ON DECK — next round = 🧪 HC TESTING FIRST (Angel drives, reports to Tigs)
+## 🃏 ON DECK — HC-PROD-01 DONE (9/10 green + row 10 fixed & shipped) → next = TEST LIBRARY, then LABEL DESIGN
 
-**▶ TOP / START HERE: run HC-PROD-01 on prod.** Open `docs/testing/banco/BANCO-PROD-HYPERCARE-SHEET.html`,
-run it against `https://banco.lapiazza.app` (desktop till), and report rows + PASS/FAIL to Tigs. This is
-the first actionable item next session — Tigs: state it and wait for Angel's results, triage from there.
-- Covers the 2026-07-13 prod ship: postcards on any product, Cynthia's 7 balms, share-in-language, short-QR, 4-up, one-page print.
-- Mobile note: login self-heals as the stale service worker updates (v99); if a phone is still stuck, clear site data / incognito once.
-- After HC: pick up the queued items below (label maker waits for the printer ~end-July).
+**✅ HC-PROD-01 run 2026-07-13 (Angel):** rows 1–9 PASS — the postcard maker on the whole catalog + Cynthia's
+7 balms + share-in-language + short-QR + 4-up + one-page print all confirmed on prod. **Row 10** (a discount
+didn't apply on a member sale) → triaged to the old "Option B" suppression → **redesigned to separate-lanes +
+role ladder + safety floor and SHIPPED PROD** (see the section below). Row 10 CLOSED.
+- **▶ NEXT (Angel picked, 2026-07-13):** build the **Test Script Library** = `docs/testing/INDEX.html` — a
+  catalog of the ~96 HTML test sheets (what/env/blank-vs-report/status) + consolidate to one GOLD template.
+  His "control file" for the test scripts. Then the LABEL DESIGN build (waits for the QL-820 printer ~end-July).
+- Mobile note: login self-heals as the stale service worker updates (v99+); if a phone is still stuck, clear site data / incognito once.
 
 ---
 
-## 🃏 IN FLIGHT 2026-07-13 — DISCOUNT MODEL: member tier + manual = SEPARATE LANES (branch `feat/member-manual-discount-stack`)
+## ✅ SHIPPED PROD 2026-07-13 — DISCOUNT MODEL: member tier + manual = SEPARATE LANES (`85ee89a`, b1740)
 
-**From HC-PROD-01 row 10** (bronze member + a manual discount → nothing came off = the old "Option B"
-suppression). Redesigned WITH Angel/Felix to the simplest SAFE rule. **Sandbox-green (b1739, 97fcde4),
-7/7 stacking tests + 1856 in-container (3 known-flaky). Manager cap set to 70 on sandbox. NOT shipped —
-holding for Angel's sandbox human-green, then staging → backup-gated prod (+ set prod manager cap 70, today 25).**
+**Closes HC-PROD-01 row 10** (bronze member + a manual discount → nothing came off = the old "Option B"
+suppression). Redesigned WITH Angel/Felix to the simplest SAFE rule. Shipped sandbox→staging→prod via the
+gated ladder, **backup-gated** (`banco_prod-prediscount-20260713_192748.sql.gz`, gzip-verified), re-probed on
+prod (build stamp b1740 + separate-lanes/safety-floor markers present in the running container + old
+suppression gone). **Manager cap set to 70 on all 3 envs** (cashier 15 / manager 70 / owner 100). Sandbox
+human-green (Angel: fat-finger target auto-clamps at checkout, "this is perfect"). 7/7 stacking tests +
+1856 in-container (3 known-flaky).
 
 - **Two lanes, two pockets:** member TIER = the shop's loyalty promise, automatic, ALWAYS applies, stacks on
   top, UNCAPPED by role. Cashier MANUAL = discretion / rounding room, bounded by a per-role **fat-finger cap:
