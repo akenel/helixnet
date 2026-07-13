@@ -10,14 +10,18 @@
 
 ---
 
-## 🃏 ON DECK — 2026-07-13 · 📇 POSTCARD MAKER awaiting Angel's SANDBOX sign-off ← TOP
+## 🃏 ON DECK — 2026-07-13 · 📇 POSTCARD MAKER ✅ SHIPPED PROD · next = LABEL DESIGN (manager-gated)
 
-**THE GATE:** Postcard maker + Mama Cynthia's 7 balms are BUILT + LIVE ON SANDBOX (`sandbox-banco.lapiazza.app`), NOT prod.
-Angel runs the e2e sign-off sheet → **`docs/testing/banco/BANCO-POSTCARD-MAKER-TEST-SHEET.html` (TEST-PC1)** → on ✅ PASS, promote to prod.
-- **Promote = TWO steps:** (1) deploy code to banco prod (`scripts/ops/deploy-banco.py prod`), (2) `python scripts/import/mama_cynthia.py --env prod` (seeds supplier + 7 balms). Backup gates prod; re-probe after restart (prove, don't assume).
-- **What shipped to sandbox:** any product → single postcard (colour-themed, QR, Banksy serial, share button) + 4-up Format-C sheet + per-product 4-flag description picker + product search now hits supplier name/description + Mama Cynthia juiced EN-source stories w/ her authentic German seeded. All committed to `main`, pushed.
-- **Focus line (Angel, 2026-07-13):** "don't get carried away — basic mechanics end to end, best value, not bells & whistles." Postcard maker = the LABEL/shelf-talker Felix prints anyway, done multilingual + scannable. **La Piazza storefront/claim/worldwide loop stays PARKED.** Do NOT build shelf-label size or storefront unless Angel says.
-- Detail: [[banco-mama-cynthia-artisan-loop]].
+**✅ POSTCARD MAKER SHIPPED PROD 2026-07-13 (`ad22a0f`, b1728).** Backup-gated (`banco_prod-prepostcardmaker`), re-probed on a REAL Felix product: any product → shareable card, OG unfurl, short-QR `/p/{code}` (low-density, scannable small), trackable scan count, share-in-chosen-language. Works across Felix's whole live catalog. TEST-PC1 = Angel-signed ("platinum gold"). Sandbox-proven: single card + 4-up Format-C sheet + 4-flag desc picker + search-by-supplier + juiced EN-source/authentic-DE + one-page print.
+
+**✅ MAMA CYNTHIA 7 BALMS SEEDED PROD 2026-07-13** (Angel said seed). 14 upserts, her Lavendel card verified rendering in prod (EN story + photo + short-QR). Reversible (`DELETE … WHERE supplier_name='Mama Cynthia'`). (Note: an unrelated pre-existing "Cynthia Bailey" supplier product also matches a "cynthia" search — not a dup.)
+
+**🔴 P1 — MOBILE LOGIN fails on PROD + STAGING (sandbox FINE) — 2026-07-13.** Fresh login → `/pos/callback` → KC `invalid_grant "Code not valid"`; callback hit TWICE with the SAME code. **KC config is byte-identical across realms** (helix_pos_web public, no PKCE, correct redirect URIs `banco/staging-banco/sandbox-banco.lapiazza.app/*`, code_ttl 60 / login 1800 / sso 36000) — so NOT config; it's live session/cookie/**service-worker** state (something re-fires the callback on stg/prod, not sbx). Desktop "works" = it had a live session; a true fresh desktop login likely fails too. **WORKAROUND: use the desktop/laptop till (works).** **NEXT (with Angel's phone as harness — he can test any env in seconds):** add request-level diagnostic logging to STAGING (safe, log-only) → Angel does one clean phone login → watch the exact sequence (who fires callback #2; is it the service worker / prefetch) → targeted fix on staging → phone-retest → promote prod. Do NOT cowboy a prod-auth change. Callback: `src/routes/pos_router.py:5976`; login init: `src/templates/pos/login.html` kcConfig/loginWithKeycloak; recovery block lines ~101-142. HC sheet tracks it: `docs/testing/banco/BANCO-PROD-HYPERCARE-SHEET.html`.
+
+**◻ LABEL DESIGN — shelf + product/item labels ← (Angel chose it 2026-07-13: "a few more buttons"); JsBarcode fetched to /tmp, ready to vendor.** Reuse the postcard render engine → shelf-sticker + product-sticker templates (barcode for till + QR for phone, per `docs/BANCO-LABEL-KIT.md`).
+- 🔑 **PERMISSIONS (Angel): MANAGER stuff, NOT cashier or public.** The label/postcard **MAKER** (design / print / quantity) = manager+ gated. The postcard **VIEW** (the QR target) stays PUBLIC by design.
+- ⏳ **Build the PHYSICAL templates when the QL-820 + DK-44205 land (~end July)** so dims match the 62 mm roll. Can build the manager-gated maker UI + on-screen templates sooner; calibrate mm on arrival.
+- **Focus line still holds:** basic mechanics, best value, not bells. La Piazza storefront/claim stays PARKED. Detail: [[banco-mama-cynthia-artisan-loop]], [[banco-hardware-procurement]].
 
 ---
 

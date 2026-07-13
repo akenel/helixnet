@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Banco PROD Hypercare — Report-to-Tigs Sheet (HC-PROD-01)</title>
+<!-- PROD hypercare check for the newly-shipped postcard maker + Mama Cynthia + short-QR.
+     Fill on screen (type + tick), then Print → Save as PDF, OR just read me the row numbers
+     + PASS/FAIL and I log them. Fields freeze on print, so fill BEFORE printing. -->
+<style>
+  :root { --red:#C0392B; --grn:#1a7f4b; --ink:#222; --head:#2C3E50; --line:#d9dee3; --shade:#f4f6f8; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color: var(--ink); background:#eceff1; margin:0; padding:24px; line-height:1.5; }
+  .sheet { max-width: 920px; margin:0 auto; background:#fff; padding:0 0 32px; box-shadow:0 2px 14px rgba(0,0,0,.12); }
+  header { display:flex; align-items:center; justify-content:space-between; border-bottom:3px solid var(--grn); padding:18px 28px; }
+  header .brand { font-weight:bold; font-size:18px; color:var(--grn); letter-spacing:.5px; }
+  header .title { font-size:14px; color:var(--head); font-weight:bold; text-align:center; }
+  header .docid { font-size:12px; color:#777; font-family:monospace; }
+  .body { padding: 22px 28px; }
+  h1 { font-size:20px; color:var(--head); margin:0 0 4px; }
+  h2.sec { font-size:14px; color:var(--grn); margin:22px 0 8px; padding-bottom:4px; border-bottom:1px solid #d7ece0; }
+  .sub { color:#667; font-size:13px; margin:0 0 14px; }
+  .howto { font-size:12px; color:#555; background:#eef4fb; border:1px solid #c5d8ee; border-left:4px solid #3b73b9; border-radius:6px; padding:9px 13px; margin-bottom:16px; }
+  .known { font-size:12.5px; background:#fff3f2; border:1px solid #f0c3bf; border-left:4px solid var(--red); border-radius:6px; padding:10px 13px; margin-bottom:16px; }
+  .known b { color:var(--red); }
+  .meta { display:grid; grid-template-columns:1fr 1fr; gap:10px 24px; font-size:13px; background:var(--shade); border:1px solid var(--line); border-radius:6px; padding:14px 16px; margin-bottom:18px; }
+  .meta b { color:var(--head); }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { border:1px solid var(--line); padding:9px 10px; vertical-align:top; text-align:left; }
+  th { background:var(--head); color:#fff; font-size:12px; }
+  td.n { text-align:center; font-weight:bold; color:var(--grn); width:28px; }
+  td.chk { text-align:center; width:44px; }
+  td.notes { width:150px; padding:4px; }
+  tr:nth-child(even) td { background:#fafbfc; }
+  .exp { color:#445; }
+  .big td { background:#eaf7ef !important; }
+  .kbd, code { font-family:monospace; background:#eef1f4; border:1px solid #cdd3da; border-radius:3px; padding:1px 5px; font-size:12px; }
+  input.txt { border:0; border-bottom:1px solid #99a; background:transparent; font:inherit; color:var(--ink); padding:2px 4px; width:100%; min-width:60px; }
+  input.txt:focus { outline:none; border-bottom:2px solid var(--grn); background:#fffce8; }
+  td.notes input.txt { border-bottom:0; }
+  input[type=checkbox], input[type=radio] { appearance:none; -webkit-appearance:none; width:18px; height:18px; border:1.6px solid #667; background:#fff; cursor:pointer; vertical-align:middle; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+  input[type=checkbox] { border-radius:3px; } input[type=radio] { border-radius:50%; }
+  input[type=checkbox]:checked { background:var(--grn); border-color:var(--grn); }
+  input[type=checkbox]:checked::after { content:"✓"; color:#fff; font-size:13px; font-weight:bold; display:flex; align-items:center; justify-content:center; height:100%; }
+  input[type=radio]:checked { background:var(--grn); border-color:var(--grn); box-shadow:inset 0 0 0 3px #fff; }
+  .result { margin-top:22px; border:2px solid var(--grn); border-radius:6px; padding:14px 16px; background:#f4fbf7; }
+  .result h3 { margin:0 0 10px; color:var(--head); font-size:15px; }
+  .result label { font-size:14px; margin-right:22px; cursor:pointer; }
+  .sig { margin-top:14px; font-size:13px; color:#445; display:flex; gap:28px; } .sig span { flex:1; }
+  footer { border-top:1px solid var(--line); margin-top:26px; padding:12px 28px 0; font-size:11px; color:#8a93a0; display:flex; justify-content:space-between; }
+  .btns { max-width:920px; margin:0 auto 14px; text-align:right; }
+  .btns button { background:var(--grn); color:#fff; border:0; border-radius:5px; padding:8px 16px; font-size:13px; cursor:pointer; font-weight:bold; }
+  @media print { body { background:#fff; padding:0; } .sheet { box-shadow:none; max-width:100%; } .btns, .no-print { display:none !important; } input.txt:focus { background:transparent; } tr { break-inside:avoid; } h2.sec { break-after:avoid; } }
+</style>
+</head>
+<body>
+<div class="btns no-print"><button onclick="window.print()">🖨️ Print / Save as PDF</button></div>
+
+<div class="sheet">
+  <header>
+    <div class="brand">HelixNet · Banco</div>
+    <div class="title">PROD Hypercare — postcard maker + Mama Cynthia<br>Report-to-Tigs sheet</div>
+    <div class="docid">HC-PROD-01</div>
+  </header>
+
+  <div class="body">
+    <h1>Prod hypercare — the new stuff, live on banco.lapiazza.app</h1>
+    <p class="sub">Confirms the 2026-07-13 prod ship (postcard maker on the whole catalog + Mama Cynthia's 7 balms + short-QR + share). Tick as you go; read me the row numbers + PASS/FAIL and I log them.</p>
+
+    <div class="howto">📝 <b>How to report:</b> either fill this on screen and <span class="kbd">Print → PDF</span>, or just message me <b>“row 7 fail — …”</b>. Fill in <b>before</b> printing (a browser PDF freezes the fields).</div>
+
+    <div class="known">⚠️ <b>KNOWN — being worked:</b> <b>mobile login</b> fails on prod + staging (Code not valid), sandbox is fine — it's a live-session/service-worker difference, NOT the new features. <b>Workaround: use the desktop/laptop till (works).</b> Row 1 just confirms this is still the state; don't burn time re-testing mobile login.</div>
+
+    <div class="meta">
+      <div><b>Environment:</b> <input class="txt" type="text" value="https://banco.lapiazza.app"></div>
+      <div><b>Build:</b> <input class="txt" type="text" value="ad22a0f · b1728"></div>
+      <div><b>Tester:</b> <input class="txt" type="text" placeholder="Angel"></div>
+      <div><b>Date:</b> <input class="txt" type="text" placeholder="dd/mm/yyyy"></div>
+    </div>
+
+    <table>
+      <thead><tr><th class="n">#</th><th>Do this on PROD</th><th>Expected</th><th class="chk">Pass</th><th class="notes">Notes</th></tr></thead>
+      <tbody>
+
+        <tr><td colspan="5"><h2 class="sec" style="margin:2px 0;">0 · Access</h2></td></tr>
+        <tr><td class="n">1</td><td><b>Log in on the DESKTOP/laptop till.</b> (Mobile = known issue, skip.)</td><td class="exp">Desktop login works, POS catalog loads.</td><td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td></tr>
+
+        <tr><td colspan="5"><h2 class="sec" style="margin:2px 0;">1 · Postcards on the REAL catalog (the feature)</h2></td></tr>
+        <tr class="big"><td class="n">2</td><td><b>Open ANY normal Felix product</b> → detail modal → tap <b>📇 Postcard</b>.</td><td class="exp">A beautiful card opens for a real catalog item (not just Cynthia) — image, name, price, QR, serial.</td><td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td></tr>
+        <tr><td class="n">3</td><td>Tap the card's <b>DE·EN·FR·IT</b> flags.</td><td class="exp">Description re-reads in each language.</td><td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td></tr>
+        <tr><td class="n">4</td><td><b>Scan the QR</b> with your phone.</td><td class="exp">Opens the card on your phone (short link <code>…/p/XXXX</code>).</td><td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td></tr>
+        <tr><td class="n">5</td><td>Switch the card to <b>English</b>, then <b>📤 Share</b> it to yourself (WhatsApp/email).</td><td class="exp">Link opens in <b>English</b> + the preview unfurls with photo + story (not a bare link). Try German too → German.</td><td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td></tr>
+        <tr><td class="n">6</td><td><b>Print</b> the single card.</td><td class="exp">Exactly <b>1 page</b> (no blank 2nd page).</td><td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td></tr>
+        <tr><td class="n">7</td><td>Tap <b>🖨️ 4-up</b>.</td><td class="exp">One A4, 4 cards, Banksy serials 01/04–04/04, cut ticks.</td><td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td></tr>
+
+        <tr><td colspan="5"><h2 class="sec" style="margin:2px 0;">2 · Mama Cynthia is live in prod</h2></td></tr>
+        <tr><td class="n">8</td><td>Search <code>cynthia</code> (also <code>salbe</code>, <code>MC-</code>).</td><td class="exp">Her <b>7 balms</b> appear, correct prices/colours/label photos.</td><td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td></tr>
+        <tr class="big"><td class="n">9</td><td>Open <b>Lavendel</b> → postcard → read EN then DE.</td><td class="exp">EN = juiced story (olive oil, coconut, beeswax, lavender, 30 ml). DE = her own words. Her label photo shows.</td><td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td></tr>
+
+        <tr><td colspan="5"><h2 class="sec" style="margin:2px 0;">3 · Nothing else broke</h2></td></tr>
+        <tr><td class="n">10</td><td>Ring up a <b>normal sale</b> (scan/add → checkout).</td><td class="exp">Checkout works exactly as before.</td><td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td></tr>
+
+      </tbody>
+    </table>
+
+    <div class="result">
+      <h3>Overall</h3>
+      <label><input type="radio" name="overall"> ✅ Prod new stuff is good</label>
+      <label><input type="radio" name="overall"> ⚠️ Issues (see notes / rows)</label>
+      <div class="sig"><span>Reported by: <input class="txt" type="text"></span><span>Date: <input class="txt" type="text"></span></div>
+    </div>
+  </div>
+
+  <footer><span>Confidential — Internal Use Only</span><span>HC-PROD-01 · Rev 1 · postcard maker prod hypercare</span></footer>
+</div>
+</body>
+</html>
