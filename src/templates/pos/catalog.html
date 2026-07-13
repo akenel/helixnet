@@ -637,6 +637,9 @@
                     <div x-show="liveResults.length" class="mt-2">
                         <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
                             🌐 <span data-i18n="catalog.snap_live_results">Live from the supplier sites</span>
+                            <template x-if="liveVariants.length">
+                                <span class="normal-case font-normal text-gray-400">· <span data-i18n="catalog.snap_live_also">also searched</span> <span class="text-teal-600" x-text="liveVariants.join(', ')"></span></span>
+                            </template>
                         </div>
                         <template x-for="m in liveResults" :key="m.supplier + m.product_url">
                             <button @click="snapPickLive(m)" class="w-full flex items-center gap-3 p-2.5 mb-2 rounded-lg border border-gray-200 hover:border-teal-400 hover:bg-teal-50 text-left">
@@ -783,6 +786,7 @@
             snapBusy: false,      // BL-34: manual "🔎 Search similar" in flight
             // BL-35: live supplier-site search fallback
             liveResults: [],
+            liveVariants: [],     // BL-38: extra language variants also searched (e.g. German)
             liveBusy: false,
             liveSearched: false,
             liveErrors: {},
@@ -1142,6 +1146,8 @@
                     const d = await API.get(`/api/v1/pos/products/search-suppliers-live?q=${encodeURIComponent(q)}&limit=4`);
                     this.liveResults = d.results || [];
                     this.liveErrors = d.errors || {};
+                    // BL-38: extra language variants we also searched (e.g. German), for transparency.
+                    this.liveVariants = (d.variants || []).filter(v => v && v.toLowerCase() !== q.toLowerCase());
                 } catch (e) {
                     showToast(e.message || t('catalog.snap_live_failed'), 'error');
                     this.liveResults = [];
@@ -1161,7 +1167,7 @@
                 this.snapPickReference(adopt);
                 this._resetLive();
             },
-            _resetLive() { this.liveResults = []; this.liveSearched = false; this.liveErrors = {}; this.liveBusy = false; },
+            _resetLive() { this.liveResults = []; this.liveVariants = []; this.liveSearched = false; this.liveErrors = {}; this.liveBusy = false; },
             snapClose() { this.snapOpen = false; this._resetLive(); },
             // BL-35 wholesale-vs-competitor labeling: what this site's price MEANS.
             roleLabel(role) {
