@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Banco · The Felix Demo (prod show day)</title>
+<style>
+  :root{
+    --bg:#06110b; --panel:#0b1710; --panel2:#0e1d14; --ink:#eef4ee; --mut:#8fae98;
+    --line:#1c3326; --gold:#e9cf7e; --gold2:#d4af37; --green:#4ade80; --red:#ef4444; --cyan:#38d6c0; --amber:#fbbf24;
+    --glowG:0 0 8px rgba(212,175,55,.5);
+    --font:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  }
+  *{ box-sizing:border-box; } html,body{ margin:0; }
+  body{ font-family:var(--font); color:var(--ink); line-height:1.55;
+    background:
+      radial-gradient(1000px 500px at 50% -10%, rgba(212,175,55,.10) 0%, transparent 60%),
+      radial-gradient(800px 640px at 88% 116%, rgba(52,128,72,.20) 0%, transparent 55%),
+      linear-gradient(160deg,#050f09 0%, #081a10 100%);
+    padding-bottom:96px; min-height:100vh; }
+  header{ position:sticky; top:0; z-index:20; background:linear-gradient(180deg,#0a1610,#06100b);
+    border-bottom:1px solid var(--gold2); box-shadow:0 0 18px rgba(212,175,55,.22); padding:12px 18px; }
+  .htop{ display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; max-width:880px; margin:0 auto; }
+  h1{ font-size:16px; margin:0; letter-spacing:.1em; color:var(--gold); text-shadow:var(--glowG); text-transform:uppercase; }
+  h1 small{ display:block; margin-top:3px; font-size:11px; letter-spacing:.04em; color:var(--mut); text-shadow:none; text-transform:none; }
+  .meters{ display:flex; align-items:center; gap:16px; }
+  .meter{ text-align:center; min-width:44px; } .meter b{ display:block; font-size:20px; line-height:1; }
+  .meter.pass b{ color:var(--green); } .meter.fail b{ color:var(--red); } .meter.left b{ color:var(--cyan); }
+  .meter span{ font-size:9.5px; letter-spacing:.13em; color:var(--mut); text-transform:uppercase; }
+  .timer{ font-size:20px; font-weight:700; color:var(--gold); text-shadow:var(--glowG); font-variant-numeric:tabular-nums; }
+  main{ max-width:880px; margin:0 auto; padding:20px 18px 40px; }
+  .coin{ text-align:center; color:var(--gold2); letter-spacing:.22em; font-size:12px; margin:2px 0 16px; }
+  .lead{ background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--gold2); border-radius:10px; padding:13px 16px; margin-bottom:14px; font-size:13.5px; }
+  .lead b{ color:var(--gold); }
+  .prep{ background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:12px 15px; font-size:12.5px; margin-bottom:16px; }
+  .prep b{ color:var(--gold); } .prep code{ background:#122019; color:var(--green); padding:1px 7px; border-radius:4px; }
+  .prep ul{ margin:8px 0 0; padding-left:20px; } .prep li{ margin:3px 0; }
+  .sect{ margin:22px 0 10px; padding:7px 13px; font-size:12px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--gold); border-left:3px solid var(--gold2); background:#0b1c13; border-radius:0 8px 8px 0; font-weight:700; }
+  ol.acts{ margin:0; padding:0; list-style:none; }
+  ol.acts li{ display:flex; gap:12px; padding:15px 15px; align-items:flex-start; background:var(--panel); border:1px solid var(--line); border-radius:12px; margin-bottom:11px; }
+  ol.acts li.pass{ border-color:rgba(74,222,128,.45); box-shadow:0 0 12px rgba(74,222,128,.08); }
+  ol.acts li.fail{ border-color:rgba(239,68,68,.5); box-shadow:0 0 12px rgba(239,68,68,.10); }
+  .verdict-btns{ display:flex; flex-direction:column; gap:5px; flex:none; }
+  .vb{ width:44px; height:38px; border:1px solid var(--line); background:#0c1610; color:var(--mut); border-radius:8px; font-size:17px; cursor:pointer; line-height:1; }
+  .vb.pass.on{ background:rgba(74,222,128,.16); border-color:var(--green); color:var(--green); }
+  .vb.fail.on{ background:rgba(239,68,68,.16); border-color:var(--red); color:var(--red); }
+  .cbody{ flex:1; min-width:0; }
+  .act-no{ font-size:11px; letter-spacing:.14em; color:var(--gold2); font-weight:700; text-transform:uppercase; }
+  .q{ font-size:15px; margin-top:2px; } .q b{ color:var(--gold); }
+  .say{ margin-top:8px; font-size:13px; color:#cfe6d6; background:#0a1a12; border-left:2px solid var(--cyan); border-radius:0 7px 7px 0; padding:7px 11px; }
+  .say b{ color:var(--cyan); }
+  .wow{ margin-top:7px; font-size:12.5px; color:var(--green); } .wow b{ color:#bbf7d0; }
+  .tag{ font-size:10px; font-weight:700; padding:2px 8px; border-radius:99px; background:#20320a; color:var(--gold); letter-spacing:.05em; margin-left:6px; }
+  .tag.felix{ background:#2a1206; color:var(--amber); }
+  .go{ display:inline-block; margin-top:8px; background:var(--gold2); color:#10251a; text-decoration:none; padding:5px 12px; border-radius:6px; font-size:11.5px; font-weight:800; }
+  .cm{ margin-top:9px; width:100%; border:1px solid var(--line); background:#08120c; color:var(--ink); border-radius:7px; padding:6px 9px; font:inherit; font-size:12px; resize:vertical; height:32px; }
+  .cm:focus{ outline:none; border-color:var(--cyan); }
+  .final{ background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-top:18px; text-align:center; }
+  .final .ttl{ font-size:13px; color:var(--mut); letter-spacing:.1em; text-transform:uppercase; margin-bottom:10px; }
+  .final-btns{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+  .big{ font-size:14px; font-weight:800; letter-spacing:.08em; padding:11px 22px; border-radius:9px; border:1px solid var(--line); background:#0c1610; color:var(--ink); cursor:pointer; }
+  .big.ship.on{ background:rgba(74,222,128,.16); border-color:var(--green); color:var(--green); }
+  .big.hold.on{ background:rgba(239,68,68,.16); border-color:var(--red); color:var(--red); }
+  .bar{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:14px; }
+  .util{ border:1px solid var(--line); background:#08120c; color:var(--cyan); border-radius:8px; padding:8px 14px; font-size:12px; cursor:pointer; }
+  footer{ text-align:center; color:var(--mut); font-size:11px; padding:18px; letter-spacing:.05em; }
+</style>
+</head>
+<body>
+<header>
+  <div class="htop">
+    <h1>🐺 Banco · The Felix Demo<small>Show day — after the harvest, on the real till. Showcase on top · debug underneath.</small></h1>
+    <div class="meters">
+      <div class="meter pass"><b id="m-pass">0</b><span>Works</span></div>
+      <div class="meter fail"><b id="m-fail">0</b><span>Broke</span></div>
+      <div class="meter left"><b id="m-left">0</b><span>Left</span></div>
+      <div class="meter"><span class="timer" id="timer">00:00</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="coin">◂ ◃ ◄  HE ASKED FOR A SCAN BUTTON · SHOW HIM THE WHOLE MACHINE  ► ▻ ▸</div>
+  <div class="lead">Lead with what Felix asked for — <b>scan, check out, done</b> — then peel back the layers he didn't
+    know he was getting. The through-line: <b>it stopped guessing.</b> No more on-the-fly typed names and
+    made-up descriptions — it <b>finds</b> the real product, and when it's not in the catalog it finds it
+    <b>live on your suppliers' sites</b>, 99% one way or another. Every ✓/✗ is a real prod check while you're at it.</div>
+
+  <div class="prep">
+    🎒 <b>Before you start</b> — this is <b>PROD</b> (the real till): <code>banco.lapiazza.app/pos</code>, log in <code>felix</code> (or <code>pam</code>), hard-refresh.
+    <ul>
+      <li>Bring a <b>papers pack (Gizeh)</b> — it's in the catalog with quantity breaks (Act 5).</li>
+      <li>Bring the <b>Tycoon gas can</b> (real barcode) + one product <b>not in the catalog</b> (for live search).</li>
+      <li>Bring the <b>scanner</b> and your <b>phone</b> (for the snap / photo find).</li>
+      <li>It's live — real scans, real checkouts. If anything's off, mark ✗ + a note and we fix it same day.</li>
+    </ul>
+  </div>
+
+  <div class="sect">① What he asked for</div>
+  <ol class="acts">
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="act-no">Act 1 · the door</div>
+        <div class="q"><b>Your front door.</b> The login is now a head-shop screen — green means the real till, the wolf, and a language picker (EN · DE · FR · IT). <span class="tag">login</span></div>
+        <div class="say"><b>Say:</b> "Green door = real money, Felix. If it's ever blue or orange, you're on a test one — you'll never mix them up."</div>
+        <a class="go" href="https://banco.lapiazza.app/pos" target="_blank">▶ Open prod</a>
+        <div class="wow"><b>Wow:</b> it looks like <i>his</i> shop, not a generic admin panel.</div>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="act-no">Act 2 · scan → check out</div>
+        <div class="q"><b>"I just want to scan and cash out." — done.</b> Scan a real product → it lands in the cart → Checkout → cash → receipt. Fast, no fuss. <span class="tag felix">Felix's ask</span></div>
+        <div class="say"><b>Say:</b> "This is the part you wanted. Everything else just makes this part never break."</div>
+        <a class="go" href="https://banco.lapiazza.app/pos/scan" target="_blank">▶ Sell</a>
+        <div class="wow"><b>Wow:</b> scan-to-receipt in seconds — VAT + totals correct.</div>
+        <textarea class="cm" placeholder="note — how fast? anything clunky?"></textarea>
+      </div>
+    </li>
+  </ol>
+
+  <div class="sect">② It stopped guessing</div>
+  <ol class="acts">
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="act-no">Act 3 · the librarian, not the author</div>
+        <div class="q"><b>No more made-up names.</b> Go to add a product — snap a photo or type a name. Instead of inventing a product, it <b>searches your real catalog</b> and shows what already exists, with an <b>honest match %</b>. <span class="tag">find-first</span></div>
+        <div class="say"><b>Say:</b> "Remember it used to type its own guess and act 90% sure even when it was wrong? Gone. Now it finds the real one, or admits it doesn't know."</div>
+        <a class="go" href="https://banco.lapiazza.app/pos/catalog" target="_blank">▶ Catalog → New product</a>
+        <div class="wow"><b>Wow:</b> 5,158 real products behind it — it <i>recognises</i>, it doesn't hallucinate.</div>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="act-no">Act 4 · the barcode that used to miss</div>
+        <div class="q"><b>Scan the Tycoon can.</b> The exact can that used to come up empty now scans and finds the item (real EAN in the reference now). <span class="tag">stale-data fix</span></div>
+        <div class="say"><b>Say:</b> "This can is why we found the whole mess. It couldn't find its own gas. Now watch."</div>
+        <div class="wow"><b>Wow:</b> the thing that was broken is the thing that now works — in front of him.</div>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="act-no">Act 5 · find it 99%, one way or another</div>
+        <div class="q"><b>Hold something NOT in the catalog.</b> Add product → <b>🌐 Search supplier sites live</b>. It searches <b>FourTwenty · Artemis · Near Dark</b> at once and finds it — real name, photo, EAN, and the price breaks. Tap it → the form fills. <span class="tag">live search</span></div>
+        <div class="say"><b>Say:</b> "You never type a product from scratch again. If it exists anywhere your suppliers sell it, we find it and pull the real details in. And it remembers, so next time it's instant."</div>
+        <div class="wow"><b>Wow:</b> type English, it even hits the German sites ("also searched Feuerzeuggas"). No guessing, ever.</div>
+        <textarea class="cm" placeholder="note — did it find his item? how many suppliers?"></textarea>
+      </div>
+    </li>
+  </ol>
+
+  <div class="sect">③ His own ideas, shipped</div>
+  <ol class="acts">
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="act-no">Act 6 · multi-tier pricing</div>
+        <div class="q"><b>Your quantity breaks — live.</b> Ring a <b>Gizeh King Size</b> (or any tiered item): at 1 it's one price, at 3 and at 10 the price drops automatically. His design, working. <span class="tag felix">Felix's design</span></div>
+        <div class="say"><b>Say:</b> "This was your idea — buy more, pay less, and the break price is final. It's in, it's exact to the cent, and the cart shows exactly what the till charges."</div>
+        <div class="wow"><b>Wow:</b> he sees <i>his own</i> concept running on the real till.</div>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="act-no">Act 7 · speaks Switzerland</div>
+        <div class="q"><b>Flip the language.</b> Top-right → <b>DE / FR / IT</b>. The buttons and the product descriptions follow. Artemis's own DE/FR/IT for free; anything else auto-translated (🤖 badge, honest). <span class="tag">4 languages</span></div>
+        <div class="say"><b>Say:</b> "This is the Swiss armour. Nobody gets to point at a missing language. German, French, Italian — covered. English too."</div>
+        <div class="wow"><b>Wow:</b> a Swiss critic's easiest complaint — gone before they open their mouth.</div>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="act-no">Act 8 · knows the cost across the border</div>
+        <div class="q"><b>A German-site price in your francs.</b> In the live search, a <b>Near Dark</b> item shows its EUR price <b>≈ CHF</b> (plan rate). You see cost + market at a glance. <span class="tag">currency</span></div>
+        <div class="say"><b>Say:</b> "Near Dark quotes euros. You think in francs. It does the math — €7.00 ≈ CHF 6.72 — so you always know your real cost."</div>
+        <div class="wow"><b>Wow:</b> the pricing brain — cost vs the market, no calculator.</div>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+  </ol>
+
+  <div class="sect">④ Under the hood (if he wants to look)</div>
+  <ol class="acts">
+    <li data-step>
+      <div class="verdict-btns"><button class="vb pass">✓</button><button class="vb fail">✗</button></div>
+      <div class="cbody">
+        <div class="act-no">Act 9 · the migration is real</div>
+        <div class="q"><b>It's all actually here.</b> The catalog is <b>5,158 real products</b>, a <b>10,282-item</b> supplier reference behind the live search, categories, images, descriptions — not a demo of ten items. The tools that built it work and re-run cleanly. <span class="tag">migration</span></div>
+        <div class="say"><b>Say:</b> "This isn't a mock-up. Your whole shop is in here, enriched, and the importers are repeatable — we can pull a fresh supplier feed any time."</div>
+        <div class="wow"><b>Wow:</b> it's production, not a pitch deck.</div>
+        <textarea class="cm" placeholder="note (only if ✗)"></textarea>
+      </div>
+    </li>
+  </ol>
+
+  <div class="final">
+    <div class="ttl">◆ Show day verdict — did Felix's face light up?</div>
+    <div class="final-btns">
+      <button class="big ship" id="v-ship">✓ HE'S SOLD</button>
+      <button class="big hold" id="v-hold">✗ FIX FIRST</button>
+    </div>
+    <div class="bar">
+      <button class="util" id="copy">📋 Copy findings</button>
+      <button class="util" id="reset">↻ Reset</button>
+    </div>
+  </div>
+
+  <footer>🐯 The Felix Demo · scan-and-checkout on top, the whole machine underneath · you steer, I row · <span id="stamp"></span></footer>
+</main>
+
+<script>
+  const KEY = 'banco-prod-felix-demo-v1';
+  const steps = [...document.querySelectorAll('li[data-step]')];
+  steps.forEach((li,i)=> li.dataset.id = 's'+i);
+  let state; try{ state = JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ state={}; }
+  const save = ()=> localStorage.setItem(KEY, JSON.stringify(state));
+  function apply(){
+    steps.forEach(li=>{
+      const s = state[li.dataset.id] || {};
+      li.classList.toggle('pass', s.v==='pass'); li.classList.toggle('fail', s.v==='fail');
+      li.querySelector('.vb.pass').classList.toggle('on', s.v==='pass');
+      li.querySelector('.vb.fail').classList.toggle('on', s.v==='fail');
+      li.querySelector('.cm').value = s.note || '';
+    });
+    document.getElementById('v-ship').classList.toggle('on', state.__v==='ship');
+    document.getElementById('v-hold').classList.toggle('on', state.__v==='hold');
+    let p=0,f=0; steps.forEach(li=>{ const v=(state[li.dataset.id]||{}).v; if(v==='pass')p++; else if(v==='fail')f++; });
+    document.getElementById('m-pass').textContent=p; document.getElementById('m-fail').textContent=f;
+    document.getElementById('m-left').textContent=steps.length-p-f;
+  }
+  steps.forEach(li=>{
+    const id=li.dataset.id;
+    li.querySelector('.vb.pass').onclick=()=>{ const s=state[id]||{}; state[id]={...s,v:s.v==='pass'?null:'pass'}; save(); apply(); };
+    li.querySelector('.vb.fail').onclick=()=>{ const s=state[id]||{}; state[id]={...s,v:s.v==='fail'?null:'fail'}; save(); apply(); };
+    li.querySelector('.cm').addEventListener('input', e=>{ state[id]={...(state[id]||{}),note:e.target.value}; save(); });
+  });
+  document.getElementById('v-ship').onclick=()=>{ state.__v = state.__v==='ship'?'':'ship'; save(); apply(); };
+  document.getElementById('v-hold').onclick=()=>{ state.__v = state.__v==='hold'?'':'hold'; save(); apply(); };
+  document.getElementById('reset').onclick=()=>{ if(confirm('Clear the demo sheet?')){ state={}; save(); state.__t0=Date.now(); save(); t0=state.__t0; apply(); } };
+  document.getElementById('copy').onclick=()=>{
+    let p=0,f=0; const lines=steps.map(li=>{
+      const s=state[li.dataset.id]||{}; if(s.v==='pass')p++; if(s.v==='fail')f++;
+      const mark=s.v==='pass'?'WORKS':s.v==='fail'?'BROKE':'—';
+      const title=li.querySelector('.q').innerText.trim();
+      return `[${mark}] ${title}${s.note?'  ↳ '+s.note:''}`;
+    }).join('\n');
+    const out=`BANCO — THE FELIX DEMO (prod)\nVerdict: ${(state.__v||'—').toUpperCase()} · Works ${p} · Broke ${f} of ${steps.length}\n\n${lines}`;
+    navigator.clipboard.writeText(out).then(()=>{ const b=document.getElementById('copy'); b.textContent='✓ Copied'; setTimeout(()=>b.textContent='📋 Copy findings',1400); });
+  };
+  let t0 = state.__t0 || (state.__t0=Date.now(), save(), state.__t0);
+  setInterval(()=>{ const s=Math.floor((Date.now()-t0)/1000); document.getElementById('timer').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); },1000);
+  document.getElementById('stamp').textContent='built '+new Date().toISOString().slice(0,10);
+  apply();
+</script>
+</body>
+</html>
