@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HelixNet · Banco — Test Script Library</title>
+<!-- The catalog of every HTML test sheet. Open this first, find the sheet, click it.
+     A sheet is a RENDER of what to test — never a second source of truth. When a test
+     sheet and the app disagree, the app wins; fix the sheet. New sheet? Copy a GOLD template. -->
+<style>
+  :root { --red:#C0392B; --grn:#1a7f4b; --ink:#222; --head:#2C3E50; --line:#d9dee3; --shade:#f4f6f8; --gold:#b8860b; --blue:#3b73b9; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color: var(--ink); background:#eceff1; margin:0; padding:24px; line-height:1.5; }
+  .sheet { max-width: 1000px; margin:0 auto; background:#fff; padding:0 0 34px; box-shadow:0 2px 14px rgba(0,0,0,.12); }
+  header { display:flex; align-items:center; justify-content:space-between; border-bottom:3px solid var(--grn); padding:18px 28px; }
+  header .brand { font-weight:bold; font-size:18px; color:var(--grn); letter-spacing:.5px; }
+  header .title { font-size:14px; color:var(--head); font-weight:bold; text-align:center; }
+  header .docid { font-size:12px; color:#777; font-family:monospace; }
+  .body { padding: 22px 28px; }
+  h1 { font-size:21px; color:var(--head); margin:0 0 4px; }
+  .sub { color:#667; font-size:13px; margin:0 0 14px; }
+  h2.sec { font-size:15px; color:var(--grn); margin:26px 0 6px; padding-bottom:5px; border-bottom:1px solid #d7ece0; }
+  h2.sec .c { font-weight:normal; color:#9aa; font-size:12px; }
+  .howto { font-size:12.5px; color:#555; background:#eef4fb; border:1px solid #c5d8ee; border-left:4px solid var(--blue); border-radius:6px; padding:10px 13px; margin-bottom:12px; }
+  .doctrine { font-size:12.5px; background:#f4fbf7; border:1px solid #bfe3cf; border-left:4px solid var(--grn); border-radius:6px; padding:10px 13px; margin-bottom:12px; }
+  .doctrine b { color:var(--grn); }
+  .legend { font-size:11.5px; color:#667; margin:4px 0 16px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; margin-bottom:4px; }
+  th, td { border:1px solid var(--line); padding:7px 10px; vertical-align:top; text-align:left; }
+  th { background:var(--head); color:#fff; font-size:11.5px; }
+  tr:nth-child(even) td { background:#fafbfc; }
+  td.nm a { color:var(--head); font-weight:bold; text-decoration:none; }
+  td.nm a:hover { color:var(--grn); text-decoration:underline; }
+  td.id { font-family:monospace; font-size:11.5px; color:#778; white-space:nowrap; }
+  .chip { display:inline-block; font-size:10.5px; font-weight:bold; padding:1px 7px; border-radius:9px; white-space:nowrap; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+  .prod { background:#fdeceb; color:var(--red); border:1px solid #f0c3bf; }
+  .sbx  { background:#fff7e6; color:var(--gold); border:1px solid #e6d9a8; }
+  .stg  { background:#eef4fb; color:var(--blue); border:1px solid #c5d8ee; }
+  .any  { background:#eef1f4; color:#667; border:1px solid #cdd3da; }
+  .t-sheet { background:#eaf7ef; color:var(--grn); border:1px solid #bfe3cf; }
+  .t-report{ background:#f0eefb; color:#5a45b8; border:1px solid #cfc7ee; }
+  .t-tmpl  { background:#fff3f2; color:var(--red); border:1px solid #f0c3bf; }
+  .t-demo  { background:#fff7e6; color:var(--gold); border:1px solid #e6d9a8; }
+  .flag { background:#eaf7ef; }
+  .flag td { border-color:#bfe3cf; }
+  .note { font-size:11.5px; color:#8a93a0; margin:6px 0 0; }
+  footer { border-top:1px solid var(--line); margin-top:26px; padding:12px 28px 0; font-size:11px; color:#8a93a0; display:flex; justify-content:space-between; }
+  @media print { body { background:#fff; padding:0; } .sheet { box-shadow:none; max-width:100%; } tr { break-inside:avoid; } h2.sec { break-after:avoid; } }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="brand">HelixNet · Banco</div>
+    <div class="title">Test Script Library<br>the catalog of every sheet</div>
+    <div class="docid">TEST-INDEX</div>
+  </header>
+
+  <div class="body">
+    <h1>Test Script Library</h1>
+    <p class="sub">Every HTML test sheet, in one place. Open this first, find the sheet, click it. Grouped by area; the live-till PROD sheets are up top.</p>
+
+    <div class="doctrine">🧭 <b>Doctrine:</b> a test sheet is a <b>render of what to test</b>, never a second source of truth. When a sheet and the app disagree, <b>the app wins — fix the sheet.</b> Starting a new one? Copy a <b>GOLD template</b> (bottom) so it comes out looking like the rest.</div>
+
+    <div class="howto">📝 <b>How a sheet works:</b> fill it on screen (type + tick), then <span class="chip any">Print → PDF</span>, or just message Tigs “row 6 fail — …”. Fill BEFORE printing (browser PDFs freeze the fields).</div>
+
+    <p class="legend">
+      Env: <span class="chip prod">PROD</span> live till · <span class="chip sbx">SBX</span> sandbox · <span class="chip stg">STG</span> staging · <span class="chip any">ANY</span> env-agnostic &nbsp;|&nbsp;
+      Type: <span class="chip t-sheet">sheet</span> blank, to run · <span class="chip t-report">report</span> a filled run · <span class="chip t-demo">demo/script</span> · <span class="chip t-tmpl">template</span>
+    </p>
+
+    <h2 class="sec">▶ Start here — the live-till PROD sheets</h2>
+    <table>
+      <thead><tr><th>Sheet</th><th>ID</th><th>Env</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr class="flag"><td class="nm"><a href="./banco/BANCO-DISCOUNT-PROD-TEST-SHEET.html">Discount Model — member tier + manual = separate lanes (NEW)</a></td><td class="id">DISC-PROD-01</td><td><span class="chip prod">PROD</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-PROD-HYPERCARE-SHEET.html">PROD Hypercare — postcard maker + Mama Cynthia</a></td><td class="id">HC-PROD-01</td><td><span class="chip prod">PROD</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-PROD-ARTEMIS-TEST-SCRIPT.html">PROD — Artemis catalog go-live check</a></td><td class="id">—</td><td><span class="chip prod">PROD</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-PROD-SMOKE.html">PROD smoke — session ship</a></td><td class="id">TEST-BANCO-PROD-001</td><td><span class="chip prod">PROD</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-PROD-HYPERCARE-CAPTURE.html">PROD — Hypercare Capture</a></td><td class="id">—</td><td><span class="chip prod">PROD</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-SCAN-FIELD-TALLY.html">Scan Field Tally — Artemis PROD</a></td><td class="id">—</td><td><span class="chip prod">PROD</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-PROD-FELIX-DEMO.html">The Felix Demo (prod show day)</a></td><td class="id">—</td><td><span class="chip prod">PROD</span></td><td><span class="chip t-demo">demo</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-ONBOARDING-GOLIVE-CHECKLIST.html">Onboarding &amp; Go-Live Checklist — Artemis / Felix</a></td><td class="id">ONBOARD-ARTEMIS</td><td><span class="chip prod">PROD</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="sec">Banco — Sandbox (SBX) <span class="c">feature UATs, newest first</span></h2>
+    <table>
+      <thead><tr><th>Sheet</th><th>ID / feature</th><th>Env</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td class="nm"><a href="./banco/BANCO-SBX-MULTILANG-DESCRIPTIONS-UAT.html">Multi-Language Descriptions UAT</a></td><td class="id">BL-36</td><td><span class="chip sbx">SBX</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-SBX-LIVE-SUPPLIER-SEARCH-UAT.html">Live Supplier Search UAT</a></td><td class="id">BL-35</td><td><span class="chip sbx">SBX</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-SBX-FIND-FIRST-UAT.html">Find-First UAT (snap → the librarian)</a></td><td class="id">—</td><td><span class="chip sbx">SBX</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-SBX-WEEKEND-UAT-v2.html">Weekend UAT v2 (tier fixes)</a></td><td class="id">tier v2</td><td><span class="chip sbx">SBX</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-SBX-WEEKEND-UAT.html">Weekend UAT (tier v2 + enrichment)</a></td><td class="id">tier v2</td><td><span class="chip sbx">SBX</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-SBX-MEMBER-CASH-TEST-SCRIPT.html">Member discounts, tiers, CRUD &amp; cash check</a></td><td class="id">—</td><td><span class="chip sbx">SBX</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-SBX-BADGES-R2-TEST-SCRIPT.html">Item badges &amp; detail card (round 2)</a></td><td class="id">—</td><td><span class="chip sbx">SBX</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-SBX-BATCH-TEST-SCRIPT.html">Batch Runbook (cockpit · roles · discount cap)</a></td><td class="id">—</td><td><span class="chip sbx">SBX</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-SBX-0710-FULL-BATCH-UAT.html">07-10 Full Batch UAT</a></td><td class="id">—</td><td><span class="chip sbx">SBX</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-SBX-FIXES-R2-TEST-SCRIPT.html">R2 fixes re-test</a></td><td class="id">—</td><td><span class="chip sbx">SBX</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-SBX-HYPERCARE-BATCH-TEST.html">Hypercare Batch Test</a></td><td class="id">—</td><td><span class="chip sbx">SBX</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-SBX-HYPERCARE-R3-QUICKCHECK.html">Hypercare R3 — Quick Re-Check</a></td><td class="id">—</td><td><span class="chip sbx">SBX</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-SBX-HYPERCARE-R4-QUICKCHECK.html">Hypercare R4 — Quick Re-Check</a></td><td class="id">—</td><td><span class="chip sbx">SBX</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-SBX-HYPERCARE-R5-QUICKCHECK.html">Hypercare R5 — Quick Re-Check</a></td><td class="id">—</td><td><span class="chip sbx">SBX</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-S2-CHANGES-SANDBOX-TEST-SHEET.html">Café-VAT engine + bug fixes — Sandbox E2E</a></td><td class="id">TEST-VAT-SBX</td><td><span class="chip sbx">SBX</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="sec">Banco — Staging (STG)</h2>
+    <table>
+      <thead><tr><th>Sheet</th><th>ID</th><th>Env</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td class="nm"><a href="./banco/BANCO-S2-CHANGES-STAGING-TEST-SHEET.html">Felix's fixes + login + VAT — Staging regression</a></td><td class="id">TEST-VAT-STG</td><td><span class="chip stg">STG</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-STAGING-TEST-SHEET.html">Staging — photos, gallery &amp; search fix</a></td><td class="id">TEST-BANCO-STAGING-001</td><td><span class="chip stg">STG</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-STAGING-TEST-2.html">Staging #2 — cash drawer + on-the-fly</a></td><td class="id">TEST-BANCO-STAGING-002</td><td><span class="chip stg">STG</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-STAGING-TEST-3.html">Staging Test #3 — next-train cargo</a></td><td class="id">TEST-BANCO-STG3</td><td><span class="chip stg">STG</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-POS-TEST-RUN-004.html">POS Staging Run 004 (catalog · giveaways · discount)</a></td><td class="id">—</td><td><span class="chip stg">STG</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-POS-TEST-RUN-003.html">POS Staging Run 003 (search · change-treat · reports)</a></td><td class="id">—</td><td><span class="chip stg">STG</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-POS-TEST-RUN.html">POS Staging Run (VAT + till bricks)</a></td><td class="id">—</td><td><span class="chip stg">STG</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="sec">Banco — Features &amp; Sign-off <span class="c">(env varies)</span></h2>
+    <table>
+      <thead><tr><th>Sheet</th><th>ID</th><th>Env</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td class="nm"><a href="./banco/BANCO-POSTCARD-MAKER-TEST-SHEET.html">Postcard Maker + Mama Cynthia — Sign-Off</a></td><td class="id">TEST-PC1</td><td><span class="chip any">ANY</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-CRM-TEST-SHEET.html">CRM / Members (enroll · attach · points · tier)</a></td><td class="id">—</td><td><span class="chip any">ANY</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-DAY-ONE-TEST-SHEET.html">Day-One — First Sale Ever</a></td><td class="id">TEST-BANCO-DAY1</td><td><span class="chip any">ANY</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-MY-DAY-TEST-SHEET.html">My Day — employee daily checkout</a></td><td class="id">TEST-MYDAY-01</td><td><span class="chip any">ANY</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-STAFF-LOOP-TEST-SHEET.html">Staff Onboarding + My Day loop</a></td><td class="id">TEST-STAFF-01</td><td><span class="chip any">ANY</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-AI-SURVEY-TEST-SHEET.html">AI End-of-Day Survey + email sign-in</a></td><td class="id">TEST-BANCO-AISURVEY-001</td><td><span class="chip any">ANY</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/ARTEMIS-PREMIUM-TEST-SHEET.html">Artemis Premium — Quick Test</a></td><td class="id">TEST-ARTEMIS-PREMIUM-001</td><td><span class="chip any">ANY</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-CHERRY-PICK-TEST-SHEET.html">Cherry-Pick — Quick Test</a></td><td class="id">TEST-BANCO-CHERRY-001</td><td><span class="chip any">ANY</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-BUGFIX-CASHIER-CREATE-TEST-SHEET.html">Cashier born-once persists (barcode)</a></td><td class="id">TEST-BUGFIX01</td><td><span class="chip any">ANY</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/RECEIVING-POC-TEST-SHEET.html">Receiving PoC Test Log</a></td><td class="id">TEST-BANCO-RECV-001</td><td><span class="chip any">ANY</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-MOBILE-TEST-SHEET.html">Receiving PoC (mobile)</a></td><td class="id">TEST-BANCO-RECV-001</td><td><span class="chip any">ANY</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/FIELD-RUN-CARD.html">Field Run Card — Banco @ Artemis (Receiving)</a></td><td class="id">—</td><td><span class="chip prod">PROD</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-STORY-CATALOG.html">Release-Gate Story Catalog (Pam's day · O2C · P2P)</a></td><td class="id">—</td><td><span class="chip any">ANY</span></td><td><span class="chip t-demo">script</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-ENRICHMENT-DEMO.html">Enrichment Demo: search → born-once → enrich → sell</a></td><td class="id">TEST-BANCO-ENRICH</td><td><span class="chip any">ANY</span></td><td><span class="chip t-demo">demo</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-ENRICHMENT-DEMO-VO-SCRIPT.html">Enrichment Demo — VO &amp; Card Script</a></td><td class="id">—</td><td><span class="chip any">ANY</span></td><td><span class="chip t-demo">script</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-INTRO-ZERO-INVENTORY-SCRIPT.html">Intro: "Zero Perpetual Inventory" (teleprompter)</a></td><td class="id">—</td><td><span class="chip any">ANY</span></td><td><span class="chip t-demo">script</span></td></tr>
+        <tr><td class="nm"><a href="./banco/BANCO-FELIX-BRIEF.html">Felix Brief — meeting capture</a></td><td class="id">—</td><td><span class="chip any">ANY</span></td><td><span class="chip t-demo">script</span></td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="sec">Banco — Offline / PWA / Identity</h2>
+    <table>
+      <thead><tr><th>Sheet</th><th>ID</th><th>Env</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td class="nm"><a href="./TEST-OFFLINE-MODE-STAGING.html">Offline Mode — live test, staging as Pam</a></td><td class="id">TEST-OFFLINE-01</td><td><span class="chip stg">STG</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./TEST-P1-OFFLINE-BANCO.html">P1 Offline + BL-13 + PWA</a></td><td class="id">TEST-P1-01</td><td><span class="chip stg">STG</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./TEST-PWA-BANCO-staging.html">PWA / App-shell</a></td><td class="id">TEST-PWA-01</td><td><span class="chip stg">STG</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./TEST-banco-roles-sandbox.html">Roles + identity — Sandbox</a></td><td class="id">TEST-IDN-ROLES</td><td><span class="chip sbx">SBX</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./TEST-identity-sandbox.html">Identity cutover — Sandbox</a></td><td class="id">TEST-IDN-SBX</td><td><span class="chip sbx">SBX</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./TEST-identity-staging.html">Identity cutover — Staging</a></td><td class="id">TEST-IDN-STG</td><td><span class="chip stg">STG</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="sec">La Piazza / Bottega / Cleo</h2>
+    <table>
+      <thead><tr><th>Sheet</th><th>ID</th><th>Env</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td class="nm"><a href="./test-scripts/KEYSTONE-V1-TEST-SCRIPT.html">Keystone v1 — Test Script</a></td><td class="id">—</td><td><span class="chip stg">STG</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./test-scripts/CONCIERGE-V2-TEST-SCRIPT.html">Cleopatra v2 — Runbook (Dispatcher · Scorecard · Mic)</a></td><td class="id">—</td><td><span class="chip stg">STG</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./test-scripts/CONCIERGE-TEST-SCRIPT.html">Concierge — Test Script (split-screen)</a></td><td class="id">—</td><td><span class="chip stg">STG</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./test-scripts/CLEO-SHARPEN-TEST-SCRIPT.html">Cleopatra — Sharpen Pass Runbook</a></td><td class="id">—</td><td><span class="chip stg">STG</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./test-scripts/CLEO-V2-STAGING-TEST-SCRIPT.html">Cleopatra v2 — Staging Smoke (6 checks)</a></td><td class="id">—</td><td><span class="chip stg">STG</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./test-scripts/CLEO-V2-ROUND2-FIXES-TEST.html">Cleopatra v2 — Round-2 Fixes (5 checks)</a></td><td class="id">—</td><td><span class="chip stg">STG</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./CLEO-BRIDGE-NEWUSER-TEST-SHEET.html">Cleo Bridge — New User End-to-End</a></td><td class="id">TEST-CLEO-008</td><td><span class="chip stg">STG</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./test-scripts/DOOR-RELEASE-v1-TEST-SCRIPT.html">The Door Release — Pre-Prod UAT (staging → prod)</a></td><td class="id">—</td><td><span class="chip stg">STG</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./test-scripts/NEWUSER-WELCOME-TEST-SCRIPT.html">New User — Warm Welcome (short)</a></td><td class="id">—</td><td><span class="chip stg">STG</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./test-scripts/FRESH-FIRSTTIMER-TEST-SCRIPT.html">Fresh First-Timer — clean-account signup</a></td><td class="id">—</td><td><span class="chip stg">STG</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./test-scripts/STAGING-TOUR-v2-TEST-SCRIPT.html">La Piazza — Staging Tour v2</a></td><td class="id">—</td><td><span class="chip stg">STG</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./test-scripts/STAGING-TOUR-TEST-SCRIPT.html">La Piazza — Staging Tour</a></td><td class="id">—</td><td><span class="chip stg">STG</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./test-scripts/STAGING-FRESHCHECK-v3-TEST-SCRIPT.html">La Piazza — Fresh-Check v3</a></td><td class="id">—</td><td><span class="chip stg">STG</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./test-scripts/EDITION-RIBBON-TEST-SCRIPT.html">Edition Ribbon — staging test</a></td><td class="id">—</td><td><span class="chip stg">STG</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./test-scripts/PROD-HYPERCARE-TEST-SCRIPT.html">PROD Hypercare — quick sanity (warm welcome)</a></td><td class="id">—</td><td><span class="chip prod">PROD</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./LA-PIAZZA-CLICK-TO-TEST.html">La Piazza — Click-to-Test</a></td><td class="id">TEST-LINKS-009</td><td><span class="chip any">ANY</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./PROD-TEST-bottega.html">La Piazza / Bottega — Prod Test Sheet</a></td><td class="id">—</td><td><span class="chip prod">PROD</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./PROD-STAGING-PARITY-TEST-SHEET.html">Prod ↔ Staging Parity — Workshop / Locandina / Card</a></td><td class="id">TEST-PARITY-007</td><td><span class="chip prod">PROD</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./CHASSIS-POLISH-TEST-SHEET.html">Recipe Chassis Polish (P1+P5) — Sanity-Check</a></td><td class="id">TEST-UX-006</td><td><span class="chip any">ANY</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+        <tr><td class="nm"><a href="./VOICEOVER-JOBHISTORY-TEST-SHEET.html">Voiceover Job-History — Test Sheet</a></td><td class="id">TEST-VO-005</td><td><span class="chip any">ANY</span></td><td><span class="chip t-sheet">sheet</span></td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="sec">Filled Reports <span class="c">(a run that happened — kept as a record)</span></h2>
+    <table>
+      <thead><tr><th>Report</th><th>When</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td class="nm"><a href="./artifacts/banco-pos-test-run-report.html">Banco POS — Test Run report</a></td><td class="id">—</td><td><span class="chip t-report">report</span></td></tr>
+        <tr><td class="nm"><a href="./banco/banco-pos-test-run-004-report.html">Banco POS — Test Run 004 report</a></td><td class="id">—</td><td><span class="chip t-report">report</span></td></tr>
+        <tr><td class="nm"><a href="./banco/banco-pos-test-run-003-report.html">Banco POS — Test Run 003 report</a></td><td class="id">—</td><td><span class="chip t-report">report</span></td></tr>
+        <tr><td class="nm"><a href="./banco/Test-Scripts/banco-item-badges-r2-uat-report.html">Banco item-badges R2 — UAT report</a></td><td class="id">—</td><td><span class="chip t-report">report</span></td></tr>
+        <tr><td class="nm"><a href="./reports/prod/prod-hypercare-2026-06-14.html">PROD Hypercare report — 2026-06-14</a></td><td class="id">2026-06-14</td><td><span class="chip t-report">report</span></td></tr>
+        <tr><td class="nm"><a href="./reports/staging/cleo-prod-hypercare-report.html">Cleo Prod Hypercare report</a></td><td class="id">—</td><td><span class="chip t-report">report</span></td></tr>
+        <tr><td class="nm"><a href="./reports/staging/cleo-sharpen-uat-report.html">Cleopatra Sharpen — UAT report</a></td><td class="id">—</td><td><span class="chip t-report">report</span></td></tr>
+        <tr><td class="nm"><a href="./reports/staging/cleo-v2-uat-report.html">Cleopatra v2 — UAT report</a></td><td class="id">—</td><td><span class="chip t-report">report</span></td></tr>
+        <tr><td class="nm"><a href="./reports/staging/cleo-v2-staging-smoke-report.html">Cleopatra v2 — Staging Smoke report</a></td><td class="id">—</td><td><span class="chip t-report">report</span></td></tr>
+        <tr><td class="nm"><a href="./reports/staging/cleo-v2-round2-fixes-report.html">Cleopatra v2 — Round-2 Fixes report</a></td><td class="id">—</td><td><span class="chip t-report">report</span></td></tr>
+        <tr><td class="nm"><a href="./reports/staging/cleo-v2-round3-fixes-report.html">Cleopatra v2 — Round-3 Fixes report</a></td><td class="id">—</td><td><span class="chip t-report">report</span></td></tr>
+        <tr><td class="nm"><a href="./reports/staging/door-release-2026-06-13.html">The Door Release — UAT report</a></td><td class="id">2026-06-13</td><td><span class="chip t-report">report</span></td></tr>
+        <tr><td class="nm"><a href="./reports/staging/fresh-firsttimer-2026-06-13.html">Fresh First-Timer — UAT report</a></td><td class="id">2026-06-13</td><td><span class="chip t-report">report</span></td></tr>
+        <tr><td class="nm"><a href="./reports/staging/newuser-welcome-2026-06-14.html">New User Warm Welcome — UAT report</a></td><td class="id">2026-06-14</td><td><span class="chip t-report">report</span></td></tr>
+      </tbody>
+    </table>
+    <p class="note">Older Cleo reports also live under <code>./archive/</code>. The delivery-slip mock <code>./banco/artemis-mock-delivery-slip-001.html</code> is a fixture, not a test.</p>
+
+    <h2 class="sec">GOLD templates <span class="c">— copy one to start a new sheet</span></h2>
+    <table>
+      <thead><tr><th>Template</th><th>Use for</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr class="flag"><td class="nm"><a href="./TEST-SHEET-TEMPLATE.html">Human Sanity-Check Sheet</a></td><td class="id">a full feature sign-off (sections + rows + result)</td><td><span class="chip t-tmpl">template</span></td></tr>
+        <tr class="flag"><td class="nm"><a href="./QUICK-TEST-SHEET-TEMPLATE.html">Quick Test</a></td><td class="id">a fast one-feature check</td><td><span class="chip t-tmpl">template</span></td></tr>
+      </tbody>
+    </table>
+    <p class="note">💡 Consolidate toward these two as the GOLD standard (like the postcard 4-UP templates). Housekeeping banked: merge the two folders <code>banco/Test-Scripts/</code> + <code>test-scripts/</code> into one, and rename the two space-in-name SBX files so they open cleanly.</p>
+
+  </div>
+
+  <footer>
+    <span>Confidential — Internal Use Only · a sheet renders the test; the app is the truth</span>
+    <span>TEST-INDEX · Rev 1 · 2026-07-13</span>
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Banco PROD — Discount Model Test (DISC-PROD-01)</title>
+<!-- PROD check for the newly-shipped discount model: member tier + manual = SEPARATE LANES,
+     the 15/70/100 role ladder, the safety floor, and the fat-finger target auto-clamp.
+     Fill on screen (type + tick), then Print → Save as PDF, OR just read me the row numbers
+     + PASS/FAIL and I log them. Fields freeze on print, so fill BEFORE printing. -->
+<style>
+  :root { --red:#C0392B; --grn:#1a7f4b; --ink:#222; --head:#2C3E50; --line:#d9dee3; --shade:#f4f6f8; --gold:#b8860b; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color: var(--ink); background:#eceff1; margin:0; padding:24px; line-height:1.5; }
+  .sheet { max-width: 920px; margin:0 auto; background:#fff; padding:0 0 32px; box-shadow:0 2px 14px rgba(0,0,0,.12); }
+  header { display:flex; align-items:center; justify-content:space-between; border-bottom:3px solid var(--grn); padding:18px 28px; }
+  header .brand { font-weight:bold; font-size:18px; color:var(--grn); letter-spacing:.5px; }
+  header .title { font-size:14px; color:var(--head); font-weight:bold; text-align:center; }
+  header .docid { font-size:12px; color:#777; font-family:monospace; }
+  .body { padding: 22px 28px; }
+  h1 { font-size:20px; color:var(--head); margin:0 0 4px; }
+  h2.sec { font-size:14px; color:var(--grn); margin:22px 0 8px; padding-bottom:4px; border-bottom:1px solid #d7ece0; }
+  .sub { color:#667; font-size:13px; margin:0 0 14px; }
+  .howto { font-size:12px; color:#555; background:#eef4fb; border:1px solid #c5d8ee; border-left:4px solid #3b73b9; border-radius:6px; padding:9px 13px; margin-bottom:12px; }
+  .rule { font-size:12.5px; background:#f4fbf7; border:1px solid #bfe3cf; border-left:4px solid var(--grn); border-radius:6px; padding:10px 13px; margin-bottom:12px; }
+  .rule b { color:var(--grn); }
+  .cast { font-size:12px; background:#fffdf3; border:1px solid #e6d9a8; border-left:4px solid var(--gold); border-radius:6px; padding:10px 13px; margin-bottom:16px; }
+  .cast b { color:var(--gold); }
+  .meta { display:grid; grid-template-columns:1fr 1fr; gap:10px 24px; font-size:13px; background:var(--shade); border:1px solid var(--line); border-radius:6px; padding:14px 16px; margin-bottom:18px; }
+  .meta b { color:var(--head); }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { border:1px solid var(--line); padding:9px 10px; vertical-align:top; text-align:left; }
+  th { background:var(--head); color:#fff; font-size:12px; }
+  td.n { text-align:center; font-weight:bold; color:var(--grn); width:28px; }
+  td.chk { text-align:center; width:44px; }
+  td.notes { width:150px; padding:4px; }
+  tr:nth-child(even) td { background:#fafbfc; }
+  .exp { color:#445; }
+  .big td { background:#eaf7ef !important; }
+  .kbd, code { font-family:monospace; background:#eef1f4; border:1px solid #cdd3da; border-radius:3px; padding:1px 5px; font-size:12px; }
+  input.txt { border:0; border-bottom:1px solid #99a; background:transparent; font:inherit; color:var(--ink); padding:2px 4px; width:100%; min-width:60px; }
+  input.txt:focus { outline:none; border-bottom:2px solid var(--grn); background:#fffce8; }
+  td.notes input.txt { border-bottom:0; }
+  input[type=checkbox], input[type=radio] { appearance:none; -webkit-appearance:none; width:18px; height:18px; border:1.6px solid #667; background:#fff; cursor:pointer; vertical-align:middle; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+  input[type=checkbox] { border-radius:3px; } input[type=radio] { border-radius:50%; }
+  input[type=checkbox]:checked { background:var(--grn); border-color:var(--grn); }
+  input[type=checkbox]:checked::after { content:"✓"; color:#fff; font-size:13px; font-weight:bold; display:flex; align-items:center; justify-content:center; height:100%; }
+  input[type=radio]:checked { background:var(--grn); border-color:var(--grn); box-shadow:inset 0 0 0 3px #fff; }
+  .result { margin-top:22px; border:2px solid var(--grn); border-radius:6px; padding:14px 16px; background:#f4fbf7; }
+  .result h3 { margin:0 0 10px; color:var(--head); font-size:15px; }
+  .result label { font-size:14px; margin-right:22px; cursor:pointer; }
+  .sig { margin-top:14px; font-size:13px; color:#445; display:flex; gap:28px; } .sig span { flex:1; }
+  footer { border-top:1px solid var(--line); margin-top:26px; padding:12px 28px 0; font-size:11px; color:#8a93a0; display:flex; justify-content:space-between; }
+  .btns { max-width:920px; margin:0 auto 14px; text-align:right; }
+  .btns button { background:var(--grn); color:#fff; border:0; border-radius:5px; padding:8px 16px; font-size:13px; cursor:pointer; font-weight:bold; }
+  @media print { body { background:#fff; padding:0; } .sheet { box-shadow:none; max-width:100%; } .btns, .no-print { display:none !important; } input.txt:focus { background:transparent; } tr { break-inside:avoid; } h2.sec { break-after:avoid; } }
+</style>
+</head>
+<body>
+<div class="btns no-print"><button onclick="window.print()">🖨️ Print / Save as PDF</button></div>
+
+<div class="sheet">
+  <header>
+    <div class="brand">HelixNet · Banco</div>
+    <div class="title">PROD — Discount Model: member tier + manual = SEPARATE LANES<br>Report-to-Tigs sheet</div>
+    <div class="docid">DISC-PROD-01</div>
+  </header>
+
+  <div class="body">
+    <h1>Prod test — the discount ship, live on banco.lapiazza.app</h1>
+    <p class="sub">Confirms the 2026-07-13 discount ship: the member's earned tier + the cashier's manual discount are two separate lanes, the <b>15 / 70 / 100</b> role ladder, the safety floor, and the fat-finger target auto-clamp. Tick as you go; read me the row numbers + PASS/FAIL and I log them.</p>
+
+    <div class="howto">📝 <b>How to report:</b> either fill this on screen and <span class="kbd">Print → PDF</span>, or just message me <b>“row 6 fail — …”</b>. Fill in <b>before</b> printing (a browser PDF freezes the fields).</div>
+
+    <div class="rule">🛡️ <b>THE ONE RULE:</b> the member's tier discount <b>always applies and shows</b> (the shop's loyalty promise). The cashier's manual discount <b>stacks on top</b>, capped only by their own role: <b>cashier 15% · manager 70% · owner 100%</b>. The two <b>never</b> combine to take the total below zero — the till can never owe the customer money.</div>
+
+    <div class="cast">🎭 <b>Cast for the test</b> (real prod members): <b>Walk-in</b> = no member attached. <b>Sally420</b> = SILVER member, <b>5%</b> tier (our stand-in for a loyal regular). Log-ins: <b>Pam</b> = cashier (15% cap) · <b>Ralph</b> = manager (70% cap) · <b>Felix</b> = owner (100%). Mobile: if a phone login sticks, hard-refresh once (service worker v100).</div>
+
+    <div class="meta">
+      <div><b>Environment:</b> <input class="txt" type="text" value="https://banco.lapiazza.app"></div>
+      <div><b>Build:</b> <input class="txt" type="text" value="85ee89a · b1740"></div>
+      <div><b>Tester:</b> <input class="txt" type="text" placeholder="Angel"></div>
+      <div><b>Date:</b> <input class="txt" type="text" placeholder="dd/mm/yyyy"></div>
+    </div>
+
+    <table>
+      <thead><tr><th class="n">#</th><th>Do this on PROD</th><th>Expected</th><th class="chk">Pass</th><th class="notes">Notes</th></tr></thead>
+      <tbody>
+
+        <tr><td colspan="5"><h2 class="sec" style="margin:2px 0;">0 · Access</h2></td></tr>
+        <tr><td class="n">1</td><td><b>Log in as Pam</b> (cashier) on the till. Open a new sale, add one normal item.</td><td class="exp">POS loads, item in cart, subtotal shows.</td><td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td></tr>
+
+        <tr><td colspan="5"><h2 class="sec" style="margin:2px 0;">1 · The fat-finger guard (walk-in, no member)</h2></td></tr>
+        <tr><td class="n">2</td><td>No member. Apply a manual <b>10%</b> discount.</td><td class="exp">10% comes off, total drops. A cashier's normal rounding room works.</td><td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td></tr>
+        <tr><td class="n">3</td><td>Now try to punch in <b>25%</b> as Pam.</td><td class="exp">Blocked / capped at <b>15%</b> — “your max is 15%, ask manager.” She can’t exceed her limit.</td><td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td></tr>
+        <tr class="big"><td class="n">4</td><td><b>Target-Total mode:</b> on a ~35 item, type a silly low target like <b>CHF 1</b>, then go to checkout.</td><td class="exp">It does NOT ring CHF 1. It auto-clamps to Pam's max (15%) and rings a safe price. <b>She can't screw up the price.</b></td><td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td></tr>
+
+        <tr><td colspan="5"><h2 class="sec" style="margin:2px 0;">2 · Member tier stacks (separate lanes)</h2></td></tr>
+        <tr class="big"><td class="n">5</td><td>New sale, add an item. Attach <b>Sally420</b> (SILVER). Add <b>no</b> manual discount → checkout.</td><td class="exp">Her <b>5%</b> shows and applies automatically (“Member discount SILVER 5%”). She always gets it, and she SEES it.</td><td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td></tr>
+        <tr class="big"><td class="n">6</td><td>Same sale, Sally still on. Now Pam adds a manual <b>10%</b> on top.</td><td class="exp">BOTH rows show: Member 5% + Discount 10% = <b>15% off, one receipt.</b> The lanes STACK. (The old bug: nothing came off — now fixed.)</td><td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td></tr>
+        <tr><td class="n">7</td><td>The <b>“George Clooney”</b>: with Sally attached, Pam adds nothing.</td><td class="exp">Pam serves her solo — the tier applies on its own, no manager needed. (A higher tier would apply the same way, even above Pam's 15% cap.)</td><td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td></tr>
+
+        <tr><td colspan="5"><h2 class="sec" style="margin:2px 0;">3 · The manager ladder + the safety floor</h2></td></tr>
+        <tr><td class="n">8</td><td><b>Log in as Ralph</b> (manager). Apply a <b>40%</b> discount (over a cashier's cap, under a manager's).</td><td class="exp">Applies — a manager can run a big markdown a cashier can't. <b>(Layla clearing the scratched tray, solo.)</b></td><td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td></tr>
+        <tr class="big"><td class="n">9</td><td><b>Log in as Felix</b> (owner). Attach a member, then pile on a <b>100%</b> manual discount.</td><td class="exp">Total floors at <b>CHF 0.00</b> — NEVER negative, never a refund to the customer. The safety floor holds no matter what.</td><td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td></tr>
+
+        <tr><td colspan="5"><h2 class="sec" style="margin:2px 0;">4 · The custom-line backdoor (bonus)</h2></td></tr>
+        <tr><td class="n">10</td><td>Tap <b>🆕 New item</b> → create an on-the-fly line, e.g. <b>“Scratch tray, CHF 1”</b> → ring it.</td><td class="exp">Rings at the oddball price you set — the exception escape hatch. (It's recorded with your name + time on the day's tape.)</td><td class="chk"><input type="checkbox"></td><td class="notes"><input class="txt" type="text"></td></tr>
+
+      </tbody>
+    </table>
+
+    <div class="result">
+      <h3>Overall</h3>
+      <label><input type="radio" name="overall"> ✅ Discount model is good on prod</label>
+      <label><input type="radio" name="overall"> ⚠️ Issues (see notes / rows)</label>
+      <div class="sig">
+        <span><b>Reported by:</b> <input class="txt" type="text" placeholder="Angel"></span>
+        <span><b>Date / time:</b> <input class="txt" type="text" placeholder=""></span>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <span>Confidential — Internal Use Only</span>
+    <span>DISC-PROD-01 · Rev 1 · separate-lanes discount ship (85ee89a · b1740)</span>
+  </footer>
+</div>
+</body>
+</html>
