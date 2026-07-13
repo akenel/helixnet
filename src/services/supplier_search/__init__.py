@@ -81,6 +81,20 @@ async def _adapters_for_suppliers(db, client, suppliers: list[str] | None) -> li
     return adapters
 
 
+async def _shop_fx(db):
+    """The shop's base currency + plan FX rates (store_settings). Falls back to CHF + defaults."""
+    from sqlalchemy import text as _text
+    from src.services.currency import load_fx
+    try:
+        row = (await db.execute(_text(
+            "SELECT currency, fx_rates FROM store_settings ORDER BY id LIMIT 1"))).first()
+    except Exception as e:  # noqa: BLE001
+        log.warning("shop fx load failed: %s", e)
+        return "CHF", load_fx(None)
+    base = (row.currency if row and row.currency else "CHF").upper()
+    return base, load_fx(row.fx_rates if row else None)
+
+
 async def search_suppliers(q: str, db, suppliers: list[str] | None = None,
                            limit: int = 4, timeout: float = 15.0) -> dict:
     """Search the shop's supplier websites live. Returns
@@ -124,10 +138,23 @@ async def search_suppliers(q: str, db, suppliers: list[str] | None = None,
             if key not in by_key or r.score > by_key[key].score:
                 by_key[key] = r
 
+    # Currency: show a foreign supplier price in the shop's own currency (plan rates).
+    base_ccy, fx = await _shop_fx(db)
+    if base_ccy:
+        from src.services.currency import convert as _fx_convert
+        for r in by_key.values():
+            conv = _fx_convert(r.price, r.currency, base_ccy, fx)
+            if conv:
+                r.base_price = conv["base_amount"]
+                r.base_currency = conv["base_ccy"]
+                r.fx_rate = conv["rate"]
+                r.fx_as_of = conv["as_of"]
+
     results = sorted(by_key.values(), key=lambda r: r.score, reverse=True)
     return {
         "query": q,
         "variants": variants,
+        "base_currency": base_ccy,
         "results": [r.to_dict() for r in results],
         "errors": errors,
         "suppliers": [a.supplier for a in adapters],

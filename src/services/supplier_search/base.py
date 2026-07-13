@@ -104,6 +104,11 @@ class SupplierResult:
     tier_mode: str = "per_unit"
     score: float = 0.0
     role: str = "wholesale"               # 'wholesale' = your COST | 'retail' = the MARKET | 'both'
+    # Currency conversion (set by the orchestrator for non-base-currency prices).
+    base_price: Optional[float] = None
+    base_currency: Optional[str] = None
+    fx_rate: Optional[float] = None
+    fx_as_of: Optional[str] = None
 
     def to_dict(self) -> dict:
         d = asdict(self)

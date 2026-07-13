@@ -188,6 +188,11 @@ _ADDITIVE_COLUMNS: list[str] = [
     # Only persisted when the shop opens the Settings → Tax editor and saves. Additive TEXT, same
     # proven idiom as the JSON blobs above (caps_json / attachments).
     "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS vat_rates TEXT",
+    # Currency plan-rates (2026-07-13): flat FX table {base, rates, as_of} for showing a foreign
+    # supplier price in the shop's currency (Near Dark EUR → ≈ CHF). NULLABLE — NULL falls back to
+    # currency.DEFAULT_FX, so a shop is byte-identical until it sets its own plan rates. Same
+    # additive TEXT-JSON idiom as vat_rates.
+    "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS fx_rates TEXT",
     # Offline outbox idempotency (P2.1, 2026-06-29): the atomic create-sale endpoint keys
     # on a client-generated UUID so a replayed sale (network retry / offline outbox sync)
     # is adopted exactly once, never double-rung. Nullable (legacy 3-step sales have none);

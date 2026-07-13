@@ -653,6 +653,7 @@
                                         <span class="font-semibold text-teal-700" x-text="m.supplier"></span>
                                         <span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-semibold" :class="roleClass(m.role)" x-text="roleLabel(m.role)"></span>
                                         <template x-if="m.price != null"> · <span x-text="m.currency + ' ' + m.price"></span></template>
+                                        <template x-if="m.base_price != null"><span class="text-gray-400" :title="'plan rate ' + m.fx_rate + (m.fx_as_of ? ' · ' + m.fx_as_of : '')"> ≈ <span x-text="m.base_currency + ' ' + m.base_price"></span></span></template>
                                         <template x-if="m.price_tiers && m.price_tiers.length"><span class="text-teal-600"> · 🏷️<span x-text="m.price_tiers.length"></span></span></template>
                                         <template x-if="m.barcode"><span class="text-gray-400"> · <span x-text="m.barcode"></span></span></template>
                                     </div>
