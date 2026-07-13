@@ -10,7 +10,20 @@
 
 ---
 
-## 🃏 ON DECK — discount SHIPPED+PROD-GREEN · Test Library BUILT → next = FELIX DEMO (Littau AM), then LABEL DESIGN
+## 🃏 ON DECK — NEXT BUILD = 🧶 ECOLUTION SUPPLIER ONBOARDING (sandbox) · spec written
+
+**▶ TOP / START HERE (next working session): the Ecolution onboarding build.** Full spec:
+**[docs/BANCO-ECOLUTION-ONBOARDING-SPEC.md](BANCO-ECOLUTION-ONBOARDING-SPEC.md)** · store facts in memory
+`banco-ecolution-sylvie-supplier`. Angel plays **manager Ralph** receiving a simulated delivery from **Sylvie
+(Ecolution, her Etsy shop)** and enters the goods himself ("here's a box, figure it out"). **Sandbox ONLY,
+manual-first.** Working method: Angel copy-pastes the Etsy item info → Tigs sets up the item → Angel adds pics →
+postcard renders perfectly. Pilot = the Merino-felt **glasses case** (start with ONE colour, gray).
+- **Open design Qs to hit fresh:** supplier-create UI · Etsy as a SOURCE-TYPE · **variants/colours** (a display
+  box = an assortment, ~8 colours — model it right) · receiving a no-EAN new product · wholesale→margin. Detail in the spec.
+- **Real-world parallel (2026-07-14 AM):** Angel's at Felix's shop in Littau — Felix demo (walk DISC-PROD-01 on
+  the phone) + help cover + the new-hire onboarding (kid starts Thu; self-drive kit ONBOARD-KIT-01 is ready).
+
+## ✅ 2026-07-13 SHIPPED — discount SEPARATE-LANES (prod-green, tagged) · Test Library BUILT · onboarding kit ready
 
 **✅ HC-PROD-01 (2026-07-13):** rows 1–9 PASS (postcard maker on the whole catalog + Cynthia's 7 balms +
 share + short-QR + 4-up + one-page print). **Row 10** (discount didn't apply on a member) → old "Option B"
