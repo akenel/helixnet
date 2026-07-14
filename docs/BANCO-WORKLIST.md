@@ -62,11 +62,11 @@ dupe — it keeps its 2 sales). Prod sweep: only 2 other discontinued-with-barco
   **✅ SHIPPED PROD 2026-07-14:** name-OR-description ranking (b1755, tag `verified/bl101-search-recall`) + the
   **bilingual/brand synonym layer** (b1757 `3aeb6f7`, tag `verified/bl101-synonym-layer`) — `lighter`→Feuerzeuge,
   `tycoon`→Tycoon Gas #1, `scale`→Waagen, `papers`→Drehpapier; 9 unit tests; search-strategy tip (EN/DE/FR/IT); sw v101.
-- **🐯 BL-102 · scan-miss → PHOTO-first — 🧪 BUILT on SANDBOX (b1759 `1046a40`), awaiting Angel's scan-test → then staging+prod.**
-  Pure frontend (scan.html camera hero + `lazyPhotoFirst`, EN/DE/FR/IT copy, sw v102). Test on sandbox: `/pos/scan` →
-  scan a BIC/any code that misses → expect the **camera hero** ("not found is normal — 📷 take a photo"), NOT the name
-  box; snap → AI names it → catalog/reference match → tap to bind barcode → sells → re-scan hits. Verify the temp
-  photo is replaced by the adopted/real image. Human-green → promote.
+- **🐯 BL-102 · scan-miss → PHOTO-first — ✅ SHIPPED PROD 2026-07-14** (b1760 `d75de14`, tag `verified/bl102-scan-miss-photo-first-2026-07-14`).
+  A pure barcode scan-miss now leads with a **camera hero** ("not found is normal — 📷 take a photo"), not the German
+  name box; snap → AI names it → catalog/reference match → tap binds the barcode (BL-90) → sells → re-scan hits. All
+  downstream cashier-allowed. Sandbox→staging→prod, backup-gated, live-probed. **▶ Watch on real use:** confirm the
+  temp phone photo is replaced by the adopted/real image (Principle 4) — flag if not.
 - **🐯 BL-102 (detail) · THE MATCHING DOCTRINE — scan-miss → PHOTO-first** (spec: [BANCO-INVENTORY-ROADMAP.md](BANCO-INVENTORY-ROADMAP.md#bl-102),
   memory `banco-barcode-matching-doctrine`). **Angel's dead-simple rule (2026-07-14):** the barcode on a can is NOT
   in the catalog on first scan (suppliers store minted codes, not the real EAN) — that's NORMAL. On a miss, go
