@@ -418,11 +418,23 @@ ClientName-ISOTTO/
   stripped in the recipe runner.
 - **Test gate:** `make test` runs pytest INSIDE the `helix-platform` container (the real
   app env -- the host `.venv` is the aux toolbox with no fastapi). Use it before promoting.
-- **Banco deploy SOP (2026-06-29):** ship through the gate ladder sandbox→staging→prod with
-  `scripts/ops/deploy-banco.py <env> [ref]` (stamps the real SHA). **Backup gates prod.**
+- **Banco deploy SOP (updated 2026-07-14):** ship through the gate ladder sandbox→staging→prod
+  using the FRONT DOOR, **from the laptop** (not the box):
+  ```
+  make deploy ENV=<sandbox|staging|prod> [REF=feat/x]
+  ```
+  It runs `deploy-banco.py` on the box (stamps the real SHA) and then **TWO BLOCKING GATES**:
+  **(1) `app-gate`** -- the app is up (`/health/healthz`, `/pos`) AND **the rendered build stamp
+  matches the SHA we just shipped** (a restart that kept the old process still passes health and
+  returns 200 -- only the stamp proves the new code is live); **(2) `login-audit`** -- a HUMAN can
+  actually READ the login screen (drives Chrome, types into the fields, measures contrast).
+  Either gate fails -> the deploy fails. **Backup gates prod** (`banco_backup.sh`, still human).
   **PROVE, don't assume -- re-probe after every restart** (the healthcheck greens a beat before
-  the first request serves; a "before" snapshot can masquerade as "after"). Parity:
-  `scripts/ops/env-parity.py --local`. Full SOP: `docs/BANCO-DEPLOY-SOP.md`.
+  the first request serves; on 2026-07-14 app-gate caught prod returning **502 while Docker
+  said "healthy"**). Why the gates exist: the login shipped BLACK-ON-BLACK because
+  "stylesheet returns HTTP 200" was mistaken for verification. **HTTP 200 means the file exists,
+  not that anyone can use it.** Parity: `scripts/ops/env-parity.py --local`.
+  Full SOP: `docs/BANCO-DEPLOY-SOP.md`.
 
 ---
 
