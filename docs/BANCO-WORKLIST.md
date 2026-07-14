@@ -62,6 +62,10 @@ dupe — it keeps its 2 sales). Prod sweep: only 2 other discontinued-with-barco
   **✅ SHIPPED PROD 2026-07-14:** name-OR-description ranking (b1755, tag `verified/bl101-search-recall`) + the
   **bilingual/brand synonym layer** (b1757 `3aeb6f7`, tag `verified/bl101-synonym-layer`) — `lighter`→Feuerzeuge,
   `tycoon`→Tycoon Gas #1, `scale`→Waagen, `papers`→Drehpapier; 9 unit tests; search-strategy tip (EN/DE/FR/IT); sw v101.
+- **🐯 BL-102.1 · preview-before-bind + 64px match thumbnails — ✅ SHIPPED PROD 2026-07-14** (b1762 `836d8e5`, tag
+  `verified/bl102.1-preview-thumbnails-2026-07-14`). Angel's post-test feedback: result thumbnails 48→64px + a 👁
+  preview (big image + details) that opens WITHOUT binding (the bind is permanent), "This one" confirms; row-tap still
+  binds (fast path). Mobile-tested by Angel (onboarded a Zippo Benzin through the whole scan-miss→photo→bind loop). sw v103.
 - **🐯 BL-102 · scan-miss → PHOTO-first — ✅ SHIPPED PROD 2026-07-14** (b1760 `d75de14`, tag `verified/bl102-scan-miss-photo-first-2026-07-14`).
   A pure barcode scan-miss now leads with a **camera hero** ("not found is normal — 📷 take a photo"), not the German
   name box; snap → AI names it → catalog/reference match → tap binds the barcode (BL-90) → sells → re-scan hits. All
