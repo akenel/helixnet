@@ -103,6 +103,50 @@ test-pos:
 	@. .venv/bin/activate && ENV=$(ENV) python -m pytest tests/pos -v $(PYTEST_ARGS)
 
 # ===================================================================
+# RELEASE GATES  --  a deploy is not done until a HUMAN can log in
+# ===================================================================
+# The login screen is the ONE page every user must get through, and it shipped
+# BLACK-ON-BLACK to Felix because "the stylesheet returns HTTP 200" was mistaken
+# for verification. 200 means the file exists. It does not mean anyone can read
+# the screen. This gate drives the real login page in Chrome, TYPES INTO THE
+# USERNAME + PASSWORD FIELDS, and measures the contrast of what Chrome actually
+# painted. Exit 1 names the unreadable element.
+#
+# It needs node + puppeteer + Chrome, so it runs from the LAPTOP -- deliberately
+# NOT on the box (no Chrome on a prod box just to run a test).
+#
+#   make login-audit              # all 4 screens (banco prod/staging/sandbox + lapiazza)
+#   make login-audit ENV=prod     # just banco prod
+BOX ?= root@46.62.138.218
+DEPLOY_SCRIPT ?= /opt/ops/deploy-banco.py
+
+.PHONY: login-audit
+login-audit:
+	@command -v node >/dev/null 2>&1 || { \
+		echo "❌ no node here -- the login gate needs Chrome/puppeteer."; \
+		echo "   Run it from the LAPTOP, not the box. A skipped gate is a fake green."; \
+		exit 1; }
+	@node scripts/ops/kc-login-audit.js $(if $(filter sandbox staging prod,$(ENV)),banco-$(ENV))
+
+# The front door for deploys. Deploys on the box, then PROVES the login still
+# works. Running deploy-banco.py by hand on the box SKIPS this gate -- that is
+# exactly how the broken login reached a user.
+#
+#   make deploy ENV=sandbox
+#   make deploy ENV=staging REF=feat/x
+#   make deploy ENV=prod                  # take a DB backup first (still human)
+.PHONY: deploy
+deploy:
+	@case "$(ENV)" in sandbox|staging|prod) ;; *) \
+		echo "usage: make deploy ENV=<sandbox|staging|prod> [REF=origin/main]"; exit 2;; esac
+	@echo "🚀 deploy $(ENV) <- $(or $(REF),origin/main)"
+	@ssh $(BOX) "python3 $(DEPLOY_SCRIPT) $(ENV) $(or $(REF),origin/main)"
+	@echo ""
+	@echo "🚦 RELEASE GATE -- can a human actually log in to $(ENV)?"
+	@$(MAKE) --no-print-directory login-audit ENV=$(ENV)
+	@echo "✅ $(ENV): deployed, and the login screen is provably readable."
+
+# ===================================================================
 # UTILITIES
 # ===================================================================
 

@@ -61,8 +61,33 @@ def main():
         status = sh(["docker", "ps", "--filter", f"name={container}", "--format", "{{.Status}}"])
         if "healthy" in status:
             print(f"[deploy] {env}: {sha} live + healthy ✅")
-            return
-    print(f"[deploy] {env}: {sha} restarted — status: {status or '(unknown)'} (check it)")
+            break
+    else:
+        print(f"[deploy] {env}: {sha} restarted — status: {status or '(unknown)'} (check it)")
+
+    login_gate_reminder(env)
+
+
+def login_gate_reminder(env):
+    """A container healthcheck is NOT proof a human can log in.
+
+    The Banco login screen shipped BLACK-ON-BLACK (username + password rendered at
+    1.17:1 — invisible) while every machine check was green: the container was healthy,
+    and the stylesheet returned HTTP 200. Nobody looked at the screen.
+
+    This script runs on the box, which has no Chrome — so it CANNOT run the login gate
+    itself. Rather than pretend, it says so loudly. A skipped gate reported as success
+    is the same fake green that put a broken login in front of a user.
+    """
+    print()
+    print("  ⚠️  LOGIN GATE NOT RUN — this box has no Chrome, so nothing here proved")
+    print("      that a human can actually READ the login screen.")
+    print("      From the laptop:")
+    print(f"          make login-audit ENV={env}")
+    print("      Or skip this warning entirely by deploying through the front door,")
+    print("      which runs the gate for you:")
+    print(f"          make deploy ENV={env}")
+    print()
 
 
 if __name__ == "__main__":
