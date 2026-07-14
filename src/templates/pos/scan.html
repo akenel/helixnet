@@ -531,19 +531,25 @@
                         <span class="text-xs text-gray-500" data-i18n="scan.snap_help">No barcode? Photograph it — AI names it &amp; searches the catalog.</span>
                     </div>
                     <p x-show="aiNote" x-text="aiNote" class="text-xs text-indigo-700 font-medium mt-1" style="display:none;"></p>
-                    <div x-show="lazyLinkResults.length" class="mt-2 max-h-64 overflow-y-auto divide-y border rounded-lg" style="display:none;">
+                    <div x-show="lazyLinkResults.length" class="mt-2 max-h-80 overflow-y-auto divide-y border rounded-lg" style="display:none;">
                         <template x-for="p in lazyLinkResults" :key="p.id">
-                            <button @click="linkToExisting(p)" :disabled="lazySaving"
-                                    class="w-full text-left px-3 py-2 hover:bg-blue-50 flex items-center gap-3">
+                            <!-- BL-102.1: row tap = bind (fast path). 👁 = preview WITHOUT binding
+                                 (the bind is permanent). Bigger 64px thumbs so a match is easy to spot
+                                 on a phone — Angel's item was 4th and nearly missed at 48px. -->
+                            <div @click="linkToExisting(p)" class="px-3 py-2 hover:bg-blue-50 flex items-center gap-3 cursor-pointer"
+                                 :class="lazySaving ? 'opacity-50 pointer-events-none' : ''">
                                 <img x-show="p.image_url" :src="p.image_url" loading="lazy" alt=""
-                                     class="w-12 h-12 rounded object-cover border flex-none">
-                                <span x-show="!p.image_url" class="w-12 h-12 rounded bg-gray-100 flex items-center justify-center text-gray-300 flex-none">📦</span>
+                                     @click.stop="openPreview(p, 'catalog')"
+                                     class="w-16 h-16 rounded object-cover border flex-none">
+                                <span x-show="!p.image_url" class="w-16 h-16 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-2xl flex-none">📦</span>
                                 <span class="flex-1 min-w-0">
                                     <span x-text="p.name" class="block text-sm font-medium text-gray-900 truncate"></span>
                                     <span x-show="p.category" x-text="p.category" class="block text-xs text-gray-400 truncate"></span>
                                 </span>
                                 <span x-text="formatPrice(p.price)" class="text-sm text-gray-600 flex-none"></span>
-                            </button>
+                                <button type="button" @click.stop="openPreview(p, 'catalog')" title="Preview"
+                                        class="flex-none text-gray-400 hover:text-blue-600 text-2xl leading-none px-1">👁</button>
+                            </div>
                         </template>
                     </div>
                     <!-- BL-97: SECOND source — the reference catalog (420/TMR master). Not in the
@@ -553,14 +559,14 @@
                             <span class="inline-block px-1.5 py-0.5 rounded bg-purple-100 text-purple-700" data-i18n="scan.from_reference">From reference</span>
                             <span class="text-gray-500 font-normal" data-i18n="scan.from_reference_help">add to your shop — title &amp; photo come from the supplier</span>
                         </p>
-                        <div class="max-h-64 overflow-y-auto divide-y border border-purple-200 rounded-lg">
+                        <div class="max-h-80 overflow-y-auto divide-y border border-purple-200 rounded-lg">
                             <template x-for="r in refResults" :key="r.id">
-                                <button @click="selectReference(r)" :disabled="lazySaving"
-                                        class="w-full text-left px-3 py-2 hover:bg-purple-50 flex items-center gap-3"
-                                        :class="refSelected && refSelected.id === r.id ? 'bg-purple-50' : ''">
+                                <div @click="selectReference(r)" class="px-3 py-2 hover:bg-purple-50 flex items-center gap-3 cursor-pointer"
+                                     :class="(lazySaving ? 'opacity-50 pointer-events-none ' : '') + (refSelected && refSelected.id === r.id ? 'bg-purple-50' : '')">
                                     <img x-show="r.image_url" :src="r.image_url" loading="lazy" alt=""
-                                         class="w-12 h-12 rounded object-cover border flex-none">
-                                    <span x-show="!r.image_url" class="w-12 h-12 rounded bg-gray-100 flex items-center justify-center text-gray-300 flex-none">📦</span>
+                                         @click.stop="openPreview(r, 'ref')"
+                                         class="w-16 h-16 rounded object-cover border flex-none">
+                                    <span x-show="!r.image_url" class="w-16 h-16 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-2xl flex-none">📦</span>
                                     <span class="flex-1 min-w-0">
                                         <span x-text="r.title" class="block text-sm font-medium text-gray-900 truncate"></span>
                                         <span class="block text-xs text-gray-400 truncate">
@@ -568,7 +574,9 @@
                                         </span>
                                     </span>
                                     <span x-show="r.suggested_price !== null" x-text="formatPrice(r.suggested_price)" class="text-sm text-gray-600 flex-none"></span>
-                                </button>
+                                    <button type="button" @click.stop="openPreview(r, 'ref')" title="Preview"
+                                            class="flex-none text-gray-400 hover:text-purple-600 text-2xl leading-none px-1">👁</button>
+                                </div>
                             </template>
                         </div>
                         <!-- Price-confirm: keeps the canonical title/description/photo regardless of price. -->
@@ -660,6 +668,30 @@
         </div>
     </div>
 
+    <!-- BL-102.1: preview a candidate WITHOUT binding it. The bind is permanent
+         ("once you connect it, it's connected"), so 👁 opens a big image + details
+         double-check first, then a confirm binds it. z above the lazy modal. -->
+    <div x-show="previewOpen" x-transition @click.self="previewOpen=false"
+         class="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-4" style="display:none;">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden">
+            <div class="relative bg-gray-50">
+                <img x-show="previewItem && previewItem.image" :src="previewItem && previewItem.image" alt=""
+                     class="w-full h-64 object-contain">
+                <span x-show="!(previewItem && previewItem.image)" class="flex items-center justify-center h-64 text-gray-300 text-7xl">📦</span>
+                <button @click="previewOpen=false" class="absolute top-2 right-2 bg-white/90 rounded-full w-9 h-9 text-gray-600 text-2xl leading-none flex-none">&times;</button>
+            </div>
+            <div class="p-4 space-y-1">
+                <p class="text-lg font-bold text-gray-900" x-text="previewItem && previewItem.name"></p>
+                <p x-show="previewItem && previewItem.sub" class="text-sm text-gray-500" x-text="previewItem && previewItem.sub"></p>
+                <p x-show="previewItem && previewItem.price" class="text-base font-semibold text-gray-700" x-text="previewItem && previewItem.price"></p>
+            </div>
+            <div class="flex gap-2 p-4 pt-0">
+                <button @click="previewOpen=false" class="btn-secondary flex-1" data-i18n="scan.preview_back">Back to list</button>
+                <button @click="confirmPreview()" :disabled="lazySaving" class="btn-primary flex-1" data-i18n="scan.preview_pick">This one</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Clear-cart confirm modal (replaces the native confirm) -->
     <div x-show="showClearModal" x-transition.opacity
          class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
@@ -732,6 +764,10 @@
             // only on a PURE barcode miss (a code but no name yet); a name-led miss keeps
             // search-first. Photo → AI names it → catalog/reference search → bind the code.
             lazyPhotoFirst: false,
+            // BL-102.1 preview-before-bind: eyeball a candidate (big image + details) without
+            // committing — the bind is permanent, so this is the double-check.
+            previewOpen: false,
+            previewItem: null,   // {name, sub, price, image, raw, kind:'catalog'|'ref'}
             lazyCreateOpen: false,   // the "genuinely new" fallback form, collapsed by default
             // BL-97 reference catalog (product master): a SECOND source under the live results.
             // Found here = not yet in the shop, but canonical data exists → "adopt" copies it in.
@@ -1200,6 +1236,31 @@
                 } finally {
                     this.lazySaving = false;
                 }
+            },
+
+            // BL-102.1: open a big-image preview of a candidate without binding it.
+            openPreview(item, kind) {
+                if (kind === 'ref') {
+                    this.previewItem = {
+                        name: item.title, image: item.image_url || '',
+                        sub: [item.supplier, item.category].filter(Boolean).join(' · '),
+                        price: (item.suggested_price !== null && item.suggested_price !== undefined)
+                            ? this.formatPrice(item.suggested_price) : '',
+                        raw: item, kind };
+                } else {
+                    this.previewItem = {
+                        name: item.name, image: item.image_url || '', sub: item.category || '',
+                        price: this.formatPrice(item.price), raw: item, kind: 'catalog' };
+                }
+                this.previewOpen = true;
+            },
+            // "This one" from the preview → run the same action a row tap would.
+            confirmPreview() {
+                const it = this.previewItem;
+                this.previewOpen = false;
+                if (!it) return;
+                if (it.kind === 'ref') this.selectReference(it.raw);   // → price-confirm, then adopt
+                else this.linkToExisting(it.raw);                       // → bind barcode + add to cart
             },
 
             async linkToExisting(product) {
