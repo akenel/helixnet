@@ -10,38 +10,49 @@
  * near-black card: 1.17:1. A 200 means the file exists. It does not mean a human can
  * read the screen.
  *
- * So this drives the REAL login page in Chrome, TYPES INTO THE FIELDS, and measures
- * the rendered contrast of every text node against its actual painted backdrop.
+ * HOW IT MEASURES (v2 — learned the hard way):
+ * The first version inferred the backdrop by walking computed background-colors. That
+ * breaks on any theme whose page background is a GRADIENT (a background-IMAGE with a
+ * transparent background-COLOR) — it measured ZERO elements on La Piazza and cheerfully
+ * printed PASS. A gate that measures nothing and reports green is worse than no gate.
+ *
+ * So it no longer infers anything: it hides all text, screenshots the page, and SAMPLES
+ * THE ACTUAL RENDERED PIXEL behind each text element. Gradients, images, glass, blur —
+ * all handled, because we read what Chrome actually painted.
+ *
+ * It also FAILS LOUD if it measured nothing (see MIN_ELEMENTS) — a login screen with no
+ * readable text on it is not a pass, it is a broken probe.
  *
  * Node (not Python, per standing rule 11) because it must drive a real browser —
  * puppeteer is the same Chrome-headless tool the PDF scripts already use.
  *
  * Usage:
- *   node scripts/ops/kc-login-audit.js              # all known envs
- *   node scripts/ops/kc-login-audit.js banco-prod   # one env
- *   node scripts/ops/kc-login-audit.js --shots /tmp/out
+ *   node scripts/ops/kc-login-audit.js                      # every env
+ *   node scripts/ops/kc-login-audit.js lapiazza-prod        # one env
+ *   node scripts/ops/kc-login-audit.js --shots /tmp/kc      # keep screenshots
  *
- * Exit code 1 if ANY text element is unreadable (< 3:1). Wire it into a release gate.
+ * Exit 1 if any text is unreadable, or if a screen yields too few elements to trust.
  */
 const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer');
+const { PNG } = require('pngjs');
 
 // One Keycloak serves every realm below; themes bind-mount from
 // /opt/helixnet/BorrowHood/keycloak/themes/ on the box.
 const ENVS = {
-  'banco-prod':    { host: 'banco.lapiazza.app',         realm: 'kc-production',      client: 'helix_pos_web', cb: '/pos/callback' },
-  'banco-staging': { host: 'staging-banco.lapiazza.app', realm: 'kc-staging',         client: 'helix_pos_web', cb: '/pos/callback' },
-  'banco-sandbox': { host: 'sandbox-banco.lapiazza.app', realm: 'kc-sandbox',         client: 'helix_pos_web', cb: '/pos/callback' },
+  'banco-prod':    { host: 'banco.lapiazza.app',         realm: 'kc-production', client: 'helix_pos_web', cb: '/pos/callback' },
+  'banco-staging': { host: 'staging-banco.lapiazza.app', realm: 'kc-staging',    client: 'helix_pos_web', cb: '/pos/callback' },
+  'banco-sandbox': { host: 'sandbox-banco.lapiazza.app', realm: 'kc-sandbox',    client: 'helix_pos_web', cb: '/pos/callback' },
   // La Piazza — realm is still `borrowhood` (pre-rebrand ID; see standing rule 12).
-  // DIFFERENT theme (lapiazza.css), NOT yet audited for the PatternFly wrapper bug.
-  // It predates the banco themes and Angel reports it "used to work fine" — but it
-  // was never MEASURED either, which is exactly what shipped the banco bug. BL-39.2.
+  // Separate theme (lapiazza.css) from the banco ones.
   'lapiazza-prod': { host: 'lapiazza.app', realm: 'borrowhood', client: 'account-console', cb: '/realms/borrowhood/account/' },
 };
 
-const WCAG_MIN = 4.5;   // normal body text
-const BROKEN   = 3.0;   // below this = nobody can read it
+const WCAG_MIN    = 4.5;  // normal body text
+const BROKEN      = 3.0;  // below this, nobody can read it
+const MIN_ELEMENTS = 4;   // a login screen has at least: heading, 2 labels, 2 fields.
+                          // Fewer than this means the probe failed — do NOT call it green.
 
 function srgb(c) { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
 function lum([r, g, b]) { return 0.2126 * srgb(r) + 0.7152 * srgb(g) + 0.0722 * srgb(b); }
@@ -56,103 +67,141 @@ function authUrl(e) {
 async function audit(page, name, env, shotDir) {
   await page.goto(authUrl(env), { waitUntil: 'networkidle0', timeout: 60000 });
 
-  // Type real text — an EMPTY field can look fine while typed text is invisible.
-  // This is the step that would have caught the original bug.
+  // Type real text. An EMPTY field looks fine while typed text is invisible — that IS
+  // the bug. An untyped check would have shipped it again.
   let typed = false;
   try {
     await page.type('#username', 'contrast.probe');
     await page.type('#password', 'ProbePassword123');
     typed = true;
-  } catch { /* some screens have no login form (error page) — still audit what's there */ }
+  } catch { /* no form (error page): still audit whatever text is there */ }
 
-  const found = await page.evaluate(() => {
+  // 1. Collect every element that paints its own text, with its exact glyph box.
+  const items = await page.evaluate(() => {
     const parse = (s) => {
       const m = (s || '').match(/rgba?\(([^)]+)\)/);
       if (!m) return null;
       const p = m[1].split(',').map(Number);
       return { rgb: [p[0], p[1], p[2]], a: p.length > 3 ? p[3] : 1 };
     };
-    // Walk up for the real painted backdrop.
-    //
-    // GOTCHA (cost me a false FAIL): the page background is usually a GRADIENT, i.e.
-    // a background-IMAGE with a transparent background-COLOR. Naively falling back to
-    // white then measures cream-on-dark as 1.19:1 and screams about a screen that is
-    // perfectly readable. So establish the page base from <html>'s background-color
-    // (the banco themes set it opaque precisely so the base is knowable), and only
-    // then blend the ancestor colour layers on top of it.
-    //
-    // A gradient on an element BELOW <body> (e.g. the gold Sign In button) still can't
-    // be sampled from computed style — flag those and eyeball them in the screenshot.
-    const pageBase = () => {
-      for (const node of [document.documentElement, document.body]) {
-        const c = parse(getComputedStyle(node).backgroundColor);
-        if (c && c.a > 0.95) return c.rgb;
-      }
-      return null;  // unknowable -> caller skips rather than guessing white
-    };
-
-    const effBg = (el) => {
-      const base0 = pageBase();
-      if (!base0) return { unknown: true };
-      let node = el; const stack = [];
-      while (node && node !== document.documentElement) {
-        const cs = getComputedStyle(node);
-        if (cs.backgroundImage && cs.backgroundImage !== 'none' && node !== document.body) return { gradient: true };
-        const bg = parse(cs.backgroundColor);
-        if (bg && bg.a > 0) stack.push(bg);
-        node = node.parentElement;
-      }
-      let base = base0;
-      for (let i = stack.length - 1; i >= 0; i--) {
-        const c = stack[i];
-        base = c.rgb.map((v, j) => v * c.a + base[j] * (1 - c.a));
-      }
-      return { rgb: base };
-    };
-
     const out = [];
-    document.querySelectorAll('input,select,textarea,label,a,span,div,h1,h2,p,button,li').forEach((el) => {
+    document.querySelectorAll('input,select,textarea,label,a,span,div,h1,h2,h3,p,button,li').forEach((el) => {
       const cs = getComputedStyle(el);
-      if (cs.display === 'none' || cs.visibility === 'hidden' || cs.opacity === '0') return;
-      const r = el.getBoundingClientRect();
-      if (!r.width || !r.height) return;
-      const own = Array.from(el.childNodes).filter((n) => n.nodeType === 3).map((n) => n.textContent.trim()).join(' ').trim();
+      if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) return;
+
       const isField = ['INPUT', 'SELECT', 'TEXTAREA'].includes(el.tagName);
+      if (isField && ['hidden', 'checkbox', 'radio', 'submit', 'button'].includes(el.type)) {
+        if (el.type !== 'submit' && el.type !== 'button') return;
+      }
+
+      // the element's OWN text (not its children's)
+      const own = Array.from(el.childNodes).filter((n) => n.nodeType === 3)
+        .map((n) => n.textContent.trim()).filter(Boolean).join(' ').trim();
       const text = isField ? (el.value || '') : own;
       if (!text) return;
-      const fg = parse(cs.color);
-      if (!fg) return;
-      const bg = effBg(el);
-      // gradient-backed (gold Sign In button) or an unknowable page base: don't guess,
-      // don't cry wolf. A guessed backdrop is worse than no measurement.
-      if (bg.gradient || bg.unknown) return;
-      const flat = fg.rgb.map((c, i) => c * fg.a + bg.rgb[i] * (1 - fg.a));
+
+      // exact painted box of the text itself (not the padded element box)
+      let r;
+      if (isField) {
+        r = el.getBoundingClientRect();
+      } else {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        r = range.getBoundingClientRect();
+        if (!r.width || !r.height) r = el.getBoundingClientRect();
+      }
+      if (!r.width || !r.height) return;
+
+      // -webkit-text-fill-color wins over color when set (we use it in the banco theme)
+      const fill = parse(cs.webkitTextFillColor) || parse(cs.color);
+      if (!fill) return;
+
       out.push({
         label: el.tagName.toLowerCase() + (el.id ? '#' + el.id : ''),
         text: text.slice(0, 30),
-        fg: flat.map(Math.round),
-        bg: bg.rgb.map(Math.round),
+        fg: fill,
+        rect: { x: r.left, y: r.top, w: r.width, h: r.height },
       });
     });
     return out;
   });
 
+  // 2. Hide ALL text, then screenshot: whatever is under each point is the true backdrop.
+  //    This is the whole trick — no inferring gradients, no guessing a page base.
+  await page.addStyleTag({
+    content: `*, *::before, *::after {
+      color: transparent !important;
+      -webkit-text-fill-color: transparent !important;
+      text-shadow: none !important;
+      caret-color: transparent !important;
+    }`,
+  });
+  const buf = await page.screenshot({ fullPage: false });
+  const png = PNG.sync.read(buf);
+  const dsf = png.width / page.viewport().width;   // map CSS px -> device px
+
+  const pixel = (x, y) => {
+    const dx = Math.max(0, Math.min(png.width - 1, Math.round(x * dsf)));
+    const dy = Math.max(0, Math.min(png.height - 1, Math.round(y * dsf)));
+    const i = (png.width * dy + dx) << 2;
+    return [png.data[i], png.data[i + 1], png.data[i + 2]];
+  };
+
+  // Sample a GRID across the text box and take the DOMINANT colour, not one pixel.
+  // A single sample can land on a checkbox, an icon or a border sitting next to the
+  // text and invent a contrast failure that isn't there (this exact false alarm fired
+  // on La Piazza's "Remember me"). The backdrop is whatever most of the box is.
+  const backdrop = (r) => {
+    const counts = new Map();
+    const nx = 5, ny = 3;
+    for (let i = 0; i < nx; i++) {
+      for (let j = 0; j < ny; j++) {
+        const x = r.x + (r.w * (i + 0.5)) / nx;
+        const y = r.y + (r.h * (j + 0.5)) / ny;
+        const p = pixel(x, y);
+        const k = p.join(',');
+        counts.set(k, (counts.get(k) || 0) + 1);
+      }
+    }
+    let best = null, bestN = -1;
+    for (const [k, n] of counts) if (n > bestN) { bestN = n; best = k; }
+    return best.split(',').map(Number);
+  };
+
+  const rows = items.map((it) => {
+    const bg = backdrop(it.rect);
+    const fg = it.fg.rgb.map((c, i) => c * it.fg.a + bg[i] * (1 - it.fg.a)); // honour text alpha
+    return { ...it, bg, cr: ratio(fg, bg) };
+  });
+
   if (shotDir) {
     fs.mkdirSync(shotDir, { recursive: true });
+    // re-screenshot WITH text so the saved image is the human-readable evidence
+    await page.reload({ waitUntil: 'networkidle0' });
+    if (typed) {
+      try { await page.type('#username', 'contrast.probe'); await page.type('#password', 'ProbePassword123'); } catch {}
+    }
     await page.screenshot({ path: path.join(shotDir, `${name}.png`) });
   }
 
-  const rows = found.map((f) => ({ ...f, cr: ratio(f.fg, f.bg) }));
   const broken = rows.filter((r) => r.cr < BROKEN);
-  const weak = rows.filter((r) => r.cr >= BROKEN && r.cr < WCAG_MIN);
+  const weak   = rows.filter((r) => r.cr >= BROKEN && r.cr < WCAG_MIN);
 
   console.log(`\n=== ${name}  (${env.host} / ${env.realm})${typed ? '' : '  [no login form — typed nothing]'}`);
   rows.sort((a, b) => a.cr - b.cr).forEach((r) => {
     const flag = r.cr < BROKEN ? 'UNREADABLE' : r.cr < WCAG_MIN ? 'weak      ' : 'ok        ';
-    console.log(`  ${flag} ${r.cr.toFixed(2).padStart(6)}:1  ${r.label.padEnd(22)} "${r.text}"`);
+    console.log(`  ${flag} ${r.cr.toFixed(2).padStart(6)}:1  ${r.label.padEnd(22)} "${r.text}"`
+              + `   rgb(${r.fg.rgb}) on rgb(${r.bg})`);
   });
+
+  // A screen that yielded almost nothing did not PASS — the probe failed. Say so.
+  if (rows.length < MIN_ELEMENTS) {
+    console.log(`  >>> PROBE FAILED: only ${rows.length} text element(s) measured (expected >= ${MIN_ELEMENTS}).`);
+    console.log(`  >>> Not a pass. The page may not have loaded, or the selectors missed.`);
+    return { broken: 1, weak: weak.length, measured: rows.length };
+  }
   if (broken.length) console.log(`  >>> ${broken.length} UNREADABLE — a human cannot use this screen`);
-  return { broken: broken.length, weak: weak.length };
+  return { broken: broken.length, weak: weak.length, measured: rows.length };
 }
 
 (async () => {
@@ -163,12 +212,13 @@ async function audit(page, name, env, shotDir) {
   const names = args.length ? args : Object.keys(ENVS);
 
   const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
-  const page = await browser.newPage();
-  await page.setViewport({ width: 1280, height: 1000, deviceScaleFactor: 2 });
-
   let totalBroken = 0;
+
   for (const n of names) {
-    if (!ENVS[n]) { console.error(`unknown env: ${n} (have: ${Object.keys(ENVS).join(', ')})`); continue; }
+    if (!ENVS[n]) { console.error(`unknown env: ${n} (have: ${Object.keys(ENVS).join(', ')})`); totalBroken++; continue; }
+    const page = await browser.newPage();
+    // deviceScaleFactor 1 keeps CSS px == device px, so pixel sampling stays honest
+    await page.setViewport({ width: 1280, height: 1400, deviceScaleFactor: 1 });
     try {
       const r = await audit(page, n, ENVS[n], shotDir);
       totalBroken += r.broken;
@@ -176,11 +226,12 @@ async function audit(page, name, env, shotDir) {
       console.error(`\n=== ${n}: AUDIT FAILED — ${e.message}`);
       totalBroken += 1;
     }
+    await page.close();
   }
   await browser.close();
 
   console.log(totalBroken
-    ? `\nFAIL — ${totalBroken} unreadable element(s). Do NOT ship this login screen.`
+    ? `\nFAIL — ${totalBroken} problem(s). Do NOT ship this login screen.`
     : `\nPASS — every text element is readable on all ${names.length} screen(s).`);
   process.exit(totalBroken ? 1 : 0);
 })();
