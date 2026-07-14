@@ -241,3 +241,39 @@ publishes." **The till search just never got the same scoring.** Half the fix is
 (assert "lighter"/"bic lighter" return "Feuerzeug BIC mini" in the top 5). (2)–(4) are the durable recall layer.
 **The rule this incident teaches: a false-negative search is the most expensive failure in a shop because it is
 SILENT — it looks like "we don't carry it," and only the operator's outside knowledge (go to Tamar) recovers it.**
+
+**✅ SHIPPED 2026-07-14:** (1) name-OR-description ranking (b1755 `7e9bce2`, tag `verified/bl101-search-recall`)
+and (2)+(4) the bilingual/brand **synonym layer** (b1757 `3aeb6f7`, tag `verified/bl101-synonym-layer`):
+`services/catalog_search_synonyms.py` maps English/brand asks → the German category/keyword the catalog stores;
+`search_products_fast` boosts category-hit 0.75 / name-hit 0.55 only when a concept is recognised (else plain
+search unchanged). Prod-verified: `lighter`→Feuerzeuge shelf, `tycoon`→Tycoon Gas #1, `scale`→Waagen,
+`papers`→Drehpapier. 9 pure-Python unit tests. Plus a **search-strategy tip** on `/pos/search` (EN/DE/FR/IT:
+"brand + one word, EN or DE both work"). **▶ Remainder (3):** a structured `brand` field via BL-98 enrichment
+(brands mostly live in the name today, so lower urgency).
+
+---
+
+## BL-102 — The Matching Doctrine: scan-miss → PHOTO-first (not name), barcode learn-back
+
+**Status:** 📋 SPEC — Angel's doctrine, 2026-07-14 ("basic principles, dead simple. This is the rule. End of
+story."). Full statement: memory `banco-barcode-matching-doctrine`. Most pieces EXIST; BL-102 is the **flow reorder**.
+
+**The dead-simple rule:**
+1. **The barcode on the can is NOT in the catalog on first scan — NORMAL, not a bug.** Suppliers (Tamar,
+   FourTwenty, Artemis) store MINTED barcodes, not the real EAN on the item. A scan-miss = "not in the system
+   yet," a signal to switch tactics — never a dead end.
+2. **On a miss, go straight to PHOTO (snap & fill).** The visual lookup is the reliable matcher — how a human
+   and the AI both match. DON'T rabbit-hole on name search. (Name is the fallback, and it needs German — now
+   bridged by the BL-101 synonym layer.)
+3. **Capture the can's barcode on first sale → scan-once-known-forever** (BL-90). After it sells once, every
+   future scan hits instantly. Over weeks the shelf becomes ~99% scan-hittable. Target for obvious high-volume
+   goods (papers/lighters/Tycoon) = 99% hit, not operator frustration.
+4. **Replace the throwaway lookup photo with the real image** once matched (never leave the blurry phone shot as
+   the cover).
+
+**Build state vs doctrine:** ✅ learn-back exists (scan.html BL-90 lazy-capture → `POST /products/{id}/barcodes`)
+· ✅ synonym bridge shipped · ✅ snap-&-fill exists. **❌ THE GAP:** on a pure barcode scan-miss the flow leads
+with NAME/catalog search (BL-96 "search-first" — `openLazyCapture` opens `lazyLinkOpen=true`), NOT the camera.
+**BL-102 = reorder scan-miss to lead with the PHOTO**, confirm the barcode auto-links on match, and verify the
+temp photo is replaced. Small, high-leverage — it's the difference between "obvious 99% hit" and "Angel must
+steward every item himself."

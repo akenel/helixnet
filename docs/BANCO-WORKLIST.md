@@ -59,6 +59,16 @@ dupe — it keeps its 2 sales). Prod sweep: only 2 other discontinued-with-barco
   port the capture-search's `GREATEST(name-sim, word_similarity(q, name||' '||description))` scoring into the till
   ORDER BY (one expression, no schema) + regression test. Durable: brand field + DE↔EN category synonyms (via BL-98
   enrichment). **A false-negative search is the most expensive shop failure because it's SILENT.**
+  **✅ SHIPPED PROD 2026-07-14:** name-OR-description ranking (b1755, tag `verified/bl101-search-recall`) + the
+  **bilingual/brand synonym layer** (b1757 `3aeb6f7`, tag `verified/bl101-synonym-layer`) — `lighter`→Feuerzeuge,
+  `tycoon`→Tycoon Gas #1, `scale`→Waagen, `papers`→Drehpapier; 9 unit tests; search-strategy tip (EN/DE/FR/IT); sw v101.
+- **🐯 BL-102 · THE MATCHING DOCTRINE — scan-miss → PHOTO-first** (spec: [BANCO-INVENTORY-ROADMAP.md](BANCO-INVENTORY-ROADMAP.md#bl-102),
+  memory `banco-barcode-matching-doctrine`). **Angel's dead-simple rule (2026-07-14):** the barcode on a can is NOT
+  in the catalog on first scan (suppliers store minted codes, not the real EAN) — that's NORMAL. On a miss, go
+  STRAIGHT to the photo/snap-&-fill (the reliable matcher), skip name-search; capture the can's barcode on first
+  sale so it hits forever (BL-90 learn-back, already built). **THE GAP:** scan-miss currently leads with NAME search
+  (BL-96), not the camera — BL-102 reorders it to PHOTO-first + confirms barcode auto-link + temp-photo replace.
+  Small, high-leverage: the difference between "obvious 99% hit" and "Angel must steward every item himself."
 
 ## ✅ 2026-07-13 SHIPPED — discount SEPARATE-LANES (prod-green, tagged) · Test Library BUILT · onboarding kit ready
 
