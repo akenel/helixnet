@@ -494,9 +494,29 @@
                     <input type="text" x-model="lazyBarcode" readonly class="input-field bg-gray-100 font-mono">
                 </div>
 
+                <!-- BL-102 matching doctrine: a scanned code that misses = NOT in the catalog
+                     yet, which is NORMAL (suppliers store minted codes, not the real EAN). Lead
+                     with the CAMERA — the reliable matcher — instead of a German name box Pam
+                     must guess. Photo → AI names it → catalog + reference search → bind the code
+                     so the very next scan hits. Hides the moment matches (or a name) appear. -->
+                <div x-show="lazyPhotoFirst && !lazyLinkResults.length && !refResults.length && !aiNote && !lazyCreateOpen"
+                     class="rounded-xl border-2 border-dashed border-indigo-300 bg-indigo-50 p-4 text-center" style="display:none;">
+                    <p class="text-sm text-gray-700" data-i18n="scan.miss_normal">Not in the catalog under that barcode — that's normal, the code on the pack rarely matches.</p>
+                    <p class="text-base font-bold text-gray-900 mt-1 mb-3" data-i18n="scan.miss_take_photo">📷 Take a photo — we'll find it for you.</p>
+                    <label class="btn-primary cursor-pointer inline-flex items-center gap-2 text-lg px-6 py-3"
+                           :class="aiBusy ? 'opacity-60 pointer-events-none' : ''">
+                        <span x-text="aiBusy ? ('🔍 ' + t('scan.reading')) : ('📷 ' + t('scan.snap_fill'))"></span>
+                        <input type="file" accept="image/*" :capture="posCaptureAttr()" class="hidden" @change="aiSnapFill($event)" :disabled="aiBusy">
+                    </label>
+                    <p x-show="aiNote" x-text="aiNote" class="text-xs text-indigo-700 font-medium mt-2" style="display:none;"></p>
+                    <button type="button" @click="lazyPhotoFirst=false; $nextTick(()=>{ if($refs.lazyLinkInput) $refs.lazyLinkInput.focus() })"
+                            class="mt-3 text-xs text-gray-500 underline" data-i18n="scan.or_search_name">or search by name instead</button>
+                </div>
+
                 <!-- PRIMARY (BL-96 search-first): find the real product, bind the code to it.
-                     The picture + name + category come from the catalog, not from memory. -->
-                <div>
+                     The picture + name + category come from the catalog, not from memory.
+                     Hidden while the BL-102 camera hero leads a fresh barcode miss. -->
+                <div x-show="!lazyPhotoFirst || lazyLinkResults.length || refResults.length || aiNote">
                     <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="scan.what_is_it">What is it? Find it in the catalog</label>
                     <input type="text" x-model="lazyLinkQuery" x-ref="lazyLinkInput"
                            @input.debounce.300ms="searchExisting(); searchReference()"
@@ -706,6 +726,12 @@
             lazyLinkQuery: '',
             lazyLinkResults: [],
             lazyLinkSearching: false,
+            // BL-102 (matching doctrine): a scanned code that misses = "not in the catalog
+            // yet", which is NORMAL (suppliers store minted codes, not the real EAN). Don't
+            // drop Pam into a German name box she has to guess — lead with the CAMERA. True
+            // only on a PURE barcode miss (a code but no name yet); a name-led miss keeps
+            // search-first. Photo → AI names it → catalog/reference search → bind the code.
+            lazyPhotoFirst: false,
             lazyCreateOpen: false,   // the "genuinely new" fallback form, collapsed by default
             // BL-97 reference catalog (product master): a SECOND source under the live results.
             // Found here = not yet in the shop, but canonical data exists → "adopt" copies it in.
@@ -1027,21 +1053,24 @@
                 this.lazyLinkQuery = prefillName || '';
                 this.lazyLinkResults = [];
                 this.lazyLinkSearching = false;
+                // BL-102: a PURE barcode miss (code, no name) leads with the camera, not the
+                // name box. A name-led miss (camera OCR / typed) stays search-first.
+                this.lazyPhotoFirst = !!((this.lazyBarcode || '').trim() && !(prefillName || '').trim());
                 // BL-97 reference second source — reset.
                 this.refResults = [];
                 this.refSearching = false;
                 this.refSelected = null;
                 this.refPrice = '';
                 this.lazyOpen = true;
-                // If we already have a name (camera OCR / typed), search straight away.
-                // On a pure barcode scan-miss there's no name yet — but the scanned code
-                // itself is a lookup key: fire the reference search by BARCODE so the exact
-                // supplier match (photo + price) surfaces automatically, no typing needed.
-                // Otherwise focus the box so Pam can type a keyword.
+                // If we already have a name (camera OCR / typed), search straight away and focus
+                // the box. On a pure barcode miss we still try the reference by BARCODE (cheap —
+                // it usually misses too, per the doctrine), but we do NOT steal focus into the
+                // name box: the camera hero is the lead action, so Pam isn't nudged to guess a
+                // German name she doesn't have.
                 this.$nextTick(() => {
                     if (this.lazyLinkQuery.trim().length > 1) { this.searchExisting(); this.searchReference(); }
                     else if ((this.lazyBarcode || '').trim()) { this.searchReference(); }
-                    if (this.$refs.lazyLinkInput) this.$refs.lazyLinkInput.focus();
+                    if (!this.lazyPhotoFirst && this.$refs.lazyLinkInput) this.$refs.lazyLinkInput.focus();
                 });
             },
 
