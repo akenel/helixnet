@@ -1809,6 +1809,21 @@ async def search_products_fast(
     q = (q or "").strip()
     category = (category or "").strip() or None
 
+    # BL-101 durable layer: expand an ENGLISH/brand ask to the GERMAN category/keyword terms
+    # the catalog actually stores ("lighter" → "feuerzeug…", "scale" → "waage…"). Only kicks
+    # in when a concept is recognised; otherwise syn_like is empty and the query below runs
+    # exactly as the plain search. See services/catalog_search_synonyms.py.
+    from src.services.catalog_search_synonyms import expand_search_terms
+    syn_like = [f"%{t}%" for t in expand_search_terms(q)]
+    # SQL fragments injected only when we have expansions (never user text → no injection):
+    # a category/name hit on a synonym term scores a floor high enough to beat an incidental
+    # description mention, so "lighter" surfaces the whole "Feuerzeuge" shelf, BIC included.
+    syn_score = (
+        ", CASE WHEN category ILIKE ANY(:syn_like) THEN 0.75"
+        "       WHEN name ILIKE ANY(:syn_like) THEN 0.55 ELSE 0 END"
+    ) if syn_like else ""
+    syn_recall = " OR category ILIKE ANY(:syn_like) OR name ILIKE ANY(:syn_like)" if syn_like else ""
+
     # Sort is interpolated from a FIXED whitelist (never user text) → no injection surface;
     # q/category/limit/skip stay bound params. (No stock/reorder filter on purpose: the shop
     # reorders by eyeballing the shelf + a pencil list, not thresholds — and under
@@ -1846,7 +1861,7 @@ async def search_products_fast(
                  -- item ("Feuerzeug BIC mini" for "bic lighter") without letting an incidental
                  -- word in a long description outrank a real name match. Full weight let
                  -- unrelated items whose description merely mentions the word saturate the top.
-                 0.5 * word_similarity(:q, coalesce(name,'') || ' ' || coalesce(description,''))
+                 0.5 * word_similarity(:q, coalesce(name,'') || ' ' || coalesce(description,'')){syn_score}
                ) AS relevance,
                count(*) OVER() AS total_count
         FROM products
@@ -1861,14 +1876,16 @@ async def search_products_fast(
             -- German-named items ("lighter"/"bic lighter" → "Feuerzeug BIC mini") and
             -- tolerates word order + minor typos the whole-phrase ILIKE misses.
             OR word_similarity(:q, coalesce(name,'') || ' ' || coalesce(description,'')) > 0.35
+            {syn_recall}
           )
           AND (CAST(:category AS TEXT) IS NULL OR category ILIKE '%' || CAST(:category AS TEXT) || '%')
         ORDER BY {order_clause}
         LIMIT :limit OFFSET :skip
     """)
-    rows = (await db.execute(query, {
-        "q": q or "", "category": category, "limit": limit, "skip": skip,
-    })).fetchall()
+    params = {"q": q or "", "category": category, "limit": limit, "skip": skip}
+    if syn_like:
+        params["syn_like"] = syn_like
+    rows = (await db.execute(query, params)).fetchall()
 
     from src.services.catalog_taxonomy import class_promo_restricted
 
