@@ -119,6 +119,9 @@ test-pos:
 #   make login-audit ENV=prod     # just banco prod
 BOX ?= root@46.62.138.218
 DEPLOY_SCRIPT ?= /opt/ops/deploy-banco.py
+TREE_sandbox := /opt/helix-sandbox-tree
+TREE_staging := /opt/helix-banco-staging-tree
+TREE_prod    := /opt/helix-banco-tree
 
 .PHONY: login-audit
 login-audit:
@@ -128,9 +131,23 @@ login-audit:
 		exit 1; }
 	@node scripts/ops/kc-login-audit.js $(if $(filter sandbox staging prod,$(ENV)),banco-$(ENV))
 
-# The front door for deploys. Deploys on the box, then PROVES the login still
-# works. Running deploy-banco.py by hand on the box SKIPS this gate -- that is
-# exactly how the broken login reached a user.
+# Gate 1 of 2: did the APP come back, and is it serving the code we just shipped?
+# The login gate alone would pass while the app was broken -- Keycloak is not even
+# restarted by a deploy. And "container: healthy" greens a beat BEFORE the first
+# request serves, so this re-probes the public URL and checks the RENDERED build
+# stamp -- the only thing that proves the restart picked up the new code.
+#   make app-gate ENV=prod [SHA=08af5a2]
+.PHONY: app-gate
+app-gate:
+	@case "$(ENV)" in sandbox|staging|prod) ;; *) \
+		echo "usage: make app-gate ENV=<sandbox|staging|prod> [SHA=<short-sha>]"; exit 2;; esac
+	@python3 scripts/ops/app-gate.py $(ENV) $(if $(SHA),--expect-sha $(SHA))
+
+# The front door for deploys. Deploys on the box, then PROVES BOTH HALVES:
+#   1. the app is serving the SHA we just deployed  (app-gate)
+#   2. a human can READ the login screen            (login-audit)
+# Running deploy-banco.py by hand on the box skips both -- that is exactly how a
+# broken login reached a user.
 #
 #   make deploy ENV=sandbox
 #   make deploy ENV=staging REF=feat/x
@@ -142,9 +159,14 @@ deploy:
 	@echo "🚀 deploy $(ENV) <- $(or $(REF),origin/main)"
 	@ssh $(BOX) "BANCO_LOGIN_GATE=1 python3 $(DEPLOY_SCRIPT) $(ENV) $(or $(REF),origin/main)"
 	@echo ""
-	@echo "🚦 RELEASE GATE -- can a human actually log in to $(ENV)?"
+	@SHA=$$(ssh $(BOX) "git -C $(TREE_$(ENV)) rev-parse --short HEAD"); \
+	 echo "🚦 RELEASE GATE 1/2 -- is the APP serving $$SHA?"; \
+	 python3 scripts/ops/app-gate.py $(ENV) --expect-sha "$$SHA"
+	@echo ""
+	@echo "🚦 RELEASE GATE 2/2 -- can a human READ the login screen on $(ENV)?"
 	@$(MAKE) --no-print-directory login-audit ENV=$(ENV)
-	@echo "✅ $(ENV): deployed, and the login screen is provably readable."
+	@echo ""
+	@echo "✅ $(ENV): deployed. App is serving the new code AND the login is readable."
 
 # ===================================================================
 # UTILITIES
