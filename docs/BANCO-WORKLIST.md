@@ -44,8 +44,14 @@ dupe — it keeps its 2 sales). Prod sweep: only 2 other discontinued-with-barco
   hypercare cockpit (discontinued-rows-with-barcode + active-rows-with-only-synthetic-barcode) so we *find* traps
   instead of scanning into them. **Angel's lesson banked: product setup/matching is the hard part — a bad match is
   paid later at the till, the most expensive place to find it. Leverage is at intake, not patch time.**
-- **🐯 BL-101 · Till search RECALL & RANKING** (spec: [BANCO-INVENTORY-ROADMAP.md](BANCO-INVENTORY-ROADMAP.md#bl-101)) —
-  **the higher-value twin of BL-100.** Angel looked for a **mini BIC lighter** at the till, it looked absent, so he
+- **🐯 BL-101 · Till search RECALL & RANKING — ✅ FAST-FIX SHIPPED PROD 2026-07-14** (b1755 `7e9bce2`, tag
+  `verified/bl101-search-recall-2026-07-14`): till `/api/v1/pos/search` now ranks
+  `GREATEST(similarity(name,q), 0.5·word_similarity(q, name+description))` — the capture-search's
+  language-agnostic trick. Prod-verified live: `bic`/`bic lighter`/`mini bic` surface the Feuerzeug BIC items on
+  screen one; grinder/clipper/raw/scale unaffected. **▶ DURABLE remainder (next round):** bare generic English
+  words (`lighter`, `scale`) + misspellings (`bick`→Storz & Bickel) still need the brand field + DE↔EN category
+  synonym layer (via BL-98 enrichment) — a one-liner can't disambiguate a word that lives in 200 descriptions.
+  **Original incident (kept for context):** Angel looked for a **mini BIC lighter** at the till, it looked absent, so he
   went to the **Tamar site**, got the exact German title (`Feuerzeug BIC mini`), came back and found it. A cashier
   without that outside knowledge just concludes *"we don't sell BICs"* — a **silent lost sale, no error.** Diagnosis:
   the item IS there and well-formed; `/pos/search` matches the English `description` but **RANKS by German-name
