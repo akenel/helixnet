@@ -30,6 +30,30 @@ Spec: **[docs/BANCO-ECOLUTION-ONBOARDING-SPEC.md](BANCO-ECOLUTION-ONBOARDING-SPE
   the phone) + help cover + the new-hire onboarding (kid starts Thu; self-drive kit ONBOARD-KIT-01 is ready). The
   barcode-trap fix now protects that new hire on the live till.
 
+## 🔴 2026-07-14 PROD INCIDENT + BL-100 raised — Tycoon Gas scanned "discontinued" on the mobile till
+
+**Live prod, Angel on mobile:** scan a can of **Tycoon Gas 250ml** → *"discontinued."* Root cause = a **bad match
+at intake**, not a bug: a discontinued `REF-FOURTWENTY "Tycoon dupe"` still held the **real can EAN** `4035687900004`
+while the live `TAM-5851 "Tycoon Gas 250ml"` (€6.90) only had a synthetic placeholder. Scan hit the dead dupe.
+**Patched by hand in prod** (moved real EAN + `42425700` onto the live row, kept placeholder as alias, stripped the
+dupe — it keeps its 2 sales). Prod sweep: only 2 other discontinued-with-barcode rows, both harmless synthetic scrap.
+- **🐯 BL-100 · Product-matching integrity** (spec: [BANCO-INVENTORY-ROADMAP.md](BANCO-INVENTORY-ROADMAP.md#bl-100)) —
+  the durable fixes: (1) **intake dedup / find-first** so attach-to-existing is the default and a true duplicate is
+  the harder choice; (2) **deactivation releases barcodes** (a dead row must never keep a scan-live code); (3)
+  scan-to-inactive → **offer the active replacement** instead of a dead end; (4) a **standing integrity sweep** in the
+  hypercare cockpit (discontinued-rows-with-barcode + active-rows-with-only-synthetic-barcode) so we *find* traps
+  instead of scanning into them. **Angel's lesson banked: product setup/matching is the hard part — a bad match is
+  paid later at the till, the most expensive place to find it. Leverage is at intake, not patch time.**
+- **🐯 BL-101 · Till search RECALL & RANKING** (spec: [BANCO-INVENTORY-ROADMAP.md](BANCO-INVENTORY-ROADMAP.md#bl-101)) —
+  **the higher-value twin of BL-100.** Angel looked for a **mini BIC lighter** at the till, it looked absent, so he
+  went to the **Tamar site**, got the exact German title (`Feuerzeug BIC mini`), came back and found it. A cashier
+  without that outside knowledge just concludes *"we don't sell BICs"* — a **silent lost sale, no error.** Diagnosis:
+  the item IS there and well-formed; `/pos/search` matches the English `description` but **RANKS by German-name
+  similarity ONLY**, so `"lighter"`/`"bic lighter"` bury the real Feuerzeuge under LED-`light` noise. **Fast fix:**
+  port the capture-search's `GREATEST(name-sim, word_similarity(q, name||' '||description))` scoring into the till
+  ORDER BY (one expression, no schema) + regression test. Durable: brand field + DE↔EN category synonyms (via BL-98
+  enrichment). **A false-negative search is the most expensive shop failure because it's SILENT.**
+
 ## ✅ 2026-07-13 SHIPPED — discount SEPARATE-LANES (prod-green, tagged) · Test Library BUILT · onboarding kit ready
 
 **✅ HC-PROD-01 (2026-07-13):** rows 1–9 PASS (postcard maker on the whole catalog + Cynthia's 7 balms +

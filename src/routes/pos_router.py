@@ -1820,8 +1820,14 @@ async def search_products_fast(
         "recent":     "created_at DESC NULLS LAST, name",
         "stock":      "stock_quantity ASC, name",   # informational view, not a stock claim
     }.get((sort or "").strip().lower(),
-          # default: relevance when searching, else name
-          "CASE WHEN name ILIKE :q || '%' THEN 0 ELSE 1 END, similarity(name, :q) DESC, name")
+          # default: relevance when searching, else name. BL-101: rank by the SELECT-list
+          # `relevance` = GREATEST(name-trigram, word_similarity(q, name+description)). The
+          # Artemis catalog NAME is German ("Feuerzeug BIC mini") but the DESCRIPTION is the
+          # English text Artemis publishes — so an English query ("lighter", "bic lighter")
+          # scored ~0 on the German name and sank under any item whose NAME held a token
+          # ("Lighter", "LED …Light"). Scoring name-OR-description floats the real item up.
+          # (Same trick the photo/capture search already uses — see search_reference_catalog.)
+          "CASE WHEN name ILIKE :q || '%' THEN 0 ELSE 1 END, relevance DESC, name")
 
     # image fallback: a product's cover lives in products.image_url, but a cashier-
     # uploaded gallery photo only sets the cover when none exists yet — so a product can
@@ -1834,7 +1840,14 @@ async def search_products_fast(
                (SELECT pi.id FROM product_images pi
                   WHERE pi.product_id = products.id
                   ORDER BY pi.sort_order, pi.created_at LIMIT 1) AS first_image_id,
-               similarity(name, :q) AS relevance,
+               GREATEST(
+                 similarity(name, :q),
+                 -- description at HALF weight: it should LIFT a German-named/English-described
+                 -- item ("Feuerzeug BIC mini" for "bic lighter") without letting an incidental
+                 -- word in a long description outrank a real name match. Full weight let
+                 -- unrelated items whose description merely mentions the word saturate the top.
+                 0.5 * word_similarity(:q, coalesce(name,'') || ' ' || coalesce(description,''))
+               ) AS relevance,
                count(*) OVER() AS total_count
         FROM products
         WHERE is_active = true
@@ -1844,6 +1857,10 @@ async def search_products_fast(
             -- also match the SUPPLIER (find "Mama Cynthia" by her name) + the description text
             OR supplier_name ILIKE '%' || :q || '%'
             OR description ILIKE '%' || :q || '%'
+            -- BL-101: word-similarity against name+description catches English queries on
+            -- German-named items ("lighter"/"bic lighter" → "Feuerzeug BIC mini") and
+            -- tolerates word order + minor typos the whole-phrase ILIKE misses.
+            OR word_similarity(:q, coalesce(name,'') || ' ' || coalesce(description,'')) > 0.35
           )
           AND (CAST(:category AS TEXT) IS NULL OR category ILIKE '%' || CAST(:category AS TEXT) || '%')
         ORDER BY {order_clause}
