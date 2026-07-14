@@ -16,6 +16,7 @@ Usage (on the box):
 Read-only on prod data — only touches the code tree + restarts the container. Take a DB
 backup first for prod (this script does not — keep that gate human until the rails are proven).
 """
+import os
 import subprocess
 import sys
 import time
@@ -78,14 +79,21 @@ def login_gate_reminder(env):
     This script runs on the box, which has no Chrome — so it CANNOT run the login gate
     itself. Rather than pretend, it says so loudly. A skipped gate reported as success
     is the same fake green that put a broken login in front of a user.
+
+    BUT: `make deploy` runs the gate immediately after this script returns, and sets
+    BANCO_LOGIN_GATE=1 to say so. Warning "GATE NOT RUN" when the gate is about to run
+    is crying wolf — and a warning people learn to ignore is worth less than no warning.
+    So it stays quiet when the caller has the gate covered, and shouts when nobody does.
     """
+    if os.environ.get("BANCO_LOGIN_GATE") == "1":
+        print("[deploy] login gate: running next, from the caller ✅")
+        return
     print()
     print("  ⚠️  LOGIN GATE NOT RUN — this box has no Chrome, so nothing here proved")
     print("      that a human can actually READ the login screen.")
     print("      From the laptop:")
     print(f"          make login-audit ENV={env}")
-    print("      Or skip this warning entirely by deploying through the front door,")
-    print("      which runs the gate for you:")
+    print("      Or deploy through the front door, which runs the gate for you:")
     print(f"          make deploy ENV={env}")
     print()
 

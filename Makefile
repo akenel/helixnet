@@ -140,7 +140,7 @@ deploy:
 	@case "$(ENV)" in sandbox|staging|prod) ;; *) \
 		echo "usage: make deploy ENV=<sandbox|staging|prod> [REF=origin/main]"; exit 2;; esac
 	@echo "🚀 deploy $(ENV) <- $(or $(REF),origin/main)"
-	@ssh $(BOX) "python3 $(DEPLOY_SCRIPT) $(ENV) $(or $(REF),origin/main)"
+	@ssh $(BOX) "BANCO_LOGIN_GATE=1 python3 $(DEPLOY_SCRIPT) $(ENV) $(or $(REF),origin/main)"
 	@echo ""
 	@echo "🚦 RELEASE GATE -- can a human actually log in to $(ENV)?"
 	@$(MAKE) --no-print-directory login-audit ENV=$(ENV)
