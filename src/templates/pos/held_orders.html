@@ -52,12 +52,13 @@
                         </span>
                     </div>
 
-                    <div class="flex gap-2 mt-3">
+                    <button @click="ringOut(c.code)" class="btn-success w-full mt-3 text-lg">💰 <span data-i18n="held.ring">Ring it out</span></button>
+                    <div class="flex gap-2 mt-2">
                         <button @click="toggle(c.code)" class="btn-secondary flex-1">
                             <span data-i18n="held.view" x-show="open !== c.code">View items</span>
                             <span data-i18n="held.hide" x-show="open === c.code" style="display:none;">Hide</span>
                         </button>
-                        <button @click="claim(c.code)" class="btn-success flex-1">✓ <span data-i18n="held.done">Done</span></button>
+                        <button @click="claim(c.code)" class="btn-secondary flex-1">✓ <span data-i18n="held.done">Clear</span></button>
                     </div>
 
                     <!-- lazy detail -->
@@ -114,6 +115,31 @@
                 try {
                     this.detail = await API.get('/api/v1/pos/carts/' + code);
                     this.open = code;
+                } catch (e) { showToast(t('held.toast_load') || 'Could not load the order', 'error'); }
+            },
+
+            async ringOut(code) {
+                // Load the held order into the SAME checkout the counter uses — reuse everything.
+                try {
+                    const d = await API.get('/api/v1/pos/carts/' + code);
+                    const cart = (d.items || []).map(l => ({
+                        id: l.product_id, product_id: l.product_id, name: l.name,
+                        quantity: l.qty, price: parseFloat(l.price),
+                        product_class: l.product_class,
+                        promo_restricted: ['tobacco_nicotine', 'alcohol'].includes(l.product_class),
+                    }));
+                    if (!cart.length) { showToast(t('held.toast_empty') || 'This order is empty', 'warning'); return; }
+                    sessionStorage.setItem('pos_cart', JSON.stringify({ cart, totals: {}, discount: 0, consumption: 'dine_in' }));
+                    sessionStorage.removeItem('pos_sale_uuid');        // fresh idempotency key for this sale
+                    sessionStorage.setItem('pos_kiosk_cart_code', code); // server applies + consumes the welcome discount
+                    if (d.customer_id) {
+                        sessionStorage.setItem('checkout_customer', JSON.stringify({
+                            id: d.customer_id, handle: d.member_handle,
+                            tier_discount_percent: 0, loyalty_tier: 'bronze',
+                            welcome_discount_pct: d.discount_pct || 0,
+                        }));
+                    } else { sessionStorage.removeItem('checkout_customer'); }
+                    window.location.href = '/pos/checkout';
                 } catch (e) { showToast(t('held.toast_load') || 'Could not load the order', 'error'); }
             },
 

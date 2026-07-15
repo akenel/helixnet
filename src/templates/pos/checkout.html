@@ -113,6 +113,10 @@
                     <span>Member discount (<span x-text="member ? member.loyalty_tier : ''"></span> <span x-text="member ? member.tier_discount_percent : 0"></span>%):</span>
                     <span x-text="'-' + formatPrice(memberDiscountAmount)"></span>
                 </div>
+                <div x-show="welcomeDiscountAmount > 0" style="display:none;" class="flex justify-between text-emerald-600 font-semibold">
+                    <span>🎁 <span data-i18n="checkout.welcome_discount">First-order discount</span> (<span x-text="member ? member.welcome_discount_pct : 0"></span>%):</span>
+                    <span x-text="'-' + formatPrice(welcomeDiscountAmount)"></span>
+                </div>
                 <div x-show="(discount > 0 || (member && member.tier_discount_percent > 0)) && discountAmount === 0 && memberDiscountAmount === 0"
                      class="flex justify-between text-amber-600 text-sm">
                     <span data-i18n="checkout.no_discount_promo">No discount — tobacco/alcohol only</span>
@@ -386,6 +390,8 @@
             discountInput: '',
             member: null,              // loyalty member attached to this sale
             memberDiscountAmount: 0,   // display-only; the server applies it once at checkout
+            kioskCartCode: '',         // set when ringing out a kiosk held order (v2b)
+            welcomeDiscountAmount: 0,  // display-only first-order welcome discount; server is authoritative
             // 🔞 Age gate (18+). The server is the real gate; this is the counter UX.
             showAgeModal: false,       // cashier STOP modal for an unverified 18+ sale
             ageVerified: false,        // cashier attested a walk-in is 18+ (ID checked)
@@ -439,6 +445,8 @@
                     const m = sessionStorage.getItem('checkout_customer');
                     if (m) this.member = JSON.parse(m);
                 } catch (e) { this.member = null; }
+                // Kiosk held order being rung out → its member's first-order welcome discount applies.
+                this.kioskCartCode = sessionStorage.getItem('pos_kiosk_cart_code') || '';
                 // Separate lanes (Felix's call 2026-07-13): the manual discount is independent of
                 // the member's tier, which stacks on top automatically. No member-based clamp — the
                 // manual was already bounded by the role cap on the scan page, and the tier applies
@@ -628,10 +636,15 @@
                 const afterDiscount = subtotal - this.discountAmount;
                 const memberPct = (this.member && this.member.tier_discount_percent) || 0;
                 this.memberDiscountAmount = eligibleSum * (memberPct / 100); // member, eligible items only
+                // First-order welcome discount (kiosk v2b): its own lane on the eligible portion,
+                // only when ringing out that member's held order. Server applies + consumes it; this
+                // mirrors the math so shown == charged.
+                const welcomePct = (this.kioskCartCode && this.member && this.member.welcome_discount_pct) || 0;
+                this.welcomeDiscountAmount = eligibleSum * (welcomePct / 100);
                 // Safety floor (mirrors the server): the combined discount can never exceed the
                 // eligible items — the total floors at the non-discountable portion, never negative.
                 const floorTotal = subtotal - eligibleSum;   // promo-restricted (tobacco/alcohol) portion
-                const gross = Math.max(floorTotal, afterDiscount - this.memberDiscountAmount);  // gross paid
+                const gross = Math.max(floorTotal, afterDiscount - this.memberDiscountAmount - this.welcomeDiscountAmount);  // gross paid
                 // Spread the discount evenly across lines so each line's contained VAT
                 // reflects its share of the discounted gross.
                 const factor = subtotal > 0 ? gross / subtotal : 1;
@@ -907,6 +920,11 @@
                     if (this.member && this.member.id) {
                         body.customer_id = this.member.id;
                     }
+                    // Ringing out a kiosk held order → server applies + consumes the welcome discount
+                    // and claims the cart, atomically inside this sale.
+                    if (this.kioskCartCode) {
+                        body.kiosk_cart_code = this.kioskCartCode;
+                    }
 
                     const sale = await API.post('/api/v1/pos/sales', body);
 
@@ -914,6 +932,7 @@
                     sessionStorage.removeItem('pos_cart');
                     sessionStorage.removeItem('checkout_customer');
                     sessionStorage.removeItem('pos_sale_uuid');
+                    sessionStorage.removeItem('pos_kiosk_cart_code');
 
                     showToast(t('checkout.toast_txn_completed'), 'success');
 

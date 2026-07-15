@@ -3686,6 +3686,31 @@ async def create_sale(
             txn.total = Decimal(str(txn.total)) - tier_disc
             txn.discount_amount = Decimal(str(txn.discount_amount)) + tier_disc
 
+    # --- KIOSK WELCOME DISCOUNT (banco-kiosk-guest-station v2b). A guest who self-signed-up at the
+    # kiosk earned a ONE-TIME first-order discount (10% kiosk / 15% phone). When Felix rings their
+    # held order (kiosk_cart_code set), apply it here as its OWN lane on the eligible portion — same
+    # per-line rule (tobacco/alcohol never discount) — then CONSUME it (welcome_discount_used=True)
+    # and CLAIM the cart, all inside this one atomic sale so it can never be spent twice. Not subject
+    # to the cashier role cap: it's the shop's join-today promise, not the cashier's discretion. ---
+    if sale.kiosk_cart_code:
+        from src.db.models.kiosk_cart_model import KioskCartModel
+        _kcart = (await db.execute(select(KioskCartModel).where(
+            KioskCartModel.code == sale.kiosk_cart_code.strip().upper()))).scalar_one_or_none()
+        if _kcart is not None and _kcart.status == "open":
+            if (customer is not None and _kcart.customer_id == customer.id
+                    and int(customer.welcome_discount_pct or 0) > 0 and not customer.welcome_discount_used):
+                w_pct = int(customer.welcome_discount_pct)
+                w_disc = (eligible_subtotal * Decimal(w_pct) / Decimal("100")).quantize(
+                    Decimal("0.01"), rounding=ROUND_HALF_UP)
+                txn.total = Decimal(str(txn.total)) - w_disc
+                txn.discount_amount = Decimal(str(txn.discount_amount)) + w_disc
+                customer.welcome_discount_used = True
+                logger.info(f"Welcome discount {w_pct}% applied for {customer.handle} on {transaction_number}")
+            # Rung = claimed, regardless of whether a discount applied (empty/anon carts too).
+            _kcart.status = "claimed"
+            _kcart.claimed_by = current_user.get("username")
+            _kcart.claimed_at = datetime.now(timezone.utc)
+
     # --- SAFETY FLOOR (the "never pay the customer" guard). No matter what caps or tiers are
     # configured — even fat-fingered (a 100% owner cap + a 25% tier = 125%, or a mistyped setting) —
     # the combined discount can NEVER exceed the value of the discountable items. The sale floors
@@ -7003,7 +7028,8 @@ async def _kiosk_cart_payload(db: AsyncSession, cart) -> dict:
         lt = (price * qty).quantize(Decimal("0.01"))
         total += lt
         lines.append({"product_id": it.get("product_id"), "name": it.get("name"),
-                      "price": f"{price:.2f}", "qty": qty, "line_total": f"{lt:.2f}"})
+                      "price": f"{price:.2f}", "qty": qty, "line_total": f"{lt:.2f}",
+                      "product_class": it.get("product_class")})
     member, discount_pct = None, 0
     if cart.customer_id:
         member = await db.get(CustomerModel, cart.customer_id)
@@ -7061,6 +7087,7 @@ async def kiosk_cart_upsert(
             "product_id": str(p.id), "name": p.name,
             "price": f"{float(p.price):.2f}" if p.price is not None else "0.00",
             "qty": min(qty, 99),
+            "product_class": getattr(p, "product_class", None),   # so checkout honours the tobacco/alcohol floor
         })
 
     cust_id = None

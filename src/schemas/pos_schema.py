@@ -297,6 +297,10 @@ class SaleCreate(BaseModel):
     # Age gate: cashier attestation that a walk-in is 18+ (ID checked). REQUIRED to sell an
     # age-restricted (18+) line without an of-age member attached. Default False (fail-closed).
     age_verified: bool = Field(False, description="Cashier attests the walk-in is 18+ (ID checked) — unlocks 18+ lines")
+    # Kiosk held order being rung out (banco-kiosk-guest-station v2b). When set, the server applies
+    # the attached member's ONE-TIME welcome discount on the eligible portion, marks it used, and
+    # claims the cart — all atomically inside this sale. Ignored if the cart is gone/already claimed.
+    kiosk_cart_code: Optional[str] = Field(None, description="Kiosk held-order code — applies + consumes the first-order welcome discount")
 
 
 class RefundRequest(BaseModel):
