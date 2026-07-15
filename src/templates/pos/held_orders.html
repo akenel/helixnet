@@ -1,0 +1,140 @@
+{% extends "pos/base.html" %}
+
+{% block title %}Held Orders - Banco POS{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50" x-data="heldOrders()" x-init="init()">
+    <div class="max-w-4xl mx-auto px-4 py-8">
+
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-2 flex-wrap gap-2">
+            <div class="flex items-center gap-3">
+                <button @click="go('/pos/dashboard')" class="btn-secondary flex-none" title="Dashboard" aria-label="Dashboard">🏠</button>
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">🧾 <span data-i18n="held.title">Held Orders</span></h1>
+            </div>
+            <button @click="load()" class="btn-secondary" :disabled="loading">
+                <span x-show="!loading">🔄 <span data-i18n="held.refresh">Refresh</span></span>
+                <span x-show="loading" style="display:none;" data-i18n="held.loading">Loading…</span>
+            </button>
+        </div>
+        <p class="text-gray-600 mb-6" data-i18n="held.intro">Orders guests built at the kiosk, waiting for you to ring out. Give them the code, tap ✓ when done.</p>
+
+        <!-- Empty -->
+        <div x-show="!loading && carts.length === 0" class="card text-center py-12">
+            <p class="text-5xl mb-2">🗒️</p>
+            <p class="text-lg font-semibold text-gray-800" data-i18n="held.empty">No orders waiting</p>
+            <p class="text-gray-500" data-i18n="held.empty_sub">Orders sent from the kiosk show up here.</p>
+        </div>
+
+        <!-- Board -->
+        <div class="grid sm:grid-cols-2 gap-4">
+            <template x-for="c in carts" :key="c.code">
+                <div class="card">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <div class="text-3xl font-black tracking-wider text-indigo-700" x-text="c.code"></div>
+                            <div class="text-sm text-gray-500 mt-1">
+                                <span x-text="c.item_count"></span> <span data-i18n="held.items">items</span> ·
+                                <span class="font-semibold text-gray-800" x-text="'CHF ' + c.total"></span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span x-show="c.source === 'phone'" class="text-lg" title="on their phone">📱</span>
+                            <span x-show="c.source === 'kiosk'" class="text-lg" title="at the kiosk">🖥️</span>
+                            <div class="text-xs text-gray-400 mt-1" x-text="timeAgo(c.created_at)"></div>
+                        </div>
+                    </div>
+
+                    <div x-show="c.member_handle" class="mt-2">
+                        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-sm">
+                            <span class="font-semibold text-gray-800" x-text="'@' + (c.member_handle || '')"></span>
+                            <span x-show="c.discount_pct > 0" class="text-emerald-700 font-bold" x-text="c.discount_pct + '%'"></span>
+                        </span>
+                    </div>
+
+                    <div class="flex gap-2 mt-3">
+                        <button @click="toggle(c.code)" class="btn-secondary flex-1">
+                            <span data-i18n="held.view" x-show="open !== c.code">View items</span>
+                            <span data-i18n="held.hide" x-show="open === c.code" style="display:none;">Hide</span>
+                        </button>
+                        <button @click="claim(c.code)" class="btn-success flex-1">✓ <span data-i18n="held.done">Done</span></button>
+                    </div>
+
+                    <!-- lazy detail -->
+                    <div x-show="open === c.code" style="display:none;" class="mt-3 pt-3 border-t space-y-1">
+                        <template x-for="l in (detail.items || [])" :key="l.product_id">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-700"><span class="font-semibold" x-text="l.qty + '×'"></span> <span x-text="l.name"></span></span>
+                                <span class="text-gray-500" x-text="'CHF ' + l.line_total"></span>
+                            </div>
+                        </template>
+                        <div x-show="detail.discount_pct > 0" style="display:none;" class="flex justify-between text-sm text-emerald-700 pt-1 border-t">
+                            <span>@<span x-text="detail.member_handle"></span> −<span x-text="detail.discount_pct"></span>%</span>
+                            <span x-text="'− CHF ' + detail.discount_amount"></span>
+                        </div>
+                        <div class="flex justify-between font-bold pt-1 border-t">
+                            <span data-i18n="held.to_ring">To ring</span>
+                            <span x-text="'CHF ' + (detail.total_after || detail.total)"></span>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function heldOrders() {
+        return {
+            carts: [],
+            loading: false,
+            open: null,
+            detail: {},
+
+            async init() {
+                const u = AuthHelper.getUserInfo();
+                if (!u || !u.posRoles || u.posRoles.length === 0) { window.location.href = '/pos/dashboard'; return; }
+                await this.load();
+                setInterval(() => this.load(true), 20000);   // the board refreshes itself
+            },
+
+            async load(silent) {
+                if (!silent) this.loading = true;
+                try {
+                    const d = await API.get('/api/v1/pos/carts/open');
+                    this.carts = d.carts || [];
+                } catch (e) { console.error('held orders load failed', e); }
+                finally { this.loading = false; }
+            },
+
+            async toggle(code) {
+                if (this.open === code) { this.open = null; return; }
+                try {
+                    this.detail = await API.get('/api/v1/pos/carts/' + code);
+                    this.open = code;
+                } catch (e) { showToast(t('held.toast_load') || 'Could not load the order', 'error'); }
+            },
+
+            async claim(code) {
+                try {
+                    await API.post('/api/v1/pos/carts/' + code + '/claim', {});
+                    this.carts = this.carts.filter(c => c.code !== code);
+                    if (this.open === code) this.open = null;
+                    showToast(t('held.toast_done') || 'Order cleared', 'success');
+                } catch (e) { showToast(t('held.toast_fail') || 'Could not update the order', 'error'); }
+            },
+
+            timeAgo(iso) {
+                if (!iso) return '';
+                const s = Math.floor((Date.now() - new Date(iso)) / 1000);
+                if (s < 60) return s + 's';
+                if (s < 3600) return Math.floor(s / 60) + 'm';
+                return Math.floor(s / 3600) + 'h';
+            },
+            go(u) { window.location.href = u; },
+        };
+    }
+</script>
+{% endblock %}

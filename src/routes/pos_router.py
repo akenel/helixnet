@@ -6974,6 +6974,198 @@ async def customers_new_today(
     return {"count": len(members), "members": members}
 
 
+# ================================================================
+# KIOSK GUEST CART / HELD ORDERS (banco-kiosk-guest-station v2) — a guest builds a basket,
+# gets a short CODE, and Felix rings it out. Guest side is PUBLIC; the counter side is authed.
+# ================================================================
+_CART_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"   # no I/O/0/1 — no ambiguity across the counter
+
+
+async def _gen_cart_code(db: AsyncSession) -> str:
+    """A short, unambiguous, shout-across-the-counter code (e.g. 'A7K3'). Unique in kiosk_carts."""
+    import secrets
+    from src.db.models.kiosk_cart_model import KioskCartModel
+    for _ in range(25):
+        code = "".join(secrets.choice(_CART_ALPHABET) for _ in range(4))
+        clash = (await db.execute(select(KioskCartModel).where(KioskCartModel.code == code))).scalar_one_or_none()
+        if not clash:
+            return code
+    return "".join(secrets.choice(_CART_ALPHABET) for _ in range(6))
+
+
+async def _kiosk_cart_payload(db: AsyncSession, cart) -> dict:
+    """Held-order view: priced lines, total, and the member's welcome discount (if unspent)."""
+    from src.db.models.customer_model import CustomerModel
+    lines, total = [], Decimal("0.00")
+    for it in (cart.items or []):
+        qty = int(it.get("qty") or 0)
+        price = Decimal(str(it.get("price") or 0))
+        lt = (price * qty).quantize(Decimal("0.01"))
+        total += lt
+        lines.append({"product_id": it.get("product_id"), "name": it.get("name"),
+                      "price": f"{price:.2f}", "qty": qty, "line_total": f"{lt:.2f}"})
+    member, discount_pct = None, 0
+    if cart.customer_id:
+        member = await db.get(CustomerModel, cart.customer_id)
+        if member and member.welcome_discount_pct and not member.welcome_discount_used:
+            discount_pct = int(member.welcome_discount_pct)
+    discount_amount = (total * discount_pct / 100).quantize(Decimal("0.01"))
+    return {
+        "found": True, "code": cart.code, "status": cart.status, "source": cart.source, "lang": cart.lang,
+        "items": lines, "item_count": sum(l["qty"] for l in lines),
+        "total": f"{total:.2f}", "currency": "CHF",
+        "member_handle": (member.handle if member else None),
+        "customer_id": (str(cart.customer_id) if cart.customer_id else None),
+        "discount_pct": discount_pct, "discount_amount": f"{discount_amount:.2f}",
+        "total_after": f"{(total - discount_amount):.2f}",
+        "created_at": cart.created_at.isoformat() if cart.created_at else None,
+    }
+
+
+class KioskCartItem(BaseModel):
+    product_id: str
+    qty: int = 1
+
+
+class KioskCartUpsert(BaseModel):
+    code: Optional[str] = None
+    items: list[KioskCartItem] = []
+    customer_id: Optional[str] = None
+    source: str = "kiosk"
+    lang: str = "de"
+
+
+@router.post("/kiosk/cart")
+async def kiosk_cart_upsert(
+    body: KioskCartUpsert,
+    db: AsyncSession = Depends(get_db_session),
+):
+    """PUBLIC — a guest saves/updates their basket. Prices are re-resolved from the catalogue here
+    (never trusted from the client). Returns the order CODE the guest shows the cashier. No auth."""
+    from src.db.models.kiosk_cart_model import KioskCartModel
+    from src.db.models.product_model import ProductModel
+
+    snapshot = []
+    for it in (body.items or []):
+        qty = int(it.qty or 0)
+        if qty <= 0:
+            continue
+        try:
+            pid = UUID(str(it.product_id))
+        except (ValueError, AttributeError, TypeError):
+            continue
+        p = await db.get(ProductModel, pid)
+        if not p or not p.is_active:
+            continue
+        snapshot.append({
+            "product_id": str(p.id), "name": p.name,
+            "price": f"{float(p.price):.2f}" if p.price is not None else "0.00",
+            "qty": min(qty, 99),
+        })
+
+    cust_id = None
+    if body.customer_id:
+        try:
+            cust_id = UUID(str(body.customer_id))
+        except (ValueError, AttributeError, TypeError):
+            cust_id = None
+
+    cart = None
+    if body.code:
+        cart = (await db.execute(
+            select(KioskCartModel).where(KioskCartModel.code == body.code.strip().upper()))).scalar_one_or_none()
+    if cart is None:
+        cart = KioskCartModel(
+            code=await _gen_cart_code(db), status="open",
+            source=("phone" if (body.source or "").lower() == "phone" else "kiosk"),
+            lang=(body.lang or "de")[:5])
+        db.add(cart)
+    elif cart.status != "open":
+        raise HTTPException(status_code=409, detail="This order was already completed.")
+
+    cart.items = snapshot
+    if cust_id is not None:
+        cart.customer_id = cust_id
+    cart.updated_at = datetime.now(timezone.utc)
+    await db.commit()
+    await db.refresh(cart)
+    return await _kiosk_cart_payload(db, cart)
+
+
+@router.get("/kiosk/cart/{code}")
+async def kiosk_cart_get(code: str, db: AsyncSession = Depends(get_db_session)):
+    """PUBLIC — a guest re-opens their own cart by code (e.g. after a page reload)."""
+    from src.db.models.kiosk_cart_model import KioskCartModel
+    cart = (await db.execute(
+        select(KioskCartModel).where(KioskCartModel.code == (code or "").strip().upper()))).scalar_one_or_none()
+    if not cart:
+        return {"found": False}
+    return await _kiosk_cart_payload(db, cart)
+
+
+@router.get("/carts/open")
+async def carts_open(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """The cashier's held-orders board — every OPEN kiosk cart waiting to be rung out."""
+    from src.db.models.kiosk_cart_model import KioskCartModel
+    rows = (await db.execute(
+        select(KioskCartModel).where(KioskCartModel.status == "open")
+        .order_by(KioskCartModel.created_at.desc()).limit(100))).scalars().all()
+    carts = []
+    for c in rows:
+        p = await _kiosk_cart_payload(db, c)
+        if p["item_count"] <= 0:
+            continue   # empty baskets are noise on the board
+        carts.append({
+            "code": c.code, "item_count": p["item_count"], "total": p["total"],
+            "total_after": p["total_after"], "discount_pct": p["discount_pct"],
+            "member_handle": p["member_handle"], "source": c.source, "created_at": p["created_at"],
+        })
+    return {"count": len(carts), "carts": carts}
+
+
+@router.get("/carts/{code}")
+async def cart_detail(
+    code: str,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """Full detail of one held order — the lines Felix reviews before ringing it out."""
+    from src.db.models.kiosk_cart_model import KioskCartModel
+    cart = (await db.execute(
+        select(KioskCartModel).where(KioskCartModel.code == (code or "").strip().upper()))).scalar_one_or_none()
+    if not cart:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return await _kiosk_cart_payload(db, cart)
+
+
+@router.post("/carts/{code}/claim")
+async def cart_claim(
+    code: str,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """Mark a held order done — Felix rang it, clear it off the board (status=claimed)."""
+    from src.db.models.kiosk_cart_model import KioskCartModel
+    cart = (await db.execute(
+        select(KioskCartModel).where(KioskCartModel.code == (code or "").strip().upper()))).scalar_one_or_none()
+    if not cart:
+        raise HTTPException(status_code=404, detail="Order not found")
+    cart.status = "claimed"
+    cart.claimed_by = current_user.get("username")
+    cart.claimed_at = datetime.now(timezone.utc)
+    await db.commit()
+    return {"ok": True, "code": cart.code, "status": cart.status}
+
+
+@html_router.get("/pos/held-orders", response_class=HTMLResponse, name="pos_held_orders")
+async def pos_held_orders(request: Request):
+    """The counter's held-orders board (cashier+): kiosk carts waiting to be rung out."""
+    return templates.TemplateResponse("pos/held_orders.html", {"request": request})
+
+
 @html_router.get("/pos/labels/batch", response_class=HTMLResponse, name="labels_batch")
 async def labels_batch(
     request: Request,

@@ -43,6 +43,13 @@
     </template>
   </div>
 
+  <!-- Floating cart — follows the guest across scans -->
+  <button x-show="cart.length > 0 && view !== 'cart' && view !== 'sent' && view !== 'signup'" style="display:none;"
+          @click="openCart()"
+          class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-6 py-4 rounded-full bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-black shadow-2xl flex items-center gap-2">
+    🛒 <span x-text="cartQty"></span> <span x-text="c('items')"></span> · <span x-text="'CHF ' + cartTotal"></span> →
+  </button>
+
   <!-- ============ ATTRACT ============ -->
   <section x-show="view==='attract'" class="min-h-screen flex flex-col items-center justify-center px-6 text-center">
     <div class="text-emerald-300/80 text-lg tracking-[0.3em] uppercase mb-6">Banco</div>
@@ -139,6 +146,67 @@
     <button @click="reset()" class="mt-8 px-7 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-emerald-950 text-lg font-bold" x-text="m('done')"></button>
   </section>
 
+  <!-- ============ YOUR ORDER (cart) ============ -->
+  <section x-show="view==='cart'" class="min-h-screen px-5 sm:px-10 py-10" style="display:none;">
+    <div class="max-w-lg mx-auto">
+      <h2 class="text-3xl font-black mb-6" x-text="c('cart')"></h2>
+      <div x-show="cart.length === 0" class="text-emerald-200/60 py-10 text-center" x-text="c('empty')"></div>
+      <div class="space-y-3">
+        <template x-for="(l, idx) in cart" :key="l.product_id">
+          <div class="glass rounded-2xl p-3 flex items-center gap-3">
+            <div class="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center overflow-hidden flex-none">
+              <img x-show="l.image_url" :src="l.image_url" class="max-w-full max-h-full object-contain" alt="">
+              <span x-show="!l.image_url" class="text-2xl opacity-40">📦</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold text-sm clamp2" x-text="l.name"></div>
+              <div class="price font-bold text-sm" x-text="'CHF ' + l.price"></div>
+            </div>
+            <div class="flex items-center gap-2 flex-none">
+              <button @click="updateQty(idx, -1)" class="w-9 h-9 rounded-lg glass text-lg">−</button>
+              <span class="w-6 text-center font-bold" x-text="l.qty"></span>
+              <button @click="updateQty(idx, 1)" class="w-9 h-9 rounded-lg glass text-lg">+</button>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <div x-show="cart.length > 0" class="mt-6 glass rounded-2xl p-4 space-y-1">
+        <div class="flex justify-between text-emerald-100/80"><span x-text="c('subtotal')"></span><span x-text="'CHF ' + cartTotal"></span></div>
+        <div x-show="cartDiscountPct > 0" class="flex justify-between text-emerald-300" style="display:none;">
+          <span x-text="cf('save', {pct: cartDiscountPct})"></span><span x-text="'− CHF ' + cartDiscount"></span>
+        </div>
+        <div class="flex justify-between text-xl font-black pt-1 border-t border-white/10">
+          <span x-text="c('total')"></span><span class="price" x-text="'CHF ' + cartAfter"></span>
+        </div>
+      </div>
+
+      <div class="flex gap-3 mt-6">
+        <button @click="reset()" class="px-5 py-4 rounded-2xl glass font-semibold" x-text="c('keepShopping')"></button>
+        <button @click="sendToCounter()" :disabled="_busy || cart.length === 0"
+                class="flex-1 px-7 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-emerald-950 text-lg font-black">
+          <span x-show="!_busy" x-text="c('send')"></span>
+          <span x-show="_busy" style="display:none;" x-text="c('sending')"></span>
+        </button>
+      </div>
+      <p x-show="!myMember" class="text-center text-emerald-200/60 text-sm mt-4">
+        🎁 <button @click="startSignup()" class="underline" x-text="mf('join', {pct: signupPct})"></button>
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ ORDER SENT ============ -->
+  <section x-show="view==='sent'" class="min-h-screen flex flex-col items-center justify-center px-6 text-center" style="display:none;">
+    <div class="text-6xl mb-3">✅</div>
+    <h2 class="text-3xl font-black mb-6" x-text="c('sentTitle')"></h2>
+    <div class="glass rounded-3xl p-8 flex flex-col items-center">
+      <div class="text-7xl font-black tracking-[0.15em] price" x-text="cartCode"></div>
+      <p class="text-emerald-100/85 mt-4 text-lg" x-text="c('showCode')"></p>
+      <p x-show="cartDiscountPct > 0" style="display:none;" class="text-emerald-300 text-sm mt-2" x-text="cf('memberNote', {pct: cartDiscountPct})"></p>
+    </div>
+    <button @click="reset()" class="mt-8 px-7 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-emerald-950 text-lg font-bold" x-text="m('done')"></button>
+  </section>
+
   <!-- ============ CAMERA OVERLAY ============ -->
   <section x-show="view==='camera'" class="fixed inset-0 z-30 bg-black flex flex-col items-center justify-center" style="display:none;">
     <div id="kiosk-reader" class="w-full max-w-md"></div>
@@ -197,9 +265,21 @@
         </div>
       </div>
 
-      <!-- actions -->
-      <div class="mt-10 flex flex-wrap gap-3 justify-center">
-        <button @click="printCard()" class="px-7 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-emerald-950 text-lg font-bold shadow-lg">
+      <!-- add to order -->
+      <div class="mt-10 flex items-center justify-center gap-4">
+        <div class="flex items-center gap-2 glass rounded-2xl px-2 py-1">
+          <button @click="pQty = Math.max(1, pQty-1)" class="w-11 h-11 text-2xl rounded-xl hover:bg-white/10">−</button>
+          <span class="text-2xl font-black w-8 text-center" x-text="pQty"></span>
+          <button @click="pQty = Math.min(99, pQty+1)" class="w-11 h-11 text-2xl rounded-xl hover:bg-white/10">+</button>
+        </div>
+        <button @click="addToOrder()" class="px-8 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-emerald-950 text-lg font-black shadow-lg">
+          ＋ <span x-text="c('add')"></span>
+        </button>
+      </div>
+
+      <!-- secondary actions -->
+      <div class="mt-5 flex flex-wrap gap-3 justify-center">
+        <button @click="printCard()" class="px-6 py-3 rounded-2xl glass text-base font-semibold">
           🖨️ <span x-text="t('printCard')"></span>
         </button>
         <button @click="openDetails()" class="px-7 py-4 rounded-2xl glass text-lg font-semibold">
@@ -267,6 +347,10 @@
       form: { handle: '', real_name: '', email: '', phone: '', age: false, marketing: false },
       signupErr: '',
       member: {},
+      cart: [],           // [{product_id, name, price, qty, image_url}]
+      myMember: null,     // {id, handle, discount_pct} once they've signed up this session
+      cartCode: '',       // the held-order code after "send to counter"
+      pQty: 1,            // quantity stepper on the product view
 
       langs: [
         { code:'de', flag:'🇩🇪', label:'Deutsch' },
@@ -326,6 +410,30 @@
 
       get signupPct(){ return this.isTouch ? 15 : 10; },   // phone (via QR) = 15%, kiosk = 10%
 
+      CART: {
+        de:{ add:'Zur Bestellung', cart:'Deine Bestellung', empty:'Dein Korb ist leer', items:'Art.',
+             subtotal:'Zwischensumme', save:'Mitglied spart {pct}%', total:'Zu zahlen', send:'An die Kasse senden', sending:'Wird gesendet…',
+             sentTitle:'Bestellung gesendet!', showCode:'Zeig diesen Code an der Kasse', memberNote:'{pct}% Mitgliederrabatt wird an der Kasse abgezogen', keepShopping:'Weiter' },
+        fr:{ add:'Ajouter', cart:'Votre commande', empty:'Votre panier est vide', items:'art.',
+             subtotal:'Sous-total', save:'Membre −{pct}%', total:'À payer', send:'Envoyer à la caisse', sending:'Envoi…',
+             sentTitle:'Commande envoyée !', showCode:'Montrez ce code à la caisse', memberNote:'{pct}% de remise membre appliquée à la caisse', keepShopping:'Continuer' },
+        it:{ add:'Aggiungi', cart:'Il tuo ordine', empty:'Il carrello è vuoto', items:'art.',
+             subtotal:'Subtotale', save:'Socio −{pct}%', total:'Da pagare', send:'Invia alla cassa', sending:'Invio…',
+             sentTitle:'Ordine inviato!', showCode:'Mostra questo codice alla cassa', memberNote:'{pct}% di sconto socio applicato alla cassa', keepShopping:'Continua' },
+        en:{ add:'Add to order', cart:'Your order', empty:'Your basket is empty', items:'items',
+             subtotal:'Subtotal', save:'Member saves {pct}%', total:'To pay', send:'Send to counter', sending:'Sending…',
+             sentTitle:'Order sent!', showCode:'Show this code to the cashier', memberNote:'{pct}% member discount applied at the till', keepShopping:'Keep shopping' },
+      },
+      c(k){ return (this.CART[this.lang] || this.CART.en)[k] || (this.CART.en[k] || k); },
+      cf(k, vars){ let s = this.c(k); for (const a in (vars||{})) s = s.split('{'+a+'}').join(vars[a]); return s; },
+
+      get cartQty(){ return this.cart.reduce((n, l) => n + (l.qty || 0), 0); },
+      _cartNum(){ return this.cart.reduce((s, l) => s + parseFloat(l.price || 0) * (l.qty || 0), 0); },
+      get cartTotal(){ return this._cartNum().toFixed(2); },
+      get cartDiscountPct(){ return (this.myMember && this.myMember.discount_pct) || 0; },
+      get cartDiscount(){ return (this._cartNum() * this.cartDiscountPct / 100).toFixed(2); },
+      get cartAfter(){ return (this._cartNum() * (1 - this.cartDiscountPct / 100)).toFixed(2); },
+
       init(){
         // remember the guest's language choice within a session
         const saved = sessionStorage.getItem('kiosk_lang');
@@ -334,6 +442,8 @@
         // Touch device = a guest's phone (via the QR). Don't auto-focus the hidden input there —
         // it would pop the on-screen keyboard. The laptop kiosk (hardware gun) is non-touch.
         this.isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints || 0) > 0;
+        this.loadCart();
+        try { const mm = sessionStorage.getItem('kiosk_member'); if (mm) this.myMember = JSON.parse(mm); } catch(e){}
         this.renderQR();
         if (!this.isTouch) {
           this.refocus();
@@ -398,6 +508,7 @@
           const data = await r.json();
           if (data && data.found) {
             this.p = data;
+            this.pQty = 1;
             this.view = 'product';
           } else {
             this.view = 'notfound';
@@ -442,7 +553,7 @@
         try {
           const r = await fetch(`/api/v1/pos/kiosk/view?product_id=${encodeURIComponent(id)}&lang=${this.lang}`);
           const data = await r.json();
-          if (data && data.found) { this.p = data; this.lastBarcode = ''; this.view = 'product'; }
+          if (data && data.found) { this.p = data; this.pQty = 1; this.lastBarcode = ''; this.view = 'product'; }
           else if (!silent) { this.view = 'notfound'; }
         } catch(e){
           console.error('kiosk view failed', e);
@@ -483,6 +594,9 @@
           const data = await r.json();
           if (r.ok && data && data.ok) {
             this.member = data;
+            // remember them for the session → cart attaches, discount shows
+            this.myMember = { id: data.id, handle: data.handle, discount_pct: data.discount_pct };
+            try { sessionStorage.setItem('kiosk_member', JSON.stringify(this.myMember)); } catch(e){}
             this.view = 'member';
             this.$nextTick(() => this.renderMemberQR());
           } else {
@@ -505,6 +619,56 @@
           });
         } catch(e){ /* QR is a nice-to-have */ }
       },
+
+      addToOrder(){
+        if (!this.p.id) return;
+        const ex = this.cart.find(l => l.product_id === this.p.id);
+        if (ex) { ex.qty = Math.min(99, ex.qty + this.pQty); }
+        else { this.cart.push({ product_id: this.p.id, name: this.p.name, price: this.p.price || '0.00', qty: this.pQty, image_url: this.p.image_url || '' }); }
+        this.persistCart();
+        this.bumpIdle();
+        this.openCart();
+      },
+      updateQty(idx, delta){
+        const l = this.cart[idx];
+        if (!l) return;
+        l.qty += delta;
+        if (l.qty <= 0) this.cart.splice(idx, 1);
+        else l.qty = Math.min(99, l.qty);
+        this.persistCart();
+        this.bumpIdle();
+      },
+      openCart(){ this.view = 'cart'; this.bumpIdle(); },
+
+      async sendToCounter(){
+        if (!this.cart.length || this._busy) return;
+        this._busy = true;
+        this.bumpIdle();
+        try {
+          const r = await fetch('/api/v1/pos/kiosk/cart', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              code: this.cartCode || null,
+              items: this.cart.map(l => ({ product_id: l.product_id, qty: l.qty })),
+              customer_id: this.myMember ? this.myMember.id : null,
+              source: this.isTouch ? 'phone' : 'kiosk',
+              lang: this.lang,
+            }),
+          });
+          const data = await r.json();
+          if (r.ok && data && data.code) {
+            this.cartCode = data.code;
+            this.cart = [];
+            this.persistCart();
+            this.view = 'sent';
+          }
+        } catch(e){ console.error('send to counter failed', e); }
+        finally { this._busy = false; }
+      },
+
+      persistCart(){ try { sessionStorage.setItem('kiosk_cart', JSON.stringify(this.cart)); } catch(e){} },
+      loadCart(){ try { const c = JSON.parse(sessionStorage.getItem('kiosk_cart') || '[]'); if (Array.isArray(c)) this.cart = c; } catch(e){} },
 
       printCard(){
         if (!this.p.id) return;

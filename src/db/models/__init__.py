@@ -19,6 +19,7 @@ from .pos_stock_movement_model import PosStockMovementModel
 from .transaction_model import TransactionModel, TransactionStatus, PaymentMethod
 from .line_item_model import LineItemModel
 from .store_settings_model import StoreSettingsModel
+from .kiosk_cart_model import KioskCartModel  # banco kiosk v2 — guest held orders
 
 # CRACK Loyalty Models (Customer + KB Gamification)
 from .customer_model import CustomerModel, CrackLevel, LoyaltyTier, PreferredContact
@@ -128,6 +129,7 @@ __all__ = [
     "PaymentMethod",
     "LineItemModel",
     "StoreSettingsModel",
+    "KioskCartModel",
     # CRACK Loyalty Models
     "CustomerModel",
     "CrackLevel",

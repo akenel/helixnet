@@ -116,6 +116,20 @@
                 </div>
             </template>
 
+            <!-- Kiosk held orders — guests who built a basket at the kiosk, waiting to ring out -->
+            <template x-if="user.isCashier">
+                <div class="card hover:shadow-xl transition cursor-pointer relative" onclick="window.location.href='/pos/held-orders'">
+                    <span x-show="heldCount > 0"
+                          class="absolute top-3 right-3 min-w-[1.75rem] h-7 px-2 flex items-center justify-center rounded-full bg-indigo-600 text-white text-sm font-bold"
+                          x-text="heldCount"></span>
+                    <div class="text-center py-8">
+                        <span class="text-6xl mb-4 block">🧾</span>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2" data-i18n="dashboard.held_orders">Held Orders</h3>
+                        <p class="text-gray-600" data-i18n="dashboard.held_orders_desc">Kiosk orders waiting to ring out</p>
+                    </div>
+                </div>
+            </template>
+
             <template x-if="user.isCashier">
                 <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/products'">
                     <div class="text-center py-8">
@@ -157,6 +171,17 @@
             </template>
 
             <!-- MANAGER ACTIONS -->
+            <!-- Guest kiosk — launch/preview the self-service scan & shop screen -->
+            <template x-if="user.isManager">
+                <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.open('/pos/kiosk','_blank')">
+                    <div class="text-center py-8">
+                        <span class="text-6xl mb-4 block">🖥️</span>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2" data-i18n="dashboard.kiosk">Guest Kiosk</h3>
+                        <p class="text-gray-600" data-i18n="dashboard.kiosk_desc">Open the self-service scan &amp; shop screen</p>
+                    </div>
+                </div>
+            </template>
+
             <template x-if="user.isManager">
                 <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/reports'">
                     <div class="text-center py-8">
@@ -287,6 +312,7 @@
             drawer: null,        // /shift/current when this cashier has an open drawer
             cleanupCount: 0,     // sold-but-half-baked products awaiting manager setup (badge)
             newMembers: [],      // members who self-signed-up at the kiosk TODAY
+            heldCount: 0,        // kiosk guest carts waiting at the counter (badge)
 
             init() {
                 // Check for tokens in URL fragment (from OAuth callback):
@@ -345,6 +371,9 @@
                 // them by name; manager sees the machine working).
                 this.loadNewMembers();
 
+                // Cashier: kiosk orders waiting at the counter (badge on the Held Orders card).
+                if (this.user.isCashier) this.loadHeldCount();
+
                 // Update shift time every minute
                 setInterval(() => this.updateShiftTime(), 60000);
                 this.updateShiftTime();
@@ -381,6 +410,13 @@
                     const data = await API.get('/api/v1/pos/customers/new-today');
                     this.newMembers = data.members || [];
                 } catch (e) { this.newMembers = []; }   // optional, never blocks the dash
+            },
+
+            async loadHeldCount() {
+                try {
+                    const data = await API.get('/api/v1/pos/carts/open');
+                    this.heldCount = data.count || 0;
+                } catch (e) { this.heldCount = 0; }      // optional, never blocks the dash
             },
 
             updateShiftTime() {
