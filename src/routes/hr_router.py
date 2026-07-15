@@ -650,23 +650,46 @@ async def list_employees(
         .order_by(EmployeeModel.first_name)
     )
     rows = result.all()
-    return {
-        "employees": [
-            {
-                "id": str(e.id),
-                "first_name": e.first_name,
-                "last_name": e.last_name,
-                "email": e.email,
-                "employee_number": e.employee_number,
-                "status": e.status,
-                "contract_type": e.contract_type,
-                "login_username": (u.username if u else None),
-                "is_linked": u is not None,
-            }
-            for (e, u) in rows
-        ],
-        "total": len(rows),
-    }
+    employees = [
+        {
+            "id": str(e.id),
+            "first_name": e.first_name,
+            "last_name": e.last_name,
+            "email": e.email,
+            "employee_number": e.employee_number,
+            "status": e.status,
+            "contract_type": e.contract_type,
+            "login_username": (u.username if u else None),
+            "is_linked": u is not None,
+            "pos_role": None,   # filled best-effort below (cashier / manager / admin)
+        }
+        for (e, u) in rows
+    ]
+
+    # Best-effort: tag each LINKED person with their current POS role so the card can show
+    # Cashier/Manager. Wrapped so a slow/down Keycloak never breaks the roster load.
+    linked = [(i, u.id) for i, (e, u) in enumerate(rows) if u is not None]
+    if linked:
+        try:
+            async with httpx.AsyncClient(timeout=10) as c:
+                kc = await _kc_pos_admin(c)
+                h, base = kc["h"], kc["base"]
+                for idx, uid in linked:
+                    try:
+                        rm = (await c.get(f"{base}/users/{uid}/role-mappings/realm", headers=h)).json()
+                        names = " ".join((r.get("name") or "") for r in rm)
+                        if "pos-admin" in names:
+                            employees[idx]["pos_role"] = "admin"
+                        elif "pos-manager" in names:
+                            employees[idx]["pos_role"] = "manager"
+                        elif "pos-cashier" in names:
+                            employees[idx]["pos_role"] = "cashier"
+                    except Exception:
+                        pass
+        except Exception as e:
+            logger.warning("list_employees: role enrichment skipped (%s)", e)
+
+    return {"employees": employees, "total": len(rows)}
 
 
 @router.post("/employees/{employee_id}/link")
@@ -857,7 +880,59 @@ async def provision_login(
     logger.info("Login provisioned: %s %s → '%s' (cashier)",
                 employee.first_name, employee.last_name, username)
     return {"id": str(employee.id), "login_username": username, "is_linked": True,
+            "pos_role": "cashier",
             "message": f"Sign-in ready — {username} can log in now."}
+
+
+@router.post("/employees/{employee_id}/set-pos-role")
+async def set_pos_role(
+    employee_id: UUID,
+    payload: dict = Body(...),
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_manager_or_admin()),
+):
+    """Promote/demote a linked employee between CASHIER and MANAGER — the role-lifecycle made a
+    one-tap in-app action (banco-role-lifecycle-rules). Assigns the target POS realm role and
+    removes the other, so they're EITHER/OR; pos-admin is never touched here (admins are protected
+    — demote them in Keycloak, deliberately). The person picks up the new role on their NEXT login.
+    They must already have a sign-in (provision-login first). Manager/admin only (admin-gated UI)."""
+    target = (payload.get("role") or "").strip().lower()
+    if target not in ("cashier", "manager"):
+        raise HTTPException(status_code=422, detail="role must be 'cashier' or 'manager'")
+
+    row = (await db.execute(
+        select(EmployeeModel, UserModel)
+        .outerjoin(UserModel, EmployeeModel.user_id == UserModel.id)
+        .where(EmployeeModel.id == employee_id))).first()
+    if not row or row[0] is None:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    employee, user = row
+    if user is None:
+        raise HTTPException(status_code=400, detail="Give them a login first, then set the role.")
+    uid = str(user.id)
+
+    want_key = "pos-manager" if target == "manager" else "pos-cashier"
+    drop_key = "pos-cashier" if target == "manager" else "pos-manager"
+    try:
+        async with httpx.AsyncClient(timeout=20) as c:
+            kc = await _kc_pos_admin(c)
+            h, base = kc["h"], kc["base"]
+            roles = (await c.get(f"{base}/roles", headers=h)).json()
+            want = next((r for r in roles if want_key in (r.get("name") or "")), None)
+            drop = next((r for r in roles if drop_key in (r.get("name") or "")), None)
+            if not want:
+                raise HTTPException(status_code=500, detail=f"No {want_key} role in this realm.")
+            await c.post(f"{base}/users/{uid}/role-mappings/realm", headers=h, json=[want])
+            if drop:
+                # Remove the other POS role so they're EITHER cashier OR manager, never both.
+                await c.request("DELETE", f"{base}/users/{uid}/role-mappings/realm", headers=h, json=[drop])
+    except httpx.HTTPError as e:
+        logger.error("set-pos-role Keycloak error: %s", e)
+        raise HTTPException(status_code=502, detail="Could not reach the login server. Try again.")
+
+    logger.info("POS role set: %s %s → %s", employee.first_name, employee.last_name, target)
+    return {"id": str(employee.id), "pos_role": target,
+            "message": f"{employee.first_name} is now a {target} — active on their next login."}
 
 
 @router.post("/employees/{employee_id}/email-setup")

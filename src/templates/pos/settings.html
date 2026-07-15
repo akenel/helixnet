@@ -266,6 +266,25 @@
                             </div>
                             <p x-show="e._msg" class="text-base mt-2" :class="e._ok ? 'text-green-600' : 'text-red-600'" x-text="e._msg"></p>
 
+                            <!-- POS role: Cashier ⇄ Manager (the role-lifecycle, one tap) -->
+                            <div x-show="e.is_linked" class="mt-3 flex items-center gap-2 flex-wrap">
+                                <span class="text-sm text-gray-500 font-medium" data-i18n="settings.role_label">Role:</span>
+                                <template x-if="e.pos_role === 'admin'">
+                                    <span class="text-sm font-bold text-purple-700 px-3 py-1 rounded-full bg-purple-50">👑 <span data-i18n="settings.role_admin">Admin</span></span>
+                                </template>
+                                <template x-if="e.pos_role !== 'admin'">
+                                    <div class="inline-flex rounded-lg border border-gray-300 overflow-hidden">
+                                        <button @click="setRole(e,'cashier')" :disabled="e._roleSaving"
+                                                :class="e.pos_role==='cashier' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'"
+                                                class="px-4 py-2 text-sm font-semibold">💰 <span data-i18n="settings.role_cashier">Cashier</span></button>
+                                        <button @click="setRole(e,'manager')" :disabled="e._roleSaving"
+                                                :class="e.pos_role==='manager' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'"
+                                                class="px-4 py-2 text-sm font-semibold border-l border-gray-300">👔 <span data-i18n="settings.role_manager">Manager</span></button>
+                                    </div>
+                                </template>
+                                <span x-show="e._roleMsg" class="text-sm" :class="e._roleOk ? 'text-green-600' : 'text-red-600'" x-text="e._roleMsg"></span>
+                            </div>
+
                             <!-- edit details / delete -->
                             <div class="mt-3 pt-3 border-t flex flex-wrap gap-2">
                                 <button @click="toggleEdit(e)" class="btn-secondary text-base"
@@ -367,6 +386,7 @@
                     this.staff = (d.employees || []).map(e => ({
                         ...e, _draft: e.login_username || '', _pw: '', _saving: false, _msg: '', _ok: false,
                         _editing: false, _card: null, _cardSaving: false, _cardMsg: '', _cardOk: false,
+                        _roleSaving: false, _roleMsg: '', _roleOk: false,
                     }));
                 } catch (e) { showToast(t('settings.toast_load_staff_failed'), 'error'); }
                 this.staffLoading = false;
@@ -415,6 +435,21 @@
                     e.is_linked = false; e.login_username = null; e._draft = ''; e._ok = true; e._msg = t('settings.unlinked');
                 } catch (err) { e._ok = false; e._msg = err.message || t('settings.could_not_unlink'); }
                 e._saving = false;
+            },
+
+            // Promote/demote between Cashier and Manager (banco role-lifecycle). The person picks
+            // up the new role on their NEXT login — so promote, then have them sign out and in.
+            async setRole(e, role) {
+                if (e.pos_role === role || e._roleSaving) return;
+                e._roleSaving = true; e._roleMsg = '';
+                try {
+                    const res = await API.post('/api/v1/hr/employees/' + e.id + '/set-pos-role', { role });
+                    e.pos_role = res.pos_role || role;
+                    e._roleOk = true;
+                    e._roleMsg = t('settings.role_next_login') || 'Saved — active on their next login';
+                    showToast(res.message || t('settings.saved'), 'success');
+                } catch (err) { e._roleOk = false; e._roleMsg = err.message || t('settings.could_not_save'); }
+                e._roleSaving = false;
             },
 
             // Self-set password: email the hire a Keycloak link so THEY pick their password.
