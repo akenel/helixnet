@@ -165,14 +165,14 @@
     </div>
 
     <!-- Unknown item → lazy create, then add to the delivery -->
-    <div x-show="newOpen" x-transition class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" @click.self="newOpen=false" style="display:none;">
+    <div x-show="newOpen" x-transition class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" @click.self="tryCloseNew()" style="display:none;">
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full">
             <div class="flex justify-between items-start p-5 border-b">
                 <div>
                     <h2 class="text-xl font-bold text-gray-900" data-i18n="receiving.new_item">🆕 New item</h2>
                     <p class="text-sm text-gray-600 mt-1" data-i18n="receiving.new_item_hint">Find it in the catalogue (photo + price come with it), or add it fresh.</p>
                 </div>
-                <button @click="newOpen=false" class="text-gray-400 hover:text-gray-700 text-3xl leading-none flex-none">&times;</button>
+                <button @click="tryCloseNew()" class="text-gray-400 hover:text-gray-700 text-3xl leading-none flex-none">&times;</button>
             </div>
             <div class="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
                 <!-- Photo-first hero (no-barcode maker item): snap → AI names it → find-first
@@ -504,6 +504,17 @@
                 this.newName = r.name || this.newName;
                 if (r.price != null) this.newPrice = r.price;
                 this.applyTradeDiscount();   // adopt sets the retail price → re-suggest the cost
+            },
+            // Has the new-item form got work in it worth protecting from an accidental close?
+            newDirty() {
+                return !!((this.newName || '').trim() || this.newPrice !== '' || this.newCost !== ''
+                    || this.newPhotoData || this.selectedRef || (this.refQuery || '').trim());
+            },
+            // Close the new-item modal, but ask first if there's unsaved entry — a mis-tap on the
+            // backdrop or the ✕ (the common way work vanishes on mobile) no longer discards silently.
+            tryCloseNew() {
+                if (this.newDirty() && !confirm(t('receiving.discard_confirm'))) return;
+                this.newOpen = false;
             },
             // No barcode at all → open the New-item modal blank, camera-first (the maker path:
             // Sylvie's felt cases, Cynthia's balms). No code to fake; the photo leads.
