@@ -4,7 +4,7 @@ Tracks known suppliers (Lieferanten) for product sourcing.
 """
 from datetime import datetime
 from typing import Optional, List
-from sqlalchemy import String, Integer, Boolean, Text, DateTime, JSON
+from sqlalchemy import String, Integer, Boolean, Text, DateTime, JSON, Float
 from sqlalchemy.orm import Mapped, mapped_column
 from src.db.models.base import Base
 import uuid
@@ -71,6 +71,16 @@ class SupplierModel(Base):
         comment="What this site's price MEANS for pricing intel: 'wholesale' = your COST, "
                 "'retail' = a competitor's MARKET price, 'both' = a site that is both "
                 "(e.g. fourtwenty.ch = public retail shop AND our dropship supplier)."
+    )
+    # Trade/wholesale discount OFF RETAIL, as a percent (0-100). When set, receiving
+    # auto-fills the cost from the shelf price: cost = retail × (1 − pct/100). This is
+    # the Ecolution model — Sylvie sells at her Etsy RETAIL price, Felix pays 70% of it
+    # (trade_discount_pct = 30), so a CHF 34.59 case costs CHF 24.21. Nullable = no deal
+    # configured (receiving asks for the cost by hand, as before).
+    trade_discount_pct: Mapped[Optional[float]] = mapped_column(
+        Float,
+        nullable=True,
+        comment="Trade discount off RETAIL, % (0-100). Receiving auto-fills cost = retail × (1 − pct/100)."
     )
     contact_name: Mapped[Optional[str]] = mapped_column(
         String(120),
@@ -163,6 +173,31 @@ class SupplierModel(Base):
 
     def __repr__(self):
         return f"<Supplier {self.code}: {self.name} ({self.quality_rating})>"
+
+
+# ---- Trade-discount costing (shared by receiving + tests) -----------------------
+from decimal import Decimal, ROUND_HALF_UP
+
+
+def cost_from_retail(retail, discount_pct):
+    """Cost the shop pays = retail × (1 − discount%/100), rounded to the cent.
+
+    The Ecolution model: Sylvie prices at her Etsy RETAIL (the shelf price), Felix pays
+    a trade discount off it. retail=34.59, discount_pct=30 → Decimal('24.21').
+
+    Money is decided at cent precision ([[banco-money-cent-precision]]) — quantize HERE
+    so the suggestion the cashier sees is the exact figure. Returns a Decimal quantized
+    to 0.01, or None when either input is missing or out of the 0-100 / non-negative range
+    (the caller then leaves the cost blank for manual entry).
+    """
+    if retail is None or discount_pct is None:
+        return None
+    r = Decimal(str(retail))
+    d = Decimal(str(discount_pct))
+    if r < 0 or d < 0 or d > 100:
+        return None
+    cost = r * (Decimal(100) - d) / Decimal(100)
+    return cost.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 
 # ---- Supplier-prefix validation (shared by the Pydantic schema + any caller) ----

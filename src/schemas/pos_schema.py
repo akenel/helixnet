@@ -32,6 +32,10 @@ class SupplierCreate(BaseModel):
     contact_email: Optional[str] = Field(None, max_length=255)
     contact_phone: Optional[str] = Field(None, max_length=50)
     vat_number: Optional[str] = Field(None, max_length=50, description="Supplier VAT/UID number (handoff)")
+    trade_discount_pct: Optional[float] = Field(
+        None, ge=0, le=100,
+        description="Trade discount off retail, % (0-100). Receiving auto-fills cost = retail × (1 − pct/100).",
+    )
     is_active: bool = Field(default=True)
 
     @field_validator("prefix")
@@ -51,6 +55,7 @@ class SupplierUpdate(BaseModel):
     contact_email: Optional[str] = Field(None, max_length=255)
     contact_phone: Optional[str] = Field(None, max_length=50)
     vat_number: Optional[str] = Field(None, max_length=50)
+    trade_discount_pct: Optional[float] = Field(None, ge=0, le=100)
     is_active: Optional[bool] = None
 
     @field_validator("prefix")
@@ -72,6 +77,7 @@ class SupplierRead(BaseModel):
     contact_email: Optional[str] = None
     contact_phone: Optional[str] = None
     vat_number: Optional[str] = None
+    trade_discount_pct: Optional[float] = None
     is_active: bool = True
     # How many products carry this supplier's SKU prefix (PREFIX-...). Drives the
     # "prefix is frozen once in use" guardrail: >0 means the prefix is locked

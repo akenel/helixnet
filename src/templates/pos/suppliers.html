@@ -60,6 +60,18 @@
                     </select>
                 </div>
                 <div>
+                    <label class="sup-lbl" data-i18n-html="suppliers.trade_discount_label">Trade discount <span class="text-gray-400 font-normal">(% off retail — auto-fills cost)</span></label>
+                    <div class="flex items-center gap-2">
+                        <input type="number" min="0" max="100" step="1" x-model.number="form.trade_discount_pct" placeholder="30" class="input-field w-28">
+                        <span class="text-gray-500 font-semibold">%</span>
+                    </div>
+                    <p x-show="form.trade_discount_pct > 0" class="sup-ok" style="display:none;">
+                        <span data-i18n="suppliers.trade_discount_hint_pre">✓ Receiving pays</span>
+                        <b x-text="(100 - (Number(form.trade_discount_pct) || 0)) + '%'"></b>
+                        <span data-i18n="suppliers.trade_discount_hint_post">of the shelf price.</span>
+                    </p>
+                </div>
+                <div>
                     <label class="sup-lbl" data-i18n-html="suppliers.contact_name_label">Contact name <span class="text-gray-400 font-normal">(who to call)</span></label>
                     <input type="text" x-model="form.contact_name" placeholder="Hans Müller" class="input-field">
                 </div>
@@ -113,6 +125,12 @@
                                 <span x-text="s.contact_phone"></span>
                             </p>
                             <p x-show="s.vat_number" class="text-xs text-gray-400 font-mono truncate" x-text="t('suppliers.vat_prefix') + s.vat_number"></p>
+                            <p x-show="s.trade_discount_pct > 0" class="text-xs mt-0.5">
+                                <span class="sup-tag" style="background:#ecfdf5;color:#047857;">
+                                    <span x-text="s.trade_discount_pct + '%'"></span>
+                                    <span data-i18n="suppliers.trade_discount_badge">trade discount</span>
+                                </span>
+                            </p>
                         </div>
                     </div>
                     <div class="flex items-center gap-2 flex-none" x-show="canManage">
@@ -164,7 +182,7 @@
             saving: false,
             formMsg: '',
             editProductCount: 0,
-            form: { prefix: '', name: '', source_url: '', adapter_type: '', contact_name: '', contact_email: '', contact_phone: '', vat_number: '' },
+            form: { prefix: '', name: '', source_url: '', adapter_type: '', contact_name: '', contact_email: '', contact_phone: '', vat_number: '', trade_discount_pct: '' },
 
             // The prefix is editable until products carry it, then frozen (it's baked
             // into every SKU). Locked = editing an in-use supplier; otherwise live-validate.
@@ -205,6 +223,7 @@
                     adapter_type: s.adapter_type || '', contact_name: s.contact_name || '',
                     contact_email: s.contact_email || '', contact_phone: s.contact_phone || '',
                     vat_number: s.vat_number || '',
+                    trade_discount_pct: (s.trade_discount_pct != null ? s.trade_discount_pct : ''),
                 };
                 this.formOpen = true;
             },
@@ -223,6 +242,10 @@
                     contact_email: (this.form.contact_email || '').trim() || null,
                     contact_phone: (this.form.contact_phone || '').trim() || null,
                     vat_number: (this.form.vat_number || '').trim() || null,
+                    // '' → null (no deal); a number → the trade discount. Sent on every save so
+                    // clearing the field on an edit actually removes the deal (exclude_unset sees it).
+                    trade_discount_pct: (this.form.trade_discount_pct === '' || this.form.trade_discount_pct == null)
+                        ? null : Number(this.form.trade_discount_pct),
                 };
                 // Send the prefix whenever it's editable (new supplier, or editing one
                 // that isn't in use yet). Frozen prefixes are never sent.

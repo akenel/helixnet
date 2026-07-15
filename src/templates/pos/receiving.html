@@ -207,11 +207,14 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="receiving.sale_price">Sale price (CHF)</label>
-                    <input type="number" step="0.05" min="0" x-model="newPrice" @keyup.enter="createAndAdd()" placeholder="0.00" class="input-field text-2xl font-bold">
+                    <input type="number" step="0.05" min="0" x-model="newPrice" @input="applyTradeDiscount()" @keyup.enter="createAndAdd()" placeholder="0.00" class="input-field text-2xl font-bold">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="receiving.cost_label">Cost — what you pay (CHF per unit)</label>
-                    <input type="number" step="0.01" min="0" x-model="newCost" @keyup.enter="createAndAdd()" placeholder="0.00" class="input-field text-xl font-bold">
+                    <input type="number" step="0.01" min="0" x-model="newCost" @input="costAutoFilled=false" @keyup.enter="createAndAdd()" placeholder="0.00" class="input-field text-xl font-bold">
+                    <!-- Trade-discount auto-fill hint: the cost was derived from the supplier's deal, not typed. -->
+                    <p x-show="costAutoFilled && supplierDiscountPct > 0" class="text-xs text-emerald-700 mt-1" style="display:none;"
+                       x-text="t('receiving.cost_autofill_hint', {pct: supplierDiscountPct, retail: formatPrice(newPrice)})"></p>
                     <!-- Box → single helper: you buy a box (papers, cigarettes…), sell singles. -->
                     <div class="mt-2 flex items-center flex-wrap gap-2 text-xs text-gray-500">
                         <span data-i18n="receiving.bought_box">Bought a box? Paid CHF</span>
@@ -254,6 +257,7 @@
             newName: '',
             newPrice: '',
             newCost: '',          // purchase cost per unit
+            costAutoFilled: false, // true = cost came from the supplier's trade discount (not typed by hand)
             boxCost: '',          // box helper: paid this for the box…
             boxUnits: '',         // …split across this many units
             newSaving: false,
@@ -295,6 +299,29 @@
                     this.supplierId = '';
                     this.newSup = { prefix: '', name: '', source_url: '' };
                 }
+                // Picking a supplier with a trade-discount deal re-suggests the cost from the price.
+                this.applyTradeDiscount();
+            },
+            // The trade discount configured on the selected supplier (0 if none / no supplier).
+            get supplierDiscountPct() {
+                const s = this.suppliers.find(x => x.id === this.supplierId);
+                const p = s ? Number(s.trade_discount_pct) : 0;
+                return (isFinite(p) && p > 0) ? p : 0;
+            },
+            // Auto-fill the COST from the RETAIL (sale) price when the supplier gives a trade
+            // discount — the Ecolution deal: shelf = Sylvie's Etsy price, cost = shelf × (1 − pct/100).
+            // Only ever fills a BLANK cost or one WE auto-filled; a hand-typed cost is never clobbered.
+            // Mirrors the server's cost_from_retail() (round to the cent, half-up).
+            applyTradeDiscount() {
+                const pct = this.supplierDiscountPct;
+                const retail = parseFloat(this.newPrice);
+                if (pct <= 0 || !(retail > 0)) {
+                    if (this.costAutoFilled) { this.newCost = ''; this.costAutoFilled = false; }
+                    return;
+                }
+                if (this.newCost !== '' && !this.costAutoFilled) return;  // respect a manual cost
+                this.newCost = (Math.round(retail * (100 - pct)) / 100).toFixed(2);
+                this.costAutoFilled = true;
             },
             cancelAddSupplier() { this.addingSupplier = false; },
             async saveSupplier() {
@@ -414,7 +441,7 @@
                 // (empty barcode → a clean 'LZ-<timestamp>' SKU is minted instead of 'LZ-<name>').
                 this.newBarcode = isBarcode ? seed : '';
                 this.newName = isBarcode ? '' : seed;
-                this.newPrice = ''; this.newCost = '';
+                this.newPrice = ''; this.newCost = ''; this.costAutoFilled = false;
                 this.boxCost = ''; this.boxUnits = ''; this.newSaving = false;
                 this.refQuery = ''; this.refMatches = []; this.selectedRef = null;
                 this.newOpen = true;
@@ -443,11 +470,12 @@
                 this.selectedRef = r;
                 this.newName = r.name || this.newName;
                 if (r.price != null) this.newPrice = r.price;
+                this.applyTradeDiscount();   // adopt sets the retail price → re-suggest the cost
             },
             // Box → single: bought a box, sell singles. Per-unit cost = box / units.
             calcUnitCost() {
                 const c = parseFloat(this.boxCost), n = parseInt(this.boxUnits, 10);
-                if (c > 0 && n > 0) this.newCost = (c / n).toFixed(2);
+                if (c > 0 && n > 0) { this.newCost = (c / n).toFixed(2); this.costAutoFilled = false; }
             },
             async createAndAdd() {
                 const price = parseFloat(this.newPrice);

@@ -22,9 +22,18 @@ shipped **4 fixes sandbox→staging→prod** (backup-gated, live-request re-prob
 3. **postcard German** — all card chrome localized (Scan me / Handmade / made with love) on card + 4-up sheet
 4. **store footer** — pickup CTA + store name/hours/address/phone/logo from `store_settings` (prod = "Artemis Lucerne")
 
+**✅ 2026-07-15 — per-supplier `trade_discount_%` → receiving cost auto-fill BUILT (local, green, NOT deployed).**
+A supplier now carries a `trade_discount_pct` (0-100, % off retail). Set it once → receiving auto-fills the cost from
+the shelf price: `cost = retail × (1 − pct/100)`. Ecolution = 30 → CHF 34.59 case costs CHF 24.21 (proven). Only fills
+a BLANK or auto-filled cost (never clobbers a hand-typed one); a green hint shows the source; box-helper + manual edit
+take over cleanly. Files: `supplier_model.py` (column + `cost_from_retail()` half-up cent helper), `database.py`
+(ALTER), `pos_schema.py` (0-100 guard), `suppliers.html` (admin field + badge), `receiving.html` (auto-fill + hint),
+`pos-i18n.js` (en/fr/it/de, parity 4/4), `sw.js` v103→v104. 16 new unit tests; `make test` **1897 pass / 3 known-flaky**;
+column verified live + ORM round-trip. **▶ Needs Angel human-green on sandbox → then `make deploy ENV=sandbox` (gated ladder).**
+
 **▶ REMAINING Ecolution work (next session):** curate more pilot items + real photos · the **variants/colours**
-question (a display box = ~8-colour assortment — model it) · **per-supplier `trade_discount_%` config** so receiving
-auto-fills cost from retail (banked seam) · supplier-prefixed auto-SKU (`ECO-####`) · get Sylvie's wholesale list.
+question (a display box = ~8-colour assortment — model it) · supplier-prefixed auto-SKU (`ECO-####`) · get Sylvie's
+wholesale list.
 Spec: **[docs/BANCO-ECOLUTION-ONBOARDING-SPEC.md](BANCO-ECOLUTION-ONBOARDING-SPEC.md)** · memory `banco-ecolution-sylvie-supplier`.
 - **Real-world parallel (2026-07-14 AM):** Angel's at Felix's shop in Littau — Felix demo (walk DISC-PROD-01 on
   the phone) + help cover + the new-hire onboarding (kid starts Thu; self-drive kit ONBOARD-KIT-01 is ready). The

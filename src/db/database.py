@@ -254,6 +254,9 @@ _ADDITIVE_COLUMNS: list[str] = [
     "ALTER TABLE suppliers ADD COLUMN IF NOT EXISTS contact_phone VARCHAR(50)",
     # Succession/handoff: VAT + named contact so the supplier isn't trapped in one head.
     "ALTER TABLE suppliers ADD COLUMN IF NOT EXISTS vat_number VARCHAR(50)",
+    # Trade discount off retail (%, 0-100). Receiving auto-fills cost = retail × (1 − pct/100)
+    # — the Ecolution deal (pay 70% of Sylvie's Etsy shelf price). Nullable = no deal set.
+    "ALTER TABLE suppliers ADD COLUMN IF NOT EXISTS trade_discount_pct DOUBLE PRECISION",
     "CREATE UNIQUE INDEX IF NOT EXISTS ix_suppliers_prefix ON suppliers (prefix)",
 ]
 
