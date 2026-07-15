@@ -32,6 +32,27 @@ def _google_url(barcode: str, name: str) -> str | None:
     return "https://www.google.com/search?q=" + quote_plus(q) if q else None
 
 
+async def _reachable_images(client, urls: list[str]) -> list[str]:
+    """Keep only images that ACTUALLY load — retailer CDNs (onbuy…) hotlink-block, so a raw URL
+    from UPCitemdb often 403s/unresolves and shows a broken icon. Return the ones that resolve to
+    a real image, so 'no pic' is clean (→ snap a photo) instead of broken. Short parallel HEADs."""
+    import asyncio as _a
+
+    async def ok(u):
+        try:
+            r = await client.head(u, timeout=4, follow_redirects=True)
+            if r.status_code == 405:   # host rejects HEAD → tiny ranged GET
+                r = await client.get(u, timeout=4, follow_redirects=True, headers={"Range": "bytes=0-0"})
+            return u if (r.status_code < 400 and "image" in r.headers.get("content-type", "")) else None
+        except Exception:
+            return None
+
+    if not urls:
+        return []
+    res = await _a.gather(*[ok(u) for u in urls])
+    return [u for u in res if u]
+
+
 async def lookup_product(barcode: str | None, name: str | None = None) -> dict:
     """Barcode (primary) → a UI-ready product dict. Keyless + free. Never raises.
 
@@ -66,12 +87,13 @@ async def lookup_product(barcode: str | None, name: str | None = None) -> dict:
                 items = (r.json() or {}).get("items") or []
                 if items:
                     it = items[0]
+                    raw_imgs = [u for u in (it.get("images") or []) if u][:6]
                     out.update(
                         found=True, source="upcitemdb",
                         title=it.get("title") or None, brand=it.get("brand") or None,
                         category=it.get("category") or None,
                         description=it.get("description") or None,
-                        images=[u for u in (it.get("images") or []) if u][:6],
+                        images=await _reachable_images(c, raw_imgs),
                     )
                     return out
             elif r.status_code == 429:
@@ -93,7 +115,7 @@ async def lookup_product(barcode: str | None, name: str | None = None) -> dict:
                         brand=out["brand"] or p.get("brands") or None,
                         category=out["category"] or p.get("categories") or None,
                         description=out["description"] or p.get("generic_name") or None,
-                        images=out["images"] or [u for u in imgs if u],
+                        images=out["images"] or await _reachable_images(c, [u for u in imgs if u]),
                     )
                     langs = p.get("languages_hierarchy") or []
                     if langs:

@@ -285,13 +285,13 @@
                                         <!-- multiple images → pick ONE (we store one, keep it simple) -->
                                         <div x-show="web.images.length" class="flex gap-1.5 overflow-x-auto pb-1 mb-1">
                                             <template x-for="img in web.images" :key="img">
-                                                <img :src="img" @click="webImage=img" loading="lazy"
+                                                <img :src="img" @click="webImage=img" loading="lazy" onerror="this.style.display='none'"
                                                      class="w-14 h-14 object-cover rounded flex-none cursor-pointer border-2"
                                                      :class="webImage===img ? 'border-emerald-500' : 'border-transparent'">
                                             </template>
                                         </div>
                                         <p class="font-semibold text-gray-900 text-sm" x-text="web.title"></p>
-                                        <p x-show="web.brand || web.category" class="text-xs text-gray-500" x-text="[web.brand, web.category].filter(Boolean).join(' · ')"></p>
+                                        <p x-show="web.brand" class="text-xs text-gray-500" x-text="web.brand"></p>
                                         <p x-show="web.description" class="text-xs text-gray-600 mt-1" x-text="web.description"></p>
                                         <p x-show="web.lang_hint" class="text-[11px] text-amber-600 mt-1" x-text="t('receiving.web_lang', {lang: (web.lang_hint||'').toUpperCase()})"></p>
                                         <button type="button" @click="useWebResult()" class="btn-success text-xs px-3 py-1 mt-2" data-i18n="receiving.web_use">✓ Use this</button>
