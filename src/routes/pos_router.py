@@ -431,6 +431,53 @@ async def ai_suggest_product(
     return result
 
 
+@router.post("/receiving/read-slip")
+async def read_delivery_slip(
+    file: UploadFile = File(...),
+    provider: Optional[str] = None,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_manager_or_admin()),
+):
+    """📄 Read a supplier delivery note (Lieferschein): photo/scan → AI extracts the header +
+    every product line → each line is trigram-matched against the live catalogue so the operator
+    just confirms/edits and adds to the delivery. Manager-gated (a receiving action). Suggest-only:
+    it persists NOTHING — the human decides what actually gets catalogued/received."""
+    raw = await file.read()
+    if len(raw) > _MAX_IMAGE_BYTES:
+        raise HTTPException(status_code=413, detail="Image too large (max 15 MB)")
+    if not (file.content_type or "").lower().startswith("image/"):
+        raise HTTPException(status_code=415, detail="Please upload an image of the delivery slip")
+
+    from src.services.vision import analyze_image, DELIVERY_SLIP
+    from src.services.image_intake import ImageIntakeError
+    try:
+        r = await analyze_image(raw, file.content_type or "image/jpeg",
+                                domain=DELIVERY_SLIP, provider=provider)
+    except ImageIntakeError:
+        raise HTTPException(status_code=400, detail="That doesn't look like a usable photo of a slip")
+
+    slip = r["data"]
+    # Match every extracted line against the live catalogue + reference (the find-first librarian).
+    out_lines = []
+    for ln in slip.get("lines", []):
+        m = await _find_catalog_matches(db, ln.get("description", ""), limit=4)
+        out_lines.append({
+            **ln,
+            "matches": m["product_matches"],
+            "reference_matches": m["reference_matches"],
+            "best_match_score": m["best_match_score"],
+        })
+    logger.info(
+        "Delivery slip read: provider=%s %dms supplier=%r lines=%d by %s",
+        r["provider"], r["elapsed_ms"], slip.get("supplier"), len(out_lines), current_user["username"],
+    )
+    return {
+        "supplier": slip.get("supplier"), "delivery_note_no": slip.get("delivery_note_no"),
+        "date": slip.get("date"), "confidence": slip.get("confidence"),
+        "lines": out_lines, "provider": r["provider"], "elapsed_ms": r["elapsed_ms"], "note": r["note"],
+    }
+
+
 async def _find_catalog_matches(db: AsyncSession, q: str, limit: int = 6) -> dict:
     """Find-first: given a NAME, search the LIVE catalog (`products`) AND the FourTwenty
     reference (`reference_products`) by pg_trgm similarity and return the REAL matching

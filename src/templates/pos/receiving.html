@@ -80,6 +80,12 @@
                         class="btn-secondary w-full mt-3 flex items-center justify-center gap-2">
                     <span>📷</span><span data-i18n="receiving.new_no_barcode">New item — no barcode (photograph it)</span>
                 </button>
+                <!-- 📄 Read the whole delivery slip at once: AI extracts every line + matches it. -->
+                <label class="w-full mt-2 flex items-center justify-center gap-2 cursor-pointer rounded-lg border-2 border-dashed border-indigo-300 text-indigo-700 hover:bg-indigo-50 py-2.5 font-semibold"
+                       :class="slipBusy ? 'opacity-60 pointer-events-none' : ''">
+                    <span x-text="slipBusy ? ('🔍 ' + t('receiving.slip_reading')) : ('📄 ' + t('receiving.read_slip'))"></span>
+                    <input type="file" accept="image/*" :capture="posCaptureAttr()" class="hidden" @change="readSlip($event)" :disabled="slipBusy">
+                </label>
             </div>
 
             <!-- Receiving list -->
@@ -272,6 +278,51 @@
             </div>
         </div>
     </div>
+
+    <!-- 📄 Delivery-slip review: AI-extracted lines, each matched to the catalogue → confirm/add -->
+    <div x-show="slipOpen" x-transition class="fixed inset-0 z-[65] flex items-center justify-center bg-black/50 p-4" @click.self="slipOpen=false" style="display:none;">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[88vh] flex flex-col">
+            <div class="flex justify-between items-start p-5 border-b">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900">📄 <span data-i18n="receiving.slip_title">Delivery slip</span></h2>
+                    <p class="text-sm text-gray-500 mt-1">
+                        <span x-show="slip.supplier" x-text="slip.supplier"></span>
+                        <span x-show="slip.delivery_note_no"> · <span x-text="slip.delivery_note_no"></span></span>
+                        <span x-show="slip.date"> · <span x-text="slip.date"></span></span>
+                    </p>
+                </div>
+                <button @click="slipOpen=false" class="text-gray-400 hover:text-gray-700 text-3xl leading-none flex-none">&times;</button>
+            </div>
+            <div class="p-4 space-y-2 overflow-y-auto">
+                <p x-show="!slip.lines || !slip.lines.length" class="text-center text-gray-400 py-6" data-i18n="receiving.slip_none">No lines read — try a clearer photo.</p>
+                <template x-for="(l, i) in (slip.lines||[])" :key="i">
+                    <div class="border rounded-lg p-3" :class="l._added ? 'bg-emerald-50 border-emerald-300' : 'bg-white'">
+                        <div class="flex justify-between gap-2">
+                            <p class="font-medium text-gray-900 text-sm" x-text="l.description"></p>
+                            <span class="text-xs text-gray-500 flex-none">×<span x-text="l.quantity"></span><template x-if="l.unit_price != null"><span> · <span x-text="formatPrice(l.unit_price)"></span></span></template></span>
+                        </div>
+                        <template x-if="l.matches && l.matches.length">
+                            <div class="mt-2 flex items-center justify-between gap-2">
+                                <span class="text-xs text-emerald-700 min-w-0 truncate">✓ <b x-text="l.matches[0].name"></b> <span class="text-gray-400" x-text="'('+Math.round((l.matches[0].score||0)*100)+'%)'"></span></span>
+                                <button x-show="!l._added" @click="addSlipMatch(l)" class="btn-success text-xs px-3 py-1 flex-none" data-i18n="receiving.slip_add">Add</button>
+                                <span x-show="l._added" class="text-xs text-emerald-700 font-semibold flex-none" data-i18n="receiving.slip_added">✓ added</span>
+                            </div>
+                        </template>
+                        <template x-if="!l.matches || !l.matches.length">
+                            <div class="mt-2 flex items-center justify-between gap-2">
+                                <span class="text-xs text-amber-600" data-i18n="receiving.slip_no_match">no catalogue match</span>
+                                <button @click="slipNewItem(l)" class="btn-secondary text-xs px-3 py-1 flex-none" data-i18n="receiving.slip_new">＋ New item</button>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </div>
+            <div class="p-4 border-t flex gap-2">
+                <button @click="addAllSlipMatches()" class="btn-success flex-1" data-i18n="receiving.slip_add_all">Add all matched</button>
+                <button @click="slipOpen=false" class="btn-secondary" data-i18n="receiving.slip_done">Done</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -299,6 +350,9 @@
             newCost: '',          // purchase cost per unit
             costAutoFilled: false, // true = cost came from the supplier's trade discount (not typed by hand)
             itemSupplierId: '',   // per-item supplier (defaults to the session pick; sets the SKU prefix + tag)
+            slipBusy: false,      // reading a delivery slip (AI in flight)
+            slipOpen: false,      // the slip-review modal
+            slip: { lines: [] },  // AI-extracted slip: {supplier, delivery_note_no, date, lines:[…]}
             photoFirst: false,    // true = no-barcode maker item → lead the modal with the camera
             newPhotoFile: null,   // the snapped item photo (File), uploaded after create
             newPhotoData: '',     // data-URL preview of the snapped photo
@@ -541,6 +595,44 @@
             tryCloseNew() {
                 if (this.newDirty() && !confirm(t('receiving.discard_confirm'))) return;
                 this.newOpen = false;
+            },
+            // 📄 Read a whole delivery slip: photo → AI extracts every line → each matched to the
+            // catalogue → review + add. The big-lever maker/supplier migration (spec, "read the slip").
+            async readSlip(e) {
+                const f = e.target.files && e.target.files[0];
+                e.target.value = '';
+                if (!f) return;
+                if (!f.type.startsWith('image/')) { showToast(t('receiving.not_an_image'), 'warning'); return; }
+                this.slipBusy = true;
+                try {
+                    const fd = new FormData(); fd.append('file', f);
+                    const r = await fetch('/api/v1/pos/receiving/read-slip', {
+                        method: 'POST', headers: { 'Authorization': `Bearer ${AuthHelper.getToken()}` }, body: fd });
+                    if (!r.ok) throw new Error('read-slip ' + r.status);
+                    const d = await r.json();
+                    this.slip = { supplier: d.supplier, delivery_note_no: d.delivery_note_no, date: d.date, lines: (d.lines || []) };
+                    this.slipOpen = true;
+                    if (!this.slip.lines.length) showToast(t('receiving.slip_none'), 'info');
+                } catch (err) {
+                    console.warn('read-slip', err);
+                    showToast(t('receiving.slip_failed'), 'error');
+                } finally { this.slipBusy = false; }
+            },
+            // Add a slip line's top catalogue match to the delivery (it already exists → catalogue event).
+            addSlipMatch(l) {
+                const m = l.matches && l.matches[0];
+                if (!m) return;
+                this.addProduct(m);
+                l._added = true;
+            },
+            addAllSlipMatches() {
+                (this.slip.lines || []).forEach(l => { if (l.matches && l.matches.length && !l._added) this.addSlipMatch(l); });
+            },
+            // No slip match → open the New-item modal pre-filled with the slip's description + price.
+            slipNewItem(l) {
+                this.slipOpen = false;
+                this.openNew(l.description || '');
+                if (l.unit_price != null) { this.newPrice = l.unit_price; this.applyTradeDiscount(); }
             },
             // No barcode at all → open the New-item modal blank, camera-first (the maker path:
             // Sylvie's felt cases, Cynthia's balms). No code to fake; the photo leads.

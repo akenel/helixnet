@@ -62,6 +62,7 @@ class VisionDomain:
     name: str
     prompt: str
     coerce: Callable[[dict], dict]
+    intake: str = "product"   # image-intake preset: "product" (1024px) or "slip" (1600px, document)
 
 
 def _b64(raw: bytes) -> str:
@@ -148,14 +149,18 @@ async def _call_provider(provider: str, b64: str, prompt: str, mime: str = "imag
     return await fn(b64, prompt, mime)
 
 
-def _normalize(raw: bytes, content_type: str) -> tuple[str, str]:
+def _normalize(raw: bytes, content_type: str, preset: str = "product") -> tuple[str, str]:
     """Phone shot -> (base64, mime). Pillow-optional: normalize when present
-    (orient/shrink/strip EXIF — faster + cheaper tokens), else send raw."""
+    (orient/shrink/strip EXIF — faster + cheaper tokens), else send raw.
+
+    `preset` picks the intake profile: "product" (1024px) for an item photo, "slip"
+    (1600px, document) for a delivery-note scan where the small print must stay legible."""
     mime = content_type if (content_type or "").startswith("image/") else "image/jpeg"
     try:
-        from src.services.image_intake import process, PRODUCT, ImageIntakeError
+        from src.services.image_intake import process, PRODUCT, SLIP, ImageIntakeError
+        presets = {"product": PRODUCT, "slip": SLIP}
         try:
-            return _b64(process(raw, PRODUCT).main), "image/jpeg"
+            return _b64(process(raw, presets.get(preset, PRODUCT)).main), "image/jpeg"
         except ImageIntakeError as e:
             raise VisionImageError(str(e))
     except ImportError:
@@ -226,7 +231,7 @@ async def analyze_image(
     for model/transport problems (blank data + a `note`). Raises VisionImageError for
     un-decodable bytes when Pillow is present."""
     provider = (provider or os.getenv("BANCO_VISION_PROVIDER", "gemini")).lower()
-    b64, mime = _normalize(raw, content_type)   # may raise VisionImageError
+    b64, mime = _normalize(raw, content_type, domain.intake)   # may raise VisionImageError
     prompt = domain.prompt if not hint else f"{domain.prompt}\nExtra hint: {hint.strip()}"
 
     started = time.perf_counter()
@@ -316,5 +321,57 @@ def _coerce_lab_report(obj: dict) -> dict:
 LAB_REPORT = VisionDomain(name="lab_report", prompt=_LAB_REPORT_PROMPT, coerce=_coerce_lab_report)
 
 
+# --- delivery slip (goods receipt) — the "read the Lieferschein" brain --------
+# Photograph the supplier's delivery note; the model returns the header + every product
+# line as structured JSON. The receiving endpoint then trigram-matches each line against
+# the live catalogue so the operator just confirms. Uses the SLIP intake (1600px, keeps
+# the small print legible). See docs/BANCO-RECEIVING-GOODS-RECEIPT-SPEC.md.
+_DELIVERY_SLIP_PROMPT = (
+    "You are reading a supplier DELIVERY NOTE (Lieferschein / bon de livraison / bolla di "
+    "consegna) for a Swiss shop. Return ONLY a JSON object (no prose, no code fence) with:\n"
+    '  "supplier"          the sender / supplier company name if visible, else ""\n'
+    '  "delivery_note_no"  the delivery-note number if visible, else ""\n'
+    '  "date"              the document/delivery date as YYYY-MM-DD if present, else ""\n'
+    '  "lines"             an ARRAY, one object per PRODUCT line, each:\n'
+    '        "description"  the article text exactly as printed (keep its language)\n'
+    '        "quantity"     the quantity as a number (else 1)\n'
+    '        "unit_price"   unit price as a number if the slip shows prices, else null\n'
+    '  "confidence"        0.0-1.0 overall\n'
+    "Include EVERY product line. SKIP header rows, subtotals, totals, VAT/MwSt and shipping "
+    "lines. Read text and numbers literally; missing field -> \"\" or null. Output JSON only."
+)
+
+
+def _coerce_delivery_slip(obj: dict) -> dict:
+    lines = []
+    raw_lines = obj.get("lines")
+    if isinstance(raw_lines, list):
+        for it in raw_lines:
+            if not isinstance(it, dict):
+                continue
+            desc = _s(it, "description")
+            if not desc:
+                continue
+            qty = _num(it, "quantity")
+            lines.append({
+                "description": desc,
+                "quantity": qty if (qty and qty > 0) else 1,
+                "unit_price": _num(it, "unit_price"),
+            })
+    return {
+        "supplier": _s(obj, "supplier"),
+        "delivery_note_no": _s(obj, "delivery_note_no"),
+        "date": _s(obj, "date"),
+        "lines": lines,
+        "confidence": _confidence(obj),
+    }
+
+
+DELIVERY_SLIP = VisionDomain(
+    name="delivery_slip", prompt=_DELIVERY_SLIP_PROMPT,
+    coerce=_coerce_delivery_slip, intake="slip",
+)
+
+
 # Registry — look a domain up by name (e.g. from an endpoint ?domain= param).
-DOMAINS = {d.name: d for d in (PRODUCT, LAB_REPORT)}
+DOMAINS = {d.name: d for d in (PRODUCT, LAB_REPORT, DELIVERY_SLIP)}
