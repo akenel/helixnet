@@ -663,6 +663,8 @@
                 // else by the typed name — so a tap can fill name+price+photo (adopt).
                 if (isBarcode) this.searchRef('', seed);
                 else if (seed) this.searchRef(seed, '');
+                // AUTO web-lookup on a barcode miss (the holster-guy flow) — result waiting, no tap.
+                if (isBarcode) this.$nextTick(() => this.runWebLookup());
             },
 
             // Search the reference catalogue (by typed name, or by the scanned barcode).

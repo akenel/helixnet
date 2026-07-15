@@ -1163,6 +1163,10 @@
                     if (this.lazyLinkQuery.trim().length > 1) { this.searchExisting(); this.searchReference(); }
                     else if ((this.lazyBarcode || '').trim()) { this.searchReference(); }
                     if (!this.lazyPhotoFirst && this.$refs.lazyLinkInput) this.$refs.lazyLinkInput.focus();
+                    // AUTO-LOOKUP ON MISS (the holster-guy flow): a pure barcode miss fires the web
+                    // lookup automatically — no "look it up" tap. Found → the card reveals itself; miss
+                    // → the camera hero (BL-102) stays as the fallback. Scan → boom → price → done.
+                    if ((this.lazyBarcode || '').trim() && !(prefillName || '').trim()) this.runWebLookup();
                 });
             },
 
@@ -1347,6 +1351,14 @@
                     const p = new URLSearchParams({ barcode: this.lazyBarcode || '', name: this.lazyName || '' });
                     this.web = await API.get('/api/v1/pos/products/web-lookup?' + p.toString());
                     if (this.web && this.web.images && this.web.images.length) this.webImage = this.web.images[0];
+                    // Auto-lookup FOUND it → reveal the create form with the card + prefill the name,
+                    // and stand down the camera hero. The holster-guy just sets a price and confirms.
+                    if (this.web && this.web.found) {
+                        this.lazyPhotoFirst = false;
+                        this.lazyCreateOpen = true;
+                        if (this.web.title && !(this.lazyName || '').trim()) this.lazyName = this.web.title;
+                        this.webDesc = this.web.description || '';
+                    }
                 } catch (e) {
                     this.web = { found: false, note: 'error', google_url: null, quota: null, images: [] };
                 } finally { this.webBusy = false; }
