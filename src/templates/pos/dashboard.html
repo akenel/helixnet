@@ -83,6 +83,25 @@
             </div>
         </div>
 
+        <!-- New members today (kiosk self-signup) — Felix's "look what the machine did" -->
+        <div x-show="newMembers.length > 0" class="card mb-8 border-l-4 border-emerald-500">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-bold text-gray-900">🎉 <span x-text="newMembers.length"></span>
+                    <span data-i18n="dashboard.new_members_today">new members today</span></h3>
+                <a href="/pos/customer-lookup" class="text-sm text-indigo-600 font-semibold" data-i18n="dashboard.members_view_all">View all →</a>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <template x-for="m in newMembers.slice(0, 15)" :key="m.id">
+                    <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-sm">
+                        <span class="font-semibold text-gray-800" x-text="'@' + m.handle"></span>
+                        <span x-show="m.welcome_discount_pct > 0 && !m.welcome_discount_used" class="text-emerald-700 font-bold" x-text="m.welcome_discount_pct + '%'"></span>
+                        <span x-show="m.source === 'phone'" title="on their phone">📱</span>
+                        <span x-show="m.source === 'kiosk'" title="at the kiosk">🖥️</span>
+                    </span>
+                </template>
+            </div>
+        </div>
+
         <!-- Action Buttons Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
@@ -267,6 +286,7 @@
             salesIsMine: false,
             drawer: null,        // /shift/current when this cashier has an open drawer
             cleanupCount: 0,     // sold-but-half-baked products awaiting manager setup (badge)
+            newMembers: [],      // members who self-signed-up at the kiosk TODAY
 
             init() {
                 // Check for tokens in URL fragment (from OAuth callback):
@@ -321,6 +341,10 @@
                 // Manager-only: how many sold items still need setting up (dashboard badge).
                 if (this.user.isManager) this.loadCleanupCount();
 
+                // Any POS role: new members who self-signed-up at the kiosk today (cashier greets
+                // them by name; manager sees the machine working).
+                this.loadNewMembers();
+
                 // Update shift time every minute
                 setInterval(() => this.updateShiftTime(), 60000);
                 this.updateShiftTime();
@@ -350,6 +374,13 @@
                     const data = await API.get('/api/v1/pos/catalog/cleanup-queue');
                     this.cleanupCount = data.count || 0;
                 } catch (e) { this.cleanupCount = 0; }  // badge is optional, never blocks the dash
+            },
+
+            async loadNewMembers() {
+                try {
+                    const data = await API.get('/api/v1/pos/customers/new-today');
+                    this.newMembers = data.members || [];
+                } catch (e) { this.newMembers = []; }   // optional, never blocks the dash
             },
 
             updateShiftTime() {

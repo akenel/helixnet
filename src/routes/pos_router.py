@@ -6875,6 +6875,105 @@ async def kiosk_search(
     return {"results": results, "q": q}
 
 
+class KioskSignup(BaseModel):
+    handle: str
+    real_name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    language: str = "de"
+    age_confirmed: bool = False
+    marketing_consent: bool = False
+    source: str = "kiosk"   # kiosk | phone
+
+
+@router.post("/kiosk/signup")
+async def kiosk_signup(
+    body: KioskSignup,
+    db: AsyncSession = Depends(get_db_session),
+):
+    """PUBLIC self-signup at the kiosk (banco-kiosk-guest-station). A guest becomes a member and
+    earns a ONE-TIME first-order discount — 10% at the kiosk, 15% on their own phone (nudges them
+    to the phone). Returns their handle + a scannable HLX- QR so the cashier pulls them up and
+    applies it. 18+ REQUIRED (head shop). Handle must be unique. No auth — this is the hook."""
+    import re
+    from src.db.models.customer_model import CustomerModel
+    handle = (body.handle or "").strip().lstrip("@")
+    if not re.fullmatch(r"[A-Za-z0-9_.\-]{3,30}", handle or ""):
+        raise HTTPException(status_code=400, detail="Pick a username: 3–30 letters, numbers, . _ -")
+    if not body.age_confirmed:
+        raise HTTPException(status_code=400, detail="Please confirm you are 18 or older.")
+    exists = (await db.execute(
+        select(CustomerModel).where(func.lower(CustomerModel.handle) == handle.lower())
+    )).scalar_one_or_none()
+    if exists:
+        raise HTTPException(status_code=409, detail=f"'{handle}' is taken — try another.")
+    email = (body.email or "").strip() or None
+    if email:
+        clash = (await db.execute(
+            select(CustomerModel).where(func.lower(CustomerModel.email) == email.lower())
+        )).scalar_one_or_none()
+        if clash:
+            raise HTTPException(status_code=409, detail="That email is already registered.")
+
+    source = "phone" if (body.source or "").strip().lower() == "phone" else "kiosk"
+    discount = 15 if source == "phone" else 10
+    member = CustomerModel(
+        handle=handle,
+        real_name=(body.real_name or "").strip() or None,
+        email=email,
+        phone=(body.phone or "").strip() or None,
+        language=(body.language or "de").lower()[:2],
+        age_confirmed=True,
+        marketing_consent=bool(body.marketing_consent),
+        welcome_discount_pct=discount,
+        welcome_discount_used=False,
+        signup_source=source,
+    )
+    db.add(member)
+    member.generate_qr_code()          # HLX-XXXX — scannable at the till
+    await db.commit()
+    await db.refresh(member)
+    logger.info(f"Kiosk signup: {member.handle} via {source} (+{discount}% first order)")
+    return {
+        "ok": True,
+        "id": str(member.id),
+        "handle": member.handle,
+        "discount_pct": discount,
+        "source": source,
+        "qr_code": member.qr_code,
+    }
+
+
+@router.get("/customers/new-today")
+async def customers_new_today(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """New members who signed up TODAY — Felix's 'look what the machine did' list on the dashboard.
+    Any POS role can see it (the cashier greets them by name too)."""
+    from datetime import timezone as _tz
+    from src.db.models.customer_model import CustomerModel
+    start = datetime.now(_tz.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    rows = (await db.execute(
+        select(CustomerModel)
+        .where(CustomerModel.created_at >= start)
+        .order_by(CustomerModel.created_at.desc())
+        .limit(100)
+    )).scalars().all()
+    members = [
+        {
+            "id": str(c.id),
+            "handle": c.handle,
+            "source": c.signup_source or "staff",
+            "welcome_discount_pct": c.welcome_discount_pct or 0,
+            "welcome_discount_used": bool(c.welcome_discount_used),
+            "created_at": c.created_at.isoformat() if c.created_at else None,
+        }
+        for c in rows
+    ]
+    return {"count": len(members), "members": members}
+
+
 @html_router.get("/pos/labels/batch", response_class=HTMLResponse, name="labels_batch")
 async def labels_batch(
     request: Request,

@@ -78,6 +78,65 @@
         <div class="text-left text-sm text-emerald-100/75 max-w-[160px]" x-text="t('onPhone')"></div>
       </div>
     </div>
+
+    <!-- The hook: join today, save on your first order -->
+    <button @click="startSignup()"
+            class="mt-10 px-7 py-4 rounded-2xl bg-emerald-500/20 border border-emerald-300/50 text-emerald-50 text-lg font-bold hover:bg-emerald-500/30 transition">
+      🎁 <span x-text="mf('join', {pct: signupPct})"></span>
+    </button>
+  </section>
+
+  <!-- ============ MEMBER SIGNUP ============ -->
+  <section x-show="view==='signup'" class="min-h-screen flex flex-col items-center justify-center px-6 py-10" style="display:none;">
+    <div class="w-full max-w-md">
+      <div class="text-center mb-6">
+        <div class="text-5xl mb-2">🎁</div>
+        <h2 class="text-3xl font-black" x-text="m('joinTitle')"></h2>
+        <p class="text-emerald-100/75 mt-1" x-text="mf('joinSub', {pct: signupPct})"></p>
+      </div>
+      <form @submit.prevent="submitSignup()" class="space-y-3">
+        <div>
+          <input x-model="form.handle" :placeholder="m('fUser')" autocomplete="off"
+                 class="w-full px-5 py-4 rounded-2xl glass text-white placeholder-emerald-200/40 outline-none focus:ring-2 focus:ring-emerald-300">
+          <p class="text-xs text-emerald-200/40 mt-1 ml-1" x-text="m('fUserHint')"></p>
+        </div>
+        <input x-model="form.real_name" :placeholder="m('fName')" class="w-full px-5 py-4 rounded-2xl glass text-white placeholder-emerald-200/40 outline-none focus:ring-2 focus:ring-emerald-300">
+        <input x-model="form.email" type="email" :placeholder="m('fEmail')" class="w-full px-5 py-4 rounded-2xl glass text-white placeholder-emerald-200/40 outline-none focus:ring-2 focus:ring-emerald-300">
+        <input x-model="form.phone" :placeholder="m('fPhone')" class="w-full px-5 py-4 rounded-2xl glass text-white placeholder-emerald-200/40 outline-none focus:ring-2 focus:ring-emerald-300">
+
+        <label class="flex items-center gap-3 p-3 rounded-2xl glass cursor-pointer select-none"
+               :class="form.age ? 'ring-2 ring-emerald-300' : ''">
+          <input type="checkbox" x-model="form.age" class="w-5 h-5 accent-emerald-500 flex-none">
+          <span class="text-sm font-semibold" x-text="'🔞 ' + m('fAge')"></span>
+        </label>
+        <label class="flex items-center gap-3 p-3 rounded-2xl glass cursor-pointer select-none">
+          <input type="checkbox" x-model="form.marketing" class="w-5 h-5 accent-emerald-500 flex-none">
+          <span class="text-sm text-emerald-100/80" x-text="m('fMarketing')"></span>
+        </label>
+
+        <p x-show="signupErr" style="display:none;" class="text-red-300 text-sm text-center" x-text="signupErr"></p>
+
+        <button type="submit" :disabled="_busy"
+                class="w-full px-7 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-emerald-950 text-lg font-black">
+          <span x-show="!_busy" x-text="mf('joinBtn', {pct: signupPct})"></span>
+          <span x-show="_busy" style="display:none;" x-text="m('joining')"></span>
+        </button>
+        <button type="button" @click="reset()" class="w-full py-2 text-emerald-200/60 text-sm" x-text="m('back')"></button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============ MEMBER SUCCESS ============ -->
+  <section x-show="view==='member'" class="min-h-screen flex flex-col items-center justify-center px-6 text-center" style="display:none;">
+    <div class="text-6xl mb-3">🎉</div>
+    <h2 class="text-4xl font-black mb-1" x-text="mf('welcome', {handle: member.handle})"></h2>
+    <p class="text-2xl price font-bold mb-8" x-text="mf('welcomeSub', {pct: member.discount_pct})"></p>
+    <div class="glass rounded-3xl p-6 flex flex-col items-center">
+      <div id="member-qr" x-ref="memberQr" class="bg-white p-2 rounded-xl"></div>
+      <p class="font-mono text-emerald-200/70 mt-3 tracking-wider" x-text="member.qr_code"></p>
+      <p class="text-emerald-100/80 mt-1" x-text="m('showCashier')"></p>
+    </div>
+    <button @click="reset()" class="mt-8 px-7 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-emerald-950 text-lg font-bold" x-text="m('done')"></button>
   </section>
 
   <!-- ============ CAMERA OVERLAY ============ -->
@@ -205,6 +264,9 @@
       _busy: false,
       camError: '',
       isTouch: false,
+      form: { handle: '', real_name: '', email: '', phone: '', age: false, marketing: false },
+      signupErr: '',
+      member: {},
 
       langs: [
         { code:'de', flag:'🇩🇪', label:'Deutsch' },
@@ -236,6 +298,33 @@
       },
 
       t(k){ return (this.STR[this.lang] || this.STR.en)[k] || (this.STR.en[k] || k); },
+
+      MEMBER: {
+        de:{ join:'Mitglied werden — {pct}% Rabatt heute', joinTitle:'Mitglied werden', joinSub:'{pct}% auf deine erste Bestellung. Dauert 20 Sekunden.',
+             fUser:'Benutzername', fUserHint:'einmalig — Buchstaben, Zahlen, . _ -', fName:'Name (optional)', fEmail:'E-Mail (optional)', fPhone:'Telefon (optional)',
+             fAge:'Ich bestätige, dass ich 18 oder älter bin', fMarketing:'Schick mir Angebote (optional)', joinBtn:'Beitreten & {pct}% sparen', joining:'Wird erstellt…', back:'Zurück',
+             welcome:'Willkommen, {handle}!', welcomeSub:'{pct}% auf deine erste Bestellung heute.', showCashier:'Zeig das an der Kasse', done:'Fertig',
+             errUser:'Benutzername: 3–30 Buchstaben, Zahlen, . _ -', errAge:'Bitte bestätige, dass du 18 oder älter bist.', errGeneric:'Etwas ist schiefgelaufen — bitte nochmal.' },
+        fr:{ join:'Devenir membre — {pct}% aujourd’hui', joinTitle:'Devenir membre', joinSub:'{pct}% sur votre première commande. 20 secondes.',
+             fUser:'Nom d’utilisateur', fUserHint:'unique — lettres, chiffres, . _ -', fName:'Nom (optionnel)', fEmail:'E-mail (optionnel)', fPhone:'Téléphone (optionnel)',
+             fAge:'Je confirme avoir 18 ans ou plus', fMarketing:'Envoyez-moi des offres (optionnel)', joinBtn:'Rejoindre & économiser {pct}%', joining:'Création…', back:'Retour',
+             welcome:'Bienvenue, {handle} !', welcomeSub:'{pct}% sur votre première commande aujourd’hui.', showCashier:'Montrez ceci à la caisse', done:'Terminé',
+             errUser:'Nom d’utilisateur : 3–30 lettres, chiffres, . _ -', errAge:'Veuillez confirmer que vous avez 18 ans ou plus.', errGeneric:'Une erreur est survenue — réessayez.' },
+        it:{ join:'Diventa socio — {pct}% oggi', joinTitle:'Diventa socio', joinSub:'{pct}% sul tuo primo ordine. Bastano 20 secondi.',
+             fUser:'Nome utente', fUserHint:'unico — lettere, numeri, . _ -', fName:'Nome (facoltativo)', fEmail:'Email (facoltativa)', fPhone:'Telefono (facoltativo)',
+             fAge:'Confermo di avere 18 anni o più', fMarketing:'Inviami offerte (facoltativo)', joinBtn:'Iscriviti & risparmia {pct}%', joining:'Creazione…', back:'Indietro',
+             welcome:'Benvenuto, {handle}!', welcomeSub:'{pct}% sul tuo primo ordine oggi.', showCashier:'Mostralo alla cassa', done:'Fatto',
+             errUser:'Nome utente: 3–30 lettere, numeri, . _ -', errAge:'Conferma di avere 18 anni o più.', errGeneric:'Qualcosa è andato storto — riprova.' },
+        en:{ join:'Become a member — {pct}% off today', joinTitle:'Become a member', joinSub:'{pct}% off your first order. Takes 20 seconds.',
+             fUser:'Username', fUserHint:'unique — letters, numbers, . _ -', fName:'Name (optional)', fEmail:'Email (optional)', fPhone:'Phone (optional)',
+             fAge:'I confirm I am 18 or older', fMarketing:'Send me offers (optional)', joinBtn:'Join & save {pct}%', joining:'Joining…', back:'Back',
+             welcome:'Welcome, {handle}!', welcomeSub:'{pct}% off your first order today.', showCashier:'Show this to the cashier', done:'Done',
+             errUser:'Pick a username: 3–30 letters, numbers, . _ -', errAge:'Please confirm you are 18 or older.', errGeneric:'Something went wrong — try again.' },
+      },
+      m(k){ return (this.MEMBER[this.lang] || this.MEMBER.en)[k] || (this.MEMBER.en[k] || k); },
+      mf(k, vars){ let s = this.m(k); for (const a in (vars||{})) s = s.split('{'+a+'}').join(vars[a]); return s; },
+
+      get signupPct(){ return this.isTouch ? 15 : 10; },   // phone (via QR) = 15%, kiosk = 10%
 
       init(){
         // remember the guest's language choice within a session
@@ -359,6 +448,62 @@
           console.error('kiosk view failed', e);
           if (!silent) this.view = 'notfound';
         } finally { this.refocus(); }
+      },
+
+      startSignup(){
+        this.form = { handle: '', real_name: '', email: '', phone: '', age: false, marketing: false };
+        this.signupErr = '';
+        this.bumpIdle();
+        this.view = 'signup';
+      },
+
+      async submitSignup(){
+        this.signupErr = '';
+        const f = this.form;
+        if (!/^[A-Za-z0-9_.\-]{3,30}$/.test((f.handle || '').trim())) { this.signupErr = this.m('errUser'); return; }
+        if (!f.age) { this.signupErr = this.m('errAge'); return; }
+        if (this._busy) return;
+        this._busy = true;
+        this.bumpIdle();
+        try {
+          const r = await fetch('/api/v1/pos/kiosk/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              handle: f.handle.trim(),
+              real_name: (f.real_name || '').trim(),
+              email: (f.email || '').trim(),
+              phone: (f.phone || '').trim(),
+              language: this.lang,
+              age_confirmed: !!f.age,
+              marketing_consent: !!f.marketing,
+              source: this.isTouch ? 'phone' : 'kiosk',
+            }),
+          });
+          const data = await r.json();
+          if (r.ok && data && data.ok) {
+            this.member = data;
+            this.view = 'member';
+            this.$nextTick(() => this.renderMemberQR());
+          } else {
+            this.signupErr = (data && data.detail) || this.m('errGeneric');
+          }
+        } catch(e){
+          console.error('signup failed', e);
+          this.signupErr = this.m('errGeneric');
+        } finally { this._busy = false; }
+      },
+
+      renderMemberQR(){
+        try {
+          const el = this.$refs.memberQr;
+          if (!el || typeof QRCode === 'undefined' || !this.member.qr_code) return;
+          el.innerHTML = '';
+          new QRCode(el, {
+            text: this.member.qr_code, width: 150, height: 150,
+            colorDark: '#0a1a14', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M,
+          });
+        } catch(e){ /* QR is a nice-to-have */ }
       },
 
       printCard(){

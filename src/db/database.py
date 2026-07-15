@@ -151,6 +151,12 @@ _ADDITIVE_COLUMNS: list[str] = [
     # table) — added below so an env whose `customers` predated it doesn't 500 on enroll.
     "ALTER TABLE customers ADD COLUMN IF NOT EXISTS birthdate DATE",
     "ALTER TABLE customers ADD COLUMN IF NOT EXISTS birthday DATE",
+    # Kiosk self-signup (2026-07-15): one-time first-order discount + where they enrolled.
+    # NOT NULL DEFAULT 0/FALSE so every existing member row is valid (they simply have no
+    # welcome discount). signup_source nullable (legacy members enrolled before the kiosk).
+    "ALTER TABLE customers ADD COLUMN IF NOT EXISTS welcome_discount_pct INTEGER NOT NULL DEFAULT 0",
+    "ALTER TABLE customers ADD COLUMN IF NOT EXISTS welcome_discount_used BOOLEAN NOT NULL DEFAULT FALSE",
+    "ALTER TABLE customers ADD COLUMN IF NOT EXISTS signup_source VARCHAR(20)",
     # BL-082 (2026-06-21): the IsottoOrder model grew team-order fields but there was
     # no additive migration -- create_all() never adds columns to an existing table, so
     # any env whose isotto_orders predated these 500'd on insert (seed crash + dead

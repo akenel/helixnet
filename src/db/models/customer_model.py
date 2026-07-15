@@ -378,6 +378,30 @@ class CustomerModel(Base):
     )
 
     # ================================================================
+    # WELCOME / FIRST-ORDER DISCOUNT (kiosk self-signup — banco-kiosk-guest-station)
+    # A one-time discount a guest earns by becoming a member at the kiosk (10%) or on their
+    # own phone (15%). Applied ONCE on the first order, then `used` flips true. Separate from
+    # the standing loyalty tier_discount_percent — this is the join-today hook.
+    # ================================================================
+    welcome_discount_pct: Mapped[int] = mapped_column(
+        Integer,
+        default=0,
+        nullable=False,
+        comment="One-time first-order discount % earned at signup (0 = none)"
+    )
+    welcome_discount_used: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False,
+        comment="True once the welcome discount has been redeemed on an order"
+    )
+    signup_source: Mapped[str | None] = mapped_column(
+        String(20),
+        nullable=True,
+        comment="Where they enrolled: kiosk / phone / staff — drives the discount + Felix's 'new today' list"
+    )
+
+    # ================================================================
     # TIMESTAMPS
     # ================================================================
     created_at: Mapped[datetime] = mapped_column(
