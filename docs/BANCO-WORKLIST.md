@@ -31,9 +31,19 @@ take over cleanly. Files: `supplier_model.py` (column + `cost_from_retail()` hal
 `pos-i18n.js` (en/fr/it/de, parity 4/4), `sw.js` v103→v104. 16 new unit tests; `make test` **1897 pass / 3 known-flaky**;
 column verified live + ORM round-trip. **▶ Needs Angel human-green on sandbox → then `make deploy ENV=sandbox` (gated ladder).**
 
-**▶ REMAINING Ecolution work (next session):** curate more pilot items + real photos · the **variants/colours**
-question (a display box = ~8-colour assortment — model it) · supplier-prefixed auto-SKU (`ECO-####`) · get Sylvie's
-wholesale list.
+**▶ 2026-07-15 — receiving workflow round IN SANDBOX (Angel testing, NOTHING shipped past sbx):**
+- ✅ **no-barcode photo-first "New item" button** (snap → AI title+price → find-first → cost auto-fills 70% → photo
+  = cover). Angel proved it live: 5 Ecolution items created with photos + correct auto-cost (34.59→24.21 etc.).
+- ✅ **unsaved-work guard** — `HelixDirtyGuard` (base.html shell) + receiving new-item modal **discard-confirm on
+  backdrop/✕ mis-tap**. Desktop swipe-back covered by beforeunload; **mobile hardware BACK button = OPEN, needs
+  Angel's on-device test** before wiring. [[banco-unsaved-work-guard]]
+- 🐯 **NEXT (Angel greenlit design 2026-07-15):** (a) **AI writes the DESCRIPTION** too — short clean desc in the
+  source lang (EN/DE) → flows to other langs via `description_i18n` (reuse BL-36); (b) **supplier auto-tag** —
+  receiving IS per-supplier mode: pick Ecolution at top → every item tagged Ecolution automatically with a visible
+  "Supplier: X ✓ change?" confirm (fixes the gap: the 5 items were NOT supplier-tagged, nor marked received).
+  Workflow generalizes to ANY craftsperson with a website + pictures.
+- ▶ still queued: replicate the guard to scan/new-product screens + scan-cart `suppressOnce()`; variants/colours
+  assortment model; supplier-prefixed auto-SKU (`ECO-####`); Sylvie's wholesale list.
 Spec: **[docs/BANCO-ECOLUTION-ONBOARDING-SPEC.md](BANCO-ECOLUTION-ONBOARDING-SPEC.md)** · memory `banco-ecolution-sylvie-supplier`.
 - **Real-world parallel (2026-07-14 AM):** Angel's at Felix's shop in Littau — Felix demo (walk DISC-PROD-01 on
   the phone) + help cover + the new-hire onboarding (kid starts Thu; self-drive kit ONBOARD-KIT-01 is ready). The
