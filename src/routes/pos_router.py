@@ -6657,12 +6657,13 @@ async def product_page(
 async def product_label(
     product_id: str,
     request: Request,
+    size: str = "s",
     db: AsyncSession = Depends(get_db_session),
 ):
-    """A print-ready 62 mm product LABEL: store name, product name, price, and a SCANNABLE barcode
-    (the minted EAN-13 or the real one) + the human SKU as a fallback code. Browser-printable now
-    (Ctrl+P → any printer); the QL-820NWB roll when it lands. Reached from the product page's
-    role-gated 'Label' button (cashier+)."""
+    """A print-ready product LABEL, small by default. `size=s` = a compact price sticker (~38mm:
+    price + small barcode + code); `size=m` = the shelf-talker (62mm: store name + full barcode).
+    Scannable EAN-13 (minted or real) with the human SKU as fallback. Browser-printable now; the
+    QL-820NWB roll when it lands. Reached from the product page's role-gated 'Label' button (cashier+)."""
     from src.db.models.product_model import ProductModel
     product = await db.get(ProductModel, product_id)
     if not product:
@@ -6670,12 +6671,14 @@ async def product_label(
     store = _postcard_store_footer(await get_active_store_settings(db), "")
     return templates.TemplateResponse("pos/product_label.html", {
         "request": request,
+        "size": "m" if (size or "s").lower().startswith("m") else "s",
         "name": product.name,
         "price": f"{float(product.price):.2f}" if product.price is not None else None,
         "currency": "CHF",
         "barcode": product.barcode or "",
         "sku": product.sku or "",
         "store_name": (store or {}).get("name") or "",
+        "pid": str(product.id),
     })
 
 

@@ -5,42 +5,57 @@
 <title>{{ name }} — Label</title>
 <script src="/static/vendor/jsbarcode.min.js"></script>
 <style>
-  :root{ --ink:#111; }
   *{ box-sizing:border-box; margin:0; padding:0; }
-  body{ font-family:-apple-system,'Helvetica Neue',Arial,sans-serif; color:var(--ink); background:#e9e9e9; padding:20px; text-align:center; }
-  .bar{ margin-bottom:16px; }
-  .bar button{ padding:10px 20px; font-size:15px; font-weight:700; border:none; border-radius:10px; background:#1a4d2e; color:#fff; cursor:pointer; }
-  .bar a{ display:inline-block; margin-left:10px; padding:10px 16px; font-size:14px; color:#1a4d2e; text-decoration:none; }
-  /* 62mm Brother QL label — fixed physical width, auto height */
-  .label{ width:62mm; min-height:30mm; margin:0 auto; background:#fff; padding:3mm 3mm 2mm; box-shadow:0 2px 8px rgba(0,0,0,.15); display:flex; flex-direction:column; align-items:center; }
-  .store{ font-size:2.6mm; color:#555; letter-spacing:.02em; }
-  .pname{ font-size:3.6mm; font-weight:800; line-height:1.15; margin:1mm 0; max-height:9mm; overflow:hidden; }
-  .price{ font-size:6mm; font-weight:800; color:#8B0000; margin:0.5mm 0 1.5mm; }
-  svg.code{ width:100%; height:14mm; }
-  .human{ font-size:2.6mm; font-family:monospace; color:#333; letter-spacing:.05em; margin-top:.5mm; }
-  .nocode{ font-size:2.8mm; color:#999; padding:3mm 0; }
+  body{ font-family:-apple-system,'Helvetica Neue',Arial,sans-serif; color:#111; background:#e9e9e9; padding:20px; text-align:center; }
+  .bar{ margin-bottom:16px; display:flex; gap:8px; justify-content:center; align-items:center; flex-wrap:wrap; }
+  .bar button{ padding:9px 18px; font-size:15px; font-weight:700; border:none; border-radius:10px; background:#1a4d2e; color:#fff; cursor:pointer; }
+  .bar .sizes{ display:inline-flex; border:1px solid #bbb; border-radius:10px; overflow:hidden; }
+  .bar .sizes a{ padding:9px 14px; font-size:14px; text-decoration:none; color:#333; background:#fff; }
+  .bar .sizes a.on{ background:#1a4d2e; color:#fff; font-weight:700; }
+  .bar .back{ color:#1a4d2e; text-decoration:none; font-size:14px; padding:9px 6px; }
+
+  /* ---- SMALL (price sticker) — ~38mm, the default ---- */
+  .label.s{ width:38mm; margin:0 auto; background:#fff; padding:1.5mm 2mm; box-shadow:0 2px 8px rgba(0,0,0,.15);
+            display:flex; flex-direction:column; align-items:center; }
+  .label.s .pname{ font-size:2.5mm; font-weight:700; line-height:1.1; max-height:5.5mm; overflow:hidden; text-align:center; }
+  .label.s .price{ font-size:5mm; font-weight:800; color:#8B0000; margin:.3mm 0 1mm; }
+  .label.s svg.code{ width:100%; height:9mm; }
+  .label.s .human{ font-size:2mm; font-family:monospace; color:#333; letter-spacing:.04em; }
+
+  /* ---- MEDIUM (shelf-talker) — 62mm ---- */
+  .label.m{ width:62mm; margin:0 auto; background:#fff; padding:3mm 3mm 2mm; box-shadow:0 2px 8px rgba(0,0,0,.15);
+            display:flex; flex-direction:column; align-items:center; }
+  .label.m .store{ font-size:2.6mm; color:#555; }
+  .label.m .pname{ font-size:3.6mm; font-weight:800; line-height:1.15; margin:1mm 0; max-height:9mm; overflow:hidden; }
+  .label.m .price{ font-size:6mm; font-weight:800; color:#8B0000; margin:.5mm 0 1.5mm; }
+  .label.m svg.code{ width:100%; height:14mm; }
+  .label.m .human{ font-size:2.6mm; font-family:monospace; color:#333; letter-spacing:.05em; margin-top:.5mm; }
+
+  .nocode{ font-size:2.6mm; color:#999; padding:2mm 0; }
+
   @media print{
     body{ background:#fff; padding:0; }
     .bar{ display:none; }
     .label{ box-shadow:none; margin:0; }
-    @page{ size:62mm auto; margin:0; }
+    /* the page IS the label — the roll/sticker size, never an A4 sheet */
+    @page{ size:{{ '62mm' if size=='m' else '38mm' }} auto; margin:0; }
   }
 </style></head>
 <body>
   <div class="bar">
-    <button onclick="window.print()">🖨️ Print label</button>
-    <a href="javascript:history.back()">← Back</a>
+    <button onclick="window.print()">🖨️ Print</button>
+    <span class="sizes">
+      <a class="{{ 'on' if size=='s' else '' }}" href="?size=s">Small</a>
+      <a class="{{ 'on' if size=='m' else '' }}" href="?size=m">Medium</a>
+    </span>
+    <a class="back" href="/pos/products/{{ pid }}/page">← Back</a>
   </div>
 
-  <div class="label">
-    {% if store_name %}<div class="store">{{ store_name }}</div>{% endif %}
+  <div class="label {{ size }}">
+    {% if size=='m' and store_name %}<div class="store">{{ store_name }}</div>{% endif %}
     <div class="pname">{{ name }}</div>
     {% if price %}<div class="price">{{ currency }} {{ price }}</div>{% endif %}
-    {% if barcode %}
-      <svg class="code" id="bc"></svg>
-    {% else %}
-      <div class="nocode">— no barcode —</div>
-    {% endif %}
+    {% if barcode %}<svg class="code" id="bc"></svg>{% else %}<div class="nocode">— no barcode —</div>{% endif %}
     <div class="human">{{ sku }}</div>
   </div>
 
@@ -48,17 +63,12 @@
     (function(){
       var code = {{ barcode | tojson }};
       if (!code) return;
-      // 13-digit numeric → EAN13 (retail scanners love it); anything else → CODE128 (universal).
+      var small = {{ 'true' if size=='s' else 'false' }};
       var isEan13 = /^\d{13}$/.test(code);
-      try {
-        JsBarcode("#bc", code, {
-          format: isEan13 ? "EAN13" : "CODE128",
-          displayValue: true, fontSize: 26, height: 48, margin: 0, width: 1.6
-        });
-      } catch (e) {
-        // Bad EAN checksum etc. → fall back to CODE128 so it still renders + scans.
-        try { JsBarcode("#bc", code, { format: "CODE128", displayValue: true, fontSize: 26, height: 48, margin: 0, width: 1.6 }); } catch (_) {}
-      }
+      var opts = { format: isEan13 ? "EAN13" : "CODE128", displayValue: true,
+                   fontSize: small ? 16 : 26, height: small ? 34 : 48, margin: 0, width: small ? 1.1 : 1.6 };
+      try { JsBarcode("#bc", code, opts); }
+      catch(e){ try { opts.format="CODE128"; JsBarcode("#bc", code, opts); } catch(_){} }
     })();
   </script>
 </body></html>
