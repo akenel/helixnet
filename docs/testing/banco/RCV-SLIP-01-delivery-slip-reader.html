@@ -47,7 +47,9 @@ Some show prices, some don't — both are fine.</p>
 <h2>2 · The test files (upload these)</h2>
 <p class="files">
 docs/testing/banco/receiving-slips/<b>slip-01-single.png</b> — 1 known item (Gizeh King Size ×20) · <span class="expect">HAPPY FLOW</span><br>
-docs/testing/banco/receiving-slips/<b>slip-02-multi.png</b> — 4 known items (Gizeh, Raw, BIC, Old School Papers)
+docs/testing/banco/receiving-slips/<b>slip-02-multi.png</b> — 4 known items<br>
+docs/testing/banco/receiving-slips/<b>slip-03-bulk.png</b> — <b>28</b> real items, CHF 3'189 · a realistic bulk order (~12 s to read)<br>
+docs/testing/banco/receiving-slips/<b>slip-04-page1.png</b> + <b>slip-04-page2.png</b> — a <b>2-page</b> slip (same Nr.) · <span class="expect">select BOTH at once</span>
 </p>
 <div class="note">📱 <b>To test on your phone:</b> open these PNGs (AirDrop / email / photo them off the screen) so they're in
 your camera roll, then use <b>📄 Read delivery slip → choose photo</b>. On desktop, just pick the file.
@@ -64,7 +66,11 @@ slip-02 read all 4 lines → all matched <b>100%</b>. So if yours differs, it's 
   <tr class="step"><td>5</td><td>Tap <b>Add</b> on that line</td><td class="expect">It turns green "✓ added"; the item lands on the Delivery list</td><td class="chk"></td></tr>
   <tr class="step"><td>6</td><td>Close the panel → hit <b>✅ Receive</b></td><td class="expect">"Catalogued 1 item" — done</td><td class="chk"></td></tr>
   <tr class="step"><td>7</td><td>Now redo with <code>slip-02-multi.png</code> → <b>Add all matched</b></td><td class="expect">All 4 lines match; all add in one tap</td><td class="chk"></td></tr>
+  <tr class="step"><td>8</td><td><b>BULK:</b> read <code>slip-03-bulk.png</code></td><td class="expect">~12 s → "✓ 28 of 28 matched" (green) → Add all</td><td class="chk"></td></tr>
+  <tr class="step"><td>9</td><td><b>2 PAGES:</b> tap 📄 Read → select <b>BOTH</b> <code>slip-04-page1</code> + <code>page2</code></td><td class="expect">"Reading page 1/2… 2/2" → 28 lines merged, one slip Nr.</td><td class="chk"></td></tr>
 </table>
+<div class="note">📄 <b>Multi-page:</b> the 📄 button lets you select more than one photo at once — pick page 1 <i>and</i> page 2
+(or 3…) together. The AI reads each, merges the lines, and takes the header (supplier / Nr. / date) from page 1.</div>
 
 <h2>4 · What to tell Tiger</h2>
 <ul>
