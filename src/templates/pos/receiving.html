@@ -89,6 +89,12 @@
                 </label>
             </div>
 
+            <!-- Label queue: every received item queues a label → print the roll (Brother QL-820) -->
+            <button x-show="labelCount > 0" style="display:none;" @click="openLabelQueue()"
+                    class="w-full py-2.5 rounded-lg border-2 border-emerald-300 text-emerald-700 font-bold flex items-center justify-center gap-2">
+                🖨️ <span data-i18n="receiving.print_labels">Print labels</span> (<span x-text="labelCount"></span>)
+            </button>
+
             <!-- Receiving list -->
             <div class="bg-white rounded-xl shadow">
                 <div class="px-4 py-3 border-b flex justify-between items-center">
@@ -453,6 +459,7 @@
             web: null,            // web-lookup result {found,title,brand,category,description,images,quota,lang_hint,google_url,note}
             webImage: '',         // the image the operator PICKED from the web result (we store one)
             webDesc: '',          // description carried from the web result
+            labelCount: 0,        // labels queued for the printer (LabelQueue)
             photoFirst: false,    // true = no-barcode maker item → lead the modal with the camera
             newPhotoFile: null,   // the snapped item photo (File), uploaded after create
             newPhotoData: '',     // data-URL preview of the snapped photo
@@ -483,7 +490,9 @@
                 // the list has items OR the new-item form is open. Receiving has no forward nav,
                 // so any departure with work on screen is a real "you're abandoning this batch".
                 if (window.HelixDirtyGuard) HelixDirtyGuard.register(() => this.lines.length > 0 || this.newOpen);
+                if (window.LabelQueue) this.labelCount = LabelQueue.count();   // labels waiting to print
             },
+            openLabelQueue() { const u = window.LabelQueue && LabelQueue.printUrl('s'); if (u) window.open(u, '_blank'); },
 
             // ---- supplier picker ----
             get newSupError() {
@@ -955,6 +964,8 @@
                     });
                     this.result = res;
                     const n = this.lines.length;
+                    // Queue a label for each received item (→ 🖨️ Labels N → QL-820 prints the roll).
+                    if (window.LabelQueue) { this.lines.forEach(l => LabelQueue.add(l.product_id)); this.labelCount = LabelQueue.count(); }
                     this.lines = [];
                     this.reference = '';
                     this.discrepancies = [];   // fresh slate for the next delivery

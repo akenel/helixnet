@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="de"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Labels ({{ labels|length }})</title>
+<script src="/static/vendor/jsbarcode.min.js"></script>
+<style>
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:-apple-system,'Helvetica Neue',Arial,sans-serif; color:#111; background:#e9e9e9; padding:20px; text-align:center; }
+  .bar{ margin-bottom:16px; display:flex; gap:8px; justify-content:center; align-items:center; flex-wrap:wrap; }
+  .bar button{ padding:10px 20px; font-size:15px; font-weight:700; border:none; border-radius:10px; cursor:pointer; }
+  .bar .print{ background:#1a4d2e; color:#fff; } .bar .clear{ background:#fff; color:#8B0000; border:1px solid #e0b4b4; }
+  .bar a{ color:#1a4d2e; text-decoration:none; font-size:14px; padding:10px 6px; }
+  .bar .count{ font-weight:800; color:#1a4d2e; }
+  .empty{ color:#888; padding:40px; }
+  /* one label per roll segment */
+  .lbl{ background:#fff; margin:0 auto 10px; box-shadow:0 2px 8px rgba(0,0,0,.15); display:flex; flex-direction:column; align-items:center; }
+  .lbl.s{ width:38mm; padding:1.5mm 2mm; }
+  .lbl.m{ width:62mm; padding:3mm 3mm 2mm; }
+  .store{ font-size:2.4mm; color:#555; }
+  .lbl.s .pname{ font-size:2.5mm; font-weight:700; line-height:1.1; max-height:5.5mm; overflow:hidden; text-align:center; }
+  .lbl.m .pname{ font-size:3.4mm; font-weight:800; line-height:1.15; margin:1mm 0; max-height:9mm; overflow:hidden; }
+  .lbl.s .price{ font-size:5mm; font-weight:800; color:#8B0000; margin:.3mm 0 1mm; }
+  .lbl.m .price{ font-size:6mm; font-weight:800; color:#8B0000; margin:.5mm 0 1.5mm; }
+  .lbl.s svg.code{ width:100%; height:9mm; } .lbl.m svg.code{ width:100%; height:14mm; }
+  .human{ font-family:monospace; color:#333; letter-spacing:.04em; }
+  .lbl.s .human{ font-size:2mm; } .lbl.m .human{ font-size:2.6mm; margin-top:.5mm; }
+  @media print{
+    body{ background:#fff; padding:0; }
+    .bar{ display:none; }
+    .lbl{ box-shadow:none; margin:0; break-after:page; page-break-after:always; }
+    @page{ size:{{ '62mm' if size=='m' else '38mm' }} auto; margin:0; }
+  }
+</style></head>
+<body>
+  <div class="bar">
+    <button class="print" onclick="window.print()">🖨️ Print <span class="count">{{ labels|length }}</span> labels</button>
+    <button class="clear" onclick="if(window.LabelQueue){LabelQueue.clear();} location.href='/pos/scan'">🗑 Clear queue</button>
+    <a href="javascript:history.back()">← Back</a>
+  </div>
+
+  {% if not labels %}
+    <p class="empty">No labels queued.</p>
+  {% endif %}
+
+  {% for l in labels %}
+  <div class="lbl {{ size }}">
+    {% if size=='m' and store_name %}<div class="store">{{ store_name }}</div>{% endif %}
+    <div class="pname">{{ l.name }}</div>
+    {% if l.price %}<div class="price">{{ currency }} {{ l.price }}</div>{% endif %}
+    {% if l.barcode %}<svg class="code" id="bc-{{ loop.index0 }}"></svg>{% endif %}
+    <div class="human">{{ l.sku }}</div>
+  </div>
+  {% endfor %}
+
+  <script>
+    var CODES = [
+      {% for l in labels %}{ i: {{ loop.index0 }}, code: {{ (l.barcode or '') | tojson }} },{% endfor %}
+    ];
+    var small = {{ 'true' if size=='s' else 'false' }};
+    CODES.forEach(function (c) {
+      if (!c.code) return;
+      var isEan13 = /^\d{13}$/.test(c.code);
+      var opts = { format: isEan13 ? 'EAN13' : 'CODE128', displayValue: true,
+                   fontSize: small ? 16 : 26, height: small ? 34 : 48, margin: 0, width: small ? 1.1 : 1.6 };
+      try { JsBarcode('#bc-' + c.i, c.code, opts); }
+      catch (e) { try { opts.format = 'CODE128'; JsBarcode('#bc-' + c.i, c.code, opts); } catch (_) {} }
+    });
+  </script>
+</body></html>

@@ -974,6 +974,21 @@
         }
         window.t = t;
 
+        // ── Label print queue ───────────────────────────────────────────────────
+        // "Every hit, queued up" — as items are catalogued (scan-save / receive), their ids drop
+        // into a queue that survives across screens (localStorage). A "🖨️ Labels (N)" button opens
+        // the batch print page → the Brother QL-820 spits the whole roll. On-demand or batched.
+        window.LabelQueue = {
+            _key: 'banco_label_queue',
+            _read() { try { return JSON.parse(localStorage.getItem(this._key) || '[]'); } catch (e) { return []; } },
+            _write(a) { try { localStorage.setItem(this._key, JSON.stringify(a)); } catch (e) {} },
+            add(id) { if (!id) return; const a = this._read(); if (a.indexOf(id) < 0) { a.push(id); this._write(a); } },
+            ids() { return this._read(); },
+            count() { return this._read().length; },
+            clear() { this._write([]); },
+            printUrl(size) { const q = this._read().join(','); return q ? ('/pos/labels/batch?size=' + (size || 's') + '&ids=' + encodeURIComponent(q)) : null; },
+        };
+
         // ── Web-search fallback (Felix's idea) ──────────────────────────────────
         // Never dead-end a product hunt: when catalog / reference / supplier all miss, hand the
         // operator a one-tap Google search pre-filled with the BARCODE (the strongest signal —

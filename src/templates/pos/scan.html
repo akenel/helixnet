@@ -70,6 +70,11 @@
                         <button @click="startScan()" class="btn-primary w-full">
                             📷 <span data-i18n="scan.scan_camera">Scan with camera</span>
                         </button>
+                        <!-- Label queue: every catalogued hit queues a label → print the roll (QL-820) -->
+                        <button x-show="labelCount > 0" style="display:none;" @click="openLabelQueue()"
+                                class="w-full py-2.5 rounded-lg border-2 border-emerald-300 text-emerald-700 font-bold flex items-center justify-center gap-2">
+                            🖨️ <span data-i18n="scan.print_labels">Print labels</span> (<span x-text="labelCount"></span>)
+                        </button>
                     </div>
 
                     <!-- Search Mode -->
@@ -781,6 +786,7 @@
             web: null,             // web-lookup result
             webImage: '',          // the image the operator PICKED (we store one)
             webDesc: '',           // description carried from the web result
+            labelCount: 0,         // labels queued for the printer (LabelQueue)
             lazySaving: false,
             lazyPhotoFile: null,   // the snapped item photo (File) to upload after create
             lazyPhotoData: '',     // data URL for the in-modal preview
@@ -860,6 +866,8 @@
                     window.location.href = '/pos';
                     return;
                 }
+                if (window.LabelQueue) this.labelCount = LabelQueue.count();   // labels waiting to print
+                this.openLabelQueue = () => { const u = LabelQueue.printUrl('s'); if (u) window.open(u, '_blank'); };
 
                 this.user = {
                     ...userInfo,
@@ -1424,6 +1432,8 @@
                         }
                     }
                     this.addToCart(product, qty);
+                    // Queue a label for the printer (every hit, queued up → 🖨️ Labels N → QL-820).
+                    if (window.LabelQueue && product && product.id) { LabelQueue.add(product.id); this.labelCount = LabelQueue.count(); }
                     this.lazyOpen = false;
                     this.barcodeInput = '';
                     showToast(t('scan.toast_saved_qty', {n: qty}), 'success');

@@ -6697,6 +6697,38 @@ async def product_label(
     })
 
 
+@html_router.get("/pos/labels/batch", response_class=HTMLResponse, name="labels_batch")
+async def labels_batch(
+    request: Request,
+    ids: str = "",
+    size: str = "s",
+    db: AsyncSession = Depends(get_db_session),
+):
+    """Batch label print — the queue's 'print all'. Given a comma-separated list of product ids,
+    render every label back-to-back (each on its own 62/38mm roll segment) so the Brother QL-820
+    spits the whole delivery/shift in one go. Reached from the "🖨️ Labels (N)" button."""
+    from src.db.models.product_model import ProductModel
+    store = _postcard_store_footer(await get_active_store_settings(db), "")
+    id_list = [i.strip() for i in (ids or "").split(",") if i.strip()][:300]
+    labels = []
+    for pid in id_list:
+        p = await db.get(ProductModel, pid)
+        if p:
+            labels.append({
+                "name": p.name,
+                "price": f"{float(p.price):.2f}" if p.price is not None else None,
+                "barcode": p.barcode or "",
+                "sku": p.sku or "",
+            })
+    return templates.TemplateResponse("pos/product_labels_batch.html", {
+        "request": request,
+        "labels": labels,
+        "size": "m" if (size or "s").lower().startswith("m") else "s",
+        "currency": "CHF",
+        "store_name": (store or {}).get("name") or "",
+    })
+
+
 @html_router.get("/pos/products/{product_id}/postcard", response_class=HTMLResponse, name="product_postcard")
 async def product_postcard(
     product_id: str,
