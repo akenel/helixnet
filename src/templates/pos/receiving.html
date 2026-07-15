@@ -247,6 +247,10 @@
                         <span data-i18n="receiving.units">units</span>
                         <span x-show="boxCost > 0 && boxUnits > 0" class="text-emerald-700 font-semibold">= <span x-text="formatPrice(boxCost / boxUnits)"></span><span data-i18n="receiving.per_unit_suffix">/unit</span></span>
                     </div>
+                    <!-- Live margin sanity: makes a fat-fingered cost/price obvious BEFORE saving.
+                         Green when you make money, red when cost ≥ price (you'd sell at a loss). -->
+                    <p x-show="marginText()" x-text="marginText()" style="display:none;"
+                       :class="marginBad ? 'text-red-600 font-semibold' : 'text-emerald-700'" class="text-xs mt-1"></p>
                 </div>
                 <button @click="createAndAdd()" :disabled="newSaving" class="btn-success w-full">
                     <span x-show="!newSaving" x-text="selectedRef ? t('receiving.adopt_add') : t('receiving.add_to_delivery')"></span>
@@ -552,6 +556,20 @@
                     this.aiNote = t('receiving.ai_unavailable');
                 } finally { this.aiBusy = false; }
             },
+            // Selling below cost is almost always a fat-finger (cost 37.50, price 25). True when
+            // both are set and cost exceeds price — drives the red hint + the save-time confirm.
+            get marginBad() {
+                const p = parseFloat(this.newPrice), c = parseFloat(this.newCost);
+                return !isNaN(p) && p > 0 && !isNaN(c) && c > 0 && c > p;
+            },
+            // Live margin line under the cost field. '' when either number is missing.
+            marginText() {
+                const p = parseFloat(this.newPrice), c = parseFloat(this.newCost);
+                if (isNaN(p) || p <= 0 || isNaN(c) || c <= 0) return '';
+                if (c > p) return t('receiving.margin_loss', {amount: formatPrice(c - p)});
+                const pct = Math.round(((p - c) / p) * 100);
+                return t('receiving.margin_ok', {amount: formatPrice(p - c), pct: pct});
+            },
             // Box → single: bought a box, sell singles. Per-unit cost = box / units.
             calcUnitCost() {
                 const c = parseFloat(this.boxCost), n = parseInt(this.boxUnits, 10);
@@ -561,6 +579,10 @@
                 const price = parseFloat(this.newPrice);
                 if (isNaN(price) || price <= 0) { showToast(t('receiving.enter_valid_price'), 'warning'); return; }
                 const cost = parseFloat(this.newCost);          // optional purchase cost/unit
+                // Sensible check: cost above the sale price = a loss. Confirm (don't block —
+                // a clearance markdown is legit), so a fat-fingered cost/price gets caught here.
+                if (!isNaN(cost) && cost > price &&
+                    !confirm(t('receiving.below_cost_confirm', {cost: formatPrice(cost), price: formatPrice(price)}))) return;
                 const bc = (this.newBarcode || '').trim();
                 this.newSaving = true;
                 try {
