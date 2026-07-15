@@ -312,8 +312,9 @@
                 </label>
                 <span class="text-gray-500"><b x-text="slipReceivedCount"></b> / <span x-text="(slip.lines||[]).length"></span> <span data-i18n="receiving.slip_received_word">received</span></span>
             </div>
-            <!-- SCROLLS: flex-1 + min-h-0 lets the list shrink inside the capped modal -->
-            <div class="flex-1 min-h-0 overflow-y-auto p-4 space-y-2">
+            <!-- SCROLLS on its own (explicit cap in vh — robust regardless of the modal's flex height),
+                 so the footer "Add received" button is ALWAYS reachable no matter how long the slip. -->
+            <div class="overflow-y-auto p-4 space-y-2" style="max-height:55vh">
                 <p x-show="!slip.lines || !slip.lines.length" class="text-center text-gray-400 py-6" data-i18n="receiving.slip_none">No lines read — try a clearer photo.</p>
                 <template x-for="(l, i) in (slip.lines||[])" :key="i">
                     <div class="border rounded-lg p-3" :class="!l._received ? 'bg-gray-50 border-gray-200 opacity-70' : (l._added ? 'bg-emerald-50 border-emerald-300' : 'bg-white')">
