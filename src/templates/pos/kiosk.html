@@ -200,7 +200,7 @@
     <div class="text-6xl mb-3">✅</div>
     <h2 class="text-3xl font-black mb-6" x-text="c('sentTitle')"></h2>
     <div class="glass rounded-3xl p-8 flex flex-col items-center">
-      <div class="text-7xl font-black tracking-[0.15em] price" x-text="cartCode"></div>
+      <div class="text-7xl font-black tracking-[0.15em] price" x-text="sentCode"></div>
       <p class="text-emerald-100/85 mt-4 text-lg" x-text="c('showCode')"></p>
       <p x-show="cartDiscountPct > 0" style="display:none;" class="text-emerald-300 text-sm mt-2" x-text="cf('memberNote', {pct: cartDiscountPct})"></p>
     </div>
@@ -349,7 +349,8 @@
       member: {},
       cart: [],           // [{product_id, name, price, qty, image_url}]
       myMember: null,     // {id, handle, discount_pct} once they've signed up this session
-      cartCode: '',       // the held-order code after "send to counter"
+      cartCode: '',       // the in-progress held-order code (cleared after each send)
+      sentCode: '',       // the code shown on the "order sent" screen
       pQty: 1,            // quantity stepper on the product view
 
       langs: [
@@ -640,25 +641,33 @@
       },
       openCart(){ this.view = 'cart'; this.bumpIdle(); },
 
+      async _postCart(code){
+        const r = await fetch('/api/v1/pos/kiosk/cart', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            code: code || null,
+            items: this.cart.map(l => ({ product_id: l.product_id, qty: l.qty })),
+            customer_id: this.myMember ? this.myMember.id : null,
+            source: this.isTouch ? 'phone' : 'kiosk',
+            lang: this.lang,
+          }),
+        });
+        return { status: r.status, data: await r.json().catch(() => null) };
+      },
+
       async sendToCounter(){
         if (!this.cart.length || this._busy) return;
         this._busy = true;
         this.bumpIdle();
         try {
-          const r = await fetch('/api/v1/pos/kiosk/cart', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              code: this.cartCode || null,
-              items: this.cart.map(l => ({ product_id: l.product_id, qty: l.qty })),
-              customer_id: this.myMember ? this.myMember.id : null,
-              source: this.isTouch ? 'phone' : 'kiosk',
-              lang: this.lang,
-            }),
-          });
-          const data = await r.json();
-          if (r.ok && data && data.code) {
-            this.cartCode = data.code;
+          // Send with the in-progress code (if we're still editing an unclaimed order).
+          let res = await this._postCart(this.cartCode);
+          // Self-heal: the cashier already rang/claimed that code (409) → start a FRESH order.
+          if (res.status === 409) { this.cartCode = ''; res = await this._postCart(''); }
+          if (res.data && res.data.code) {
+            this.sentCode = res.data.code;   // shown on the "sent" screen
+            this.cartCode = '';              // each send = a brand-new order next time
             this.cart = [];
             this.persistCart();
             this.view = 'sent';
@@ -679,7 +688,7 @@
         window.open(`/pos/products/${this.p.id}/page?lang=${this.lang}`, '_blank');
       },
 
-      reset(){ this.stopCamera(); this.view = 'attract'; this.p = {}; this.manual = ''; this.camError = ''; this.$nextTick(() => { this.renderQR(); this.refocus(); }); },
+      reset(){ this.stopCamera(); this.view = 'attract'; this.p = {}; this.manual = ''; this.camError = ''; this.cartCode = ''; this.sentCode = ''; this.$nextTick(() => { this.renderQR(); this.refocus(); }); },
 
       // idle → back to attract so the next guest starts fresh
       bumpIdle(){
