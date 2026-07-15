@@ -974,6 +974,18 @@
         }
         window.t = t;
 
+        // ── Web-search fallback (Felix's idea) ──────────────────────────────────
+        // Never dead-end a product hunt: when catalog / reference / supplier all miss, hand the
+        // operator a one-tap Google search pre-filled with the BARCODE (the strongest signal —
+        // the raw EAN usually finds the product) + the read/typed name. Their manual move,
+        // automated. Human still decides. Opens a new tab; no API, no key, no cost.
+        window.webSearchProduct = function (query, barcode) {
+            var q = [ (barcode || '').toString().trim(), (query || '').toString().trim() ]
+                    .filter(Boolean).join(' ').trim();
+            if (!q) return;
+            window.open('https://www.google.com/search?q=' + encodeURIComponent(q), '_blank', 'noopener');
+        };
+
         // ── Unsaved-work guard ──────────────────────────────────────────────────
         // A stray two-finger swipe (browser "back"), an Escape, a reload, or a mis-tapped
         // nav link navigates the page away — and any in-progress work a screen keeps only

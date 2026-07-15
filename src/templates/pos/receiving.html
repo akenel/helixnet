@@ -269,6 +269,10 @@
                     <p x-show="selectedRef" class="text-xs text-emerald-700 mt-1" style="display:none;">
                         <span data-i18n="receiving.using_prefix">✓ Using</span> <b x-text="selectedRef?.name"></b> <span data-i18n="receiving.using_suffix">— its photo &amp; details come with it. Set your price/cost below.</span>
                     </p>
+                    <!-- Still can't find it? Search the web by barcode + name (Felix's idea) -->
+                    <button type="button" x-show="!refSearching && !refMatches.length && ((refQuery||'').trim() || (newName||'').trim() || (newBarcode||'').trim())"
+                            @click="webSearchProduct(refQuery || newName, newBarcode)"
+                            class="mt-2 text-sm text-indigo-700 font-semibold inline-flex items-center gap-1" style="display:none;">🔎 <span data-i18n="receiving.search_web">Search the web</span></button>
                 </div>
 
                 <div>

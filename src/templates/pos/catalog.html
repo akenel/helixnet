@@ -178,6 +178,9 @@
             <div x-show="results.length === 0" class="text-center py-10 text-gray-500">
                 <span class="text-5xl block mb-3">🗂️</span>
                 <p x-text="loading ? t('common.loading') : t('catalog.no_products')"></p>
+                <!-- Never dead-end: can't find it here → search the web for it (Felix's idea) -->
+                <button x-show="!loading && (q||'').trim()" @click="webSearchProduct(q)"
+                        class="btn-secondary mt-4 inline-flex items-center gap-2">🔎 <span data-i18n="catalog.search_web">Search the web</span></button>
             </div>
 
             <div class="cat-list">
