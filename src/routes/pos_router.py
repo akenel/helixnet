@@ -1177,6 +1177,69 @@ async def delete_product(
     logger.info(f"Product deactivated: {product.sku} by user {current_user['username']}")
 
 
+async def _product_sales_count(db: AsyncSession, product_id) -> int:
+    """How many times this product appears on a sale (line_items). Zero = never sold →
+    safe to hard-delete; >0 → the row must survive (receipts/reports/10-yr retention)."""
+    from sqlalchemy import text as _text
+    return int((await db.execute(
+        _text("SELECT count(*) FROM line_items WHERE product_id = :pid"),
+        {"pid": str(product_id)},
+    )).scalar() or 0)
+
+
+@router.get("/products/{product_id}/sales-count")
+async def product_sales_count(
+    product_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_manager_or_admin()),
+):
+    """Sales count for a product — drives the 'Delete permanently' button (shown only at 0)."""
+    return {"sales": await _product_sales_count(db, product_id)}
+
+
+@router.delete("/products/{product_id}/permanent", status_code=status.HTTP_204_NO_CONTENT)
+async def hard_delete_product(
+    product_id: UUID,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_manager_or_admin()),
+):
+    """PERMANENTLY delete a product — ONLY when it has never been sold.
+
+    Discontinue (soft) is the normal path and keeps history. Hard delete is for genuine
+    mistakes (test rows, dupes). A product with ANY sales is refused (409) — deleting it
+    would orphan its line_items and break receipts/reports/retention. Child rows (photos,
+    cached translations, reorder lines) are cleared first so nothing is left dangling."""
+    from sqlalchemy import text as _text
+    result = await db.execute(select(ProductModel).where(ProductModel.id == product_id))
+    product = result.scalar_one_or_none()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    sales = await _product_sales_count(db, product_id)
+    if sales > 0:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Cannot permanently delete: this product has {sales} sale(s). Discontinue it instead.",
+        )
+
+    # Clear every child row that references this product, then the product itself.
+    fks = (await db.execute(_text(
+        """
+        SELECT tc.table_name, kcu.column_name
+        FROM information_schema.table_constraints tc
+        JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name
+        JOIN information_schema.constraint_column_usage ccu ON tc.constraint_name = ccu.constraint_name
+        WHERE tc.constraint_type = 'FOREIGN KEY'
+          AND ccu.table_name = 'products' AND ccu.column_name = 'id'
+        """
+    ))).fetchall()
+    for tbl, col in fks:
+        await db.execute(_text(f'DELETE FROM "{tbl}" WHERE "{col}" = :pid'), {"pid": str(product_id)})
+    await db.delete(product)
+    await db.commit()
+    logger.info(f"Product PERMANENTLY deleted: {product.sku} by user {current_user['username']}")
+
+
 # ================================================================
 # SUPPLIER REGISTRY — a supplier IS an import source, keyed by a unique SKU prefix
 # (TAM-=Tamar/Artemis, FTW-=FourTwenty, future CSV/manual). Foundation for

@@ -303,13 +303,18 @@
                         <div class="mt-4">
                             <h3 class="font-semibold text-gray-900 mb-1 flex items-center gap-2 flex-wrap">
                                 <span data-i18n="catalog.description_heading">Description</span>
-                                <span x-show="detailProduct?._descProvenance === 'machine'" class="text-[11px] font-normal text-gray-400" title="machine-translated">🤖 <span data-i18n="catalog.auto_translated">auto-translated</span></span>
+                                <!-- Translating… (first look-up to a language is an LLM call) -->
+                                <span x-show="detailProduct?._descTranslating" style="display:none;" class="text-[11px] font-normal text-indigo-500 inline-flex items-center gap-1">
+                                    <span class="inline-block h-3 w-3 border-2 border-indigo-300 border-t-indigo-600 rounded-full animate-spin"></span>
+                                    <span data-i18n="catalog.translating">Translating…</span>
+                                </span>
+                                <span x-show="detailProduct?._descProvenance === 'machine' && !detailProduct?._descTranslating" class="text-[11px] font-normal text-gray-400" title="machine-translated">🤖 <span data-i18n="catalog.auto_translated">auto-translated</span></span>
                                 <!-- Read the description in ANY language, whatever you're logged in as (Swiss polyglots + everyone else) -->
                                 <span class="ml-auto flex items-center gap-0.5 text-base leading-none">
                                     <template x-for="fl in [['de','🇩🇪'],['en','🇬🇧'],['fr','🇫🇷'],['it','🇮🇹']]" :key="fl[0]">
-                                        <button type="button" @click="setDescLang(fl[0])" :title="fl[0].toUpperCase()"
+                                        <button type="button" @click="setDescLang(fl[0])" :title="fl[0].toUpperCase()" :disabled="detailProduct?._descTranslating"
                                             :class="(detailProduct?._descLang || (window._posLang||'en')) === fl[0] ? 'ring-2 ring-indigo-400 rounded' : 'opacity-45 hover:opacity-100'"
-                                            class="px-0.5 rounded transition" x-text="fl[1]"></button>
+                                            class="px-0.5 rounded transition disabled:cursor-wait" x-text="fl[1]"></button>
                                     </template>
                                 </span>
                             </h3>
@@ -344,11 +349,11 @@
     </div>
 
     <!-- Create / Edit modal -->
-    <div x-show="modalOpen" x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click.self="modalOpen=false" style="display:none;">
+    <div x-show="modalOpen" x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click.self="tryCloseEdit()" style="display:none;">
         <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[92vh] overflow-y-auto">
             <div class="flex justify-between items-start p-5 border-b sticky top-0 bg-white">
                 <h2 class="text-xl font-bold text-gray-900" x-text="editing ? t('catalog.modal_edit_title') : t('catalog.modal_new_title')"></h2>
-                <button @click="modalOpen=false" class="text-gray-400 hover:text-gray-700 text-3xl leading-none flex-none">&times;</button>
+                <button @click="tryCloseEdit()" class="text-gray-400 hover:text-gray-700 text-3xl leading-none flex-none">&times;</button>
             </div>
             <div class="p-5 space-y-4">
                 <!-- ✨ AI assist: snap an unmarked item, let the model draft the fields (create mode only) -->
@@ -571,8 +576,13 @@
                     </button>
                     <button x-show="editing" @click="discontinue()" :disabled="saving"
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg font-semibold">🗑️ <span data-i18n="catalog.discontinue">Discontinue</span></button>
+                    <!-- Permanent delete: ONLY when the item was never sold (mistakes/dupes). Hidden the
+                         moment it has sales — then history must be kept and Discontinue is the only path. -->
+                    <button x-show="editing && form._sales === 0" style="display:none;" @click="hardDelete()" :disabled="saving"
+                            class="border border-red-300 text-red-700 hover:bg-red-50 px-4 py-3 rounded-lg font-semibold">🔥 <span data-i18n="catalog.delete_permanent">Delete permanently</span></button>
                 </div>
                 <p class="text-xs text-gray-500" data-i18n="catalog.discontinue_hint">Discontinue = soft delete. The item stops selling but history is kept; you can reactivate it later.</p>
+                <p x-show="editing && form._sales === 0" style="display:none;" class="text-xs text-red-400" data-i18n="catalog.delete_permanent_hint">This item has never been sold, so it can be permanently removed. Sold items can only be discontinued.</p>
             </div>
         </div>
     </div>
@@ -783,6 +793,7 @@
             sort: '',
             pageSize: 25,
             loading: false,
+            _formSnapshot: null,   // form signature when the edit modal opened (unsaved-changes guard)
             detailProduct: null,   // product shown in the read-only preview modal
             showDiscontinued: false,
 
@@ -982,6 +993,7 @@
                 this.gallery = []; this.pendingPhotos = []; this.uploadingPhoto = false;
                 this.aiBusy = false; this.aiNote = '';
                 this.modalOpen = true;
+                this._formSnapshot = this._formSig();   // baseline for the unsaved-changes guard
             },
 
             // ✨ Snap & fill: photograph an unmarked item → AI drafts the fields.
@@ -1287,7 +1299,11 @@
             async setDescLang(lang) {
                 const id = this.detailProduct && this.detailProduct.id;
                 if (!id) return;
-                this.detailProduct._descLang = lang;   // highlight the flag immediately
+                if (this.detailProduct._descTranslating) return;   // ignore taps mid-translate
+                this.detailProduct._descLang = lang;               // highlight the flag immediately
+                // First translation to a language is an LLM call — can take a beat on a slow line.
+                // Show "Translating…" so the operator knows it's working, not stuck.
+                this.detailProduct._descTranslating = true;
                 try {
                     const d = await API.get(`/api/v1/pos/products/${id}/i18n-description?lang=${encodeURIComponent(lang)}`);
                     if (d && this.detailProduct && this.detailProduct.id === id && this.detailProduct._descLang === lang) {
@@ -1295,6 +1311,7 @@
                         this.detailProduct._descProvenance = d.provenance;
                     }
                 } catch (e) { showToast(t('catalog.snap_live_failed') || 'translate failed', 'error'); }
+                finally { if (this.detailProduct && this.detailProduct.id === id) this.detailProduct._descTranslating = false; }
             },
 
             async openEdit(p) {
@@ -1315,6 +1332,45 @@
                     const cmp = await API.get(`/api/v1/pos/products/${p.id}/supplier-compare`);
                     this.form.compare = (cmp && cmp.matches && cmp.matches.length) ? cmp : null;
                 } catch (e) { this.form.compare = null; }
+                // Baseline the loaded form for the unsaved-changes guard (transient keys excluded).
+                this._formSnapshot = this._formSig();
+                // Sales count → the "Delete permanently" button only shows at 0 (never-sold).
+                this.form._sales = null;
+                try { this.form._sales = (await API.get(`/api/v1/pos/products/${p.id}/sales-count`)).sales; }
+                catch (e) { this.form._sales = null; }
+            },
+
+            // Everything editable in the form, minus transient/display keys — the signature the
+            // unsaved-changes guard compares against the snapshot taken when the modal opened.
+            _formSig() {
+                const f = {};
+                for (const k in this.form) { if (k === 'compare' || k[0] === '_') continue; f[k] = this.form[k]; }
+                return JSON.stringify(f);
+            },
+            get editDirty() {
+                return this._formSnapshot != null && this._formSig() !== this._formSnapshot;
+            },
+            // Close the create/edit modal — but a stray backdrop click / ✕ must not throw away
+            // unsaved edits (Angel: "you click outside and lose all your updates"). Clean form
+            // closes freely; a changed one asks first.
+            tryCloseEdit() {
+                if (this.editDirty && !confirm(t('catalog.discard_changes'))) return;
+                this.modalOpen = false;
+            },
+            // Permanently delete a never-sold product (mistakes/dupes). Server refuses if it has
+            // sales (409) → we fall back to explaining "discontinue instead". Irreversible → confirm.
+            async hardDelete() {
+                if (!confirm(t('catalog.delete_permanent_confirm'))) return;
+                this.saving = true;
+                try {
+                    await API.delete(`/api/v1/pos/products/${this.form.id}/permanent`);
+                    showToast(t('catalog.deleted_permanent_toast'), 'info');
+                    this._formSnapshot = null;   // don't let the guard fire on the now-gone item
+                    this.modalOpen = false;
+                    this.search();
+                } catch (e) {
+                    showToast(e.message || t('catalog.has_sales_cant_delete'), 'error');
+                } finally { this.saving = false; }
             },
 
             // Slice 3+: pull a field from a supplier match. Every pull ALSO sets the supplier — the DB
