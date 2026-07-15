@@ -289,6 +289,23 @@
           ← <span x-text="t('another')"></span>
         </button>
       </div>
+      <!-- You might also like — the "more like this" carousel -->
+      <div x-show="p.related && p.related.length" class="mt-12">
+        <h3 class="text-lg font-bold text-emerald-100/85 mb-3" x-text="c('more')"></h3>
+        <div class="flex gap-3 overflow-x-auto pb-3" style="scroll-snap-type:x mandatory;">
+          <template x-for="r in p.related" :key="r.id">
+            <button @click="pickResult(r.id)" class="glass rounded-2xl p-3 flex-none w-36 text-left hover:ring-2 hover:ring-emerald-300 transition" style="scroll-snap-align:start;">
+              <div class="aspect-square rounded-xl bg-white/5 flex items-center justify-center overflow-hidden mb-2">
+                <img x-show="r.image_url" :src="r.image_url" class="max-w-full max-h-full object-contain" alt="">
+                <span x-show="!r.image_url" class="text-3xl opacity-40">📦</span>
+              </div>
+              <div class="text-sm font-semibold clamp2" x-text="r.name"></div>
+              <div class="price font-bold text-sm mt-1" x-show="r.price" x-text="'CHF ' + r.price"></div>
+            </button>
+          </template>
+        </div>
+      </div>
+
       <p class="text-center text-emerald-200/40 text-sm mt-6" x-text="t('scanNext')"></p>
     </div>
   </section>
@@ -414,16 +431,16 @@
       CART: {
         de:{ add:'Zur Bestellung', cart:'Deine Bestellung', empty:'Dein Korb ist leer', items:'Art.',
              subtotal:'Zwischensumme', save:'Mitglied spart {pct}%', total:'Zu zahlen', send:'An die Kasse senden', sending:'Wird gesendet…',
-             sentTitle:'Bestellung gesendet!', showCode:'Zeig diesen Code an der Kasse', memberNote:'{pct}% Mitgliederrabatt wird an der Kasse abgezogen', keepShopping:'Weiter' },
+             sentTitle:'Bestellung gesendet!', showCode:'Zeig diesen Code an der Kasse', memberNote:'{pct}% Mitgliederrabatt wird an der Kasse abgezogen', keepShopping:'Weiter', more:'Das könnte dir auch gefallen' },
         fr:{ add:'Ajouter', cart:'Votre commande', empty:'Votre panier est vide', items:'art.',
              subtotal:'Sous-total', save:'Membre −{pct}%', total:'À payer', send:'Envoyer à la caisse', sending:'Envoi…',
-             sentTitle:'Commande envoyée !', showCode:'Montrez ce code à la caisse', memberNote:'{pct}% de remise membre appliquée à la caisse', keepShopping:'Continuer' },
+             sentTitle:'Commande envoyée !', showCode:'Montrez ce code à la caisse', memberNote:'{pct}% de remise membre appliquée à la caisse', keepShopping:'Continuer', more:'Vous aimerez aussi' },
         it:{ add:'Aggiungi', cart:'Il tuo ordine', empty:'Il carrello è vuoto', items:'art.',
              subtotal:'Subtotale', save:'Socio −{pct}%', total:'Da pagare', send:'Invia alla cassa', sending:'Invio…',
-             sentTitle:'Ordine inviato!', showCode:'Mostra questo codice alla cassa', memberNote:'{pct}% di sconto socio applicato alla cassa', keepShopping:'Continua' },
+             sentTitle:'Ordine inviato!', showCode:'Mostra questo codice alla cassa', memberNote:'{pct}% di sconto socio applicato alla cassa', keepShopping:'Continua', more:'Potrebbe piacerti anche' },
         en:{ add:'Add to order', cart:'Your order', empty:'Your basket is empty', items:'items',
              subtotal:'Subtotal', save:'Member saves {pct}%', total:'To pay', send:'Send to counter', sending:'Sending…',
-             sentTitle:'Order sent!', showCode:'Show this code to the cashier', memberNote:'{pct}% member discount applied at the till', keepShopping:'Keep shopping' },
+             sentTitle:'Order sent!', showCode:'Show this code to the cashier', memberNote:'{pct}% member discount applied at the till', keepShopping:'Keep shopping', more:'You might also like' },
       },
       c(k){ return (this.CART[this.lang] || this.CART.en)[k] || (this.CART.en[k] || k); },
       cf(k, vars){ let s = this.c(k); for (const a in (vars||{})) s = s.split('{'+a+'}').join(vars[a]); return s; },

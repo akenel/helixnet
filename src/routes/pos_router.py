@@ -6811,12 +6811,38 @@ async def pos_kiosk(request: Request):
     return templates.TemplateResponse("pos/kiosk.html", {"request": request})
 
 
+async def _kiosk_related(db: AsyncSession, product, limit: int = 10) -> list:
+    """The "You might also like" carousel: same-category active products (shuffled so it feels
+    alive), falling back to the newest items when the product has no category — never empty.
+    Guest-safe cards only (id/name/price/image)."""
+    def _cards(rows):
+        return [{"id": str(p.id), "name": p.name,
+                 "price": f"{float(p.price):.2f}" if p.price is not None else None,
+                 "image_url": p.image_url} for p in rows]
+    rows = []
+    if product.category:
+        rows = (await db.execute(
+            select(ProductModel)
+            .where(ProductModel.category == product.category,
+                   ProductModel.id != product.id,
+                   ProductModel.is_active == True)  # noqa: E712
+            .order_by(func.random()).limit(limit))).scalars().all()
+    if not rows:   # no category, or a lonely category → show the freshest stock instead
+        rows = (await db.execute(
+            select(ProductModel)
+            .where(ProductModel.id != product.id, ProductModel.is_active == True)  # noqa: E712
+            .order_by(ProductModel.created_at.desc()).limit(limit))).scalars().all()
+    return _cards(rows)
+
+
 async def _kiosk_payload(db: AsyncSession, product, lang: str) -> dict:
     """Build the GUEST-SAFE product view for the kiosk — name + description in `lang`, price,
-    image, specs, price tiers, 18+ flag. Deliberately NO cost / margin / supplier / stock."""
+    image, specs, price tiers, 18+ flag, and a "more like this" carousel. Deliberately NO cost /
+    margin / supplier / stock."""
     from src.services.product_translations import ensure_description
     desc = await ensure_description(db, product, lang)
     return {
+        "related": await _kiosk_related(db, product),
         "found": True,
         "id": str(product.id),
         "name": desc.get("name") or product.name,
