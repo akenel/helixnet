@@ -668,14 +668,20 @@ async def list_employees(
 
     # Best-effort: tag each LINKED person with their current POS role so the card can show
     # Cashier/Manager. Wrapped so a slow/down Keycloak never breaks the roster load.
-    linked = [(i, u.id) for i, (e, u) in enumerate(rows) if u is not None]
+    # Resolve by USERNAME (the reliable key) — legacy users' local id != their Keycloak sub.
+    linked = [(i, u.username) for i, (e, u) in enumerate(rows) if u is not None and u.username]
     if linked:
         try:
-            async with httpx.AsyncClient(timeout=10) as c:
+            async with httpx.AsyncClient(timeout=12) as c:
                 kc = await _kc_pos_admin(c)
                 h, base = kc["h"], kc["base"]
-                for idx, uid in linked:
+                for idx, uname in linked:
                     try:
+                        found = (await c.get(f"{base}/users", headers=h,
+                                             params={"username": uname, "exact": "true"})).json()
+                        if not found:
+                            continue
+                        uid = found[0]["id"]
                         rm = (await c.get(f"{base}/users/{uid}/role-mappings/realm", headers=h)).json()
                         names = " ".join((r.get("name") or "") for r in rm)
                         if "pos-admin" in names:
@@ -907,9 +913,9 @@ async def set_pos_role(
     if not row or row[0] is None:
         raise HTTPException(status_code=404, detail="Employee not found")
     employee, user = row
-    if user is None:
+    if user is None or not user.username:
         raise HTTPException(status_code=400, detail="Give them a login first, then set the role.")
-    uid = str(user.id)
+    username = user.username.strip().lower()
 
     want_key = "pos-manager" if target == "manager" else "pos-cashier"
     drop_key = "pos-cashier" if target == "manager" else "pos-manager"
@@ -917,14 +923,22 @@ async def set_pos_role(
         async with httpx.AsyncClient(timeout=20) as c:
             kc = await _kc_pos_admin(c)
             h, base = kc["h"], kc["base"]
+            # Resolve the KC user by USERNAME — legacy local ids don't match the Keycloak sub.
+            found = (await c.get(f"{base}/users", headers=h,
+                                 params={"username": username, "exact": "true"})).json()
+            if not found:
+                raise HTTPException(status_code=404, detail=f"No login '{username}' in the identity server.")
+            uid = found[0]["id"]
             roles = (await c.get(f"{base}/roles", headers=h)).json()
             want = next((r for r in roles if want_key in (r.get("name") or "")), None)
             drop = next((r for r in roles if drop_key in (r.get("name") or "")), None)
             if not want:
                 raise HTTPException(status_code=500, detail=f"No {want_key} role in this realm.")
-            await c.post(f"{base}/users/{uid}/role-mappings/realm", headers=h, json=[want])
+            # raise_for_status so a failed assignment can NEVER report as success (the silent-lie bug).
+            (await c.post(f"{base}/users/{uid}/role-mappings/realm", headers=h, json=[want])).raise_for_status()
             if drop:
                 # Remove the other POS role so they're EITHER cashier OR manager, never both.
+                # Best-effort: a 404 here just means they didn't have it — fine.
                 await c.request("DELETE", f"{base}/users/{uid}/role-mappings/realm", headers=h, json=[drop])
     except httpx.HTTPError as e:
         logger.error("set-pos-role Keycloak error: %s", e)
