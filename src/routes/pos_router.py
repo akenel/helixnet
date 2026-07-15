@@ -576,6 +576,21 @@ async def find_product_matches(
     return await _find_catalog_matches(db, q, limit)
 
 
+@router.get("/products/web-lookup")
+async def web_lookup_product(
+    barcode: str = "",
+    name: str = "",
+    current_user: dict = Depends(require_any_pos_role()),
+):
+    """Tier-2 'search the web' — resolve an unknown product by BARCODE against free, keyless barcode
+    databases (UPCitemdb trial → Open Products Facts), so the till/receiving auto-fills
+    title/brand/category/description/images and the human confirms. Returns up to 6 images for a
+    pick-one picker (we store one). Quota-aware (how many free lookups are left today),
+    language-flagged, with a Google URL fallback. Any POS role — Pam uses it at the till."""
+    from src.services.web_product_lookup import lookup_product
+    return await lookup_product(barcode, name)
+
+
 @router.post("/products/snap-find")
 async def snap_find_product(
     file: UploadFile = File(...),

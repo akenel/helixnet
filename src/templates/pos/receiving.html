@@ -269,10 +269,44 @@
                     <p x-show="selectedRef" class="text-xs text-emerald-700 mt-1" style="display:none;">
                         <span data-i18n="receiving.using_prefix">✓ Using</span> <b x-text="selectedRef?.name"></b> <span data-i18n="receiving.using_suffix">— its photo &amp; details come with it. Set your price/cost below.</span>
                     </p>
-                    <!-- Still can't find it? Search the web by barcode + name (Felix's idea) -->
-                    <button type="button" x-show="!refSearching && !refMatches.length && ((refQuery||'').trim() || (newName||'').trim() || (newBarcode||'').trim())"
-                            @click="webSearchProduct(refQuery || newName, newBarcode)"
-                            class="mt-2 text-sm text-indigo-700 font-semibold inline-flex items-center gap-1" style="display:none;">🔎 <span data-i18n="receiving.search_web">Search the web</span></button>
+                    <!-- 🔎 TIER-2 web lookup: barcode → free DB (UPCitemdb/OPF) → pick an image, use the
+                         title/description. Quota-aware; Google fallback on a miss or when the day's used up. -->
+                    <div x-show="!refSearching && !refMatches.length && ((newBarcode||'').trim() || (refQuery||'').trim() || (newName||'').trim())" class="mt-2" style="display:none;">
+                        <button type="button" @click="runWebLookup()" :disabled="webBusy"
+                                class="text-sm text-indigo-700 font-semibold inline-flex items-center gap-1">
+                            <span x-text="webBusy ? ('🔍 ' + t('receiving.web_looking')) : ('🔎 ' + t('receiving.web_lookup'))"></span>
+                        </button>
+                        <template x-if="web">
+                            <div class="mt-2 border rounded-lg p-2 bg-gray-50">
+                                <p x-show="web.quota" class="text-[11px] mb-1" :class="(web.quota && web.quota.remaining <= 15) ? 'text-red-600 font-semibold' : 'text-gray-400'"
+                                   x-text="web.quota ? t('receiving.web_quota', {n: web.quota.remaining, total: web.quota.limit}) : ''"></p>
+                                <template x-if="web.found">
+                                    <div>
+                                        <!-- multiple images → pick ONE (we store one, keep it simple) -->
+                                        <div x-show="web.images.length" class="flex gap-1.5 overflow-x-auto pb-1 mb-1">
+                                            <template x-for="img in web.images" :key="img">
+                                                <img :src="img" @click="webImage=img" loading="lazy"
+                                                     class="w-14 h-14 object-cover rounded flex-none cursor-pointer border-2"
+                                                     :class="webImage===img ? 'border-emerald-500' : 'border-transparent'">
+                                            </template>
+                                        </div>
+                                        <p class="font-semibold text-gray-900 text-sm" x-text="web.title"></p>
+                                        <p x-show="web.brand || web.category" class="text-xs text-gray-500" x-text="[web.brand, web.category].filter(Boolean).join(' · ')"></p>
+                                        <p x-show="web.description" class="text-xs text-gray-600 mt-1" x-text="web.description"></p>
+                                        <p x-show="web.lang_hint" class="text-[11px] text-amber-600 mt-1" x-text="t('receiving.web_lang', {lang: (web.lang_hint||'').toUpperCase()})"></p>
+                                        <button type="button" @click="useWebResult()" class="btn-success text-xs px-3 py-1 mt-2" data-i18n="receiving.web_use">✓ Use this</button>
+                                    </div>
+                                </template>
+                                <template x-if="!web.found">
+                                    <div>
+                                        <p class="text-xs text-gray-500" x-text="web.note==='quota_exhausted' ? t('receiving.web_quota_out') : t('receiving.web_none')"></p>
+                                        <a x-show="web.google_url" :href="web.google_url" target="_blank" rel="noopener"
+                                           class="text-sm text-indigo-700 font-semibold inline-flex items-center gap-1 mt-1">🔎 <span data-i18n="receiving.search_web">Search the web</span></a>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
                 </div>
 
                 <div>
@@ -415,6 +449,10 @@
             slipOpen: false,      // the slip-review modal
             slip: { lines: [] },  // AI-extracted slip: {supplier, delivery_note_no, date, lines:[…]}
             discrepancies: [],    // slip lines that did NOT arrive: [{name, qty, reason, reasonLabel}]
+            webBusy: false,       // Tier-2 web lookup in flight
+            web: null,            // web-lookup result {found,title,brand,category,description,images,quota,lang_hint,google_url,note}
+            webImage: '',         // the image the operator PICKED from the web result (we store one)
+            webDesc: '',          // description carried from the web result
             photoFirst: false,    // true = no-barcode maker item → lead the modal with the camera
             newPhotoFile: null,   // the snapped item photo (File), uploaded after create
             newPhotoData: '',     // data-URL preview of the snapped photo
@@ -618,6 +656,7 @@
                 this.boxCost = ''; this.boxUnits = ''; this.newSaving = false;
                 this.refQuery = ''; this.refMatches = []; this.selectedRef = null;
                 this.photoFirst = false; this.newPhotoFile = null; this.newPhotoData = ''; this.aiBusy = false; this.aiNote = '';
+                this.web = null; this.webBusy = false; this.webImage = ''; this.webDesc = '';
                 this.itemSupplierId = this.supplierId || '';   // default to the session supplier; overridable per item
                 this.newOpen = true;
                 // Auto-look up in the 7k reference catalogue — by code if it's a barcode,
@@ -759,6 +798,25 @@
                 this.openNew(l.description || '');
                 if (l.unit_price != null) { this.newPrice = l.unit_price; this.applyTradeDiscount(); }
             },
+            // 🔎 TIER-2: resolve an unknown item from the free web DBs by barcode (+name). Fills the
+            // form on confirm; the operator picks one image from several. Quota-aware, Google fallback.
+            async runWebLookup() {
+                this.webBusy = true; this.web = null; this.webImage = ''; this.webDesc = '';
+                try {
+                    const p = new URLSearchParams({ barcode: this.newBarcode || '', name: this.newName || this.refQuery || '' });
+                    this.web = await API.get('/api/v1/pos/products/web-lookup?' + p.toString());
+                    if (this.web && this.web.images && this.web.images.length) this.webImage = this.web.images[0];
+                } catch (e) {
+                    this.web = { found: false, note: 'error', google_url: null, quota: null, images: [] };
+                } finally { this.webBusy = false; }
+            },
+            // Adopt the web result into the new-item form (title if empty + the picked image + description).
+            useWebResult() {
+                if (!this.web) return;
+                if (this.web.title && !(this.newName || '').trim()) this.newName = this.web.title;
+                this.webDesc = this.web.description || '';
+                showToast(t('receiving.web_used'), 'success');
+            },
             // No barcode at all → open the New-item modal blank, camera-first (the maker path:
             // Sylvie's felt cases, Cynthia's balms). No code to fake; the photo leads.
             newItemNoBarcode() {
@@ -851,6 +909,10 @@
                             stock_quantity: 0,
                             supplier_id: this.itemSupplierId || null,
                             mint_identity: true,
+                            // Tier-2 web result: the picked image + description ride along (hotlink now,
+                            // adopted to our storage later). Only when the operator used a web lookup.
+                            image_url: this.webImage || null,
+                            description: this.webDesc || null,
                         });
                     }
                     // A snapped photo (no-barcode maker item) → upload it as the product cover.
