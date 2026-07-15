@@ -89,6 +89,25 @@
                     </button>
                 </div>
 
+                <!-- Bulk cleanup bar — mass delete / discontinue the junk (test rows, dupes) -->
+                <div x-show="items.length > 0" class="card mb-3 flex items-center justify-between flex-wrap gap-2 border-2"
+                     :class="selectedIds.length ? 'border-red-300 bg-red-50' : 'border-transparent'">
+                    <label class="flex items-center gap-2 text-sm font-semibold text-gray-700 cursor-pointer select-none">
+                        <input type="checkbox" class="w-5 h-5 accent-indigo-600" :checked="allSelected" @change="toggleAll($event)">
+                        <span x-show="!selectedIds.length" data-i18n="cleanup.select_all">Select all</span>
+                        <span x-show="selectedIds.length" style="display:none;"><span x-text="selectedIds.length"></span> <span data-i18n="cleanup.selected">selected</span></span>
+                    </label>
+                    <div class="flex gap-2" x-show="selectedIds.length" style="display:none;">
+                        <button @click="bulkDelete('discontinue')" :disabled="bulkBusy" class="btn-secondary">
+                            🚫 <span data-i18n="cleanup.discontinue">Discontinue</span> <span x-text="selectedIds.length"></span>
+                        </button>
+                        <button @click="bulkDelete('permanent')" :disabled="bulkBusy"
+                                class="px-3 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold text-sm">
+                            🗑 <span data-i18n="cleanup.delete">Delete</span> <span x-text="selectedIds.length"></span>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Empty / all-clear -->
                 <div x-show="!loading && items.length === 0" class="card text-center py-10">
                     <p class="text-5xl mb-2">🎉</p>
@@ -100,8 +119,12 @@
                 <!-- Queue -->
                 <div class="space-y-3">
                     <template x-for="p in items" :key="p.product_id">
-                        <div class="card">
+                        <div class="card" :class="!!selected[p.product_id] ? 'ring-2 ring-red-400' : ''">
                             <div class="flex gap-3">
+                                <!-- Select for bulk delete -->
+                                <input type="checkbox" class="w-5 h-5 accent-indigo-600 mt-1 flex-none"
+                                       :checked="!!selected[p.product_id]" @change="toggle(p.product_id)"
+                                       :aria-label="'Select ' + p.name">
                                 <!-- Photo / placeholder -->
                                 <div class="w-16 h-16 rounded-lg border bg-white flex-none flex items-center justify-center overflow-hidden">
                                     <img x-show="p.image_url" :src="p.image_url" class="w-full h-full object-cover" alt="">
@@ -161,7 +184,10 @@
                                     <span class="text-sm font-semibold" :class="p._age ? 'text-red-800' : 'text-gray-700'" data-i18n="cleanup.f_age">18+ — needs ID? (tobacco, alcohol, CBD flower…)</span>
                                 </label>
                             </div>
-                            <div class="flex justify-end mt-3">
+                            <div class="flex justify-between items-center mt-3">
+                                <button @click="deleteOne(p)" :disabled="p._saving || bulkBusy"
+                                        class="text-sm text-red-600 hover:text-red-800 font-medium px-2 py-2"
+                                        title="Delete or discontinue this one" data-i18n="cleanup.delete_one">🗑 Delete</button>
                                 <button @click="save(p)" :disabled="p._saving" class="btn-success">
                                     <span x-show="!p._saving">✅ <span data-i18n="cleanup.save">Save &amp; done</span></span>
                                     <span x-show="p._saving" style="display:none;" data-i18n="cleanup.saving">Saving…</span>
@@ -202,10 +228,62 @@
             limit: 20,
             catFilter: '',
             progress: { done: 0, total: 0, remaining: 0 },
+            selected: {},          // product_id -> true (bulk-delete selection)
+            bulkBusy: false,
 
             get pct() {
                 if (!this.progress.total) return 0;
                 return Math.round((this.progress.done / this.progress.total) * 100);
+            },
+
+            get selectedIds() {
+                return Object.keys(this.selected).filter(k => this.selected[k]);
+            },
+            get allSelected() {
+                return this.items.length > 0 && this.items.every(p => this.selected[p.product_id]);
+            },
+            toggle(id) { this.selected = { ...this.selected, [id]: !this.selected[id] }; },
+            toggleAll(ev) {
+                const on = ev.target.checked;
+                const next = {};
+                if (on) this.items.forEach(p => { next[p.product_id] = true; });
+                this.selected = next;
+            },
+
+            async deleteOne(p) {
+                await this.bulkDelete('permanent', [p.product_id]);
+            },
+
+            async bulkDelete(action, onlyIds) {
+                const ids = onlyIds || this.selectedIds;
+                if (!ids.length) return;
+                const verb = action === 'permanent'
+                    ? (t('cleanup.confirm_delete') || 'Permanently delete')
+                    : (t('cleanup.confirm_discontinue') || 'Discontinue');
+                if (!confirm(`${verb} ${ids.length} ${ids.length === 1 ? 'product' : 'products'}?`)) return;
+                this.bulkBusy = true;
+                try {
+                    const res = await API.post('/api/v1/pos/products/bulk-delete', { product_ids: ids, action });
+                    const gone = new Set([...(res.deleted || []), ...(res.discontinued || [])]);
+                    this.items = this.items.filter(x => !gone.has(x.product_id));
+                    // drop the removed ids from the selection
+                    const sel = { ...this.selected };
+                    gone.forEach(id => delete sel[id]);
+                    this.selected = sel;
+                    const skipped = res.skipped_sold || [];
+                    if (gone.size) {
+                        showToast((t('cleanup.toast_removed') || '{n} removed').replace('{n}', gone.size), 'success');
+                    }
+                    if (skipped.length) {
+                        // Honest guardrail: sold products can't be nuked — offer discontinue instead.
+                        showToast((t('cleanup.toast_kept_sold') ||
+                            "{n} kept — they've sold. Use Discontinue for those.").replace('{n}', skipped.length), 'warning');
+                    }
+                    if (this.mode === 'bench') await this.load();   // refresh counter/next batch
+                } catch (e) {
+                    console.error('bulk delete failed', e);
+                    showToast(t('cleanup.toast_delete_failed') || 'Delete failed', 'error');
+                } finally { this.bulkBusy = false; }
             },
 
             async init() {

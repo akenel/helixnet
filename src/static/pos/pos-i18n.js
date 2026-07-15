@@ -1085,7 +1085,17 @@ window.POS_STRINGS = {
       "prev_batch": "Previous",
       "next_batch": "Next batch",
       "batch": "Batch",
-      "of": "of"
+      "of": "of",
+      "select_all": "Select all",
+      "selected": "selected",
+      "discontinue": "Discontinue",
+      "delete": "Delete",
+      "delete_one": "🗑 Delete",
+      "confirm_delete": "Permanently delete",
+      "confirm_discontinue": "Discontinue",
+      "toast_removed": "{n} removed",
+      "toast_kept_sold": "{n} kept — they've sold. Use Discontinue for those.",
+      "toast_delete_failed": "Delete failed"
     },
     "reports": {
       "title": "📊 Sales Reports",
@@ -2742,7 +2752,17 @@ window.POS_STRINGS = {
       "prev_batch": "Précédent",
       "next_batch": "Lot suivant",
       "batch": "Lot",
-      "of": "de"
+      "of": "de",
+      "select_all": "Tout sélectionner",
+      "selected": "sélectionné(s)",
+      "discontinue": "Retirer",
+      "delete": "Supprimer",
+      "delete_one": "🗑 Supprimer",
+      "confirm_delete": "Supprimer définitivement",
+      "confirm_discontinue": "Retirer",
+      "toast_removed": "{n} supprimé(s)",
+      "toast_kept_sold": "{n} conservé(s) — déjà vendus. Utilisez Retirer pour ceux-ci.",
+      "toast_delete_failed": "Échec de la suppression"
     },
     "reports": {
       "title": "📊 Rapports de ventes",
@@ -4389,7 +4409,17 @@ window.POS_STRINGS = {
       "prev_batch": "Precedente",
       "next_batch": "Lotto successivo",
       "batch": "Lotto",
-      "of": "di"
+      "of": "di",
+      "select_all": "Seleziona tutto",
+      "selected": "selezionati",
+      "discontinue": "Ritira",
+      "delete": "Elimina",
+      "delete_one": "🗑 Elimina",
+      "confirm_delete": "Elimina definitivamente",
+      "confirm_discontinue": "Ritira",
+      "toast_removed": "{n} rimossi",
+      "toast_kept_sold": "{n} mantenuti — già venduti. Usa Ritira per quelli.",
+      "toast_delete_failed": "Eliminazione non riuscita"
     },
     "reports": {
       "title": "📊 Rapporti vendite",
@@ -6036,7 +6066,17 @@ window.POS_STRINGS = {
       "prev_batch": "Zurück",
       "next_batch": "Nächster Stapel",
       "batch": "Stapel",
-      "of": "von"
+      "of": "von",
+      "select_all": "Alle auswählen",
+      "selected": "ausgewählt",
+      "discontinue": "Ausmustern",
+      "delete": "Löschen",
+      "delete_one": "🗑 Löschen",
+      "confirm_delete": "Endgültig löschen",
+      "confirm_discontinue": "Ausmustern",
+      "toast_removed": "{n} entfernt",
+      "toast_kept_sold": "{n} behalten — bereits verkauft. Dafür Ausmustern verwenden.",
+      "toast_delete_failed": "Löschen fehlgeschlagen"
     },
     "reports": {
       "title": "📊 Verkaufsberichte",

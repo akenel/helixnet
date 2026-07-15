@@ -1284,7 +1284,23 @@ async def hard_delete_product(
             detail=f"Cannot permanently delete: this product has {sales} sale(s). Discontinue it instead.",
         )
 
-    # Clear every child row that references this product, then the product itself.
+    await _purge_product_children(db, product_id)
+    await db.delete(product)
+    await db.commit()
+    logger.info(f"Product PERMANENTLY deleted: {product.sku} by user {current_user['username']}")
+
+
+async def _purge_product_children(db: AsyncSession, product_id) -> None:
+    """Clear every child row that references this product (photos, cached translations,
+    reorder lines, …) so the product row can be deleted without leaving a dangling FK.
+    Callers MUST have already checked the product has never sold — line_items are a child
+    too, and deleting them would silently erase receipt history."""
+    from sqlalchemy import text as _text
+    # information_schema FK-discovery is Postgres-specific. On other dialects (the SQLite test
+    # DB) there are no child rows to purge, so skip cleanly rather than error.
+    dialect = getattr(getattr(db, "bind", None), "dialect", None)
+    if dialect is not None and getattr(dialect, "name", "postgresql") != "postgresql":
+        return
     fks = (await db.execute(_text(
         """
         SELECT tc.table_name, kcu.column_name
@@ -1297,9 +1313,68 @@ async def hard_delete_product(
     ))).fetchall()
     for tbl, col in fks:
         await db.execute(_text(f'DELETE FROM "{tbl}" WHERE "{col}" = :pid'), {"pid": str(product_id)})
-    await db.delete(product)
+
+
+@router.post("/products/bulk-delete")
+async def bulk_delete_products(
+    payload: dict = Body(...),
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_manager_or_admin()),
+):
+    """Mass cleanup for the Cockpit — take a list of product ids and either PERMANENTLY delete
+    them or DISCONTINUE them, honestly reporting what happened to each.
+
+    action='permanent' (default): delete only the ones that have NEVER sold. Any product with
+    sales is REFUSED and returned in `skipped_sold` — never silently erased (receipts/retention).
+    action='discontinue': soft-delete (is_active=False) — always safe, keeps history.
+
+    Returns { deleted:[ids], discontinued:[ids], skipped_sold:[{id,name,sales}], not_found:[ids] }
+    so the UI can tell the manager exactly what it did and what it protected."""
+    ids = payload.get("product_ids") or payload.get("ids") or []
+    action = (payload.get("action") or "permanent").strip().lower()
+    if not isinstance(ids, list) or not ids:
+        raise HTTPException(status_code=400, detail="product_ids required")
+    if len(ids) > 500:
+        raise HTTPException(status_code=400, detail="Too many at once (max 500)")
+
+    deleted, discontinued, skipped_sold, not_found = [], [], [], []
+    for pid in ids:
+        try:
+            pid_key = UUID(str(pid))          # the id column is UUID-typed; coerce the JSON string
+        except (ValueError, AttributeError, TypeError):
+            not_found.append(str(pid))
+            continue
+        product = (await db.execute(
+            select(ProductModel).where(ProductModel.id == pid_key)
+        )).scalar_one_or_none()
+        if not product:
+            not_found.append(str(pid))
+            continue
+        if action == "discontinue":
+            product.is_active = False
+            product.updated_at = datetime.now(timezone.utc)
+            discontinued.append(str(pid))
+            continue
+        # permanent — guard on sales, never orphan a receipt
+        sales = await _product_sales_count(db, pid)
+        if sales > 0:
+            skipped_sold.append({"id": str(pid), "name": product.name, "sales": sales})
+            continue
+        await _purge_product_children(db, pid)
+        await db.delete(product)
+        deleted.append(str(pid))
+
     await db.commit()
-    logger.info(f"Product PERMANENTLY deleted: {product.sku} by user {current_user['username']}")
+    logger.info(
+        f"Bulk {action}: {len(deleted)} deleted, {len(discontinued)} discontinued, "
+        f"{len(skipped_sold)} kept (sold) by {current_user['username']}"
+    )
+    return {
+        "deleted": deleted,
+        "discontinued": discontinued,
+        "skipped_sold": skipped_sold,
+        "not_found": not_found,
+    }
 
 
 # ================================================================
