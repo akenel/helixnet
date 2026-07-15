@@ -83,8 +83,9 @@
                 <!-- 📄 Read the whole delivery slip at once: AI extracts every line + matches it. -->
                 <label class="w-full mt-2 flex items-center justify-center gap-2 cursor-pointer rounded-lg border-2 border-dashed border-indigo-300 text-indigo-700 hover:bg-indigo-50 py-2.5 font-semibold"
                        :class="slipBusy ? 'opacity-60 pointer-events-none' : ''">
-                    <span x-text="slipBusy ? ('🔍 ' + t('receiving.slip_reading')) : ('📄 ' + t('receiving.read_slip'))"></span>
-                    <input type="file" accept="image/*" :capture="posCaptureAttr()" class="hidden" @change="readSlip($event)" :disabled="slipBusy">
+                    <span x-text="slipBusy ? ('🔍 ' + (slipProgress || t('receiving.slip_reading'))) : ('📄 ' + t('receiving.read_slip'))"></span>
+                    <!-- multiple = a slip that spans pages: pick page 1 + page 2 (no capture → gallery multi-select). -->
+                    <input type="file" accept="image/*" multiple class="hidden" @change="readSlip($event)" :disabled="slipBusy">
                 </label>
             </div>
 
@@ -298,6 +299,8 @@
                         <span x-show="slip.delivery_note_no"> · <span x-text="slip.delivery_note_no"></span></span>
                         <span x-show="slip.date"> · <span x-text="slip.date"></span></span>
                     </p>
+                    <p class="text-xs mt-1 font-semibold" :class="slipMatchedCount === (slip.lines||[]).length ? 'text-emerald-600' : 'text-amber-600'"
+                       x-text="t('receiving.slip_matched_of', {n: slipMatchedCount, total: (slip.lines||[]).length})"></p>
                 </div>
                 <button @click="slipOpen=false" class="text-gray-400 hover:text-gray-700 text-3xl leading-none flex-none">&times;</button>
             </div>
@@ -359,6 +362,7 @@
             costAutoFilled: false, // true = cost came from the supplier's trade discount (not typed by hand)
             itemSupplierId: '',   // per-item supplier (defaults to the session pick; sets the SKU prefix + tag)
             slipBusy: false,      // reading a delivery slip (AI in flight)
+            slipProgress: '',     // "Reading page X/Y…" while a multi-page slip is read
             slipOpen: false,      // the slip-review modal
             slip: { lines: [] },  // AI-extracted slip: {supplier, delivery_note_no, date, lines:[…]}
             photoFirst: false,    // true = no-barcode maker item → lead the modal with the camera
@@ -606,36 +610,49 @@
             },
             // 📄 Read a whole delivery slip: photo → AI extracts every line → each matched to the
             // catalogue → review + add. The big-lever maker/supplier migration (spec, "read the slip").
+            // Read ONE OR MORE pages of a delivery note (a big order spans pages — load page 1 + 2).
+            // Each page → the AI reads it; lines are MERGED, the header comes from the first page
+            // that has one. Reads pages in order so the "Reading page X/Y…" count is honest.
             async readSlip(e) {
-                const f = e.target.files && e.target.files[0];
-                e.target.value = '';
-                if (!f) return;
-                if (!f.type.startsWith('image/')) { showToast(t('receiving.not_an_image'), 'warning'); return; }
+                const files = Array.from((e.target && e.target.files) || []);
+                if (e.target) e.target.value = '';
+                if (!files.length) return;
+                for (const f of files) {
+                    if (!f.type.startsWith('image/')) { showToast(t('receiving.not_an_image'), 'warning'); return; }
+                }
                 this.slipBusy = true;
+                this.slipProgress = files.length > 1 ? t('receiving.slip_page', {n: 1, total: files.length}) : '';
                 try {
-                    const fd = new FormData(); fd.append('file', f);
-                    const r = await fetch('/api/v1/pos/receiving/read-slip', {
-                        method: 'POST', headers: { 'Authorization': `Bearer ${AuthHelper.getToken()}` }, body: fd });
-                    if (!r.ok) throw new Error('read-slip ' + r.status);
-                    const d = await r.json();
-                    this.slip = { supplier: d.supplier, delivery_note_no: d.delivery_note_no, date: d.date, lines: (d.lines || []) };
-                    // Stamp the slip's provenance onto the delivery so EVERY line received in this
-                    // batch is tracked (supplier · note-no · date → the stock-movement reference;
-                    // who + when are already automatic). This is the "for tracking later" hook.
-                    const meta = [d.supplier, d.delivery_note_no, d.date].filter(Boolean).join(' · ');
+                    let header = null;
+                    const allLines = [];
+                    for (let i = 0; i < files.length; i++) {
+                        this.slipProgress = files.length > 1 ? t('receiving.slip_page', {n: i + 1, total: files.length}) : '';
+                        const fd = new FormData(); fd.append('file', files[i]);
+                        const r = await fetch('/api/v1/pos/receiving/read-slip', {
+                            method: 'POST', headers: { 'Authorization': `Bearer ${AuthHelper.getToken()}` }, body: fd });
+                        if (!r.ok) throw new Error('read-slip ' + r.status);
+                        const d = await r.json();
+                        if (!header && (d.supplier || d.delivery_note_no || d.date)) header = d;   // header lives on page 1
+                        (d.lines || []).forEach(l => allLines.push(l));
+                    }
+                    header = header || {};
+                    this.slip = { supplier: header.supplier, delivery_note_no: header.delivery_note_no, date: header.date, lines: allLines };
+                    // Stamp provenance onto the delivery so EVERY line received is tracked (supplier ·
+                    // note-no · date → the stock-movement reference; who + when are already automatic).
+                    const meta = [header.supplier, header.delivery_note_no, header.date].filter(Boolean).join(' · ');
                     if (meta) this.reference = meta;
                     // Auto-select a matching known supplier so new items inherit the right prefix/tag.
-                    if (d.supplier) {
-                        const sl = d.supplier.toLowerCase(), first = sl.split(/\s+/)[0];
+                    if (header.supplier) {
+                        const sl = header.supplier.toLowerCase(), first = sl.split(/\s+/)[0];
                         const s = this.suppliers.find(x => x.name && (sl.includes(x.name.toLowerCase()) || x.name.toLowerCase().includes(first)));
                         if (s) this.supplierId = s.id;
                     }
                     this.slipOpen = true;
-                    if (!this.slip.lines.length) showToast(t('receiving.slip_none'), 'info');
+                    if (!allLines.length) showToast(t('receiving.slip_none'), 'info');
                 } catch (err) {
                     console.warn('read-slip', err);
                     showToast(t('receiving.slip_failed'), 'error');
-                } finally { this.slipBusy = false; }
+                } finally { this.slipBusy = false; this.slipProgress = ''; }
             },
             // Add a slip line's top catalogue match to the delivery (it already exists → catalogue event).
             addSlipMatch(l) {
@@ -643,6 +660,9 @@
                 if (!m) return;
                 this.addProduct(m);
                 l._added = true;
+            },
+            get slipMatchedCount() {
+                return (this.slip.lines || []).filter(l => l.matches && l.matches.length).length;
             },
             addAllSlipMatches() {
                 (this.slip.lines || []).forEach(l => { if (l.matches && l.matches.length && !l._added) this.addSlipMatch(l); });
