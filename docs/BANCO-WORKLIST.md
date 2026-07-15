@@ -12,15 +12,15 @@
 
 ## 🔴 BACKLOG — PRIORITY (Angel 2026-07-15, "damaging… fat-fingered all over the place")
 
-- **🛟 CLICK-OUTSIDE LOSES EDITS — generalize the guard to EVERY edit/input modal.** Same disease as
-  receiving, worse on EDIT (real work lost). **DOCTRINE: clicking a form's backdrop must do NOTHING;
-  only ✕/Cancel/Save closes, and ✕/Cancel confirms if dirty.** Primitive already built
-  ([[banco-unsaved-work-guard]]); roll `tryClose`+dirty-confirm (or kill `@click.self`) across product-edit
-  (catalog.html), supplier edit, tier editor, order-book lines, settings. **Next up — Angel's about to edit.**
-- **🗑️ GUARDED PERMANENT DELETE.** Discontinue = default (soft, keeps history; NEVER delete a SOLD product —
-  orphans line_items + breaks receipts/reports/10-yr retention). Add "Delete permanently" that only
-  appears/works when the product has **ZERO sales**. Small. (9 zero-sales LZ- test items deleted by hand on
-  sbx 2026-07-15 — this button would've let Angel do it himself.)
+- **🛟 CLICK-OUTSIDE LOSES EDITS.** **DOCTRINE: clicking a form's backdrop must not discard; only
+  ✕/Cancel/Save closes, and ✕/Cancel confirms if dirty.** ✅ SHIPPED SBX b1782 on the **catalog
+  create/edit modal** (`tryCloseEdit` + snapshot-vs-current dirty check). ▶ STILL TO ROLL OUT: supplier
+  edit, tier editor, order-book lines, settings, + receiving mobile back-button. [[banco-unsaved-work-guard]]
+- **🗑️ GUARDED PERMANENT DELETE — ✅ SHIPPED SBX b1782.** "🔥 Delete permanently" shows only for never-sold
+  items (`GET /products/{id}/sales-count`); `DELETE /products/{id}/permanent` hard-deletes with a server guard
+  (409 if any sales → discontinue instead; clears child rows first). Discontinue stays default for sold items.
+- **⏳ "Translating…" indicator — ✅ SHIPPED SBX b1782** (spinner on the desc language flags; slow LLM lookup
+  no longer looks dead).
 
 ## 🃏 ON DECK — 🧶 ECOLUTION SUPPLIER ONBOARDING (sandbox) · IN FLIGHT · 4 maker-flow fixes SHIPPED PROD
 
@@ -59,8 +59,11 @@ column verified live + ORM round-trip. **▶ Needs Angel human-green on sandbox 
   happy moment); price-sanity ✅ shipped b1777; desktop guard ✅, mobile back-button = next test.
 - ▶ **BUILD ORDER (spec §15):** ✅3 supplier-mode core SHIPPED SBX b1779 9510cf4 (per-item supplier + `PREFIX-####`
   server-minted SKU + internal EAN-13 + supplier tag; house prefix = `store_settings.house_sku_prefix` default ITEM;
-  live-verified ZZ-0001 + valid EAN + house fallback) → 4 AI desc → 5 AI cat → 6 delivery header → 7 daily summary +
-  CSV → 8 label cockpit → 9 previews → 10 mobile guard + partial-barcode search.
+  live-verified ZZ-0001 + valid EAN + house fallback) → **4 AI writes DESCRIPTION + suggested TAGS**
+  (Angel 2026-07-15: snap already does title+search — add desc+tags; wire into BOTH catalog "Snap & fill" AND
+  receiving photo-first; desc source-lang → all langs via `description_i18n`) → 5 AI cat → 6 delivery header →
+  7 daily summary + CSV → 8 label cockpit → 9 previews (incl. **tap a Delivery-list line → photo/postcard
+  preview + edit desc/detail before Receive**, Angel 2026-07-15) → 10 mobile guard + partial-barcode search.
   ⚠️ The 5 items Angel entered pre-fix keep their LZ- SKUs + no supplier (SKU immutable) — delete+re-add to re-mint if wanted.
 - ▶ still queued outside the spec: variants/colours assortment model; Sylvie's wholesale list.
 Spec: **[docs/BANCO-ECOLUTION-ONBOARDING-SPEC.md](BANCO-ECOLUTION-ONBOARDING-SPEC.md)** · memory `banco-ecolution-sylvie-supplier`.
