@@ -100,8 +100,9 @@
         </div>
         {% if store %}
         <div class="storefoot">
-          <span class="pickup">🛍️ {{ {'de':'Heute abholen — solange Vorrat reicht','fr':'À retirer aujourd’hui','it':'Ritira oggi — fino a esaurimento'}.get(lang,'Pick up today — while supplies last') }}</span>
-          <span class="sline">{{ store.name }}{% if store.phone %} · <b>{{ store.phone }}</b>{% endif %}</span>
+          <span class="sline"><b>{{ store.name }}</b>{% if store.phone %} · {{ store.phone }}{% endif %}</span>
+          {% if store.website %}<span class="sline"><b>🌐 {{ store.website_display }}</b>{% if store.email %} · ✉️ {{ store.email }}{% endif %}</span>{% elif store.email %}<span class="sline">✉️ {{ store.email }}</span>{% endif %}
+          {% if store.address %}<span class="sline">📍 {{ store.address }}</span>{% endif %}
         </div>
         {% endif %}
       </div>

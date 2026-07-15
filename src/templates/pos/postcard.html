@@ -88,6 +88,10 @@
   .storelines{ display:flex; flex-direction:column; gap:2px; font-size:11px; color:var(--mut); line-height:1.5; }
   .storelines .hours{ white-space:pre-line; }
   .storelines .phone{ font-weight:700; color:#8B0000; }
+  .storelines a{ color:var(--ink); text-decoration:none; }
+  .storelines .web a{ color:#8B0000; font-weight:600; }
+  .storelines .social{ margin-top:2px; }
+  .storelines .social a{ color:var(--mut); }
 
   @media print{
     /* ONE A6 page — the screen card is tall, so shrink internals to mm and keep it whole. */
@@ -150,15 +154,23 @@
     </div>
     {% if store %}
     <div class="storefoot">
-      <div class="pickup">🛍️ {{ {'de':'Heute abholen — solange der Vorrat reicht','fr':'À retirer aujourd’hui — jusqu’à épuisement','it':'Ritira oggi — fino a esaurimento'}.get(lang,'Pick up today — while supplies last') }}</div>
       <div class="storeid">
         {% if store.logo %}<img class="storelogo" src="{{ store.logo }}" alt="" onerror="this.style.display='none'">{% endif %}
         <span class="storename">{{ store.name }}</span>
       </div>
       <div class="storelines">
-        {% if store.hours %}<span class="hours">🕑 {{ store.hours }}</span>{% endif %}
         {% if store.address %}<span>📍 {{ store.address }}</span>{% endif %}
+        {% if store.hours %}<span class="hours">🕑 {{ store.hours }}</span>{% endif %}
         {% if store.phone %}<span class="phone">📞 {{ store.phone }}</span>{% endif %}
+        {% if store.website %}<span class="web">🌐 <a href="{{ store.website }}" target="_blank" rel="noopener">{{ store.website_display }}</a></span>{% endif %}
+        {% if store.email %}<span>✉️ <a href="mailto:{{ store.email }}">{{ store.email }}</a></span>{% endif %}
+        {% if store.instagram or store.facebook %}
+        <span class="social">
+          {% if store.instagram %}<a href="{{ store.instagram }}" target="_blank" rel="noopener">📷 Instagram</a>{% endif %}
+          {% if store.instagram and store.facebook %} · {% endif %}
+          {% if store.facebook %}<a href="{{ store.facebook }}" target="_blank" rel="noopener">👍 Facebook</a>{% endif %}
+        </span>
+        {% endif %}
       </div>
     </div>
     {% else %}

@@ -6496,12 +6496,30 @@ def _postcard_store_footer(store, origin: str) -> dict | None:
     logo = store.receipt_logo_url or None
     if logo and not logo.startswith(("http://", "https://")):
         logo = origin + (logo if logo.startswith("/") else "/" + logo)
+
+    def _linkify(u):
+        """(href, display) for a URL — ensure a scheme for the href, strip it for the label."""
+        u = (u or "").strip()
+        if not u:
+            return None, None
+        href = u if u.startswith(("http://", "https://")) else "https://" + u
+        display = href.split("://", 1)[-1].rstrip("/")
+        return href, display
+
+    web_href, web_display = _linkify(store.website)
+    ig_href, ig_display = _linkify(store.instagram_url)
+    fb_href, fb_display = _linkify(store.facebook_url)
     return {
         "name": store.store_name,
         "hours": store.opening_hours,
         "address": address or None,
         "phone": store.phone,
         "logo": logo,
+        # Contact + web — how a recipient actually reaches the shop (Angel: critical on the footer).
+        "email": store.email or None,
+        "website": web_href, "website_display": web_display,
+        "instagram": ig_href, "instagram_display": ig_display,
+        "facebook": fb_href, "facebook_display": fb_display,
     }
 
 
