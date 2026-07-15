@@ -74,6 +74,12 @@
                     <button type="button" @click="lookup()" class="btn-success flex-none px-4" data-i18n="receiving.add">Add</button>
                 </div>
                 <p x-show="lookupMsg" x-text="lookupMsg" class="text-sm mt-2 text-gray-500" style="display:none;"></p>
+                <!-- No barcode at all (a maker's goods — Sylvie's felt cases, Cynthia's balms).
+                     Don't fake a code: lead with the camera, AI names it, you set the price. -->
+                <button type="button" @click="newItemNoBarcode()"
+                        class="btn-secondary w-full mt-3 flex items-center justify-center gap-2">
+                    <span>📷</span><span data-i18n="receiving.new_no_barcode">New item — no barcode (photograph it)</span>
+                </button>
             </div>
 
             <!-- Receiving list -->
@@ -169,7 +175,24 @@
                 <button @click="newOpen=false" class="text-gray-400 hover:text-gray-700 text-3xl leading-none flex-none">&times;</button>
             </div>
             <div class="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
-                <div>
+                <!-- Photo-first hero (no-barcode maker item): snap → AI names it → find-first
+                     search → set price. The lead action, so nobody fakes a barcode. -->
+                <div x-show="photoFirst" class="bg-emerald-50 border-2 border-emerald-300 rounded-xl p-4 text-center" style="display:none;">
+                    <template x-if="newPhotoData">
+                        <img :src="newPhotoData" alt="" class="mx-auto mb-3 max-h-40 rounded-lg object-contain">
+                    </template>
+                    <label class="btn-primary cursor-pointer inline-flex items-center gap-2"
+                           :class="aiBusy ? 'opacity-60 pointer-events-none' : ''">
+                        <span x-text="aiBusy ? ('🔍 ' + t('receiving.ai_reading')) : (newPhotoData ? ('📷 ' + t('receiving.retake')) : ('📷 ' + t('receiving.photo_first_cta')))"></span>
+                        <input type="file" accept="image/*" :capture="posCaptureAttr()" class="hidden" @change="aiSnapFill($event)" :disabled="aiBusy">
+                    </label>
+                    <p x-show="!newPhotoData && !aiNote" class="text-xs text-emerald-700 mt-2" data-i18n="receiving.photo_first_hint">No barcode? Photograph it — AI names it and searches the catalogue.</p>
+                    <p x-show="aiNote" x-text="aiNote" class="text-xs text-gray-600 mt-2" style="display:none;"></p>
+                </div>
+
+                <!-- Barcode box: only when there IS a code (a scan miss). A no-barcode maker
+                     item leaves it blank + hidden — an empty "Barcode" field just confuses. -->
+                <div x-show="newBarcode || !photoFirst" style="display:none;">
                     <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="receiving.barcode">Barcode</label>
                     <input type="text" x-model="newBarcode" readonly class="input-field bg-gray-100 font-mono">
                 </div>
@@ -258,6 +281,11 @@
             newPrice: '',
             newCost: '',          // purchase cost per unit
             costAutoFilled: false, // true = cost came from the supplier's trade discount (not typed by hand)
+            photoFirst: false,    // true = no-barcode maker item → lead the modal with the camera
+            newPhotoFile: null,   // the snapped item photo (File), uploaded after create
+            newPhotoData: '',     // data-URL preview of the snapped photo
+            aiBusy: false,        // photo→product AI suggest in flight
+            aiNote: '',           // human note after an AI read
             boxCost: '',          // box helper: paid this for the box…
             boxUnits: '',         // …split across this many units
             newSaving: false,
@@ -444,6 +472,7 @@
                 this.newPrice = ''; this.newCost = ''; this.costAutoFilled = false;
                 this.boxCost = ''; this.boxUnits = ''; this.newSaving = false;
                 this.refQuery = ''; this.refMatches = []; this.selectedRef = null;
+                this.photoFirst = false; this.newPhotoFile = null; this.newPhotoData = ''; this.aiBusy = false; this.aiNote = '';
                 this.newOpen = true;
                 // Auto-look up in the 7k reference catalogue — by code if it's a barcode,
                 // else by the typed name — so a tap can fill name+price+photo (adopt).
@@ -471,6 +500,42 @@
                 this.newName = r.name || this.newName;
                 if (r.price != null) this.newPrice = r.price;
                 this.applyTradeDiscount();   // adopt sets the retail price → re-suggest the cost
+            },
+            // No barcode at all → open the New-item modal blank, camera-first (the maker path:
+            // Sylvie's felt cases, Cynthia's balms). No code to fake; the photo leads.
+            newItemNoBarcode() {
+                this.openNew('');
+                this.photoFirst = true;
+            },
+            // ✨ Snap & fill: photograph the item → AI names it → find-first search the catalogue
+            // + reference (maybe it's already there) → pre-fill name/price for the new case.
+            // Keeps the shot as the product photo (uploaded on save). Same engine as the till scan.
+            async aiSnapFill(e) {
+                const f = e.target.files && e.target.files[0];
+                e.target.value = '';
+                if (!f) return;
+                if (!f.type.startsWith('image/')) { showToast(t('receiving.not_an_image'), 'warning'); return; }
+                this.newPhotoFile = f;
+                const reader = new FileReader();
+                reader.onload = () => { this.newPhotoData = reader.result; };
+                reader.readAsDataURL(f);
+                this.aiBusy = true; this.aiNote = '';
+                try {
+                    const fd = new FormData(); fd.append('file', f);
+                    const r = await fetch('/api/v1/pos/products/ai-suggest', {
+                        method: 'POST', headers: { 'Authorization': `Bearer ${AuthHelper.getToken()}` }, body: fd });
+                    if (!r.ok) throw new Error('ai-suggest failed');
+                    const d = await r.json();
+                    const s = d.suggestion || {};
+                    const blank = v => v === '' || v === null || v === undefined;
+                    if (s.name) { this.refQuery = s.name; this.searchRef(s.name, ''); }  // find-first
+                    if (blank(this.newName) && s.name) this.newName = s.name;
+                    if (blank(this.newPrice) && s.price_estimate != null) { this.newPrice = s.price_estimate; this.applyTradeDiscount(); }
+                    this.aiNote = d.note || t('receiving.ai_read_note');
+                } catch (err) {
+                    console.warn('ai snap', err);
+                    this.aiNote = t('receiving.ai_unavailable');
+                } finally { this.aiBusy = false; }
             },
             // Box → single: bought a box, sell singles. Per-unit cost = box / units.
             calcUnitCost() {
@@ -507,6 +572,22 @@
                             cost: (!isNaN(cost) && cost >= 0) ? cost : null,
                             stock_quantity: 0,
                         });
+                    }
+                    // A snapped photo (no-barcode maker item) → upload it as the product cover.
+                    if (this.newPhotoFile && p && p.id) {
+                        try {
+                            const ifd = new FormData(); ifd.append('file', this.newPhotoFile);
+                            const ir = await fetch(`/api/v1/pos/products/${p.id}/images`, {
+                                method: 'POST', headers: { 'Authorization': `Bearer ${AuthHelper.getToken()}` }, body: ifd });
+                            if (!ir.ok) {
+                                let why = 'HTTP ' + ir.status;
+                                try { const ej = await ir.json(); if (ej && ej.detail) why = (typeof ej.detail === 'string') ? ej.detail : JSON.stringify(ej.detail); } catch (_) {}
+                                showToast(t('receiving.photo_not_attached') + ' — ' + why, 'warning');
+                            }
+                        } catch (imgErr) {
+                            console.warn('photo upload failed', imgErr);
+                            showToast(t('receiving.photo_not_attached'), 'warning');
+                        }
                     }
                     this.addProduct(p);
                     this.newOpen = false;
