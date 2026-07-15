@@ -10,6 +10,18 @@
 
 ---
 
+## 🔴 BACKLOG — PRIORITY (Angel 2026-07-15, "damaging… fat-fingered all over the place")
+
+- **🛟 CLICK-OUTSIDE LOSES EDITS — generalize the guard to EVERY edit/input modal.** Same disease as
+  receiving, worse on EDIT (real work lost). **DOCTRINE: clicking a form's backdrop must do NOTHING;
+  only ✕/Cancel/Save closes, and ✕/Cancel confirms if dirty.** Primitive already built
+  ([[banco-unsaved-work-guard]]); roll `tryClose`+dirty-confirm (or kill `@click.self`) across product-edit
+  (catalog.html), supplier edit, tier editor, order-book lines, settings. **Next up — Angel's about to edit.**
+- **🗑️ GUARDED PERMANENT DELETE.** Discontinue = default (soft, keeps history; NEVER delete a SOLD product —
+  orphans line_items + breaks receipts/reports/10-yr retention). Add "Delete permanently" that only
+  appears/works when the product has **ZERO sales**. Small. (9 zero-sales LZ- test items deleted by hand on
+  sbx 2026-07-15 — this button would've let Angel do it himself.)
+
 ## 🃏 ON DECK — 🧶 ECOLUTION SUPPLIER ONBOARDING (sandbox) · IN FLIGHT · 4 maker-flow fixes SHIPPED PROD
 
 **✅ 2026-07-13 — Ecolution onboarding proved END-TO-END in sandbox** (Angel=Ralph): created supplier
