@@ -93,7 +93,7 @@
             <div class="bg-white rounded-xl shadow">
                 <div class="px-4 py-3 border-b flex justify-between items-center">
                     <h2 class="font-semibold text-gray-900" data-i18n="receiving.delivery">Delivery</h2>
-                    <span class="text-sm text-gray-500"><span x-text="lines.length"></span> <span data-i18n="receiving.items_suffix">item(s)</span></span>
+                    <span class="text-sm text-gray-500"><span x-text="lines.length"></span> <span data-i18n="receiving.items_suffix">item(s)</span><template x-if="discrepancies.length"><span class="text-amber-600"> · ⚠ <span x-text="discrepancies.length"></span> <span data-i18n="receiving.not_received_short">not received</span></span></template></span>
                 </div>
 
                 <div x-show="!lines.length" class="px-4 py-10 text-center text-gray-400" style="display:none;" data-i18n="receiving.empty">
@@ -116,6 +116,25 @@
                         <div class="flex items-center flex-none">
                             <button type="button" @click="removeLine(i)" class="text-gray-400 hover:text-red-600 text-2xl leading-none px-2" :title="t('receiving.remove')">&times;</button>
                         </div>
+                    </div>
+                </template>
+
+                <!-- ⚠ Not received: the slip's lines that DIDN'T arrive — kept visible with their
+                     reason so nothing silently vanishes (Angel: "everything accounted for"). -->
+                <template x-if="discrepancies.length">
+                    <div>
+                        <div class="px-4 py-2 text-xs font-semibold text-amber-700 bg-amber-50 border-b border-t">
+                            ⚠ <span data-i18n="receiving.not_received_heading">Not received</span> (<span x-text="discrepancies.length"></span>)
+                        </div>
+                        <template x-for="(dq, i) in discrepancies" :key="'d'+i">
+                            <div class="px-4 py-2.5 border-b flex items-center gap-3" style="background:rgba(251,191,36,.08)">
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm text-gray-600 truncate line-through" x-text="dq.name"></p>
+                                    <p class="text-xs text-amber-700">×<span x-text="dq.qty"></span> · <span x-text="dq.reasonLabel"></span></p>
+                                </div>
+                                <button type="button" @click="discrepancies.splice(i, 1)" class="text-gray-400 hover:text-red-600 text-2xl leading-none px-2" :title="t('receiving.remove')">&times;</button>
+                            </div>
+                        </template>
                     </div>
                 </template>
 
@@ -391,6 +410,7 @@
             slipProgress: '',     // "Reading page X/Y…" while a multi-page slip is read
             slipOpen: false,      // the slip-review modal
             slip: { lines: [] },  // AI-extracted slip: {supplier, delivery_note_no, date, lines:[…]}
+            discrepancies: [],    // slip lines that did NOT arrive: [{name, qty, reason, reasonLabel}]
             photoFirst: false,    // true = no-barcode maker item → lead the modal with the camera
             newPhotoFile: null,   // the snapped item photo (File), uploaded after create
             newPhotoData: '',     // data-URL preview of the snapped photo
@@ -705,17 +725,29 @@
             toggleAllReceived(v) {
                 (this.slip.lines || []).forEach(l => { l._received = !!v; });
             },
-            // Add every RECEIVED, matched line to the delivery; stamp any shortfall onto the note.
+            // Human label for a not-received reason code.
+            reasonLabel(code) {
+                const m = { short: 'reason_short', damaged: 'reason_damaged', wrong: 'reason_wrong', backorder: 'reason_backorder', other: 'reason_other' };
+                return t('receiving.' + (m[code] || 'reason_other'));
+            },
+            // Add every RECEIVED, matched line to the delivery; KEEP the not-received ones visible
+            // (with their reason) so the whole slip is accounted for — nothing silently vanishes.
             addReceivedSlip() {
                 (this.slip.lines || []).forEach(l => {
                     if (l._received && l.matches && l.matches.length && !l._added) this.addSlipMatch(l);
                 });
-                // Note the discrepancies on the delivery reference (short/damaged/etc.) for tracking.
-                const missing = (this.slip.lines || []).filter(l => !l._received);
-                if (missing.length) {
-                    const note = t('receiving.slip_not_received', {n: missing.length});
-                    if (this.reference && this.reference.indexOf(note) === -1) this.reference = (this.reference + ' · ' + note).slice(0, 140);
+                (this.slip.lines || []).forEach(l => {
+                    if (!l._received && !l._loggedMissing) {
+                        this.discrepancies.push({ name: l.description, qty: l.quantity, reason: l._reason || 'other', reasonLabel: this.reasonLabel(l._reason) });
+                        l._loggedMissing = true;
+                    }
+                });
+                // Also stamp a short shortfall note on the delivery-note reference for the audit trail.
+                if (this.discrepancies.length) {
+                    const note = t('receiving.slip_not_received', {n: this.discrepancies.length});
+                    if (this.reference.indexOf(note) === -1) this.reference = (this.reference + ' · ' + note).replace(/^ · /, '').slice(0, 140);
                 }
+                this.slipOpen = false;   // back to the delivery, where received + not-received both show
             },
             // No slip match → open the New-item modal pre-filled with the slip's description + price.
             slipNewItem(l) {
@@ -857,6 +889,8 @@
                     const n = this.lines.length;
                     this.lines = [];
                     this.reference = '';
+                    this.discrepancies = [];   // fresh slate for the next delivery
+                    this.slip = { lines: [] };
                     showToast(t('receiving.catalogued_n', {n: n}), 'success');
                 } catch (err) {
                     showToast(err.message || t('receiving.receiving_failed'), 'error');
