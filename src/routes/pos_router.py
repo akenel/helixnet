@@ -6786,24 +6786,10 @@ async def pos_kiosk(request: Request):
     return templates.TemplateResponse("pos/kiosk.html", {"request": request})
 
 
-@router.get("/kiosk/lookup")
-async def kiosk_lookup(
-    barcode: str = "",
-    lang: str = "de",
-    db: AsyncSession = Depends(get_db_session),
-):
-    """PUBLIC guest lookup for the kiosk — resolve a scanned barcode to a GUEST-SAFE product view
-    (name + description in `lang`, price, image, specs, price tiers, 18+ flag). No auth; active
-    products only; deliberately NO cost / margin / supplier / stock. Feeds pos/kiosk.html. Returns
-    {found:false} (never 404s) so the kiosk can show a friendly 'ask staff' instead of an error."""
+async def _kiosk_payload(db: AsyncSession, product, lang: str) -> dict:
+    """Build the GUEST-SAFE product view for the kiosk — name + description in `lang`, price,
+    image, specs, price tiers, 18+ flag. Deliberately NO cost / margin / supplier / stock."""
     from src.services.product_translations import ensure_description
-    barcode = (barcode or "").strip()
-    lang = (lang or "de").lower()[:2]
-    if not barcode:
-        return {"found": False, "barcode": ""}
-    product = await _find_product_by_any_barcode(db, barcode)
-    if not product or not product.is_active:
-        return {"found": False, "barcode": barcode}
     desc = await ensure_description(db, product, lang)
     return {
         "found": True,
@@ -6819,6 +6805,74 @@ async def kiosk_lookup(
         "is_age_restricted": bool(getattr(product, "is_age_restricted", False)),
         "lang": lang,
     }
+
+
+@router.get("/kiosk/lookup")
+async def kiosk_lookup(
+    barcode: str = "",
+    lang: str = "de",
+    db: AsyncSession = Depends(get_db_session),
+):
+    """PUBLIC guest lookup for the kiosk — resolve a scanned BARCODE to a guest-safe product view.
+    No auth; active products only. Returns {found:false} (never 404s) so the kiosk shows a friendly
+    'ask staff' instead of an error. Typed NAMES go through /kiosk/search instead."""
+    barcode = (barcode or "").strip()
+    lang = (lang or "de").lower()[:2]
+    if not barcode:
+        return {"found": False, "barcode": ""}
+    product = await _find_product_by_any_barcode(db, barcode)
+    if not product or not product.is_active:
+        return {"found": False, "barcode": barcode}
+    return await _kiosk_payload(db, product, lang)
+
+
+@router.get("/kiosk/view")
+async def kiosk_view(
+    product_id: str = "",
+    lang: str = "de",
+    db: AsyncSession = Depends(get_db_session),
+):
+    """PUBLIC guest view by product id — how the kiosk opens a product a guest PICKED from a
+    name-search result list. Same guest-safe payload as /kiosk/lookup. Active products only."""
+    from src.db.models.product_model import ProductModel
+    lang = (lang or "de").lower()[:2]
+    try:
+        pid = UUID(str(product_id))
+    except (ValueError, AttributeError, TypeError):
+        return {"found": False}
+    product = await db.get(ProductModel, pid)
+    if not product or not product.is_active:
+        return {"found": False}
+    return await _kiosk_payload(db, product, lang)
+
+
+@router.get("/kiosk/search")
+async def kiosk_search(
+    q: str = "",
+    lang: str = "de",
+    db: AsyncSession = Depends(get_db_session),
+):
+    """PUBLIC guest search for the kiosk — a customer types a NAME (not a barcode) and gets back
+    lightweight, guest-safe cards to pick from. Reuses search_products_fast so the smart BL-101
+    ranking (German name / English query, synonyms) works here too. NO cost / supplier / stock."""
+    q = (q or "").strip()
+    if not q:
+        return {"results": [], "q": ""}
+    env = await search_products_fast(q=q, limit=8, db=db)
+    items = env.get("items", []) if isinstance(env, dict) else []
+    results = [
+        {
+            "id": str(it.get("id")),
+            "name": it.get("name"),
+            "price": f"{float(it['price']):.2f}" if it.get("price") else None,
+            "currency": "CHF",
+            "image_url": it.get("image_url"),
+            "category": it.get("category"),
+            "is_age_restricted": bool(it.get("is_age_restricted")),
+        }
+        for it in items
+    ]
+    return {"results": results, "q": q}
 
 
 @html_router.get("/pos/labels/batch", response_class=HTMLResponse, name="labels_batch")

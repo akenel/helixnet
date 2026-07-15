@@ -63,3 +63,22 @@ async def test_kiosk_lookup_skips_inactive(db_session):
 async def test_kiosk_lookup_blank_barcode(db_session):
     out = await pos_router.kiosk_lookup(barcode="", lang="en", db=db_session)
     assert out["found"] is False
+
+
+@pytest.mark.asyncio
+async def test_kiosk_view_by_id(db_session):
+    """A guest who typed a NAME picks a search result → the kiosk opens it by id."""
+    p = await _make_product(db_session, barcode="7610000222222")
+    out = await pos_router.kiosk_view(product_id=str(p.id), lang="en", db=db_session)
+    assert out["found"] is True
+    assert out["id"] == str(p.id)
+    for leak in ("cost", "supplier", "supplier_name", "stock_quantity"):
+        assert leak not in out
+
+
+@pytest.mark.asyncio
+async def test_kiosk_view_inactive_or_bad_id(db_session):
+    p = await _make_product(db_session, barcode="7610000333333", active=False)
+    assert (await pos_router.kiosk_view(product_id=str(p.id), lang="en", db=db_session))["found"] is False
+    assert (await pos_router.kiosk_view(product_id="not-a-uuid", lang="en", db=db_session))["found"] is False
+    assert (await pos_router.kiosk_view(product_id="", lang="en", db=db_session))["found"] is False

@@ -24,6 +24,7 @@
   .price{ color:#8CFFC0; }
   .off-focus{ position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0; }
   ::-webkit-scrollbar{ width:10px } ::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.18); border-radius:8px }
+  .clamp2{ display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
 </style></head>
 <body x-data="kiosk()" x-init="init()" @click="refocus()">
 
@@ -61,9 +62,9 @@
       <div class="flex items-center gap-2"><span class="w-9 h-9 rounded-full bg-emerald-500/25 flex items-center justify-center font-bold">3</span><span x-text="t('s3')"></span></div>
     </div>
 
-    <!-- manual entry (works with no hardware; the scanner uses the hidden input) -->
-    <form @submit.prevent="doScan(manual); manual=''" class="w-full max-w-md">
-      <input x-model="manual" inputmode="numeric" :placeholder="t('typeHint')"
+    <!-- manual entry: digits → barcode, words → name search. (Scanner uses the hidden input.) -->
+    <form @submit.prevent="onSubmit(manual); manual=''" class="w-full max-w-md">
+      <input x-model="manual" :placeholder="t('typeHint')"
              class="w-full text-center text-lg px-5 py-4 rounded-2xl glass text-white placeholder-emerald-200/40 outline-none focus:ring-2 focus:ring-emerald-300">
     </form>
 
@@ -153,6 +154,32 @@
     </div>
   </section>
 
+  <!-- ============ SEARCH RESULTS (typed a name) ============ -->
+  <section x-show="view==='results'" class="min-h-screen px-5 sm:px-10 py-10" style="display:none;">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-2xl sm:text-3xl font-black mb-1" x-text="t('pickOne')"></h2>
+      <p class="text-emerald-200/50 mb-6">&ldquo;<span x-text="lastQuery"></span>&rdquo;</p>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <template x-for="r in results" :key="r.id">
+          <button @click="pickResult(r.id)" class="glass rounded-2xl p-3 text-left hover:ring-2 hover:ring-emerald-300 transition">
+            <div class="aspect-square rounded-xl bg-white/5 flex items-center justify-center overflow-hidden mb-2">
+              <img x-show="r.image_url" :src="r.image_url" class="max-w-full max-h-full object-contain" alt="">
+              <span x-show="!r.image_url" class="text-4xl opacity-40">📦</span>
+            </div>
+            <div class="font-semibold text-sm leading-tight clamp2" x-text="r.name"></div>
+            <div class="flex items-center justify-between mt-1">
+              <span class="price font-bold" x-show="r.price"><span x-text="r.currency"></span> <span x-text="r.price"></span></span>
+              <span x-show="r.is_age_restricted" class="text-xs">🔞</span>
+            </div>
+          </button>
+        </template>
+      </div>
+      <div class="text-center mt-10">
+        <button @click="reset()" class="px-6 py-3 rounded-2xl glass font-semibold">← <span x-text="t('another')"></span></button>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ NOT FOUND ============ -->
   <section x-show="view==='notfound'" class="min-h-screen flex flex-col items-center justify-center px-6 text-center">
     <div class="text-7xl mb-5">🤔</div>
@@ -171,7 +198,9 @@
       manual: '',
       scanBuffer: '',
       p: {},
+      results: [],
       lastBarcode: '',
+      lastQuery: '',
       idleTimer: null,
       _busy: false,
       camError: '',
@@ -185,23 +214,23 @@
       ],
       STR: {
         de:{ head:'Scanne ein Produkt', sub:'Alle Details — in deiner Sprache.', s1:'Scannen', s2:'Ansehen', s3:'Karte drucken',
-             typeHint:'oder Barcode eingeben', looking:'Suche…', printCard:'Karte drucken', details:'Details', another:'Neu scannen',
-             scanNext:'Einfach das nächste Produkt scannen', age:'18+ Ausweis nötig',
+             typeHint:'nach Name oder Barcode suchen', looking:'Suche…', printCard:'Karte drucken', details:'Details', another:'Neu scannen',
+             scanNext:'Einfach das nächste Produkt scannen', age:'18+ Ausweis nötig', pickOne:'Welches Produkt?',
              useCamera:'Mit Kamera scannen', onPhone:'Oder auf deinem Handy öffnen', noCamera:'Keine Kamera verfügbar. Bitte den Scanner oder die Eingabe nutzen.',
              notFound:'Dieses Produkt haben wir nicht gefunden. Bitte frag unser Team.' },
         fr:{ head:'Scannez un produit', sub:'Tous les détails — dans votre langue.', s1:'Scanner', s2:'Voir', s3:'Imprimer une carte',
-             typeHint:'ou saisir le code-barres', looking:'Recherche…', printCard:'Imprimer une carte', details:'Détails', another:'Nouveau scan',
-             scanNext:'Scannez simplement le produit suivant', age:'18+ pièce d’identité requise',
+             typeHint:'rechercher par nom ou code-barres', looking:'Recherche…', printCard:'Imprimer une carte', details:'Détails', another:'Nouveau scan',
+             scanNext:'Scannez simplement le produit suivant', age:'18+ pièce d’identité requise', pickOne:'Quel produit ?',
              useCamera:'Scanner avec la caméra', onPhone:'Ou ouvrez-le sur votre téléphone', noCamera:'Pas de caméra. Utilisez le scanner ou la saisie.',
              notFound:'Nous n’avons pas trouvé ce produit. Merci de demander à notre équipe.' },
         it:{ head:'Scansiona un prodotto', sub:'Tutti i dettagli — nella tua lingua.', s1:'Scansiona', s2:'Guarda', s3:'Stampa una card',
-             typeHint:'o inserisci il codice a barre', looking:'Ricerca…', printCard:'Stampa una card', details:'Dettagli', another:'Nuova scansione',
-             scanNext:'Scansiona semplicemente il prossimo prodotto', age:'18+ documento richiesto',
+             typeHint:'cerca per nome o codice a barre', looking:'Ricerca…', printCard:'Stampa una card', details:'Dettagli', another:'Nuova scansione',
+             scanNext:'Scansiona semplicemente il prossimo prodotto', age:'18+ documento richiesto', pickOne:'Quale prodotto?',
              useCamera:'Scansiona con la fotocamera', onPhone:'Oppure aprilo sul tuo telefono', noCamera:'Nessuna fotocamera. Usa lo scanner o digita.',
              notFound:'Non abbiamo trovato questo prodotto. Chiedi al nostro team.' },
         en:{ head:'Scan a product', sub:'Every detail — in your language.', s1:'Scan', s2:'See it', s3:'Print a card',
-             typeHint:'or type the barcode', looking:'Looking…', printCard:'Print a card', details:'Details', another:'Scan another',
-             scanNext:'Just scan the next product', age:'18+ ID required',
+             typeHint:'search by name or barcode', looking:'Looking…', printCard:'Print a card', details:'Details', another:'Scan another',
+             scanNext:'Just scan the next product', age:'18+ ID required', pickOne:'Which one?',
              useCamera:'Scan with camera', onPhone:'Or open it on your phone', noCamera:'No camera available. Use the scanner or type it in.',
              notFound:'We couldn’t find that product. Please ask our team.' },
       },
@@ -256,8 +285,16 @@
         this.lang = code;
         sessionStorage.setItem('kiosk_lang', code);
         document.documentElement.lang = code;
-        // re-translate the product in place if one is showing
-        if (this.view === 'product' && this.lastBarcode) this.doScan(this.lastBarcode, true);
+        // re-translate the product in place if one is showing (works for barcode OR search hits)
+        if (this.view === 'product' && this.p.id) this.pickResult(this.p.id, true);
+      },
+
+      // A typed submit: pure digits → barcode; anything with letters → name search.
+      onSubmit(v){
+        const s = (v || '').trim();
+        if (!s) return;
+        if (/^[0-9]{6,}$/.test(s)) this.doScan(s);
+        else this.doSearch(s);
       },
 
       async doScan(raw, silent){
@@ -283,6 +320,45 @@
           this._busy = false;
           this.refocus();
         }
+      },
+
+      async doSearch(raw){
+        const query = (raw || '').trim();
+        if (!query || this._busy) return;
+        this._busy = true;
+        this.lastQuery = query;
+        this.bumpIdle();
+        this.view = 'loading';
+        try {
+          const r = await fetch(`/api/v1/pos/kiosk/search?q=${encodeURIComponent(query)}&lang=${this.lang}`);
+          const data = await r.json();
+          const res = (data && data.results) || [];
+          this._busy = false;                     // release before a possible pickResult
+          if (res.length === 0) { this.lastBarcode = query; this.view = 'notfound'; }
+          else if (res.length === 1) { await this.pickResult(res[0].id); }
+          else { this.results = res; this.view = 'results'; }
+        } catch(e){
+          console.error('kiosk search failed', e);
+          this.view = 'notfound';
+        } finally {
+          this._busy = false;
+          this.refocus();
+        }
+      },
+
+      async pickResult(id, silent){
+        if (!id) return;
+        this.bumpIdle();
+        if (!silent) this.view = 'loading';
+        try {
+          const r = await fetch(`/api/v1/pos/kiosk/view?product_id=${encodeURIComponent(id)}&lang=${this.lang}`);
+          const data = await r.json();
+          if (data && data.found) { this.p = data; this.lastBarcode = ''; this.view = 'product'; }
+          else if (!silent) { this.view = 'notfound'; }
+        } catch(e){
+          console.error('kiosk view failed', e);
+          if (!silent) this.view = 'notfound';
+        } finally { this.refocus(); }
       },
 
       printCard(){
