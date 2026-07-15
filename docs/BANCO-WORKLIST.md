@@ -45,8 +45,11 @@ column verified live + ORM round-trip. **▶ Needs Angel human-green on sandbox 
   notice on Felix's dashboard (one big number); (10) reviewable CSV→Banana; (11) label **print cockpit** (received-but-
   not-printed queue, checkbox + qty, 62mm, barcode+QR); (12) postcard+label+translation PREVIEWS at receiving (the
   happy moment); price-sanity ✅ shipped b1777; desktop guard ✅, mobile back-button = next test.
-- ▶ **BUILD ORDER (spec §15):** 3 supplier-mode core (per-item supplier + SKU + EAN-13 + tag) → 4 AI desc → 5 AI cat →
-  6 delivery header → 7 daily summary + CSV → 8 label cockpit → 9 previews → 10 mobile guard + partial-barcode search.
+- ▶ **BUILD ORDER (spec §15):** ✅3 supplier-mode core SHIPPED SBX b1779 9510cf4 (per-item supplier + `PREFIX-####`
+  server-minted SKU + internal EAN-13 + supplier tag; house prefix = `store_settings.house_sku_prefix` default ITEM;
+  live-verified ZZ-0001 + valid EAN + house fallback) → 4 AI desc → 5 AI cat → 6 delivery header → 7 daily summary +
+  CSV → 8 label cockpit → 9 previews → 10 mobile guard + partial-barcode search.
+  ⚠️ The 5 items Angel entered pre-fix keep their LZ- SKUs + no supplier (SKU immutable) — delete+re-add to re-mint if wanted.
 - ▶ still queued outside the spec: variants/colours assortment model; Sylvie's wholesale list.
 Spec: **[docs/BANCO-ECOLUTION-ONBOARDING-SPEC.md](BANCO-ECOLUTION-ONBOARDING-SPEC.md)** · memory `banco-ecolution-sylvie-supplier`.
 - **Real-world parallel (2026-07-14 AM):** Angel's at Felix's shop in Littau — Felix demo (walk DISC-PROD-01 on
