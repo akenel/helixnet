@@ -37,13 +37,17 @@ column verified live + ORM round-trip. **▶ Needs Angel human-green on sandbox 
 - ✅ **unsaved-work guard** — `HelixDirtyGuard` (base.html shell) + receiving new-item modal **discard-confirm on
   backdrop/✕ mis-tap**. Desktop swipe-back covered by beforeunload; **mobile hardware BACK button = OPEN, needs
   Angel's on-device test** before wiring. [[banco-unsaved-work-guard]]
-- 🐯 **NEXT (Angel greenlit design 2026-07-15):** (a) **AI writes the DESCRIPTION** too — short clean desc in the
-  source lang (EN/DE) → flows to other langs via `description_i18n` (reuse BL-36); (b) **supplier auto-tag** —
-  receiving IS per-supplier mode: pick Ecolution at top → every item tagged Ecolution automatically with a visible
-  "Supplier: X ✓ change?" confirm (fixes the gap: the 5 items were NOT supplier-tagged, nor marked received).
-  Workflow generalizes to ANY craftsperson with a website + pictures.
-- ▶ still queued: replicate the guard to scan/new-product screens + scan-cart `suppressOnce()`; variants/colours
-  assortment model; supplier-prefixed auto-SKU (`ECO-####`); Sylvie's wholesale list.
+- 📋 **SPEC WRITTEN + Angel-approved (A–F + Option 2): [docs/BANCO-RECEIVING-GOODS-RECEIPT-SPEC.md](BANCO-RECEIVING-GOODS-RECEIPT-SPEC.md).**
+  Receiving → a flexible **goods-receipt + maker-migration** flow. Key calls: (2) per-item supplier, NOT a session cage;
+  (4) `PREFIX-####` server-minted SKU, house prefix from settings, NEVER ART/LZ; (5) minted internal EAN-13; (6) AI
+  1-2 sentence description → all langs via `description_i18n`; (7) AI category + "please check" nudge; (8) delivery
+  header (note-no/date/received-by/terms/attach slip) = Option 2 goods receipt; (9) daily "goods received today"
+  notice on Felix's dashboard (one big number); (10) reviewable CSV→Banana; (11) label **print cockpit** (received-but-
+  not-printed queue, checkbox + qty, 62mm, barcode+QR); (12) postcard+label+translation PREVIEWS at receiving (the
+  happy moment); price-sanity ✅ shipped b1777; desktop guard ✅, mobile back-button = next test.
+- ▶ **BUILD ORDER (spec §15):** 3 supplier-mode core (per-item supplier + SKU + EAN-13 + tag) → 4 AI desc → 5 AI cat →
+  6 delivery header → 7 daily summary + CSV → 8 label cockpit → 9 previews → 10 mobile guard + partial-barcode search.
+- ▶ still queued outside the spec: variants/colours assortment model; Sylvie's wholesale list.
 Spec: **[docs/BANCO-ECOLUTION-ONBOARDING-SPEC.md](BANCO-ECOLUTION-ONBOARDING-SPEC.md)** · memory `banco-ecolution-sylvie-supplier`.
 - **Real-world parallel (2026-07-14 AM):** Angel's at Felix's shop in Littau — Felix demo (walk DISC-PROD-01 on
   the phone) + help cover + the new-hire onboarding (kid starts Thu; self-drive kit ONBOARD-KIT-01 is ready). The
