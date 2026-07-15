@@ -52,6 +52,15 @@ class StoreSettingsModel(Base):
         comment="Display name (e.g., 'Artemis Store - Zurich')"
     )
 
+    # The shop's own internal SKU prefix, used when a received item has no supplier (the
+    # 'house' code). Receiving mints house goods as PREFIX-#### from this. Nullable → the
+    # server falls back to 'ITEM'. Never 'ART' (reads as 'article') or 'LZ' (legacy).
+    house_sku_prefix: Mapped[str | None] = mapped_column(
+        String(8),
+        nullable=True,
+        comment="Shop's internal SKU prefix for house/no-supplier goods (default 'ITEM')"
+    )
+
     is_active: Mapped[bool] = mapped_column(
         Boolean,
         default=True,

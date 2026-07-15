@@ -22,6 +22,7 @@ from pathlib import Path
 from src.db.database import get_db_session
 from src.services.fiscal_regime import resolve_regime
 from src.services.store_settings_seeding import get_active_store_settings
+from src.services.catalog_enrichment import mint_internal_ean13
 from src.services.lp_publish import publish_product
 from src.services.square_bridge import SquareBridgeError
 from src.services.vat_resolver import line_vat, split_vat
@@ -250,6 +251,53 @@ def _sanitize_product_codes(data: dict) -> dict:
     return data
 
 
+async def _mint_next_sku(db: AsyncSession, prefix: str) -> str:
+    """Next sequential SKU for a prefix: PREFIX-0001, PREFIX-0002, … (max existing + 1).
+
+    Server-side so two receivers can't collide on the same number; a rare race loses the
+    UNIQUE(sku) insert (409) and the caller retries. Only 4-digit PREFIX-NNNN rows count —
+    a legacy TAM-21577 import under the same prefix won't skew the maker sequence."""
+    import re as _re
+    res = await db.execute(select(ProductModel.sku).where(ProductModel.sku.like(f"{prefix}-%")))
+    pat = _re.compile(rf"^{_re.escape(prefix)}-(\d{{1,6}})$")
+    mx = 0
+    for (s,) in res:
+        m = pat.match(s or "")
+        if m:
+            mx = max(mx, int(m.group(1)))
+    return f"{prefix}-{mx + 1:04d}"
+
+
+async def _apply_supplier_mode_identity(db: AsyncSession, data: dict) -> dict:
+    """Receiving 'supplier mode' (§3–5 of the goods-receipt spec). Strips the two receiving-only
+    keys ALWAYS; when mint_identity was set, it mints the immutable identity server-side:
+      • SKU = PREFIX-####  — the supplier's own prefix (ECO), else the shop's house prefix from
+        settings (never ART/LZ; defaults to 'ITEM').
+      • barcode = internal EAN-13 (GS1 20–29 in-store range) IF the item has no real barcode, so
+        a no-code maker item is still scannable at the till and printable on a label.
+      • supplier_name denormalized onto the product (the per-item supplier tag).
+    No-op (beyond stripping the keys) for non-receiving callers."""
+    mint = bool(data.pop("mint_identity", False))
+    supplier_id = data.pop("supplier_id", None)
+    if not mint:
+        return data
+    supplier = None
+    if supplier_id:
+        supplier = (await db.execute(
+            select(SupplierModel).where(SupplierModel.id == supplier_id))).scalar_one_or_none()
+    prefix = supplier.prefix if (supplier and supplier.prefix) else None
+    if not prefix:
+        settings_row = await get_active_store_settings(db)
+        prefix = (getattr(settings_row, "house_sku_prefix", None) or "ITEM").upper()
+    data["sku"] = await _mint_next_sku(db, prefix)
+    if not (data.get("barcode") or "").strip():
+        # Seed the EAN from the just-minted (unique) SKU → stable + unique; UNIQUE(barcode) backstops.
+        data["barcode"] = mint_internal_ean13(data["sku"])
+    if supplier is not None:
+        data["supplier_name"] = supplier.name
+    return data
+
+
 @router.post("/products", response_model=ProductRead, status_code=status.HTTP_201_CREATED)
 async def create_product(
     product: ProductCreate,
@@ -262,7 +310,8 @@ async def create_product(
     on the floor grows the catalog by selling). Destructive edits stay manager-only: changing
     price/details (PUT) and deleting (DELETE) still require a manager/admin."""
 
-    new_product = ProductModel(**_sanitize_product_codes(product.model_dump()))
+    data = await _apply_supplier_mode_identity(db, _sanitize_product_codes(product.model_dump()))
+    new_product = ProductModel(**data)
     db.add(new_product)
     try:
         await db.commit()
@@ -309,7 +358,7 @@ async def quick_create_product(
     cups) without a manager. Minimal fields; auto-filed under "On the fly" if no
     category is given, so a manager can enhance or discontinue it later.
     """
-    data = _sanitize_product_codes(product.model_dump())
+    data = await _apply_supplier_mode_identity(db, _sanitize_product_codes(product.model_dump()))
     if not (data.get("name") or "").strip():
         raise HTTPException(status_code=422, detail="Name is required")
     if data.get("price") is None:

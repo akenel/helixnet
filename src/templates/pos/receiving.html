@@ -175,6 +175,19 @@
                 <button @click="tryCloseNew()" class="text-gray-400 hover:text-gray-700 text-3xl leading-none flex-none">&times;</button>
             </div>
             <div class="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
+                <!-- Per-item supplier: sets the SKU prefix (ECO-####) + tags the product. Defaults
+                     to the session supplier, overridable here (supplier is per ITEM, not a cage). -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="receiving.item_supplier">Supplier for this item</label>
+                    <select x-model="itemSupplierId" @change="applyTradeDiscount()" class="input-field">
+                        <option value="" data-i18n="receiving.house_supplier">— House (own code) —</option>
+                        <template x-for="s in suppliers" :key="s.id">
+                            <option :value="s.id" x-text="s.name + (s.prefix ? ' · '+s.prefix : '')"></option>
+                        </template>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1" x-text="t('receiving.sku_preview', {code: skuPreviewPrefix + '-####'})"></p>
+                </div>
+
                 <!-- Photo-first hero (no-barcode maker item): snap → AI names it → find-first
                      search → set price. The lead action, so nobody fakes a barcode. -->
                 <div x-show="photoFirst" class="bg-emerald-50 border-2 border-emerald-300 rounded-xl p-4 text-center" style="display:none;">
@@ -285,6 +298,7 @@
             newPrice: '',
             newCost: '',          // purchase cost per unit
             costAutoFilled: false, // true = cost came from the supplier's trade discount (not typed by hand)
+            itemSupplierId: '',   // per-item supplier (defaults to the session pick; sets the SKU prefix + tag)
             photoFirst: false,    // true = no-barcode maker item → lead the modal with the camera
             newPhotoFile: null,   // the snapped item photo (File), uploaded after create
             newPhotoData: '',     // data-URL preview of the snapped photo
@@ -338,11 +352,18 @@
                 // Picking a supplier with a trade-discount deal re-suggests the cost from the price.
                 this.applyTradeDiscount();
             },
-            // The trade discount configured on the selected supplier (0 if none / no supplier).
+            // The trade discount on the item's supplier (the modal pick; falls back to session).
             get supplierDiscountPct() {
-                const s = this.suppliers.find(x => x.id === this.supplierId);
+                const id = this.itemSupplierId || this.supplierId;
+                const s = this.suppliers.find(x => x.id === id);
                 const p = s ? Number(s.trade_discount_pct) : 0;
                 return (isFinite(p) && p > 0) ? p : 0;
+            },
+            // The SKU prefix this item will get: the supplier's own, else 'ITEM' (house). Preview only —
+            // the server mints the authoritative PREFIX-#### (and the house prefix comes from settings).
+            get skuPreviewPrefix() {
+                const s = this.suppliers.find(x => x.id === this.itemSupplierId);
+                return (s && s.prefix) ? s.prefix : 'ITEM';
             },
             // Auto-fill the COST from the RETAIL (sale) price when the supplier gives a trade
             // discount — the Ecolution deal: shelf = Sylvie's Etsy price, cost = shelf × (1 − pct/100).
@@ -481,6 +502,7 @@
                 this.boxCost = ''; this.boxUnits = ''; this.newSaving = false;
                 this.refQuery = ''; this.refMatches = []; this.selectedRef = null;
                 this.photoFirst = false; this.newPhotoFile = null; this.newPhotoData = ''; this.aiBusy = false; this.aiNote = '';
+                this.itemSupplierId = this.supplierId || '';   // default to the session supplier; overridable per item
                 this.newOpen = true;
                 // Auto-look up in the 7k reference catalogue — by code if it's a barcode,
                 // else by the typed name — so a tap can fill name+price+photo (adopt).
@@ -600,7 +622,9 @@
                         }
                     } else {
                         if (!this.newName.trim()) { showToast(t('receiving.enter_product_name'), 'warning'); this.newSaving = false; return; }
-                        // Zero perpetual inventory: receiving just catalogues the item.
+                        // Zero perpetual inventory: receiving just catalogues the item. The server
+                        // mints the identity (PREFIX-#### SKU + internal EAN-13 if no real barcode)
+                        // and tags the supplier — sku below is only a fallback if minting is skipped.
                         p = await API.post('/api/v1/pos/products', {
                             barcode: bc || null,
                             sku: bc ? ('LZ-' + bc) : ('LZ-' + Date.now()),
@@ -608,6 +632,8 @@
                             price,
                             cost: (!isNaN(cost) && cost >= 0) ? cost : null,
                             stock_quantity: 0,
+                            supplier_id: this.itemSupplierId || null,
+                            mint_identity: true,
                         });
                     }
                     // A snapped photo (no-barcode maker item) → upload it as the product cover.

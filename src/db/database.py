@@ -193,6 +193,8 @@ _ADDITIVE_COLUMNS: list[str] = [
     # currency.DEFAULT_FX, so a shop is byte-identical until it sets its own plan rates. Same
     # additive TEXT-JSON idiom as vat_rates.
     "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS fx_rates TEXT",
+    # Shop's own SKU prefix for house/no-supplier goods (receiving mints PREFIX-#### from it).
+    "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS house_sku_prefix VARCHAR(8)",
     # Short links for scannable QR (2026-07-13): the postcard QR encodes /p/{short_code} instead of
     # the full /pos/products/{uuid}/postcard so the QR stays low-density → scans reliably even printed
     # ~20mm on a label. short_code minted lazily on first postcard render, unique among non-nulls

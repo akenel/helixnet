@@ -119,7 +119,13 @@ class ProductBase(BaseModel):
 
 class ProductCreate(ProductBase):
     """Schema for creating a new product"""
-    pass
+    # Receiving "supplier mode" (stripped before the ORM sees them; ignored by other callers):
+    # when mint_identity is set, the server mints a clean PREFIX-#### SKU (the supplier's own
+    # prefix, else the shop's house prefix) and a scannable internal EAN-13 if the item has no
+    # real barcode, and tags the product with the supplier. The identity is immutable, so it's
+    # minted server-side — get it right once.
+    supplier_id: Optional[str] = Field(None, description="Supplier to tag + take the SKU prefix from")
+    mint_identity: bool = Field(False, description="Server mints PREFIX-#### SKU + internal EAN-13")
 
 
 class ProductUpdate(BaseModel):
