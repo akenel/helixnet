@@ -19,7 +19,11 @@ from urllib.parse import quote_plus
 import httpx
 
 _UPCITEMDB_TRIAL = "https://api.upcitemdb.com/prod/trial/lookup"
-_OPF = "https://world.openproductsfacts.org/api/v0/product/{}.json"
+# The "Open * Facts" family — free, keyless, unlimited. FOOD is the big one (3M+ products: drinks,
+# snacks, gummies…), then non-food PRODUCTS. A shop sells both, so try food first (more common),
+# then products. Same API shape for all of them.
+_OFACTS_HOSTS = ("world.openfoodfacts.org", "world.openproductsfacts.org")
+_OFACTS = "https://{}/api/v0/product/{}.json"
 _TIMEOUT = 12
 
 
@@ -75,27 +79,28 @@ async def lookup_product(barcode: str | None, name: str | None = None) -> dict:
         except Exception:
             pass
 
-        # 2) Open Products Facts — free + unlimited; coverage + LANGUAGE vary (flag it, don't trust).
-        try:
-            r2 = await c.get(_OPF.format(barcode))
-            d2 = r2.json() or {}
-            if d2.get("status") == 1:
-                p = d2.get("product") or {}
-                imgs = [p.get("image_url")] if p.get("image_url") else []
-                out.update(
-                    found=True, source="openproductsfacts",
-                    title=out["title"] or p.get("product_name") or None,
-                    brand=out["brand"] or p.get("brands") or None,
-                    category=out["category"] or p.get("categories") or None,
-                    description=out["description"] or p.get("generic_name") or None,
-                    images=out["images"] or [u for u in imgs if u],
-                )
-                langs = p.get("languages_hierarchy") or []
-                if langs:
-                    out["lang_hint"] = str(langs[0]).replace("en:", "")   # e.g. 'nl' → Dutch
-                return out
-        except Exception:
-            pass
+        # 2) Open Food/Products Facts — free + unlimited; coverage + LANGUAGE vary (flag, don't trust).
+        for host in _OFACTS_HOSTS:
+            try:
+                r2 = await c.get(_OFACTS.format(host, barcode))
+                d2 = r2.json() or {}
+                if d2.get("status") == 1:
+                    p = d2.get("product") or {}
+                    imgs = [p.get("image_url")] if p.get("image_url") else []
+                    out.update(
+                        found=True, source=host.split(".")[1],   # 'openfoodfacts' | 'openproductsfacts'
+                        title=out["title"] or p.get("product_name") or None,
+                        brand=out["brand"] or p.get("brands") or None,
+                        category=out["category"] or p.get("categories") or None,
+                        description=out["description"] or p.get("generic_name") or None,
+                        images=out["images"] or [u for u in imgs if u],
+                    )
+                    langs = p.get("languages_hierarchy") or []
+                    if langs:
+                        out["lang_hint"] = str(langs[0]).replace("en:", "")   # e.g. 'nl' → Dutch
+                    return out
+            except Exception:
+                continue
 
     if out["note"] is None:
         out["note"] = "not_found"
