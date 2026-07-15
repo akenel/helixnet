@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>RCV-SLIP-01 · Delivery-Slip Reader (AI)</title>
+<style>
+  :root { --green:#1a4d2e; --ink:#1a1a1a; --line:#dcdcdc; }
+  * { box-sizing:border-box; }
+  body { font-family:'Helvetica Neue',Arial,sans-serif; color:var(--ink); max-width:900px; margin:0 auto; padding:28px; line-height:1.5; }
+  header { border-bottom:3px solid var(--green); padding-bottom:14px; margin-bottom:22px; display:flex; justify-content:space-between; align-items:flex-end; }
+  header h1 { color:var(--green); margin:0; font-size:24px; }
+  header .id { text-align:right; font-size:13px; color:#666; }
+  h2 { color:var(--green); font-size:17px; margin:26px 0 8px; border-bottom:1px solid var(--line); padding-bottom:4px; }
+  table { width:100%; border-collapse:collapse; margin:10px 0; font-size:14px; }
+  th,td { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+  th { background:var(--green); color:#fff; font-size:12.5px; letter-spacing:.3px; }
+  tr:nth-child(even) td { background:#f7f9f7; }
+  .step td:first-child { font-weight:700; width:34px; text-align:center; color:var(--green); }
+  .chk { width:52px; text-align:center; font-size:18px; }
+  .expect { color:#0a6b2e; }
+  .note { background:#fff9e6; border:1px solid #f0d98a; border-radius:8px; padding:12px 14px; font-size:13.5px; margin:12px 0; }
+  .files { font-family:monospace; font-size:13px; }
+  code { background:#f0f0f0; padding:1px 5px; border-radius:4px; }
+  .pill { display:inline-block; background:var(--green); color:#fff; border-radius:12px; padding:1px 10px; font-size:12px; }
+  ul { margin:6px 0 6px 18px; } li { margin:3px 0; }
+</style></head>
+<body>
+<header>
+  <div><h1>📄 Delivery-Slip Reader — UAT</h1><div style="color:#666;font-size:13px">Snap a supplier slip → AI reads it → matches your catalogue → you confirm</div></div>
+  <div class="id"><b>RCV-SLIP-01</b><br>Banco · Receiving<br>2026-07-15 · sandbox</div>
+</header>
+
+<p>This tests the new <b>📄 Read delivery slip</b> button on Receiving. The AI reads a photo of a supplier's
+delivery note (<i>Lieferschein</i>), pulls out the header + every line item, and matches each line to a real
+product in your catalogue — so you just confirm and add. <span class="pill">happy flow first</span></p>
+
+<h2>1 · What a Swiss delivery slip looks like (what to expect)</h2>
+<p>A Swiss <b>Lieferschein</b> (FR <i>bon de livraison</i>, IT <i>bolla di consegna</i>) travels <b>with the goods</b>
+and typically carries:</p>
+<ul>
+  <li><b>Supplier</b> name + address + <b>UID</b> (CHE-###.###.### MWST)</li>
+  <li><b>Lieferschein-Nr.</b> (the slip number) and <b>Datum</b> (date)</li>
+  <li><b>Lieferadresse</b> — your shop</li>
+  <li>A <b>line table</b>: Pos · Menge · Art.-Nr. · Bezeichnung · (sometimes Preis)</li>
+  <li>Often a <b>Total</b> + a reservation-of-title line — the AI is told to <b>skip totals/VAT/shipping</b></li>
+</ul>
+<p>Real suppliers you'll see: <b>Tamar Trade</b> (behind Artemis), <b>FourTwenty</b>, <b>Near Dark</b>, <b>Hemag</b>.
+Some show prices, some don't — both are fine.</p>
+
+<h2>2 · The test files (upload these)</h2>
+<p class="files">
+docs/testing/banco/receiving-slips/<b>slip-01-single.png</b> — 1 known item (Gizeh King Size ×20) · <span class="expect">HAPPY FLOW</span><br>
+docs/testing/banco/receiving-slips/<b>slip-02-multi.png</b> — 4 known items (Gizeh, Raw, BIC, Old School Papers)
+</p>
+<div class="note">📱 <b>To test on your phone:</b> open these PNGs (AirDrop / email / photo them off the screen) so they're in
+your camera roll, then use <b>📄 Read delivery slip → choose photo</b>. On desktop, just pick the file.
+<br>✅ <b>Pre-verified on the box:</b> slip-01 read <code>Gizeh King Size ×20 @1.40</code> → matched <b>100%</b>;
+slip-02 read all 4 lines → all matched <b>100%</b>. So if yours differs, it's the upload/photo, not the engine.</div>
+
+<h2>3 · Happy-flow steps</h2>
+<table>
+  <tr><th>#</th><th>Do this</th><th>Expected</th><th class="chk">✓/✗</th></tr>
+  <tr class="step"><td>1</td><td>Receiving → pick supplier <b>Tamar/Artemis</b> (or leave it)</td><td>You're in the receiving screen</td><td class="chk"></td></tr>
+  <tr class="step"><td>2</td><td>Tap <b>📄 Read delivery slip</b> → choose <code>slip-01-single.png</code></td><td class="expect">"🔍 Reading slip…" then a review panel opens</td><td class="chk"></td></tr>
+  <tr class="step"><td>3</td><td>Read the header</td><td class="expect">Supplier "TAMAR TRADE GmbH", Nr. LS-2026-4471, date 2026-07-15</td><td class="chk"></td></tr>
+  <tr class="step"><td>4</td><td>Read the line</td><td class="expect">"Gizeh King Size" ×20 · match shown ✓ (~100%)</td><td class="chk"></td></tr>
+  <tr class="step"><td>5</td><td>Tap <b>Add</b> on that line</td><td class="expect">It turns green "✓ added"; the item lands on the Delivery list</td><td class="chk"></td></tr>
+  <tr class="step"><td>6</td><td>Close the panel → hit <b>✅ Receive</b></td><td class="expect">"Catalogued 1 item" — done</td><td class="chk"></td></tr>
+  <tr class="step"><td>7</td><td>Now redo with <code>slip-02-multi.png</code> → <b>Add all matched</b></td><td class="expect">All 4 lines match; all add in one tap</td><td class="chk"></td></tr>
+</table>
+
+<h2>4 · What to tell Tiger</h2>
+<ul>
+  <li>Did the <b>header</b> (supplier / Nr. / date) read right?</li>
+  <li>Did every <b>line</b> read right (description, quantity, price)?</li>
+  <li>Did the <b>matches</b> make sense — right product, sensible %?</li>
+  <li>How did it <b>feel</b> — fast enough? clear? what's missing?</li>
+</ul>
+
+<h2>5 · Round 2 — edge cases (after the happy flow feels good)</h2>
+<p>Once this is smooth we build slips that break things on purpose:</p>
+<ul>
+  <li><b>Not in catalogue</b> — an item we don't stock → should offer <b>＋ New item</b></li>
+  <li><b>Brand-new maker item</b> — no barcode → new item + minted ECO/ITEM code</li>
+  <li><b>Messy / handwritten</b> slip, a <b>PDF</b>, a <b>phone photo at an angle</b></li>
+  <li><b>No prices</b> on the slip · <b>mixed languages</b> · a long 15-line slip</li>
+  <li><b>Wrong supplier</b> picked vs the slip's supplier — does it warn / auto-suggest?</li>
+</ul>
+
+<p style="margin-top:26px;color:#888;font-size:12px;border-top:1px solid var(--line);padding-top:10px">
+Banco · Receiving · RCV-SLIP-01 · generated 2026-07-15. Slips are fakes for testing (Tamar Trade / Artemis Luzern).</p>
+</body></html>

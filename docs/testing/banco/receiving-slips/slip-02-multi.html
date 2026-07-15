@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#e9e9e9; padding:24px; font-family:'Helvetica Neue',Arial,sans-serif; color:#111; }
+  .slip { width:820px; margin:0 auto; background:#fff; padding:48px 56px; box-shadow:0 2px 10px rgba(0,0,0,.15); }
+  .top { display:flex; justify-content:space-between; align-items:flex-start; border-bottom:3px solid #1a4d2e; padding-bottom:18px; }
+  .brand { font-size:22px; font-weight:800; color:#1a4d2e; letter-spacing:.5px; }
+  .brand small { display:block; font-weight:400; font-size:12px; color:#555; margin-top:4px; line-height:1.5; }
+  .doc { text-align:right; }
+  .doc h1 { font-size:26px; letter-spacing:2px; color:#1a4d2e; }
+  .doc table { margin-top:8px; font-size:13px; }
+  .doc td { padding:1px 0 1px 14px; text-align:right; }
+  .doc td.k { color:#666; }
+  .parties { display:flex; justify-content:space-between; margin:26px 0 8px; font-size:13px; }
+  .parties .lbl { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#888; margin-bottom:5px; }
+  .parties .box { line-height:1.55; }
+  table.items { width:100%; border-collapse:collapse; margin-top:18px; font-size:13.5px; }
+  table.items th { background:#1a4d2e; color:#fff; text-align:left; padding:9px 10px; font-weight:600; font-size:12px; letter-spacing:.3px; }
+  table.items th.num, table.items td.num { text-align:right; }
+  table.items td { padding:11px 10px; border-bottom:1px solid #e4e4e4; }
+  table.items tr:nth-child(even) td { background:#f7f9f7; }
+  .totals { margin-top:14px; display:flex; justify-content:flex-end; }
+  .totals table { font-size:14px; }
+  .totals td { padding:3px 0 3px 26px; text-align:right; }
+  .totals .grand td { font-weight:800; font-size:16px; border-top:2px solid #1a4d2e; padding-top:8px; color:#1a4d2e; }
+  .foot { margin-top:34px; font-size:11.5px; color:#777; line-height:1.6; border-top:1px solid #ddd; padding-top:14px; }
+  .sign { margin-top:36px; display:flex; justify-content:space-between; font-size:12px; color:#555; }
+  .sign div { width:44%; border-top:1px solid #999; padding-top:6px; text-align:center; }
+</style></head>
+<body>
+  <div class="slip">
+    <div class="top">
+      <div class="brand">TAMAR TRADE GmbH
+        <small>Blegistrasse 1 · 6340 Baar · Schweiz<br>
+        UID: CHE-116.281.277 MWST · Tel. 041 500 12 34 · bestellung@tamar.ch</small>
+      </div>
+      <div class="doc">
+        <h1>LIEFERSCHEIN</h1>
+        <table>
+          <tr><td class="k">Nr.</td><td>LS-2026-4489</td></tr>
+          <tr><td class="k">Datum</td><td>15.07.2026</td></tr>
+          <tr><td class="k">Kunden-Nr.</td><td>K-1042</td></tr>
+          <tr><td class="k">Bestellung</td><td>WEB-88240</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="parties">
+      <div>
+        <div class="lbl">Lieferadresse</div>
+        <div class="box"><b>Artemis Luzern</b><br>z.H. Felix<br>Baselstrasse 11<br>6003 Luzern</div>
+      </div>
+      <div style="text-align:right">
+        <div class="lbl">Versand</div>
+        <div class="box">Post PostPac Priority<br>Sendung 99.34.5544.9921<br>1 Paket · 5.1 kg</div>
+      </div>
+    </div>
+
+    <table class="items">
+      <thead><tr>
+        <th style="width:42px">Pos.</th>
+        <th class="num" style="width:70px">Menge</th>
+        <th style="width:130px">Art.-Nr.</th>
+        <th>Bezeichnung</th>
+        <th class="num" style="width:100px">Preis/Stk</th>
+        <th class="num" style="width:100px">Total CHF</th>
+      </tr></thead>
+      <tbody>
+        <tr><td>1</td><td class="num">20</td><td>TAM-21669</td><td>Gizeh King Size</td><td class="num">1.40</td><td class="num">28.00</td></tr>
+        <tr><td>2</td><td class="num">10</td><td>TAM-21577</td><td>Raw KS Classic black Extra Fine</td><td class="num">1.90</td><td class="num">19.00</td></tr>
+        <tr><td>3</td><td class="num">50</td><td>SB-BIC-01</td><td>Feuerzeug BIC mini</td><td class="num">2.00</td><td class="num">100.00</td></tr>
+        <tr><td>4</td><td class="num">5</td><td>TAM-21248</td><td>Old School Papers</td><td class="num">25.00</td><td class="num">125.00</td></tr>
+      </tbody>
+    </table>
+
+    <div class="totals">
+      <table>
+        <tr><td>Zwischensumme</td><td>272.00</td></tr>
+        <tr><td>MwSt 8.1&nbsp;%</td><td>22.03</td></tr>
+        <tr class="grand"><td>Total CHF</td><td>294.03</td></tr>
+      </table>
+    </div>
+
+    <div class="foot">
+      Die Ware bleibt bis zur vollständigen Bezahlung unser Eigentum. Beanstandungen innert 8 Tagen.
+      Vielen Dank für Ihre Bestellung — Tamar Trade GmbH.
+    </div>
+    <div class="sign">
+      <div>Ausgeliefert (Datum / Visum)</div>
+      <div>Erhalten (Datum / Visum)</div>
+    </div>
+  </div>
+</body></html>
