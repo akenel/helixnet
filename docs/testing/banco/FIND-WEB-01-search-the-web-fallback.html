@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>FIND-WEB-01 · Search-the-web fallback</title>
+<style>
+  :root{ --green:#1a4d2e; --line:#dcdcdc; }
+  *{ box-sizing:border-box; } body{ font-family:'Helvetica Neue',Arial,sans-serif; max-width:900px; margin:0 auto; padding:28px; line-height:1.5; color:#1a1a1a; }
+  header{ border-bottom:3px solid var(--green); padding-bottom:14px; margin-bottom:22px; display:flex; justify-content:space-between; align-items:flex-end; }
+  header h1{ color:var(--green); margin:0; font-size:23px; } header .id{ text-align:right; font-size:13px; color:#666; }
+  h2{ color:var(--green); font-size:16px; margin:24px 0 8px; border-bottom:1px solid var(--line); padding-bottom:4px; }
+  table{ width:100%; border-collapse:collapse; margin:10px 0; font-size:14px; }
+  th,td{ border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+  th{ background:var(--green); color:#fff; font-size:12.5px; }
+  tr:nth-child(even) td{ background:#f7f9f7; }
+  .step td:first-child{ font-weight:700; width:34px; text-align:center; color:var(--green); }
+  .chk{ width:54px; text-align:center; font-size:18px; }
+  .exp{ color:#0a6b2e; } code{ background:#f0f0f0; padding:1px 5px; border-radius:4px; }
+  .note{ background:#fff9e6; border:1px solid #f0d98a; border-radius:8px; padding:12px 14px; font-size:13.5px; margin:12px 0; }
+</style></head>
+<body>
+<header>
+  <div><h1>🔎 Search-the-web fallback — UAT</h1><div style="color:#666;font-size:13px">Never dead-end a product hunt (Felix's idea)</div></div>
+  <div class="id"><b>FIND-WEB-01</b><br>Banco · sandbox<br>2026-07-15</div>
+</header>
+
+<p>When a product can't be found locally (catalog / reference), a <b>🔎 Search the web</b> button opens Google
+pre-filled with the <b>barcode + name</b> in a new tab — your manual "go to Google" move, one tap. This tests
+the button appears on every miss and searches the right thing. <b>Guest never sees it — staff only.</b></p>
+
+<div class="note">✅ Proven live: barcode <code>7610442291046</code> → <b>"Sun Snack"</b> via a barcode DB. Tier 1
+(this button) opens Google; Tier 2 (in-app auto-lookup) is banked for a service pick.</div>
+
+<h2>Steps</h2>
+<table>
+  <tr><th>#</th><th>Do this</th><th>Expected</th><th class="chk">✓/✗</th></tr>
+  <tr class="step"><td>1</td><td><b>Catalog</b> → search a product that isn't there (e.g. <code>zzzclippergas</code>)</td><td class="exp">"No products" + a <b>🔎 Search the web</b> button appears</td><td class="chk"></td></tr>
+  <tr class="step"><td>2</td><td>Tap it</td><td class="exp">New tab: Google search for your term</td><td class="chk"></td></tr>
+  <tr class="step"><td>3</td><td><b>Scan</b> → scan/type a barcode not in the catalog (e.g. <code>7610442291046</code>) → open "new item"</td><td class="exp">🔎 Search the web button by the name field</td><td class="chk"></td></tr>
+  <tr class="step"><td>4</td><td>Tap it</td><td class="exp">Google opens with the <b>barcode</b> (+ name if typed) — finds "Sun Snack"</td><td class="chk"></td></tr>
+  <tr class="step"><td>5</td><td><b>Receiving</b> → 📷 New item (no barcode) → search a name with no match (e.g. <code>clipper gas bottle</code>)</td><td class="exp">🔎 Search the web button under the catalogue search</td><td class="chk"></td></tr>
+  <tr class="step"><td>6</td><td>Tap it</td><td class="exp">Google opens with the name</td><td class="chk"></td></tr>
+  <tr class="step"><td>7</td><td>Sanity: open a product <b>Page as a guest</b> (incognito, logged out)</td><td class="exp">No staff buttons (search-the-web lives on the staff screens, not the guest page)</td><td class="chk"></td></tr>
+</table>
+
+<h2>Notes / anything off</h2>
+<p style="border:1px solid var(--line);border-radius:8px;min-height:70px;padding:10px;">&nbsp;</p>
+
+<p style="margin-top:20px;color:#888;font-size:12px;border-top:1px solid var(--line);padding-top:10px">
+Banco · FIND-WEB-01 · 2026-07-15 · sandbox b1799. Ship to prod on green. Tier 2 (auto barcode-DB lookup) banked.</p>
+</body></html>
