@@ -57,6 +57,7 @@
                         <input
                             type="text"
                             x-model="barcodeInput"
+                            x-ref="barcodeInput"
                             @keyup.enter="searchByBarcode()"
                             placeholder="Scan or type barcode..."
                             data-i18n-placeholder="scan.ph_barcode"
@@ -606,8 +607,9 @@
                 <!-- FALLBACK: genuinely new item — collapsed so create-new is the last resort,
                      not the default. Opening it spawns a NEW catalog row. -->
                 <div class="border-t pt-3">
-                    <button x-show="!lazyCreateOpen" @click="lazyCreateOpen=true" class="text-sm text-blue-600 hover:underline" data-i18n="scan.add_new_item_link">
-                        Not in the catalog? Add it as a new item →
+                    <button x-show="!lazyCreateOpen" @click="lazyCreateOpen=true"
+                            class="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-base flex items-center justify-center gap-2 shadow">
+                        ➕ <span data-i18n="scan.add_new_item_link">Not found — add it here (we keep the scanned code &amp; can look it up on the web)</span>
                     </button>
                     <div x-show="lazyCreateOpen" style="display:none;" class="space-y-4">
                         <p class="text-xs text-amber-700 bg-amber-50 rounded-lg p-2" data-i18n="scan.new_catalog_warning">New catalog item — only do this if it truly isn't in the search above.</p>
@@ -918,6 +920,16 @@
                 }
 
                 const code = this.barcodeInput.trim();
+                // Double-fire guard: a fast scanner (or holding the item on the beam) can trigger the
+                // SAME code twice in a blink → two rings / a garbage double-entry. Ignore an identical
+                // code within 700ms; a real "sell two" re-scan is always slower than that.
+                const now = Date.now();
+                if (code === this._lastScanCode && (now - (this._lastScanAt || 0)) < 700) {
+                    this.barcodeInput = '';
+                    this.$nextTick(() => this.$refs.barcodeInput && this.$refs.barcodeInput.focus());
+                    return;
+                }
+                this._lastScanCode = code; this._lastScanAt = now;
                 try {
                     // Exact barcode lookup (the dedicated endpoint -- /search fuzzy-ranks
                     // the exact match too low to trust for a scan).
@@ -926,6 +938,8 @@
                     if (window.CatalogCache) CatalogCache.put(product);   // P1: keep the offline mirror warm
                     this.barcodeInput = '';
                     showToast(t('scan.toast_product_added'), 'success');
+                    // Keep the cursor IN the box so the next scan just works — no mouse needed.
+                    this.$nextTick(() => this.$refs.barcodeInput && this.$refs.barcodeInput.focus());
 
                 } catch (error) {
                     // P1 read-offline: if the lookup failed because we're OFFLINE, answer from the
