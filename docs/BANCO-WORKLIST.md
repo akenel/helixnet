@@ -71,6 +71,20 @@ Spec: **[docs/BANCO-ECOLUTION-ONBOARDING-SPEC.md](BANCO-ECOLUTION-ONBOARDING-SPE
   the phone) + help cover + the new-hire onboarding (kid starts Thu; self-drive kit ONBOARD-KIT-01 is ready). The
   barcode-trap fix now protects that new hire on the live till.
 
+## 📄 2026-07-15 — READ-THE-DELIVERY-SLIP (AI) — CUT #1 SHIPPED SANDBOX b1784 c9353bc
+
+Angel's "ultimate idea": snap the supplier's delivery note → AI reads supplier + note-no + date +
+EVERY product line → each line trigram-matched to the live catalogue → operator confirms/adds. Built
+on the EXISTING multi-provider vision engine (no reinvention): new `delivery_slip` VisionDomain +
+`POST /receiving/read-slip` + a review modal on receiving ("📄 Read delivery slip"). Suggest-only.
+- ✅ **End-to-end PROVEN on the box** (gemini 3.7s): synthetic Lieferschein → structured lines, Total
+  row correctly skipped. **Text accuracy on the crude synthetic image was rough → real-slip TUNING is
+  the next round** (prompt + a real sample). This is cut #1 = plumbing, as promised.
+- ▶ **NEXT tuning:** test with a REAL slip photo/PDF; refine the prompt on real formats; attach the slip
+  image to the goods-receipt record (spec §8); auto-select the session supplier when the slip names one;
+  let a line pick a NON-top match (currently adds matches[0]). Also still queued: AI desc+tags (step 4),
+  delivery-line preview (§12), edit-guard rollout to other modals, mobile back-button.
+
 ## 🔴 2026-07-14 PROD INCIDENT + BL-100 raised — Tycoon Gas scanned "discontinued" on the mobile till
 
 **Live prod, Angel on mobile:** scan a can of **Tycoon Gas 250ml** → *"discontinued."* Root cause = a **bad match
