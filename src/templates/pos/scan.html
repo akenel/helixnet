@@ -669,7 +669,7 @@
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="scan.price_chf">Price (CHF)</label>
-                                <input type="number" step="0.05" min="0" x-model="lazyPrice" @keyup.enter="saveLazyCapture()" placeholder="0.00" class="input-field text-2xl font-bold">
+                                <input type="number" step="0.05" min="0" x-model="lazyPrice" x-ref="lazyPriceInput" @keyup.enter="saveLazyCapture()" placeholder="0.00" class="input-field text-2xl font-bold">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="scan.quantity">Quantity</label>
@@ -1358,6 +1358,8 @@
                         this.lazyCreateOpen = true;
                         if (this.web.title && !(this.lazyName || '').trim()) this.lazyName = this.web.title;
                         this.webDesc = this.web.description || '';
+                        // Name's filled → drop the cursor straight into Price. Thumb lands, types, done.
+                        this.$nextTick(() => this.$refs.lazyPriceInput && this.$refs.lazyPriceInput.focus());
                     }
                 } catch (e) {
                     this.web = { found: false, note: 'error', google_url: null, quota: null, images: [] };
@@ -1425,6 +1427,8 @@
                     this.lazyOpen = false;
                     this.barcodeInput = '';
                     showToast(t('scan.toast_saved_qty', {n: qty}), 'success');
+                    // Close the loop — cursor back in the scan box, ready for the next bang. No mouse.
+                    this.$nextTick(() => this.$refs.barcodeInput && this.$refs.barcodeInput.focus());
                 } catch (err) {
                     // No permission (cashier) or any failure → never block the sale.
                     // Fall back to a one-off line so the customer still gets rung up.
