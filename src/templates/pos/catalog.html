@@ -275,13 +275,22 @@
                             </ul>
                         </div>
                     </template>
-                    <div class="flex gap-2 mt-4">
+                    <div class="flex gap-2 mt-4 flex-wrap">
                         <button x-show="user.isManager" @click="openEdit(detailProduct); detailProduct=null"
                                 class="btn-primary flex-1">✏️ <span data-i18n="catalog.edit_this_product">Edit this product</span></button>
+                        <!-- 🏷️ Print a label — Pam's one-tap: any staff, any item, on demand (Brother QL-820) -->
+                        <a :href="'/pos/products/' + (detailProduct?.id) + '/label'" target="_blank" x-show="detailProduct?.id"
+                           class="flex-none inline-flex items-center gap-1 px-3 py-2 rounded-lg border-2 border-emerald-200 text-emerald-700 font-semibold hover:border-emerald-400 hover:bg-emerald-50"
+                           :title="t('catalog.print_label')">🏷️ <span data-i18n="catalog.label">Label</span></a>
+                        <!-- Full product page — the living-catalogue view (guest browse / share) -->
+                        <a :href="'/pos/products/' + (detailProduct?.id) + '/page?lang=' + (detailProduct?._descLang || window._posLang || 'de')"
+                           target="_blank" x-show="detailProduct?.id"
+                           class="flex-none inline-flex items-center gap-1 px-3 py-2 rounded-lg border-2 border-gray-200 text-gray-600 font-semibold hover:border-gray-400 hover:bg-gray-50"
+                           :title="t('catalog.open_page')">🔎 <span data-i18n="catalog.page">Page</span></a>
                         <!-- Postcard maker: any product → a beautiful shareable card in the current language -->
                         <a :href="'/pos/products/' + (detailProduct?.id) + '/postcard?lang=' + (detailProduct?._descLang || window._posLang || 'de')"
                            target="_blank" x-show="detailProduct?.id"
-                           class="flex-none inline-flex items-center gap-1 px-3 rounded-lg border-2 border-indigo-200 text-indigo-700 font-semibold hover:border-indigo-400 hover:bg-indigo-50"
+                           class="flex-none inline-flex items-center gap-1 px-3 py-2 rounded-lg border-2 border-indigo-200 text-indigo-700 font-semibold hover:border-indigo-400 hover:bg-indigo-50"
                            :title="t('catalog.make_postcard')">📇 <span data-i18n="catalog.postcard">Postcard</span></a>
                     </div>
                 </div>
