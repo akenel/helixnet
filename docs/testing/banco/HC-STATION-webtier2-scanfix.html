@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>HC — Tier-2 web lookup + scan polish</title>
+<style>
+  :root{--green:#1a4d2e;--line:#dcdcdc;}
+  *{box-sizing:border-box;} body{font-family:'Helvetica Neue',Arial,sans-serif;max-width:820px;margin:0 auto;padding:26px;line-height:1.5;color:#1a1a1a;}
+  header{border-bottom:3px solid var(--green);padding-bottom:12px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:flex-end;}
+  header h1{color:var(--green);margin:0;font-size:21px;} header .id{text-align:right;font-size:13px;color:#666;}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:14px;}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;}
+  th{background:var(--green);color:#fff;font-size:12.5px;} tr:nth-child(even) td{background:#f7f9f7;}
+  .step td:first-child{font-weight:700;width:30px;text-align:center;color:var(--green);}
+  .chk{width:52px;text-align:center;font-size:18px;} .exp{color:#0a6b2e;} code{background:#f0f0f0;padding:1px 5px;border-radius:4px;}
+  .note{background:#fff9e6;border:1px solid #f0d98a;border-radius:8px;padding:10px 12px;font-size:13px;margin:10px 0;}
+</style></head>
+<body>
+<header><div><h1>🚦 HC — Tier-2 web lookup + scan polish</h1><div style="color:#666;font-size:13px">Quick check before prod</div></div>
+<div class="id"><b>HC-STATION</b><br>Banco · sandbox b1804<br>2026-07-15</div></header>
+
+<div class="note">Test barcodes that resolve: <code>7610948070107</code> (Sambal, food) · <code>5449000000996</code> (Coke) ·
+<code>070330600072</code> (BIC). Login as a cashier/manager.</div>
+
+<table>
+  <tr><th>#</th><th>Do this</th><th>Expected</th><th class="chk">✓/✗</th></tr>
+  <tr class="step"><td>1</td><td><b>Till</b> (/pos/scan) → scan/type <code>5449000000996</code> (not in catalog) → the big blue <b>"Not found — add it here"</b> button → open it</td><td class="exp">Clear, obvious next step</td><td class="chk"></td></tr>
+  <tr class="step"><td>2</td><td>Tap <b>🔎 Look it up on the web</b></td><td class="exp">Card: title (Coke), quota "N of 100 left", image to pick, ✓ Use this</td><td class="chk"></td></tr>
+  <tr class="step"><td>3</td><td>Pick image → ✓ Use this → set a price → save</td><td class="exp">Sells; product born into catalog with image + title</td><td class="chk"></td></tr>
+  <tr class="step"><td>4</td><td>Scan the SAME barcode again</td><td class="exp">Rings up instantly — no lookup ("sold once, born forever")</td><td class="chk"></td></tr>
+  <tr class="step"><td>5</td><td><b>Double-scan guard:</b> scan one item twice super fast (or hold on the beam)</td><td class="exp">Rings ONCE, not twice — no garbage dupe</td><td class="chk"></td></tr>
+  <tr class="step"><td>6</td><td><b>Auto-focus:</b> after a scan, scan the next item WITHOUT clicking the field</td><td class="exp">Cursor stayed in the box — next scan just works</td><td class="chk"></td></tr>
+  <tr class="step"><td>7</td><td><b>Food/Swiss:</b> new item → <code>7610948070107</code> → Look it up</td><td class="exp">"Sambal Oelek" + image + ⚠ language flag (french)</td><td class="chk"></td></tr>
+  <tr class="step"><td>8</td><td><b>Receiving</b> → New item → a barcode → Look it up on the web</td><td class="exp">Same card works here too</td><td class="chk"></td></tr>
+  <tr class="step"><td>9</td><td><b>Miss:</b> look up a made-up barcode e.g. <code>1111111111116</code></td><td class="exp">"Not in the free databases" + 🔎 Google link (never a dead end)</td><td class="chk"></td></tr>
+</table>
+
+<h3 style="color:var(--green)">Feedback / anything off</h3>
+<p style="border:1px solid var(--line);border-radius:8px;min-height:60px;padding:10px;">&nbsp;</p>
+<p style="margin-top:16px;color:#888;font-size:12px;border-top:1px solid var(--line);padding-top:8px">Green → promote 4 commits to staging→prod (gated, backup-gated).</p>
+</body></html>
