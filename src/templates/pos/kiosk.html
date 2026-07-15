@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="de"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Banco — Scan &amp; See</title>
+<script src="/static/vendor/tailwind.js"></script>
+<script src="/static/vendor/qrcode.min.js"></script>
+<script src="/static/vendor/html5-qrcode.min.js"></script>
+<script src="/static/pos-scanner.js"></script>
+<script defer src="/static/vendor/alpine.min.js"></script>
+<style>
+  html,body{ height:100%; margin:0; }
+  body{ font-family:-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+        background:radial-gradient(1200px 800px at 50% -10%, #1c5138 0%, #113024 45%, #0a1a14 100%);
+        color:#f3f7f4; overflow-x:hidden; }
+  .scanline{ position:relative; }
+  .scanline::after{ content:''; position:absolute; left:8%; right:8%; top:50%; height:3px;
+        background:linear-gradient(90deg,transparent,#7CFFB2,transparent); border-radius:3px;
+        animation:sweep 2.2s ease-in-out infinite; }
+  @keyframes sweep{ 0%,100%{ transform:translateY(-42px); opacity:.25 } 50%{ transform:translateY(42px); opacity:1 } }
+  @keyframes pulse{ 0%,100%{ transform:scale(1); opacity:.9 } 50%{ transform:scale(1.06); opacity:1 } }
+  .breathe{ animation:pulse 2.4s ease-in-out infinite; }
+  .glass{ background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); backdrop-filter:blur(6px); }
+  .price{ color:#8CFFC0; }
+  .off-focus{ position:fixed; left:-9999px; top:0; width:1px; height:1px; opacity:0; }
+  ::-webkit-scrollbar{ width:10px } ::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.18); border-radius:8px }
+</style></head>
+<body x-data="kiosk()" x-init="init()" @click="refocus()">
+
+  <!-- The scanner types here no matter what's on screen (hardware scanner = keyboard). -->
+  <input x-ref="scanInput" class="off-focus" @keydown.enter.prevent="doScan(scanBuffer); scanBuffer=''"
+         x-model="scanBuffer" aria-hidden="true" autocomplete="off">
+
+  <!-- Language bar (always visible, top-right) -->
+  <div class="fixed top-4 right-4 flex gap-2 z-20">
+    <template x-for="L in langs" :key="L.code">
+      <button @click="setLang(L.code)"
+              class="px-3 py-2 rounded-xl text-sm font-semibold transition glass"
+              :class="lang===L.code ? 'ring-2 ring-emerald-300 bg-emerald-500/20' : 'opacity-70 hover:opacity-100'">
+        <span x-text="L.flag"></span> <span class="hidden sm:inline" x-text="L.label"></span>
+      </button>
+    </template>
+  </div>
+
+  <!-- ============ ATTRACT ============ -->
+  <section x-show="view==='attract'" class="min-h-screen flex flex-col items-center justify-center px-6 text-center">
+    <div class="text-emerald-300/80 text-lg tracking-[0.3em] uppercase mb-6">Banco</div>
+
+    <div class="scanline breathe mb-8">
+      <div class="text-[92px] leading-none">🔫</div>
+    </div>
+
+    <h1 class="text-4xl sm:text-6xl font-black mb-3" x-text="t('head')"></h1>
+    <p class="text-xl sm:text-2xl text-emerald-100/80 mb-10 max-w-2xl" x-text="t('sub')"></p>
+
+    <div class="flex flex-wrap items-center justify-center gap-4 sm:gap-8 mb-12 text-lg">
+      <div class="flex items-center gap-2"><span class="w-9 h-9 rounded-full bg-emerald-500/25 flex items-center justify-center font-bold">1</span><span x-text="t('s1')"></span></div>
+      <div class="opacity-40 text-2xl">→</div>
+      <div class="flex items-center gap-2"><span class="w-9 h-9 rounded-full bg-emerald-500/25 flex items-center justify-center font-bold">2</span><span x-text="t('s2')"></span></div>
+      <div class="opacity-40 text-2xl">→</div>
+      <div class="flex items-center gap-2"><span class="w-9 h-9 rounded-full bg-emerald-500/25 flex items-center justify-center font-bold">3</span><span x-text="t('s3')"></span></div>
+    </div>
+
+    <!-- manual entry (works with no hardware; the scanner uses the hidden input) -->
+    <form @submit.prevent="doScan(manual); manual=''" class="w-full max-w-md">
+      <input x-model="manual" inputmode="numeric" :placeholder="t('typeHint')"
+             class="w-full text-center text-lg px-5 py-4 rounded-2xl glass text-white placeholder-emerald-200/40 outline-none focus:ring-2 focus:ring-emerald-300">
+    </form>
+
+    <!-- Camera + phone: use the device camera here, OR carry it to your own phone via the QR. -->
+    <div class="flex flex-col sm:flex-row items-center gap-6 mt-10">
+      <button @click="startCamera()" class="px-7 py-4 rounded-2xl glass text-lg font-semibold flex items-center gap-2">
+        📷 <span x-text="t('useCamera')"></span>
+      </button>
+      <div class="flex items-center gap-3 glass rounded-2xl p-3 pr-5">
+        <div id="kiosk-qr" class="bg-white p-1.5 rounded-lg" x-ref="qr"></div>
+        <div class="text-left text-sm text-emerald-100/75 max-w-[160px]" x-text="t('onPhone')"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CAMERA OVERLAY ============ -->
+  <section x-show="view==='camera'" class="fixed inset-0 z-30 bg-black flex flex-col items-center justify-center" style="display:none;">
+    <div id="kiosk-reader" class="w-full max-w-md"></div>
+    <p x-show="camError" style="display:none;" class="text-white/80 mt-4 px-6 text-center" x-text="camError"></p>
+    <button @click="stopCamera(); reset()" class="mt-8 px-7 py-4 rounded-2xl bg-white/15 text-white text-lg font-semibold">
+      ✕ <span x-text="t('another')"></span>
+    </button>
+  </section>
+
+  <!-- ============ LOADING ============ -->
+  <section x-show="view==='loading'" class="min-h-screen flex flex-col items-center justify-center">
+    <div class="text-6xl breathe">🔍</div>
+    <p class="mt-4 text-emerald-100/70 text-lg" x-text="t('looking')"></p>
+  </section>
+
+  <!-- ============ PRODUCT ============ -->
+  <section x-show="view==='product'" class="min-h-screen px-5 sm:px-10 py-8">
+    <div class="max-w-5xl mx-auto">
+      <div class="grid md:grid-cols-2 gap-8 items-start">
+        <!-- image -->
+        <div class="rounded-3xl glass p-4 flex items-center justify-center aspect-square overflow-hidden">
+          <img x-show="p.image_url" :src="p.image_url" alt="" class="max-w-full max-h-full object-contain rounded-2xl">
+          <div x-show="!p.image_url" class="text-[120px] opacity-40">📦</div>
+        </div>
+        <!-- info -->
+        <div>
+          <div class="flex items-center gap-2 flex-wrap mb-2">
+            <span x-show="p.category" class="text-xs px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-200" x-text="p.category"></span>
+            <span x-show="p.is_age_restricted" class="text-xs px-3 py-1 rounded-full bg-red-500/25 text-red-100 font-semibold" x-text="'🔞 ' + t('age')"></span>
+          </div>
+          <h1 class="text-3xl sm:text-4xl font-black leading-tight mb-3" x-text="p.name"></h1>
+          <div x-show="p.price" class="text-5xl font-black price mb-5"><span x-text="p.currency"></span> <span x-text="p.price"></span></div>
+
+          <p class="text-lg text-emerald-50/85 leading-relaxed whitespace-pre-line mb-6" x-text="p.description"></p>
+
+          <!-- tier ladder -->
+          <div x-show="p.tiers && p.tiers.length" class="glass rounded-2xl p-4 mb-6">
+            <template x-for="row in p.tiers" :key="row.qty">
+              <div class="flex justify-between py-1 text-sm">
+                <span><span class="font-bold" x-text="row.qty + '×'"></span></span>
+                <span><span x-text="p.currency + ' ' + row.unit"></span>
+                  <span x-show="row.save>0" class="text-emerald-300 font-semibold" x-text="'−' + row.save + '%'"></span></span>
+              </div>
+            </template>
+          </div>
+
+          <!-- specs -->
+          <div x-show="p.specs && p.specs.length" class="glass rounded-2xl p-4 mb-2">
+            <template x-for="row in p.specs" :key="row[0]">
+              <div class="flex justify-between py-1.5 border-b border-white/10 last:border-0 text-sm">
+                <span class="text-emerald-100/60" x-text="row[0]"></span>
+                <span class="font-medium text-right" x-text="row[1]"></span>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+
+      <!-- actions -->
+      <div class="mt-10 flex flex-wrap gap-3 justify-center">
+        <button @click="printCard()" class="px-7 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-emerald-950 text-lg font-bold shadow-lg">
+          🖨️ <span x-text="t('printCard')"></span>
+        </button>
+        <button @click="openDetails()" class="px-7 py-4 rounded-2xl glass text-lg font-semibold">
+          📄 <span x-text="t('details')"></span>
+        </button>
+        <button @click="reset()" class="px-7 py-4 rounded-2xl glass text-lg font-semibold">
+          ← <span x-text="t('another')"></span>
+        </button>
+      </div>
+      <p class="text-center text-emerald-200/40 text-sm mt-6" x-text="t('scanNext')"></p>
+    </div>
+  </section>
+
+  <!-- ============ NOT FOUND ============ -->
+  <section x-show="view==='notfound'" class="min-h-screen flex flex-col items-center justify-center px-6 text-center">
+    <div class="text-7xl mb-5">🤔</div>
+    <p class="text-2xl font-semibold max-w-xl mb-3" x-text="t('notFound')"></p>
+    <p class="text-emerald-200/50 mb-8" x-text="lastBarcode"></p>
+    <button @click="reset()" class="px-7 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-emerald-950 text-lg font-bold">
+      ← <span x-text="t('another')"></span>
+    </button>
+  </section>
+
+<script>
+  function kiosk() {
+    return {
+      view: 'attract',
+      lang: 'de',
+      manual: '',
+      scanBuffer: '',
+      p: {},
+      lastBarcode: '',
+      idleTimer: null,
+      _busy: false,
+      camError: '',
+      isTouch: false,
+
+      langs: [
+        { code:'de', flag:'🇩🇪', label:'Deutsch' },
+        { code:'fr', flag:'🇫🇷', label:'Français' },
+        { code:'it', flag:'🇮🇹', label:'Italiano' },
+        { code:'en', flag:'🇬🇧', label:'English' },
+      ],
+      STR: {
+        de:{ head:'Scanne ein Produkt', sub:'Alle Details — in deiner Sprache.', s1:'Scannen', s2:'Ansehen', s3:'Karte drucken',
+             typeHint:'oder Barcode eingeben', looking:'Suche…', printCard:'Karte drucken', details:'Details', another:'Neu scannen',
+             scanNext:'Einfach das nächste Produkt scannen', age:'18+ Ausweis nötig',
+             useCamera:'Mit Kamera scannen', onPhone:'Oder auf deinem Handy öffnen', noCamera:'Keine Kamera verfügbar. Bitte den Scanner oder die Eingabe nutzen.',
+             notFound:'Dieses Produkt haben wir nicht gefunden. Bitte frag unser Team.' },
+        fr:{ head:'Scannez un produit', sub:'Tous les détails — dans votre langue.', s1:'Scanner', s2:'Voir', s3:'Imprimer une carte',
+             typeHint:'ou saisir le code-barres', looking:'Recherche…', printCard:'Imprimer une carte', details:'Détails', another:'Nouveau scan',
+             scanNext:'Scannez simplement le produit suivant', age:'18+ pièce d’identité requise',
+             useCamera:'Scanner avec la caméra', onPhone:'Ou ouvrez-le sur votre téléphone', noCamera:'Pas de caméra. Utilisez le scanner ou la saisie.',
+             notFound:'Nous n’avons pas trouvé ce produit. Merci de demander à notre équipe.' },
+        it:{ head:'Scansiona un prodotto', sub:'Tutti i dettagli — nella tua lingua.', s1:'Scansiona', s2:'Guarda', s3:'Stampa una card',
+             typeHint:'o inserisci il codice a barre', looking:'Ricerca…', printCard:'Stampa una card', details:'Dettagli', another:'Nuova scansione',
+             scanNext:'Scansiona semplicemente il prossimo prodotto', age:'18+ documento richiesto',
+             useCamera:'Scansiona con la fotocamera', onPhone:'Oppure aprilo sul tuo telefono', noCamera:'Nessuna fotocamera. Usa lo scanner o digita.',
+             notFound:'Non abbiamo trovato questo prodotto. Chiedi al nostro team.' },
+        en:{ head:'Scan a product', sub:'Every detail — in your language.', s1:'Scan', s2:'See it', s3:'Print a card',
+             typeHint:'or type the barcode', looking:'Looking…', printCard:'Print a card', details:'Details', another:'Scan another',
+             scanNext:'Just scan the next product', age:'18+ ID required',
+             useCamera:'Scan with camera', onPhone:'Or open it on your phone', noCamera:'No camera available. Use the scanner or type it in.',
+             notFound:'We couldn’t find that product. Please ask our team.' },
+      },
+
+      t(k){ return (this.STR[this.lang] || this.STR.en)[k] || (this.STR.en[k] || k); },
+
+      init(){
+        // remember the guest's language choice within a session
+        const saved = sessionStorage.getItem('kiosk_lang');
+        if (saved && this.STR[saved]) this.lang = saved;
+        document.documentElement.lang = this.lang;
+        // Touch device = a guest's phone (via the QR). Don't auto-focus the hidden input there —
+        // it would pop the on-screen keyboard. The laptop kiosk (hardware gun) is non-touch.
+        this.isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints || 0) > 0;
+        this.renderQR();
+        if (!this.isTouch) {
+          this.refocus();
+          setInterval(() => this.refocus(), 2500);   // keep the scanner target focused
+        }
+      },
+
+      renderQR(){
+        try {
+          if (typeof QRCode === 'undefined' || !this.$refs.qr) return;
+          this.$refs.qr.innerHTML = '';
+          new QRCode(this.$refs.qr, {
+            text: location.origin + '/pos/kiosk',
+            width: 96, height: 96,
+            colorDark: '#0a1a14', colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.M,
+          });
+        } catch(e){ /* QR is a nice-to-have; never block the kiosk */ }
+      },
+
+      refocus(){ if (this.isTouch) return; try { const el = this.$refs.scanInput; if (el && document.activeElement !== el && !this._typingManual()) el.focus(); } catch(e){} },
+      _typingManual(){ const a = document.activeElement; return a && a.tagName === 'INPUT' && a !== this.$refs.scanInput; },
+
+      async startCamera(){
+        this.camError = '';
+        this.view = 'camera';
+        this.$nextTick(() => {
+          if (!window.PosScanner) { this.camError = this.t('noCamera'); return; }
+          window.PosScanner.start('kiosk-reader',
+            (code) => { try { window.PosScanner.beep(); window.PosScanner.vibrate(); } catch(e){}; this.doScan(code); },
+            () => { this.camError = this.t('noCamera'); },
+            {});
+        });
+      },
+      async stopCamera(){ try { if (window.PosScanner) await window.PosScanner.stop(); } catch(e){} },
+
+      setLang(code){
+        this.lang = code;
+        sessionStorage.setItem('kiosk_lang', code);
+        document.documentElement.lang = code;
+        // re-translate the product in place if one is showing
+        if (this.view === 'product' && this.lastBarcode) this.doScan(this.lastBarcode, true);
+      },
+
+      async doScan(raw, silent){
+        const code = (raw || '').trim();
+        if (!code || this._busy) return;
+        this._busy = true;
+        this.lastBarcode = code;
+        this.bumpIdle();
+        if (!silent) this.view = 'loading';
+        try {
+          const r = await fetch(`/api/v1/pos/kiosk/lookup?barcode=${encodeURIComponent(code)}&lang=${this.lang}`);
+          const data = await r.json();
+          if (data && data.found) {
+            this.p = data;
+            this.view = 'product';
+          } else {
+            this.view = 'notfound';
+          }
+        } catch(e){
+          console.error('kiosk lookup failed', e);
+          this.view = 'notfound';
+        } finally {
+          this._busy = false;
+          this.refocus();
+        }
+      },
+
+      printCard(){
+        if (!this.p.id) return;
+        window.open(`/pos/products/${this.p.id}/postcard?lang=${this.lang}`, '_blank');
+      },
+      openDetails(){
+        if (!this.p.id) return;
+        window.open(`/pos/products/${this.p.id}/page?lang=${this.lang}`, '_blank');
+      },
+
+      reset(){ this.stopCamera(); this.view = 'attract'; this.p = {}; this.manual = ''; this.camError = ''; this.$nextTick(() => { this.renderQR(); this.refocus(); }); },
+
+      // idle → back to attract so the next guest starts fresh
+      bumpIdle(){
+        clearTimeout(this.idleTimer);
+        this.idleTimer = setTimeout(() => { if (this.view !== 'attract') this.reset(); }, 90000);
+      },
+    };
+  }
+</script>
+</body></html>

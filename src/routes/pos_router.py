@@ -6772,6 +6772,55 @@ async def product_label(
     })
 
 
+# ================================================================
+# THE KIOSK — guest self-service station (banco-kiosk-guest-station).
+# A no-login, full-screen, scan-first shell a customer walks up to while the cashier is
+# busy: "scan any product, see it in YOUR language, print a card to carry." Reuses the
+# whole enriched catalog (multilingual descriptions, image, postcard, label). v1 = walk-up
+# -and-view; guest cart + held-order handoff is v2.
+# ================================================================
+@html_router.get("/pos/kiosk", response_class=HTMLResponse, name="pos_kiosk")
+async def pos_kiosk(request: Request):
+    """The guest kiosk shell — public, full-screen, boots to an attract screen. All the product
+    data comes from the public /api/v1/pos/kiosk/lookup endpoint; nothing here needs a login."""
+    return templates.TemplateResponse("pos/kiosk.html", {"request": request})
+
+
+@router.get("/kiosk/lookup")
+async def kiosk_lookup(
+    barcode: str = "",
+    lang: str = "de",
+    db: AsyncSession = Depends(get_db_session),
+):
+    """PUBLIC guest lookup for the kiosk — resolve a scanned barcode to a GUEST-SAFE product view
+    (name + description in `lang`, price, image, specs, price tiers, 18+ flag). No auth; active
+    products only; deliberately NO cost / margin / supplier / stock. Feeds pos/kiosk.html. Returns
+    {found:false} (never 404s) so the kiosk can show a friendly 'ask staff' instead of an error."""
+    from src.services.product_translations import ensure_description
+    barcode = (barcode or "").strip()
+    lang = (lang or "de").lower()[:2]
+    if not barcode:
+        return {"found": False, "barcode": ""}
+    product = await _find_product_by_any_barcode(db, barcode)
+    if not product or not product.is_active:
+        return {"found": False, "barcode": barcode}
+    desc = await ensure_description(db, product, lang)
+    return {
+        "found": True,
+        "id": str(product.id),
+        "name": desc.get("name") or product.name,
+        "description": desc.get("description") or product.description or "",
+        "price": f"{float(product.price):.2f}" if product.price is not None else None,
+        "currency": "CHF",
+        "image_url": product.image_url,
+        "category": product.category,
+        "specs": _product_page_specs(product.attributes, lang),
+        "tiers": _product_page_tiers(product.price_tiers, product.price, product.tier_mode),
+        "is_age_restricted": bool(getattr(product, "is_age_restricted", False)),
+        "lang": lang,
+    }
+
+
 @html_router.get("/pos/labels/batch", response_class=HTMLResponse, name="labels_batch")
 async def labels_batch(
     request: Request,
