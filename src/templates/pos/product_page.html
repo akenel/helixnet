@@ -89,6 +89,11 @@
           <a class="btn btn-p" href="/pos/products/{{ product.id }}/postcard?lang={{ lang }}" target="_blank">📇 {{ {'de':'Karte','fr':'Carte','it':'Cartolina'}.get(lang,'Card') }}</a>
           <button class="btn btn-s" onclick="sharePage()">↗ {{ {'de':'Teilen','fr':'Partager','it':'Condividi'}.get(lang,'Share') }}</button>
         </div>
+        <!-- Role actions — revealed by JS per POS role: cashier+ sees Label, manager+ sees Edit -->
+        <div class="actions" id="roleBar" style="display:none">
+          <a class="btn btn-s" id="btnLabel" href="/pos/products/{{ product.id }}/label" target="_blank" style="display:none">🏷️ {{ {'de':'Etikett','fr':'Étiquette','it':'Etichetta'}.get(lang,'Label') }}</a>
+          <a class="btn btn-s" id="btnEdit" href="/pos/catalog?edit={{ product.id }}" style="display:none">✏️ {{ {'de':'Bearbeiten','fr':'Modifier','it':'Modifica'}.get(lang,'Edit') }}</a>
+        </div>
 
         {% if tiers %}
         <div class="tiers">
@@ -142,19 +147,36 @@
     </div>
   </div>
 
-  <!-- Manager lens: only if a POS session token is present in this tab -->
-  <div class="mgr" id="mgrbar">
-    <a class="edit" href="/pos/catalog?edit={{ product.id }}">✏️ {{ {'de':'Bearbeiten','fr':'Modifier','it':'Modifica'}.get(lang,'Edit') }}</a>
-    <a class="back" href="/pos">← POS</a>
-  </div>
+  <!-- Persistent "back to POS" — only for a logged-in tab -->
+  <div class="mgr" id="mgrbar"><a class="back" href="/pos">← POS</a></div>
 
   <script>
-    // Manager/cashier lens: reveal the toolbar when logged into POS (token in this tab's session).
-    try { if (sessionStorage.getItem('pos_token')) document.getElementById('mgrbar').style.display = 'flex'; } catch(e){}
+    // One page, three lenses — decode the POS token's roles to show the right actions.
+    // Guest (no token): just Card + Share. Cashier: + 🏷️ Label. Manager/admin: + ✏️ Edit.
+    function posRoles(){
+      try {
+        var t = sessionStorage.getItem('pos_token'); if (!t) return null;
+        var b64 = t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+        var json = decodeURIComponent(atob(b64).split('').map(function(c){
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2); }).join(''));
+        return (JSON.parse(json).realm_access || {}).roles || [];
+      } catch(e){ return null; }
+    }
+    (function(){
+      var r = posRoles(); if (!r) return;              // guest → nothing extra
+      var has = function(x){ return r.indexOf(x) >= 0; };
+      var manager = has('pos-manager') || has('pos-admin');
+      var cashier = manager || has('pos-cashier');
+      if (!cashier && !manager) return;
+      document.getElementById('mgrbar').style.display = 'flex';   // "← POS"
+      document.getElementById('roleBar').style.display = 'flex';
+      if (cashier) document.getElementById('btnLabel').style.display = '';
+      if (manager) document.getElementById('btnEdit').style.display = '';
+    })();
     function sharePage(){
-      const d = { title: document.title, url: location.href };
-      if (navigator.share) navigator.share(d).catch(()=>{});
-      else { navigator.clipboard && navigator.clipboard.writeText(location.href); alert('Link copied'); }
+      var d = { title: document.title, url: location.href };
+      if (navigator.share) navigator.share(d).catch(function(){});
+      else { if (navigator.clipboard) navigator.clipboard.writeText(location.href); alert('Link copied'); }
     }
   </script>
 </body></html>
