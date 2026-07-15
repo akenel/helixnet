@@ -974,6 +974,37 @@
         }
         window.t = t;
 
+        // ── Unsaved-work guard ──────────────────────────────────────────────────
+        // A stray two-finger swipe (browser "back"), an Escape, a reload, or a mis-tapped
+        // nav link navigates the page away — and any in-progress work a screen keeps only
+        // in memory (the receiving delivery list, an open cart) vanishes with it, silently,
+        // no "wait, you're in the middle of something." A screen registers a "dirty check";
+        // while ANY registered check returns true, the browser asks "Leave site? Changes
+        // you made may not be saved." before it unloads — catching the swipe, the reload,
+        // the tab-close and the stray link alike. The check auto-relaxes when the work is
+        // saved (list emptied). For a screen with a LEGITIMATE forward navigation that
+        // carries its state (e.g. scan → checkout), call suppressOnce() right before it so
+        // the intended hop doesn't nag. Native dialog wording is fixed by the browser.
+        window.HelixDirtyGuard = (function () {
+            const checks = [];
+            let armed = false, skipNext = false;
+            function arm() {
+                if (armed) return;
+                armed = true;
+                window.addEventListener('beforeunload', function (e) {
+                    if (skipNext) { skipNext = false; return; }
+                    const dirty = checks.some(function (fn) { try { return !!fn(); } catch (_) { return false; } });
+                    if (dirty) { e.preventDefault(); e.returnValue = ''; return ''; }
+                });
+            }
+            return {
+                // register(fn) → fn() truthy means "I have unsaved work". Returns unregister().
+                register: function (fn) { arm(); checks.push(fn); return function () { const i = checks.indexOf(fn); if (i >= 0) checks.splice(i, 1); }; },
+                // Skip the guard for exactly the next unload (an intended, state-carrying nav).
+                suppressOnce: function () { skipNext = true; }
+            };
+        })();
+
         // Switch language and reload (cart survives in sessionStorage across the reload).
         function switchLanguage(newLang) {
             if ((window.POS_STRINGS && POS_STRINGS[newLang]) || ['fr', 'nl', 'es'].indexOf(newLang) >= 0) {

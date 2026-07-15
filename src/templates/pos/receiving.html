@@ -307,6 +307,10 @@
                 const info = (AuthHelper.getUserInfo && AuthHelper.getUserInfo()) || {};
                 this.user = { ...info, isManager: AuthHelper.isManager(), isAdmin: AuthHelper.isAdmin() };
                 if (this.user.isManager) this.loadSuppliers();
+                // Don't let a stray swipe/Escape throw away an in-progress delivery: warn while
+                // the list has items OR the new-item form is open. Receiving has no forward nav,
+                // so any departure with work on screen is a real "you're abandoning this batch".
+                if (window.HelixDirtyGuard) HelixDirtyGuard.register(() => this.lines.length > 0 || this.newOpen);
             },
 
             // ---- supplier picker ----
