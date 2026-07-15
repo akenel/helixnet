@@ -119,10 +119,18 @@
                 </template>
 
                 <div class="px-4 py-3 space-y-3">
+                    <!-- Slip provenance captured from the AI read — stamped on every line's audit
+                         record (who + when are automatic). Shown so the operator sees where it's from. -->
+                    <div x-show="slip.delivery_note_no || slip.supplier" style="display:none;"
+                         class="bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2 text-sm text-emerald-800">
+                        📄 <span data-i18n="receiving.from_slip">From delivery slip</span>:
+                        <b x-show="slip.supplier" x-text="slip.supplier"></b><template x-if="slip.delivery_note_no"><span> · <span x-text="slip.delivery_note_no"></span></span></template><template x-if="slip.date"><span> · <span x-text="slip.date"></span></span></template>
+                    </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1"><span data-i18n="receiving.delivery_note">Delivery note</span> <span class="text-gray-400 font-normal" data-i18n="receiving.optional">(optional)</span></label>
                         <input type="text" x-model="reference" maxlength="140" placeholder="e.g. FourTwenty invoice 4821"
                                class="input-field">
+                        <p class="text-xs text-gray-400 mt-1" data-i18n="receiving.delivery_note_hint">Stamped on every item received now — supplier, slip no. and date, for tracking later.</p>
                     </div>
                     <button type="button" @click="confirm()" :disabled="!lines.length || saving"
                             class="btn-success w-full text-lg">
@@ -611,6 +619,17 @@
                     if (!r.ok) throw new Error('read-slip ' + r.status);
                     const d = await r.json();
                     this.slip = { supplier: d.supplier, delivery_note_no: d.delivery_note_no, date: d.date, lines: (d.lines || []) };
+                    // Stamp the slip's provenance onto the delivery so EVERY line received in this
+                    // batch is tracked (supplier · note-no · date → the stock-movement reference;
+                    // who + when are already automatic). This is the "for tracking later" hook.
+                    const meta = [d.supplier, d.delivery_note_no, d.date].filter(Boolean).join(' · ');
+                    if (meta) this.reference = meta;
+                    // Auto-select a matching known supplier so new items inherit the right prefix/tag.
+                    if (d.supplier) {
+                        const sl = d.supplier.toLowerCase(), first = sl.split(/\s+/)[0];
+                        const s = this.suppliers.find(x => x.name && (sl.includes(x.name.toLowerCase()) || x.name.toLowerCase().includes(first)));
+                        if (s) this.supplierId = s.id;
+                    }
                     this.slipOpen = true;
                     if (!this.slip.lines.length) showToast(t('receiving.slip_none'), 'info');
                 } catch (err) {
