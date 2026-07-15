@@ -614,10 +614,43 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="scan.product_name">Product name</label>
                             <input type="text" x-model="lazyName" @keyup.enter="saveLazyCapture()" placeholder="e.g. Rolling papers — King Size" data-i18n-placeholder="scan.ph_product_name" class="input-field">
-                            <!-- Can't identify it? Search the web by the scanned barcode + name (Felix's idea) -->
-                            <button type="button" x-show="(lazyBarcode||'').trim() || (lazyName||'').trim()"
-                                    @click="webSearchProduct(lazyName, lazyBarcode)"
-                                    class="mt-2 text-sm text-indigo-700 font-semibold inline-flex items-center gap-1" style="display:none;">🔎 <span data-i18n="scan.search_web">Search the web</span></button>
+                            <!-- 🔎 TIER-2 web lookup at the TILL (Pam): barcode → free DB → pick image + auto-fill.
+                                 Quota-aware; Google fallback on a miss or when the day's used up. -->
+                            <div x-show="(lazyBarcode||'').trim() || (lazyName||'').trim()" class="mt-2" style="display:none;">
+                                <button type="button" @click="runWebLookup()" :disabled="webBusy"
+                                        class="text-sm text-indigo-700 font-semibold inline-flex items-center gap-1">
+                                    <span x-text="webBusy ? ('🔍 ' + t('scan.web_looking')) : ('🔎 ' + t('scan.web_lookup'))"></span>
+                                </button>
+                                <template x-if="web">
+                                    <div class="mt-2 border rounded-lg p-2 bg-gray-50">
+                                        <p x-show="web.quota" class="text-[11px] mb-1" :class="(web.quota && web.quota.remaining <= 15) ? 'text-red-600 font-semibold' : 'text-gray-400'"
+                                           x-text="web.quota ? t('scan.web_quota', {n: web.quota.remaining, total: web.quota.limit}) : ''"></p>
+                                        <template x-if="web.found">
+                                            <div>
+                                                <div x-show="web.images.length" class="flex gap-1.5 overflow-x-auto pb-1 mb-1">
+                                                    <template x-for="img in web.images" :key="img">
+                                                        <img :src="img" @click="webImage=img" loading="lazy"
+                                                             class="w-14 h-14 object-cover rounded flex-none cursor-pointer border-2"
+                                                             :class="webImage===img ? 'border-emerald-500' : 'border-transparent'">
+                                                    </template>
+                                                </div>
+                                                <p class="font-semibold text-gray-900 text-sm" x-text="web.title"></p>
+                                                <p x-show="web.brand || web.category" class="text-xs text-gray-500" x-text="[web.brand, web.category].filter(Boolean).join(' · ')"></p>
+                                                <p x-show="web.description" class="text-xs text-gray-600 mt-1" x-text="web.description"></p>
+                                                <p x-show="web.lang_hint" class="text-[11px] text-amber-600 mt-1" x-text="t('scan.web_lang', {lang: (web.lang_hint||'').toUpperCase()})"></p>
+                                                <button type="button" @click="useWebResult()" class="btn-success text-xs px-3 py-1 mt-2" data-i18n="scan.web_use">✓ Use this</button>
+                                            </div>
+                                        </template>
+                                        <template x-if="!web.found">
+                                            <div>
+                                                <p class="text-xs text-gray-500" x-text="web.note==='quota_exhausted' ? t('scan.web_quota_out') : t('scan.web_none')"></p>
+                                                <a x-show="web.google_url" :href="web.google_url" target="_blank" rel="noopener"
+                                                   class="text-sm text-indigo-700 font-semibold inline-flex items-center gap-1 mt-1">🔎 <span data-i18n="scan.search_web">Search the web</span></a>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
                         </div>
                         <!-- Photo of the item — for unmarked goods the picture IS the label. -->
                         <div>
@@ -735,13 +768,17 @@
             scanFallback: false,   // no-camera: show the "choose a photo from disc" fallback
             scanLive: '',     // live (unconfirmed) read shown in the overlay
 
-            // BL-87: lazy capture (unknown scan → persisted product)
+            // BL-87: lazy capture (unknown scan → persisted product) — "receive once, born forever"
             lazyOpen: false,
             lazyBarcode: '',
             lazyName: '',
             lazyPrice: '',
             lazyCost: '',          // your buy price (per unit) — optional, invisible to the customer
             lazyQty: 1,
+            webBusy: false,        // Tier-2 web lookup in flight
+            web: null,             // web-lookup result
+            webImage: '',          // the image the operator PICKED (we store one)
+            webDesc: '',           // description carried from the web result
             lazySaving: false,
             lazyPhotoFile: null,   // the snapped item photo (File) to upload after create
             lazyPhotoData: '',     // data URL for the in-modal preview
@@ -1082,6 +1119,7 @@
                 this.lazySaving = false;
                 this.lazyPhotoFile = null;
                 this.lazyPhotoData = '';
+                this.web = null; this.webBusy = false; this.webImage = ''; this.webDesc = '';
                 this.aiBusy = false;
                 this.aiNote = '';
                 this.boxOpen = false;
@@ -1287,6 +1325,25 @@
                 }
             },
 
+            // 🔎 TIER-2 at the till: resolve the scanned barcode from the free web DBs → fill the
+            // form; pick one image from several. Quota-aware, Google fallback. "Receive once, born forever."
+            async runWebLookup() {
+                this.webBusy = true; this.web = null; this.webImage = ''; this.webDesc = '';
+                try {
+                    const p = new URLSearchParams({ barcode: this.lazyBarcode || '', name: this.lazyName || '' });
+                    this.web = await API.get('/api/v1/pos/products/web-lookup?' + p.toString());
+                    if (this.web && this.web.images && this.web.images.length) this.webImage = this.web.images[0];
+                } catch (e) {
+                    this.web = { found: false, note: 'error', google_url: null, quota: null, images: [] };
+                } finally { this.webBusy = false; }
+            },
+            useWebResult() {
+                if (!this.web) return;
+                if (this.web.title && !(this.lazyName || '').trim()) this.lazyName = this.web.title;
+                this.webDesc = this.web.description || '';
+                showToast(t('scan.web_used'), 'success');
+            },
+
             async saveLazyCapture() {
                 if (!this.lazyName.trim()) { showToast(t('scan.toast_enter_product_name'), 'warning'); return; }
                 const price = parseFloat(this.lazyPrice);
@@ -1306,6 +1363,9 @@
                     cost: (!isNaN(cost) && cost >= 0) ? cost : null,
                     // Zero perpetual inventory: no stock_quantity to set. A product is born
                     // once and is always sellable; velocity comes from the sales log, not a count.
+                    // Tier-2 web result rides along: the picked image + description (when used).
+                    image_url: this.webImage || null,
+                    description: this.webDesc || null,
                 };
                 try {
                     // Persist a REAL product via the CASHIER-SAFE quick endpoint (require_any_pos_role).
