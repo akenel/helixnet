@@ -6506,9 +6506,9 @@ def _postcard_store_footer(store, origin: str) -> dict | None:
         display = href.split("://", 1)[-1].rstrip("/")
         return href, display
 
-    web_href, web_display = _linkify(store.website)
-    ig_href, ig_display = _linkify(store.instagram_url)
-    fb_href, fb_display = _linkify(store.facebook_url)
+    web_href, web_display = _linkify(getattr(store, "website", None))
+    ig_href, ig_display = _linkify(getattr(store, "instagram_url", None))
+    fb_href, fb_display = _linkify(getattr(store, "facebook_url", None))
     return {
         "name": store.store_name,
         "hours": store.opening_hours,
@@ -6516,11 +6516,141 @@ def _postcard_store_footer(store, origin: str) -> dict | None:
         "phone": store.phone,
         "logo": logo,
         # Contact + web — how a recipient actually reaches the shop (Angel: critical on the footer).
-        "email": store.email or None,
+        "email": getattr(store, "email", None) or None,
         "website": web_href, "website_display": web_display,
         "instagram": ig_href, "instagram_display": ig_display,
         "facebook": fb_href, "facebook_display": fb_display,
     }
+
+
+# ===================================================================
+# THE PRODUCT PAGE — "the living catalogue" (BANCO-PRODUCT-PAGE-SPEC).
+# One public page per product: gallery, price, tier ladder, spec table,
+# description (in ?lang), "you might also like", store footer. Rendered
+# guest-first; the client reveals cashier/manager panels if logged in.
+# ===================================================================
+_SPEC_LABELS = {
+    "raw_material": {"de": "Material", "fr": "Matériau", "it": "Materiale", "en": "Material"},
+    "papierst_rke": {"de": "Papierstärke", "fr": "Grammage", "it": "Grammatura", "en": "Paper weight"},
+    "width":  {"de": "Breite", "fr": "Largeur", "it": "Larghezza", "en": "Width"},
+    "length": {"de": "Länge", "fr": "Longueur", "it": "Lunghezza", "en": "Length"},
+    "size":   {"de": "Grösse", "fr": "Taille", "it": "Taglia", "en": "Size"},
+    "brand":  {"de": "Marke", "fr": "Marque", "it": "Marca", "en": "Brand"},
+    "content": {"de": "Inhalt", "fr": "Contenu", "it": "Contenuto", "en": "Content"},
+    "flavor": {"de": "Geschmack", "fr": "Goût", "it": "Gusto", "en": "Flavour"},
+    "colour": {"de": "Farbe", "fr": "Couleur", "it": "Colore", "en": "Colour"},
+    "color":  {"de": "Farbe", "fr": "Couleur", "it": "Colore", "en": "Colour"},
+}
+
+
+def _spec_label(key: str, lang: str) -> str:
+    m = _SPEC_LABELS.get(key)
+    if m:
+        return m.get(lang) or m.get("en") or key
+    return key.replace("_", " ").strip().title()
+
+
+def _product_page_specs(attributes, lang: str):
+    """attributes dict → ordered [(label, value)] for the spec table (blanks/internal keys dropped)."""
+    if not isinstance(attributes, dict):
+        return []
+    skip = {"confidence", "source", "source_lang", "path", "18plus", "age", "age_restricted"}
+    rows = []
+    for k, v in attributes.items():
+        if k in skip or v in (None, "", []):
+            continue
+        rows.append((_spec_label(k, lang), str(v)))
+    return rows
+
+
+def _product_page_tiers(price_tiers, base_price, mode):
+    """price_tiers → display rows [{qty, unit, save}] (base row + each break); [] if no ladder."""
+    if not price_tiers:
+        return []
+    from src.services.pricing import tier_unit_price
+    base = Decimal(str(base_price or 0))
+    rows = [{"qty": 1, "unit": f"{base:.2f}", "save": 0}]
+    for t in sorted(price_tiers, key=lambda x: int(x.get("min_qty", 1) or 1)):
+        mq = int(t.get("min_qty", 1) or 1)
+        if mq < 2:
+            continue
+        unit, _ = tier_unit_price(price_tiers, base_price, mq, mode or "per_unit")
+        save = int(round(float((base - unit) / base) * 100)) if base > 0 else 0
+        rows.append({"qty": mq, "unit": f"{unit:.2f}", "save": max(save, 0)})
+    return rows if len(rows) > 1 else []
+
+
+def _product_breadcrumb(tags, category):
+    """'artemis:papers-co/drehpapier/greengo' path tag → ['Papers Co','Drehpapier','Greengo']."""
+    for tg in (tags or "").split(","):
+        tg = tg.strip()
+        if tg.startswith("artemis:"):
+            crumbs = [seg.replace("-", " ").strip().title()
+                      for seg in tg.split(":", 1)[1].split("/") if seg.strip()]
+            if crumbs:
+                return crumbs
+    return [category] if category else []
+
+
+@html_router.get("/pos/products/{product_id}/page", response_class=HTMLResponse, name="product_page")
+async def product_page(
+    product_id: str,
+    request: Request,
+    lang: str = "de",
+    db: AsyncSession = Depends(get_db_session),
+):
+    """The living-catalogue product page — PUBLIC (guest). Gallery, price, tier ladder, spec table,
+    description in `lang`, related items, store footer. The client layers cashier/manager panels on
+    top if a token is present (progressive disclosure); no auth needed to LOOK."""
+    from src.db.models.product_model import ProductModel
+    from src.services.product_translations import ensure_description
+
+    product = await db.get(ProductModel, product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    lang = (lang or "de").lower()[:2]
+    desc = await ensure_description(db, product, lang)
+
+    proto = request.headers.get("x-forwarded-proto", "https")
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host", "")
+    origin = f"{proto}://{host}"
+    store = _postcard_store_footer(await get_active_store_settings(db), origin)
+    is_maker = await _supplier_is_maker(db, product.supplier_name)
+
+    related = []
+    if product.category:
+        res = await db.execute(
+            select(ProductModel)
+            .where(ProductModel.category == product.category,
+                   ProductModel.id != product.id,
+                   ProductModel.is_active == True)  # noqa: E712
+            .order_by(func.random()).limit(8)
+        )
+        related = [
+            {"id": str(p.id), "name": p.name,
+             "price": f"{float(p.price):.2f}" if p.price is not None else None,
+             "image_url": p.image_url}
+            for p in res.scalars().all()
+        ]
+
+    return templates.TemplateResponse("pos/product_page.html", {
+        "request": request,
+        "product": product,
+        "name": desc.get("name") or product.name,
+        "description": desc.get("description") or product.description or "",
+        "provenance": desc.get("provenance"),
+        "price": f"{float(product.price):.2f}" if product.price is not None else None,
+        "currency": "CHF",
+        "image_url": product.image_url,
+        "specs": _product_page_specs(product.attributes, lang),
+        "tiers": _product_page_tiers(product.price_tiers, product.price, product.tier_mode),
+        "crumbs": _product_breadcrumb(product.tags, product.category),
+        "related": related,
+        "store": store,
+        "is_maker": is_maker,
+        "lang": lang,
+        "origin": origin,
+    })
 
 
 @html_router.get("/pos/products/{product_id}/postcard", response_class=HTMLResponse, name="product_postcard")

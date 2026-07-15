@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="{{ lang }}"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{{ name }} · {{ store.name if store else 'Banco' }}</title>
+<meta name="robots" content="noindex">{# guest page, not a public SEO storefront (spec §Open Q1) #}
+<meta property="og:title" content="{{ name }}">
+<meta property="og:description" content="{{ (description or '')[:160] }}">
+{% if image_url %}<meta property="og:image" content="{{ image_url if image_url.startswith('http') else origin + image_url }}">{% endif %}
+<meta property="og:type" content="product">
+<style>
+  :root{ --ink:#1a1a1a; --mut:#6b7280; --line:#e5e7eb; --brand:#1a4d2e; --accent:#8B0000; --bg:#f6f7f6; --card:#fff; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:-apple-system,'Helvetica Neue',Arial,sans-serif; color:var(--ink); background:var(--bg); line-height:1.5; -webkit-font-smoothing:antialiased; }
+  a{ color:inherit; }
+  .wrap{ max-width:640px; margin:0 auto; padding:0 0 40px; }
+  .topbar{ position:sticky; top:0; z-index:20; background:rgba(246,247,246,.92); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:space-between; padding:10px 16px; border-bottom:1px solid var(--line); }
+  .topbar .home{ font-weight:800; color:var(--brand); text-decoration:none; font-size:15px; letter-spacing:.02em; }
+  .langs{ display:flex; gap:2px; }
+  .langs a{ text-decoration:none; font-size:18px; padding:2px 4px; border-radius:6px; opacity:.4; }
+  .langs a.on{ opacity:1; outline:2px solid var(--brand); }
+  .card{ background:var(--card); }
+  .hero{ width:100%; aspect-ratio:1/1; max-height:420px; object-fit:contain; background:#fff; display:block; }
+  .hero.ph{ display:flex; align-items:center; justify-content:center; font-size:64px; color:#cbd5e1; aspect-ratio:1/1; }
+  .body{ padding:20px 18px 0; }
+  .crumb{ font-size:12px; color:var(--mut); margin-bottom:8px; }
+  .crumb span:not(:last-child)::after{ content:' · '; }
+  .maker{ display:inline-block; font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--brand); background:#eaf4ee; padding:3px 9px; border-radius:20px; margin-bottom:6px; }
+  h1{ font-size:26px; line-height:1.2; font-weight:800; }
+  .price{ font-size:32px; font-weight:800; color:var(--accent); margin:12px 0 4px; }
+  .actions{ display:flex; gap:10px; margin:16px 0 4px; }
+  .btn{ flex:1; text-align:center; padding:12px; border-radius:12px; font-weight:700; text-decoration:none; border:none; font-size:15px; cursor:pointer; }
+  .btn-p{ background:var(--brand); color:#fff; }
+  .btn-s{ background:#fff; color:var(--brand); border:2px solid var(--brand); }
+  .tiers{ margin:18px 0; border:1px solid #c7d9cd; border-radius:12px; overflow:hidden; }
+  .tiers h3{ background:#eaf4ee; color:var(--brand); font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; padding:9px 14px; }
+  .tiers .row{ display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-top:1px solid #eef3ef; font-size:15px; }
+  .tiers .row:first-of-type{ border-top:none; color:var(--mut); }
+  .tiers .q{ font-weight:600; } .tiers .u{ font-weight:800; }
+  .tiers .save{ font-size:11px; font-weight:800; color:#fff; background:var(--brand); border-radius:20px; padding:1px 8px; margin-left:8px; }
+  h2.sec{ font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--mut); margin:26px 0 8px; }
+  .desc{ font-size:15.5px; color:#333; white-space:pre-line; }
+  .desc .auto{ font-size:11px; color:var(--mut); }
+  table.specs{ width:100%; border-collapse:collapse; font-size:14.5px; }
+  table.specs td{ padding:9px 2px; border-bottom:1px solid var(--line); }
+  table.specs td:first-child{ color:var(--mut); width:45%; }
+  table.specs td:last-child{ font-weight:600; text-align:right; }
+  .related{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media(min-width:520px){ .related{ grid-template-columns:1fr 1fr 1fr; } }
+  .rel{ background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; text-decoration:none; display:flex; flex-direction:column; transition:box-shadow .15s; }
+  .rel:hover{ box-shadow:0 4px 14px rgba(0,0,0,.08); }
+  .rel img{ width:100%; aspect-ratio:1/1; object-fit:contain; background:#fff; }
+  .rel .ph{ aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; font-size:32px; color:#cbd5e1; background:#f8fafc; }
+  .rel .n{ font-size:12.5px; font-weight:600; padding:8px 8px 2px; line-height:1.25; flex:1; }
+  .rel .p{ font-size:13px; font-weight:800; color:var(--accent); padding:0 8px 9px; }
+  .foot{ margin:30px 16px 0; border-top:1.5px solid var(--accent); padding-top:14px; text-align:center; }
+  .foot .sid{ display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:6px; }
+  .foot .slogo{ height:22px; } .foot .sname{ font-size:15px; font-weight:800; }
+  .foot .lines{ display:flex; flex-direction:column; gap:2px; font-size:12.5px; color:var(--mut); }
+  .foot .lines a{ text-decoration:none; }
+  .foot .web a{ color:var(--accent); font-weight:600; }
+  .foot .phone{ color:var(--accent); font-weight:700; }
+  /* Manager toolbar — revealed by JS only when a POS token is present in this tab */
+  .mgr{ position:fixed; left:0; right:0; bottom:0; z-index:40; display:none; gap:10px; padding:10px 16px; background:#111; }
+  .mgr a{ flex:1; text-align:center; padding:11px; border-radius:10px; font-weight:700; text-decoration:none; font-size:14px; }
+  .mgr .edit{ background:var(--brand); color:#fff; } .mgr .back{ background:#333; color:#eee; }
+</style></head>
+<body data-pid="{{ product.id }}" data-lang="{{ lang }}">
+  <div class="wrap">
+    <div class="topbar">
+      <a class="home" href="{{ ('https://' ~ store.website.split('://')[-1]) if store and store.website else '#' }}">{{ store.name if store else 'Banco' }}</a>
+      <div class="langs">
+        {% for l,f in [('de','🇩🇪'),('en','🇬🇧'),('fr','🇫🇷'),('it','🇮🇹')] %}
+        <a class="{{ 'on' if lang==l else '' }}" href="?lang={{ l }}">{{ f }}</a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="card">
+      {% if image_url %}<img class="hero" src="{{ image_url }}" alt="{{ name }}" onerror="this.classList.add('ph');this.removeAttribute('src');this.textContent='📦'">
+      {% else %}<div class="hero ph">📦</div>{% endif %}
+      <div class="body">
+        {% if crumbs %}<div class="crumb">{% for c in crumbs %}<span>{{ c }}</span>{% endfor %}</div>{% endif %}
+        {% if is_maker %}<div class="maker">✨ Handmade · {{ product.supplier_name }}</div>{% endif %}
+        <h1>{{ name }}</h1>
+        {% if price %}<div class="price">{{ currency }} {{ price }}</div>{% endif %}
+
+        <div class="actions">
+          <a class="btn btn-p" href="/pos/products/{{ product.id }}/postcard?lang={{ lang }}" target="_blank">📇 {{ {'de':'Karte','fr':'Carte','it':'Cartolina'}.get(lang,'Card') }}</a>
+          <button class="btn btn-s" onclick="sharePage()">↗ {{ {'de':'Teilen','fr':'Partager','it':'Condividi'}.get(lang,'Share') }}</button>
+        </div>
+
+        {% if tiers %}
+        <div class="tiers">
+          <h3>🏷️ {{ {'de':'Mengenrabatt','fr':'Prix dégressifs','it':'Prezzi a scaglioni'}.get(lang,'Quantity price breaks') }}</h3>
+          {% for row in tiers %}
+          <div class="row">
+            <span class="q">{% if row.qty == 1 %}1 {{ {'de':'Stück','fr':'pièce','it':'pezzo'}.get(lang,'unit') }}{% else %}{{ {'de':'ab','fr':'dès','it':'da'}.get(lang,'from') }} {{ row.qty }} {{ {'de':'Stück','fr':'pièces','it':'pezzi'}.get(lang,'pcs') }}{% endif %}</span>
+            <span><span class="u">{{ currency }} {{ row.unit }}</span>{% if row.save %}<span class="save">−{{ row.save }}%</span>{% endif %}</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if description %}
+        <h2 class="sec">{{ {'de':'Beschreibung','fr':'Description','it':'Descrizione'}.get(lang,'Description') }}{% if provenance == 'machine' %} <span class="auto">🤖</span>{% endif %}</h2>
+        <div class="desc">{{ description }}</div>
+        {% endif %}
+
+        {% if specs %}
+        <h2 class="sec">{{ {'de':'Details','fr':'Détails','it':'Dettagli'}.get(lang,'Details') }}</h2>
+        <table class="specs">{% for label,val in specs %}<tr><td>{{ label }}</td><td>{{ val }}</td></tr>{% endfor %}</table>
+        {% endif %}
+
+        {% if related %}
+        <h2 class="sec">{{ {'de':'Das könnte Ihnen auch gefallen','fr':'Vous aimerez aussi','it':'Potrebbe piacerti anche'}.get(lang,'You might also like') }}</h2>
+        <div class="related">
+          {% for r in related %}
+          <a class="rel" href="/pos/products/{{ r.id }}/page?lang={{ lang }}">
+            {% if r.image_url %}<img src="{{ r.image_url }}" alt="" onerror="this.outerHTML='<div class=ph>📦</div>'">{% else %}<div class="ph">📦</div>{% endif %}
+            <div class="n">{{ r.name }}</div>
+            {% if r.price %}<div class="p">{{ currency }} {{ r.price }}</div>{% endif %}
+          </a>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+
+      {% if store %}
+      <div class="foot">
+        <div class="sid">{% if store.logo %}<img class="slogo" src="{{ store.logo }}" onerror="this.style.display='none'">{% endif %}<span class="sname">{{ store.name }}</span></div>
+        <div class="lines">
+          {% if store.address %}<span>📍 {{ store.address }}</span>{% endif %}
+          {% if store.hours %}<span>🕑 {{ store.hours }}</span>{% endif %}
+          {% if store.phone %}<span class="phone">📞 {{ store.phone }}</span>{% endif %}
+          {% if store.website %}<span class="web">🌐 <a href="{{ store.website }}" target="_blank" rel="noopener">{{ store.website_display }}</a></span>{% endif %}
+          {% if store.email %}<span>✉️ <a href="mailto:{{ store.email }}">{{ store.email }}</a></span>{% endif %}
+          {% if store.instagram or store.facebook %}<span>{% if store.instagram %}<a href="{{ store.instagram }}" target="_blank" rel="noopener">📷 Instagram</a>{% endif %}{% if store.instagram and store.facebook %} · {% endif %}{% if store.facebook %}<a href="{{ store.facebook }}" target="_blank" rel="noopener">👍 Facebook</a>{% endif %}</span>{% endif %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Manager lens: only if a POS session token is present in this tab -->
+  <div class="mgr" id="mgrbar">
+    <a class="edit" href="/pos/catalog?edit={{ product.id }}">✏️ {{ {'de':'Bearbeiten','fr':'Modifier','it':'Modifica'}.get(lang,'Edit') }}</a>
+    <a class="back" href="/pos">← POS</a>
+  </div>
+
+  <script>
+    // Manager/cashier lens: reveal the toolbar when logged into POS (token in this tab's session).
+    try { if (sessionStorage.getItem('pos_token')) document.getElementById('mgrbar').style.display = 'flex'; } catch(e){}
+    function sharePage(){
+      const d = { title: document.title, url: location.href };
+      if (navigator.share) navigator.share(d).catch(()=>{});
+      else { navigator.clipboard && navigator.clipboard.writeText(location.href); alert('Link copied'); }
+    }
+  </script>
+</body></html>

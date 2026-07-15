@@ -835,6 +835,10 @@
                 this.user = { ...userInfo, isManager: AuthHelper.isManager(), isAdmin: AuthHelper.isAdmin() };
                 this.loadCategories();
                 this.search();   // list the catalogue by default — no need to type first
+                // Deep-link from the product page's manager "Edit" button: /pos/catalog?edit={id}
+                // opens that product straight into the edit modal (openEdit fetches the full record).
+                const editId = new URLSearchParams(location.search).get('edit');
+                if (editId && this.user.isManager) this.$nextTick(() => this.openEdit({ id: editId }));
                 // Infinite scroll: load the next page as the sentinel nears the viewport.
                 this.$nextTick(() => {
                     const sentinel = this.$refs.moreSentinel;
