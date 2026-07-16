@@ -776,6 +776,37 @@
         </div>
     </div>
 
+    <!-- BL-128 #3: same-size look-alikes — "is it one of these?" before forking a duplicate. -->
+    <div x-show="nameDupes" x-transition class="fixed inset-0 z-[80] bg-black/60 flex items-center justify-center p-4" style="display:none;" @click.self="nameDupes=null">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-5 space-y-4">
+            <div>
+                <h3 class="text-lg font-bold text-gray-900" data-i18n="catalog.namedup_title">Is it one of these?</h3>
+                <p class="text-sm text-gray-600 mt-1" data-i18n="catalog.namedup_msg">A very similar item — same name and size — is already in the catalog. Open it instead of creating a duplicate.</p>
+            </div>
+            <div class="space-y-2 max-h-72 overflow-y-auto">
+                <template x-for="m in (nameDupes || [])" :key="m.id">
+                    <button @click="useDupeMatch(m)" :disabled="saving"
+                            class="w-full text-left border rounded-lg p-3 hover:border-green-400 hover:bg-green-50 flex items-center gap-3">
+                        <img x-show="m.image_url" :src="m.image_url" class="w-12 h-12 rounded object-cover flex-shrink-0" alt="">
+                        <div class="min-w-0 flex-1">
+                            <div class="font-medium text-gray-900 break-words" x-text="m.name"></div>
+                            <div class="text-sm text-gray-600">
+                                <span x-show="posProductSize(m.name)" class="badge-size">📏 <span x-text="posProductSize(m.name)"></span></span>
+                                <span class="ml-1" x-text="m.price != null ? formatPrice(m.price) : ''"></span>
+                                <span class="text-gray-400 text-xs ml-1" x-text="m.category || ''"></span>
+                            </div>
+                        </div>
+                        <span class="text-green-600 text-sm font-semibold flex-shrink-0" data-i18n="catalog.namedup_use">Use this →</span>
+                    </button>
+                </template>
+            </div>
+            <div class="flex flex-col gap-2 pt-1">
+                <button @click="createAnyway()" :disabled="saving" class="w-full text-gray-700 text-sm py-2 border rounded-lg hover:bg-gray-50" data-i18n="catalog.namedup_create">No, these are different — create it anyway</button>
+                <button @click="nameDupes=null" :disabled="saving" class="w-full text-gray-500 text-sm py-2 hover:underline" data-i18n="catalog.namedup_cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <!-- BL-89: barcode scanner overlay (shared PosScanner) for the create/edit form -->
     <div x-show="scanOpen" x-transition class="fixed inset-0 z-[70] bg-black flex flex-col" style="display:none;">
         <div class="flex justify-between items-center px-4 py-3 bg-black/80 text-white">
@@ -846,6 +877,8 @@
             editing: false,
             saving: false,
             dup: null,            // BL-32: set when a create hits an existing product → {existing_id, existing, conflict}
+            nameDupes: null,      // BL-128 #3: same-size look-alikes returned by the create guard → [{id,name,price,...}]
+            _forceCreate: false,  // BL-128 #3: true after "create it anyway" → next create bypasses the name guard
             form: {},
             gallery: [],          // existing photos (edit mode): [{id, url, is_cover}]
             pendingPhotos: [],    // photos queued before the product exists (create): [{file, preview}]
@@ -1514,7 +1547,13 @@
                     if (this.editing) {
                         await API.put(`/api/v1/pos/products/${this.form.id}`, this._payload());
                     } else {
-                        const created = await API.post('/api/v1/pos/products', this._payload());
+                        // BL-128 #3: after the operator confirms "create it anyway" we bypass the
+                        // same-size name-dedup guard; otherwise the guard may 409 with look-alikes.
+                        const url = this._forceCreate
+                            ? '/api/v1/pos/products?allow_duplicate=true'
+                            : '/api/v1/pos/products';
+                        const created = await API.post(url, this._payload());
+                        this._forceCreate = false;
                         productId = created.id;
                     }
                     // Upload any queued photos (create mode) now that the product exists.
@@ -1526,9 +1565,16 @@
                     this.modalOpen = false;
                     this.showDiscontinued ? this.loadDiscontinued() : this.search();
                 } catch (e) {
+                    // BL-128 #3: a same-size, near-identical NAME already exists → the #1 dupe source.
+                    // Show the look-alikes so the operator can open the real one instead of forking it.
+                    if (!this.editing && e.status === 409 && e.detail && e.detail.conflict === 'name'
+                        && Array.isArray(e.detail.matches) && e.detail.matches.length) {
+                        this.nameDupes = e.detail.matches;
+                        this._forceCreate = false;
+                    }
                     // BL-32: a create that hit an existing product (409 duplicate barcode/SKU) is NOT a
                     // dead-end — surface the existing one so the operator can apply their enrichment to it.
-                    if (!this.editing && e.status === 409 && e.detail && e.detail.existing_id) {
+                    else if (!this.editing && e.status === 409 && e.detail && e.detail.existing_id) {
                         try {
                             const existing = await API.get(`/api/v1/pos/products/${e.detail.existing_id}`);
                             this.dup = { existing_id: e.detail.existing_id, existing, conflict: e.detail.conflict };
@@ -1558,6 +1604,19 @@
                 } catch (e) {
                     showToast(e.message || t('catalog.save_failed'), 'error');
                 } finally { this.saving = false; }
+            },
+
+            // BL-128 #3: "that's the one" — drop the dupe form and open the existing item to enrich it.
+            useDupeMatch(m) {
+                this.nameDupes = null;
+                this.pendingPhotos = [];
+                this.openEdit({ id: m.id });
+            },
+            // BL-128 #3: "no, these are different" — create anyway, bypassing the name guard this once.
+            createAnyway() {
+                this.nameDupes = null;
+                this._forceCreate = true;
+                this.save();
             },
 
             async discontinue() {

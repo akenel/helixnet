@@ -1,6 +1,6 @@
 # BL-128 — Variant findability: make SIZE / price / photo POP in till search results
 
-**Status:** #1 SHIPPED PROD (size badge); #2 SHIPPED PROD (size-token boost, 2026-07-16). Field-authored from a full day scanning at Felix's Littau shop (2026-07-16).
+**Status:** #1 SHIPPED PROD (size badge); #2 SHIPPED PROD (size-token boost); #3 SHIPPED PROD (same-size name-dedup guard) — all 2026-07-16. Field-authored from a full day scanning at Felix's Littau shop (2026-07-16).
 **Type:** Frontend (result-card rendering) + a tiny size-extract helper; no schema, no backend change for #1.
 **Branch policy:** `main` (trunk-based). Own commit, own BL. Ship through the gate ladder sandbox→staging→prod.
 **Verification:** Angel at the till — search a strain that has multiple sizes (e.g. "Lemon Haze") and confirm the

@@ -302,6 +302,7 @@ async def _apply_supplier_mode_identity(db: AsyncSession, data: dict) -> dict:
 @router.post("/products", response_model=ProductRead, status_code=status.HTTP_201_CREATED)
 async def create_product(
     product: ProductCreate,
+    allow_duplicate: bool = False,
     db: AsyncSession = Depends(get_db_session),
     current_user: dict = Depends(require_any_pos_role()),
 ):
@@ -309,13 +310,51 @@ async def create_product(
 
     Any cashier can CAPTURE a new item (Banco's born-once / sell-to-seed spirit — the person
     on the floor grows the catalog by selling). Destructive edits stay manager-only: changing
-    price/details (PUT) and deleting (DELETE) still require a manager/admin."""
+    price/details (PUT) and deleting (DELETE) still require a manager/admin.
+
+    BL-128 #3 — name-dedup guard: the give-up-and-create path is the #1 dupe source (barcode-dup is
+    already caught by BL-32, but a MANUAL create with no/new barcode slipped a near-identical name
+    past). Before minting, look for an active product with a STRONG name match AND the SAME pack size
+    (2g is never a dupe of 10g) and 409 with those matches so the client can offer "is it one of
+    these?" `allow_duplicate=true` (the operator clicked 'create anyway') skips the guard."""
 
     data = await _apply_supplier_mode_identity(db, _sanitize_product_codes(product.model_dump()))
     # BL-CAT funnel: every new item's category is canonicalized (+ product_group set) so the
     # cleaned 2-level tree can NEVER regrow into the German-slug mess. Unknown/blank -> Unsorted.
     from src.services.catalog_taxonomy import canonicalize_category
     data["category"], data["product_group"] = canonicalize_category(data.get("category"))
+
+    # BL-128 #3 — same-size name-dedup guard (skipped on an explicit create-anyway).
+    if not allow_duplicate:
+        _name = (data.get("name") or "").strip()
+        if _name:
+            from sqlalchemy import text as _text
+            _want = _product_size(_name)
+            try:
+                _cands = (await db.execute(_text(
+                    "SELECT id, name, price, image_url, sku, barcode, category, "
+                    "       similarity(lower(name), lower(:n)) AS sim "
+                    "FROM products WHERE is_active AND similarity(lower(name), lower(:n)) > 0.5 "
+                    "ORDER BY sim DESC LIMIT 8"), {"n": _name})).fetchall()
+            except Exception:
+                # pg_trgm absent (e.g. the SQLite test DB) or any query error → FAIL OPEN.
+                # A dedup check that can't run must never block a legitimate create.
+                await db.rollback()
+                _cands = []
+            # only a match of the SAME size counts — the whole point is 2g must not block on the 10g row.
+            _dupes = [r for r in _cands if _product_size(r.name) == _want]
+            if _dupes and _dupes[0].sim >= 0.65:
+                raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={
+                    "message": "A very similar item already exists — is it one of these?",
+                    "conflict": "name",
+                    "matches": [{
+                        "id": str(r.id), "name": r.name,
+                        "price": float(r.price) if r.price is not None else None,
+                        "image_url": r.image_url, "sku": r.sku, "barcode": r.barcode,
+                        "category": r.category,
+                    } for r in _dupes[:5]],
+                })
+
     new_product = ProductModel(**data)
     db.add(new_product)
     try:
@@ -2061,6 +2100,22 @@ def _query_size_regex(q: str) -> Optional[str]:
     num = m.group(1).replace(",", ".").replace(".", r"\.")   # escape the decimal dot for the PG regex
     unit = _SIZE_UNIT_FAMILY.get(m.group(2).lower(), re.escape(m.group(2).lower()))
     return r"\y" + num + r"\s?" + unit + r"\y"               # \y = word boundary in Postgres regex
+
+
+def _product_size(name: str) -> str:
+    """Normalized size token in a product name ('2g','10ml','20mg','34stk','250er') or '' — the
+    Python mirror of the client's posProductSize. Used by the dedup guard so a variant is only a
+    duplicate of the SAME size (2g never a dupe of 10g)."""
+    m = _SIZE_Q_RE.search(name or "")
+    if not m:
+        return ""
+    num = m.group(1).replace(",", ".")
+    u = m.group(2).lower()
+    if u == "gr":
+        u = "g"
+    elif u in ("stück", "pcs", "stk"):
+        u = "stk"
+    return num + u
 
 
 @router.get("/search")
