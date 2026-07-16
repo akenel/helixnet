@@ -24,9 +24,13 @@ BIC lighter category = "Lighters" → de "Feuerzeuge"; app health/catalog 200; l
 chokepoint on every create: create_product + quick_create (blank/unknown→Unsorted + product_group set), adopt
 (supplier category canonicalized), and the snap-fill vision prompt (AI picks EXACT canonical English labels or
 Unsorted; desc forced English). 7 funnel tests; verified live in prod container (Feuerzeuge→Lighters, unknown→Unsorted).
-**▶ STILL OPEN (flagged, NOT routine-regrowth):** the BULK Artemis importer/enrichment should call the same
-canonicalizer on re-import; `ensure_description` source_lang honesty (description axis); kiosk category-chip
-translation (guest sees English); nl/es labels. Plan: `docs/BANCO-CATEGORY-FUNNEL-PLAN.md`.
+**✅ BULK IMPORTER FUNNEL — SHIPPED PROD 2026-07-16 (`abdbc25`).** The enrichment recipe emitted a THIRD
+vocabulary (_ALLOWED_*: Storage & Safes, Vape Pods, CBD Flowers…); now `enrich_rules` output + `reenrich_inplace`
+write both canonicalize (compliance still runs on the recipe label), and CATEGORY_SYNONYMS covers all 26 enrichment
+labels. Verified live: enrich_rules canonicalizes; Storage & Safes→Storage & Stash, Vape Pods→Coils & Pods. So EVERY
+writer — cashier create, quick-add, adopt, snap-fill AI, AND the bulk importer/re-enrich — lands canonical. Tree can't regrow.
+**▶ STILL OPEN (minor, non-regrowth):** `ensure_description` source_lang honesty (description axis, NOT category);
+kiosk category-chip translation (guest sees English); nl/es labels. Plan: `docs/BANCO-CATEGORY-FUNNEL-PLAN.md`.
 
 ## 🗄️ BL-CAT (orig handoff, done) — CATEGORY TAXONOMY CLEANUP · ✅ BL-CAT.1+.2 DONE 2026-07-16
 
