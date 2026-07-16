@@ -389,6 +389,9 @@
                             <input type="file" accept="image/*" :capture="posCaptureAttr()" class="hidden"
                                    @change="aiSuggest($event)" :disabled="aiBusy">
                         </label>
+                        <!-- Laptop/desktop: shoot from the built-in WEBCAM (the file input can't drive it) -->
+                        <button type="button" x-show="!posIsTouchDevice()" @click="webcamSuggest()" :disabled="aiBusy"
+                                class="btn-secondary flex-none inline-flex items-center gap-1">📷 Webcam</button>
                         <div class="text-sm text-gray-600">
                             <span data-i18n="catalog.ai_help">No barcode? Photograph it — the AI drafts name, category &amp; description. You confirm.</span>
                             <p x-show="aiNote" x-text="aiNote" class="text-xs mt-1 font-medium text-indigo-700"></p>
@@ -1036,6 +1039,13 @@
             // FIND-FIRST: snap → the AI reads the item → SEARCH the real catalog for it. If it's
             // already in the shop (or the FourTwenty reference), show the picker so the cashier picks
             // the existing row instead of creating a duplicate. No matches → straight to the AI draft.
+            // Desktop webcam → same snap-fill pipe as the file input (getUserMedia → File → aiSuggest).
+            async webcamSuggest() {
+                if (typeof window.PosCameraPhoto === 'undefined') return;
+                const file = await window.PosCameraPhoto.capture();
+                if (file) await this.aiSuggest({ target: { files: [file], value: '' } });
+            },
+
             async aiSuggest(e) {
                 const f = e.target.files && e.target.files[0];
                 e.target.value = '';

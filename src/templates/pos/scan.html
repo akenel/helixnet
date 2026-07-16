@@ -514,6 +514,8 @@
                         <span x-text="aiBusy ? ('🔍 ' + t('scan.reading')) : ('📷 ' + t('scan.snap_fill'))"></span>
                         <input type="file" accept="image/*" :capture="posCaptureAttr()" class="hidden" @change="aiSnapFill($event)" :disabled="aiBusy">
                     </label>
+                    <button type="button" x-show="!posIsTouchDevice()" @click="webcamSnapFill()" :disabled="aiBusy"
+                            class="btn-secondary inline-flex items-center gap-1 text-lg px-5 py-3 ml-2">📷 Webcam</button>
                     <p x-show="aiNote" x-text="aiNote" class="text-xs text-indigo-700 font-medium mt-2" style="display:none;"></p>
                     <button type="button" @click="lazyPhotoFirst=false; $nextTick(()=>{ if($refs.lazyLinkInput) $refs.lazyLinkInput.focus() })"
                             class="mt-3 text-xs text-gray-500 underline" data-i18n="scan.or_search_name">or search by name instead</button>
@@ -534,6 +536,8 @@
                             <span x-text="aiBusy ? '🔍 ' + t('scan.reading') : '✨ ' + t('scan.snap_fill')"></span>
                             <input type="file" accept="image/*" :capture="posCaptureAttr()" class="hidden" @change="aiSnapFill($event)" :disabled="aiBusy">
                         </label>
+                        <button type="button" x-show="!posIsTouchDevice()" @click="webcamSnapFill()" :disabled="aiBusy"
+                                class="btn-secondary flex-none inline-flex items-center gap-1">📷 Webcam</button>
                         <span class="text-xs text-gray-500" data-i18n="scan.snap_help">No barcode? Photograph it — AI names it &amp; searches the catalog.</span>
                     </div>
                     <p x-show="aiNote" x-text="aiNote" class="text-xs text-indigo-700 font-medium mt-1" style="display:none;"></p>
@@ -1198,6 +1202,13 @@
             // search-first lookup with that name (maybe it's already in the catalog),
             // and pre-fill the create form for the no-match case. Keeps the shot as
             // the product photo (uploaded on save).
+            // Desktop webcam → same snap-fill pipe as the file input (getUserMedia → File → aiSnapFill).
+            async webcamSnapFill() {
+                if (typeof window.PosCameraPhoto === 'undefined') return;
+                const file = await window.PosCameraPhoto.capture();
+                if (file) await this.aiSnapFill({ target: { files: [file], value: '' } });
+            },
+
             async aiSnapFill(e) {
                 const f = e.target.files && e.target.files[0];
                 e.target.value = '';

@@ -174,3 +174,56 @@
     return window.posIsTouchDevice() ? 'environment' : false;
   };
 })();
+
+// ---------------------------------------------------------------------------
+// BL: webcam PHOTO capture (getUserMedia) — for the AI snap-fill / product photo
+// on a LAPTOP, where the <input type=file capture> just opens the file dialog
+// (desktop browsers ignore `capture`). Self-contained overlay, no framework.
+// window.PosCameraPhoto.capture() -> Promise<File|null> (JPEG) — null on cancel/no-cam.
+// ---------------------------------------------------------------------------
+(function () {
+  window.PosCameraPhoto = {
+    async capture() {
+      const md = navigator.mediaDevices;
+      if (!md || !md.getUserMedia) { alert('This browser has no camera access.'); return null; }
+      let stream;
+      try { stream = await md.getUserMedia({ video: { facingMode: 'environment' }, audio: false }); }
+      catch (e) {
+        try { stream = await md.getUserMedia({ video: true, audio: false }); }
+        catch (e2) { alert('No camera available (or permission denied).'); return null; }
+      }
+      return await new Promise((resolve) => {
+        const ov = document.createElement('div');
+        ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#000;display:flex;' +
+          'flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:16px;';
+        const video = document.createElement('video');
+        video.autoplay = true; video.playsInline = true; video.muted = true; video.srcObject = stream;
+        video.style.cssText = 'max-width:100%;max-height:72vh;border-radius:12px;background:#111;';
+        const bar = document.createElement('div');
+        bar.style.cssText = 'display:flex;gap:16px;align-items:center;';
+        const snap = document.createElement('button');
+        snap.textContent = '📸 Snap';
+        snap.style.cssText = 'padding:15px 34px;font-size:18px;font-weight:800;border:none;border-radius:14px;' +
+          'background:#10b981;color:#04231a;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.3);';
+        const cancel = document.createElement('button');
+        cancel.textContent = '✕';
+        cancel.style.cssText = 'padding:15px 22px;font-size:18px;border:none;border-radius:14px;' +
+          'background:rgba(255,255,255,.15);color:#fff;cursor:pointer;';
+        bar.appendChild(snap); bar.appendChild(cancel);
+        ov.appendChild(video); ov.appendChild(bar);
+        document.body.appendChild(ov);
+        const cleanup = () => { try { stream.getTracks().forEach(t => t.stop()); } catch (e) {} ov.remove(); };
+        cancel.onclick = () => { cleanup(); resolve(null); };
+        snap.onclick = () => {
+          const c = document.createElement('canvas');
+          c.width = video.videoWidth || 1280; c.height = video.videoHeight || 720;
+          c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
+          c.toBlob((blob) => {
+            cleanup();
+            resolve(blob ? new File([blob], 'webcam-' + Date.now() + '.jpg', { type: 'image/jpeg' }) : null);
+          }, 'image/jpeg', 0.9);
+        };
+      });
+    },
+  };
+})();
