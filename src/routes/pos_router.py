@@ -311,6 +311,10 @@ async def create_product(
     price/details (PUT) and deleting (DELETE) still require a manager/admin."""
 
     data = await _apply_supplier_mode_identity(db, _sanitize_product_codes(product.model_dump()))
+    # BL-CAT funnel: every new item's category is canonicalized (+ product_group set) so the
+    # cleaned 2-level tree can NEVER regrow into the German-slug mess. Unknown/blank -> Unsorted.
+    from src.services.catalog_taxonomy import canonicalize_category
+    data["category"], data["product_group"] = canonicalize_category(data.get("category"))
     new_product = ProductModel(**data)
     db.add(new_product)
     try:
@@ -363,8 +367,10 @@ async def quick_create_product(
         raise HTTPException(status_code=422, detail="Name is required")
     if data.get("price") is None:
         raise HTTPException(status_code=422, detail="Price is required")
-    if not (data.get("category") or "").strip():
-        data["category"] = "On the fly"
+    # BL-CAT funnel: a lean quick-add still lands on the canonical tree. Blank/unknown -> Unsorted
+    # (the manager sorts it later in the Cockpit), never a fresh free-text category.
+    from src.services.catalog_taxonomy import canonicalize_category
+    data["category"], data["product_group"] = canonicalize_category(data.get("category"))
     data["is_active"] = True
     # 18+ toggle (cashier contract): the checkout age gate reads product_class, NOT the
     # is_age_restricted column — bind the toggle to a gating class + keep the two in sync.
@@ -1098,6 +1104,10 @@ async def adopt_reference_product(
     if price < 0:
         raise HTTPException(status_code=422, detail="Price must be >= 0")
 
+    # BL-CAT funnel: canonicalize the supplier's category (+ set product_group) so an adopted
+    # item joins the clean 2-level tree instead of importing FourTwenty's raw German string.
+    from src.services.catalog_taxonomy import canonicalize_category
+    _adopt_cat, _adopt_grp = canonicalize_category(ref.our_category or ref.category)
     new_product = ProductModel(
         barcode=barcode,
         sku=sku,
@@ -1105,9 +1115,9 @@ async def adopt_reference_product(
         description=ref.description,
         price=price,
         cost=ref.cost,
-        # BL-96: carry our skeleton category + behaviour class + 18+ flag (set by the enricher),
-        # falling back to FourTwenty's raw category if the item wasn't reclassified yet.
-        category=(ref.our_category or ref.category or "").strip() or "Other",
+        # BL-96/BL-CAT: canonical category + group; behaviour class + 18+ flag from the enricher.
+        category=_adopt_cat,
+        product_group=_adopt_grp,
         product_class=ref.our_class or "standard",
         is_age_restricted=bool(ref.age_restricted),
         image_url=ref.image_url,    # provisional — copied into our storage below (best-effort)

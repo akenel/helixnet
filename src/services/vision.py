@@ -261,15 +261,21 @@ async def analyze_image(
 # ===========================================================================
 
 # --- product (POS catalog / ISOTTO / La Piazza listings) — WIRED via POS ----
+# BL-CAT: the "category" MUST come from the canonical tree (English hub) so a snap-fill never
+# invents a fresh category. The list is built from catalog_taxonomy so prompt == tree, always;
+# the write path canonicalizes again as a backstop (unknown -> Unsorted).
+from src.services.catalog_taxonomy import CANONICAL_CATEGORIES as _CANON_CATS
+
 _PRODUCT_PROMPT = (
     "You are a Swiss head-shop / CBD point-of-sale assistant. Look at the photo of "
     "a single retail product and return ONLY a JSON object (no prose, no code fence) "
     "with these keys:\n"
     '  "name"          short shelf name (brand + product), e.g. "Green Passion CBD Blüten Gelato 5g"\n'
     '  "brand"         the brand if visible, else ""\n'
-    '  "category"      one of: CBD, Flower, Vape, Accessories, Grow, Drinks, Cosmetics, Other\n'
+    '  "category"      choose the closest EXACT English label from this list, or "Unsorted" if unsure:\n'
+    "                  " + ", ".join(_CANON_CATS) + "\n"
     '  "size"          pack size / weight if visible (e.g. "5g", "10ml"), else ""\n'
-    '  "description"   one tidy sentence a customer would read\n'
+    '  "description"   one tidy sentence in ENGLISH a customer would read\n'
     '  "tags"          comma-separated keywords for search\n'
     '  "price_estimate" a number in CHF if you can guess from the type, else null\n'
     '  "confidence"    0.0–1.0, how sure you are about the name\n'
