@@ -178,9 +178,7 @@
             <div x-show="results.length === 0" class="text-center py-10 text-gray-500">
                 <span class="text-5xl block mb-3">🗂️</span>
                 <p x-text="loading ? t('common.loading') : t('catalog.no_products')"></p>
-                <!-- Never dead-end: can't find it here → search the web for it (Felix's idea) -->
-                <button x-show="!loading && (q||'').trim()" @click="webSearchProduct(q)"
-                        class="btn-secondary mt-4 inline-flex items-center gap-2">🔎 <span data-i18n="catalog.search_web">Search the web</span></button>
+                <!-- action lives in the persistent BL-127 row below (shown on 0 OR weak results) -->
             </div>
 
             <div class="cat-list">
@@ -233,6 +231,20 @@
                     class="btn-secondary w-full mt-3">
                 <span data-i18n="catalog.show_more">Show more</span> (<span x-text="total - results.length"></span> <span data-i18n="catalog.more_count">more</span>)
             </button>
+
+            <!-- BL-127: never dead-end. Whenever there's a query, the operator can ALWAYS look it up
+                 on Google OR create it from a photo — no matter how many (weak) near-matches came
+                 back. Fixes the button hiding the moment ≥1 result rendered. -->
+            <div x-show="!loading && (q||'').trim()"
+                 class="border-t mt-4 pt-3 flex flex-wrap items-center justify-center gap-2 text-sm">
+                <span class="text-gray-500" data-i18n="catalog.not_right_item">Not the right item?</span>
+                <button @click="webSearchProduct(q)" class="btn-secondary inline-flex items-center gap-1">
+                    🔎 <span data-i18n="catalog.search_web">Look it up on Google</span>
+                </button>
+                <button x-show="user.isManager" @click="openCreate()" class="btn-primary inline-flex items-center gap-1">
+                    ➕ <span data-i18n="catalog.create_from_photo">Create from photo</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -707,10 +719,16 @@
                     </div>
                 </div>
 
-                <!-- Fallback: it's genuinely new -->
-                <button @click="snapUseAiDraft()" class="w-full mt-1 py-3 rounded-lg border-2 border-dashed border-gray-300 text-gray-700 font-semibold hover:border-indigo-400 hover:text-indigo-700">
-                    <span data-i18n="catalog.snap_none_new">None of these — it's a new item</span> →
-                </button>
+                <!-- BL-127: no dead-end on a weak snap — look it up on Google, OR create from the photo draft -->
+                <div class="flex gap-2 mt-1">
+                    <button @click="webSearchProduct(snap ? snap.query : '')"
+                            class="flex-none py-3 px-4 rounded-lg border-2 border-dashed border-gray-300 text-gray-700 font-semibold hover:border-indigo-400 hover:text-indigo-700 inline-flex items-center gap-1">
+                        🔎 <span data-i18n="catalog.search_web">Look it up on Google</span>
+                    </button>
+                    <button @click="snapUseAiDraft()" class="flex-1 py-3 rounded-lg border-2 border-dashed border-gray-300 text-gray-700 font-semibold hover:border-indigo-400 hover:text-indigo-700">
+                        ➕ <span data-i18n="catalog.snap_none_new">None of these — create it</span> →
+                    </button>
+                </div>
             </div>
         </div>
     </div>

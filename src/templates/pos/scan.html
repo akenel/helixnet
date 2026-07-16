@@ -645,7 +645,12 @@
                                                 <p x-show="web.brand" class="text-xs text-gray-500" x-text="web.brand"></p>
                                                 <p x-show="web.description" class="text-xs text-gray-600 mt-1" x-text="web.description"></p>
                                                 <p x-show="web.lang_hint" class="text-[11px] text-amber-600 mt-1" x-text="t('scan.web_lang', {lang: (web.lang_hint||'').toUpperCase()})"></p>
-                                                <button type="button" @click="useWebResult()" class="btn-success text-xs px-3 py-1 mt-2" data-i18n="scan.web_use">✓ Use this</button>
+                                                <div class="flex items-center gap-3 mt-2">
+                                                    <button type="button" @click="useWebResult()" class="btn-success text-xs px-3 py-1" data-i18n="scan.web_use">✓ Use this</button>
+                                                    <!-- BL-127: wrong hit is never a dead-end — look it up on Google (barcode = strongest signal) -->
+                                                    <button type="button" @click="webSearchProduct(lazyName, lazyBarcode)"
+                                                            class="text-xs text-gray-500 hover:text-indigo-700 inline-flex items-center gap-1">🔎 <span data-i18n="scan.search_web">Look it up on Google</span></button>
+                                                </div>
                                             </div>
                                         </template>
                                         <template x-if="!web.found">
