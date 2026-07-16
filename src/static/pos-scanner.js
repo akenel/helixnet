@@ -227,3 +227,20 @@
     },
   };
 })();
+
+// ---------------------------------------------------------------------------
+// BL-128 — pull the SIZE/pack token out of a product name so search results can
+// show it as a badge (2g vs 10g at a glance — variants are the till's #1 dupe trap).
+// Pure name parse, no schema. Returns '' if no size-like token.
+// ---------------------------------------------------------------------------
+window.posProductSize = function (name) {
+  if (!name) return '';
+  var m = String(name).match(/(\d+(?:[.,]\d+)?)\s?(gr|kg|mg|g|ml|cl|stk|stück|pcs|blatt|er|x)\b/i);
+  if (!m) return '';
+  var num = m[1].replace(',', '.');
+  var u = m[2].toLowerCase();
+  if (u === 'gr') u = 'g';
+  if (u === 'stück' || u === 'pcs' || u === 'stk') u = 'Stk';
+  if (u === 'blatt') u = 'Blatt';
+  return (u === 'Stk' || u === 'Blatt') ? (num + ' ' + u) : (num + u);
+};

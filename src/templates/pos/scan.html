@@ -553,10 +553,15 @@
                                      class="w-16 h-16 rounded object-cover border flex-none">
                                 <span x-show="!p.image_url" class="w-16 h-16 rounded bg-gray-100 flex items-center justify-center text-gray-300 text-2xl flex-none">📦</span>
                                 <span class="flex-1 min-w-0">
-                                    <span x-text="p.name" class="block text-sm font-medium text-gray-900 truncate"></span>
+                                    <span class="flex items-center gap-1.5">
+                                        <!-- BL-128: SIZE badge leads the row so 2g vs 10g is a glance, not a read -->
+                                        <span x-show="posProductSize(p.name)" x-text="posProductSize(p.name)"
+                                              class="flex-none text-xs font-extrabold text-blue-800 bg-blue-100 rounded px-1.5 py-0.5"></span>
+                                        <span x-text="p.name" class="min-w-0 text-sm font-medium text-gray-900 truncate"></span>
+                                    </span>
                                     <span x-show="p.category" x-text="p.category" class="block text-xs text-gray-400 truncate"></span>
                                 </span>
-                                <span x-text="formatPrice(p.price)" class="text-sm text-gray-600 flex-none"></span>
+                                <span x-text="formatPrice(p.price)" class="text-base font-bold text-indigo-600 flex-none"></span>
                                 <button type="button" @click.stop="openPreview(p, 'catalog')" title="Preview"
                                         class="flex-none text-gray-400 hover:text-blue-600 text-2xl leading-none px-1">👁</button>
                             </div>
