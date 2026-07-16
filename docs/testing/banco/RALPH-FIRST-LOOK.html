@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Banco — Ralph's First Look</title><style>
+:root{--green:#1a4d2e;--em:#10b981;--ink:#12261c;}
+*{box-sizing:border-box;}body{margin:0;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#12261c;background:#eef4f0;line-height:1.5;}
+header{background:radial-gradient(700px 340px at 30% -40%,#1c5138,#113024 60%,#0a1a14);color:#eafff2;padding:26px 22px;}
+header .k{letter-spacing:.3em;text-transform:uppercase;font-size:11px;color:#7CFFB2;}
+header h1{margin:6px 0 3px;font-size:26px;font-weight:900;}header .s{color:#bfe9cf;font-size:14px;}
+.wrap{max-width:820px;margin:0 auto;padding:18px 16px 60px;}
+.act{background:#fff;border-radius:14px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin:16px 0;overflow:hidden;}
+.act h2{margin:0;padding:14px 18px;font-size:18px;color:#fff;background:var(--green);display:flex;gap:10px;align-items:center;}
+.act h2 .r{margin-left:auto;font-size:12px;background:rgba(255,255,255,.16);padding:3px 10px;border-radius:999px;font-weight:600;}
+.act .body{padding:8px 18px 16px;}
+.step{display:flex;gap:11px;padding:9px 0;border-bottom:1px dashed #e7eeea;}
+.step:last-child{border-bottom:0;}
+.step input{width:20px;height:20px;margin-top:2px;accent-color:var(--em);flex:none;}
+.step .t{font-size:14.5px;}
+.step .t b{color:var(--green);}
+.step .say{display:block;color:#5a6b62;font-style:italic;font-size:13px;margin-top:2px;}
+.url{display:inline-block;background:#eef4f0;color:var(--green);font-weight:700;padding:1px 8px;border-radius:6px;font-size:13px;text-decoration:none;}
+.tip{background:#fffdf3;border-left:4px solid #b8860b;border-radius:9px;padding:10px 14px;margin:14px 0;font-size:13.5px;color:#6b5410;}
+.close{background:var(--ink);color:#eafff2;border-radius:14px;padding:16px 20px;margin-top:20px;font-size:15px;}
+footer{text-align:center;color:#7a8b82;font-size:12px;padding:16px;}
+</style></head><body>
+<header><div class="k">HelixPOS · Banco</div><h1>🐺 Ralph's First Look</h1>
+<div class="s">Show the whole thing as ONE story that climbs the roles. ~15 min. Tick as you go.</div></header>
+<div class="wrap">
+
+<div class="tip"><b>Where:</b> the real shop runs at <a class="url" href="https://banco.lapiazza.app/pos">banco.lapiazza.app/pos</a>.
+A kiosk signup = a <b>real</b> member; born-once = a <b>real</b> product (that's fine — it's his shop). Want it
+throwaway? do the <i>create-a-new-item</i> bit on <a class="url" href="https://sandbox-banco.lapiazza.app/pos/kiosk">sandbox</a>,
+show the clean live catalog on prod.</div>
+
+<div class="act"><h2>🖥️ Act 1 — The Kiosk <span class="r">Ralph = a customer</span></h2><div class="body">
+  <label class="step"><input type="checkbox"><span class="t">Open <a class="url" href="https://banco.lapiazza.app/pos/kiosk">/pos/kiosk</a> on the big screen. <b>Hand Ralph the gun</b> or point him at the QR.<span class="say">"This is what a customer walks up to while you're busy with someone else."</span></span></label>
+  <label class="step"><input type="checkbox"><span class="t">He <b>scans a product</b> → it reads in his language. Flip 🇩🇪/🇬🇧.<span class="say">"Better answer than a busy human — every detail, their language."</span></span></label>
+  <label class="step"><input type="checkbox"><span class="t">Tap <b>🎁 Become a member</b> → 10% off (15% on his phone). Type a name, tick 18+.<span class="say">"Self sign-up. Lands on your dashboard as a new member today."</span></span></label>
+  <label class="step"><input type="checkbox"><span class="t"><b>Add 2–3 items</b> → <b>Send to counter</b> → note the code (e.g. A7K3).<span class="say">"He built his own order. Now he walks it to you."</span></span></label>
+</div></div>
+
+<div class="act"><h2>💰 Act 2 — The Cashier <span class="r">born-once + the handoff</span></h2><div class="body">
+  <label class="step"><input type="checkbox"><span class="t">On <a class="url" href="https://banco.lapiazza.app/pos/scan">/pos/scan</a>, ring a <b>normal sale</b> — scan a known item.</span></label>
+  <label class="step"><input type="checkbox"><span class="t"><b>Scan something NOT in the catalog</b> (or a fridge item) → snap a photo → it names itself → set a price → sold.<span class="say">"The catalog builds itself. A miss is never a dead-end — never a lost sale."</span></span></label>
+  <label class="step"><input type="checkbox"><span class="t">Open <a class="url" href="https://banco.lapiazza.app/pos/held-orders">/pos/held-orders</a> → find Ralph's kiosk code → <b>💰 Ring it out</b>.<span class="say">"His order was waiting. The 10% member discount comes off automatically."</span></span></label>
+</div></div>
+
+<div class="act"><h2>👔 Act 3 — The Manager <span class="r">Ralph's real seat</span></h2><div class="body">
+  <label class="step"><input type="checkbox"><span class="t">Open <a class="url" href="https://banco.lapiazza.app/pos/catalog">/pos/catalog</a> → show the <b>clean categories</b>.<span class="say">"Yesterday this was 61 messy German-slug bins. This MORNING it became 9 tidy groups in four languages. 5,500 products, sorted, in a couple hours."</span></span></label>
+  <label class="step"><input type="checkbox"><span class="t">Open <a class="url" href="https://banco.lapiazza.app/pos/cleanup">/pos/cleanup</a> (the Cockpit) → the item Ralph just born-once'd is sitting there asking for a photo/category/cost. <b>He tunes it.</b><span class="say">"The cashier births it rough; the manager perfects it. That's your job, made one screen."</span></span></label>
+  <label class="step"><input type="checkbox"><span class="t">Show <b>Settings → Staff &amp; Logins</b> (add people, set Cashier/Manager) + <b>Reports</b> + the <b>🎉 new-members-today</b> tile on the dashboard.</span></label>
+</div></div>
+
+<div class="close"><b>The close:</b> a €40 refurbished laptop + a €40 gun. No SAP, no €8k setup, no per-swipe tax.
+It reads four languages, builds its own catalog, and a customer can serve themselves. <b>His shop, his till, his to run.</b></div>
+
+</div><footer>Banco · Ralph's First Look · the role-climb IS the demo · Tigs + Angel</footer></body></html>
