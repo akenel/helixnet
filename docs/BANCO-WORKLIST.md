@@ -29,8 +29,14 @@ vocabulary (_ALLOWED_*: Storage & Safes, Vape Pods, CBD Flowers…); now `enrich
 write both canonicalize (compliance still runs on the recipe label), and CATEGORY_SYNONYMS covers all 26 enrichment
 labels. Verified live: enrich_rules canonicalizes; Storage & Safes→Storage & Stash, Vape Pods→Coils & Pods. So EVERY
 writer — cashier create, quick-add, adopt, snap-fill AI, AND the bulk importer/re-enrich — lands canonical. Tree can't regrow.
-**▶ STILL OPEN (minor, non-regrowth):** `ensure_description` source_lang honesty (description axis, NOT category);
-kiosk category-chip translation (guest sees English); nl/es labels. Plan: `docs/BANCO-CATEGORY-FUNNEL-PLAN.md`.
+**✅ ENSURE_DESCRIPTION SOURCE_LANG HONESTY — SHIPPED PROD 2026-07-16 (`6fb3c17`).** The `source_lang='en'`
+lie made English viewers read GERMAN stamped authoritative ("the English is still German"). Fixed: `_guess_base_lang`
+(German function words + umlauts, conservative one-sided) OVERRIDES the lie → German viewer gets native, English viewer
+gets a real machine TRANSLATION (needs_review), self-heals `product.source_lang`→'de'; unverified 'en' flagged not
+authoritative. 5 tests. Fixes NEW fills; existing bad-cached en skins heal on text-edit invalidation (or a backfill
+`--invalidate` pass — next round). **This + the category funnel = banco-category-language-mess FULLY CLOSED.**
+**▶ STILL OPEN (cosmetic, non-regrowth):** kiosk category-chip translation (guest sees English category); nl/es labels;
+optional backfill to invalidate existing lying-en translation skins. Plan: `docs/BANCO-CATEGORY-FUNNEL-PLAN.md`.
 
 ## 🗄️ BL-CAT (orig handoff, done) — CATEGORY TAXONOMY CLEANUP · ✅ BL-CAT.1+.2 DONE 2026-07-16
 
