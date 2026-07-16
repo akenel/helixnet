@@ -482,6 +482,37 @@ CATEGORY_SYNONYMS = {
     "Zigaretten Huelsen": "Cigarette Tubes",
     "Zubehoer": "Accessories (general)",
 }
+# Enrichment-recipe vocabulary (catalog_enrichment._ALLOWED_*) -> canonical, so a BULK re-enrich /
+# Artemis re-import also lands on the clean tree instead of seeding a 4th competing vocabulary.
+CATEGORY_SYNONYMS.update({
+    "Rolling Machines": "Rolling & Filling Machines",
+    "Cones": "Cones & Tubes",
+    "Pre-rolled": "Cones & Tubes",
+    "Storage": "Storage & Stash",
+    "Bong Heads & Bowls": "Bong & Pipe Accessories",
+    "Storage & Safes": "Storage & Stash",
+    "Glass Accessories": "Bong & Pipe Accessories",
+    "CBD Hash": "CBD Flower",
+    "CBD Flowers": "CBD Flower",
+    "CBD Extracts": "Extracts & Oils",
+    "CBD Cosmetics": "Cosmetics",
+    "CBD Other": "CBD Flower",
+    "Vape Kits": "Vape Devices",
+    "Vape Pods": "Coils & Pods",
+    "Disposables": "Prefilled & Disposables",
+    "Shisha Pipes": "Shishas & Hookahs",
+    "Coals & Heat": "Shisha Coal",
+    "Shisha Accessories": "Accessories (general)",
+    "Apparel": "Apparel & Textiles",
+    "Posters & Stickers": "Decor",
+    "Gifts": "Gifts & Gadgets",
+    "Lifestyle Accessories": "Gifts & Gadgets",
+    "Grow Lights": "Grow Supplies",
+    "Nutrients & Soil": "Grow Supplies",
+    "Tents & Climate": "Grow Supplies",
+    "Grow Accessories": "Grow Supplies",
+})
+
 CANONICAL_CATEGORIES = sorted(CANONICAL_LABEL_GROUP.keys())
 _CATEGORY_SYNONYMS_LOWER = {k.lower(): v for k, v in CATEGORY_SYNONYMS.items()}
 

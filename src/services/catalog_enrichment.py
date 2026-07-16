@@ -543,6 +543,12 @@ def enrich_rules(raw: RawProduct) -> EnrichmentRecord:
         flags.append("needs_translation")
     flags = list(dict.fromkeys(flags))
 
+    # BL-CAT: funnel the recipe's OUTPUT category onto the canonical tree (compliance + tags above
+    # ran on the recipe label on purpose — e.g. _NON_AGE_CATEGORIES matches "Storage & Safes").
+    # Unknown -> Unsorted, so a bulk re-import can never seed a fresh non-canonical category.
+    from src.services.catalog_taxonomy import canonicalize_category
+    _canon_cat, _canon_grp = canonicalize_category(catmap["category"])
+
     return EnrichmentRecord(
         sku=make_sku(raw.identifier),
         source={
@@ -552,8 +558,8 @@ def enrich_rules(raw: RawProduct) -> EnrichmentRecord:
             "image_url": raw.image_url, "raw_name": raw.name,
             "raw_price_text": raw.price_text,
         },
-        group=raw.group,
-        category=catmap["category"],
+        group=_canon_grp,
+        category=_canon_cat,
         tags=tags,
         description=detail_desc if has_detail_desc else "",   # scraped wins; else LLM drafts
         attributes=attrs,

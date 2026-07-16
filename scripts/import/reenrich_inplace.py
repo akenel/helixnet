@@ -80,7 +80,11 @@ async def run(commit: bool, sku_like: str) -> dict:
             new_age = bool(comp["age_restricted"])
             new_reason = comp["age_reason"]
 
-            stats["cat_after"][new_cat] = stats["cat_after"].get(new_cat, 0) + 1
+            # BL-CAT: funnel the WRITE onto the canonical tree (compliance above already used the
+            # recipe label). Unknown -> Unsorted; also set the canonical product_group.
+            from src.services.catalog_taxonomy import canonicalize_category
+            _canon_cat, _canon_grp = canonicalize_category(new_cat)
+            stats["cat_after"][_canon_cat] = stats["cat_after"].get(_canon_cat, 0) + 1
             stats["age_after"] += 1 if new_age else 0
 
             if p.sync_override:
@@ -88,10 +92,11 @@ async def run(commit: bool, sku_like: str) -> dict:
                 continue
 
             changed = False
-            if confident and new_cat and new_cat != p.category:
+            if confident and _canon_cat and (_canon_cat != p.category or _canon_grp != (p.product_group or "")):
                 if len(stats["samples"]) < 25:
-                    stats["samples"].append((p.category, new_cat, p.name or ""))
-                p.category = new_cat
+                    stats["samples"].append((p.category, _canon_cat, p.name or ""))
+                p.category = _canon_cat
+                p.product_group = _canon_grp
                 stats["cat_changed"] += 1
                 changed = True
             if new_age != bool(p.is_age_restricted):

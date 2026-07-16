@@ -39,6 +39,21 @@ def test_canonicalize_is_case_insensitive_and_idempotent():
     assert canonicalize_category("Dab & Concentrate Gear")[0] == "Dab & Concentrate Gear"
 
 
+def test_enrichment_recipe_vocabulary_is_canonical():
+    """The bulk importer/re-enrich emits its OWN vocabulary (_ALLOWED_*); each must funnel to a
+    canonical category so a re-import can't seed a 4th competing set."""
+    cases = {
+        "Storage & Safes": "Storage & Stash", "Vape Pods": "Coils & Pods",
+        "CBD Flowers": "CBD Flower", "CBD Extracts": "Extracts & Oils",
+        "Bong Heads & Bowls": "Bong & Pipe Accessories", "Disposables": "Prefilled & Disposables",
+        "Grow Lights": "Grow Supplies", "Coals & Heat": "Shisha Coal",
+        "Posters & Stickers": "Decor", "Rolling Machines": "Rolling & Filling Machines",
+        "Cones": "Cones & Tubes", "Vape Kits": "Vape Devices", "Shisha Pipes": "Shishas & Hookahs",
+    }
+    for raw, exp in cases.items():
+        assert canonicalize_category(raw)[0] == exp, f"{raw} did not funnel to {exp}"
+
+
 def test_every_canonical_category_maps_to_a_group():
     for c in CANONICAL_CATEGORIES:
         cat, grp = canonicalize_category(c)
