@@ -10,7 +10,20 @@
 
 ---
 
-## 🆕 BL-CAT — CATEGORY TAXONOMY CLEANUP (handed off 2026-07-15) · ✅ BL-CAT.1+.2 DONE 2026-07-16
+## ✅ BL-CAT — CATEGORY TAXONOMY CLEANUP — SHIPPED PROD 2026-07-16 (Felix→Angel sign-off)
+
+**✅ LIVE ON PROD 2026-07-16** (`517ee0b` + data migration). Felix delegated → Angel approved the tree.
+Backup-gated (`/root/banco_prod-precat-20260716_055555.sql.gz`, 3.8M, gzip-OK, 5179 products/54 txns).
+**Migration:** `blcat_migrate.py --commit` remapped **5,533 products** → canonical `category` + `product_group`;
+**0 non-canonical categories left**; **product_class/age/VAT invariant asserted UNCHANGED** (standard 4057 /
+tobacco_nicotine 802 / cbd_hemp 292 / …). **Labels:** 49 categories + 9 groups × en/de/fr/it in POS_CATEGORY_LABELS
+(Felix's German shop shows Feuerzeuge/CBD Blüten/etc.). Verified live: 49 categories under 9 groups via the API;
+BIC lighter category = "Lighters" → de "Feuerzeuge"; app health/catalog 200; label map serving on prod.
+**▶ FOLLOW-ON (BL-CAT.4 writer funnel — so the mess can't REGROW, not yet shipped):** vision/snap-fill prompt
+(`vision.py:270`), adopt path (`pos_router.py:1110`), quick-add→Unsorted, enrichment map, `ensure_description`
+source_lang honesty; + kiosk category-label translation; + nl/es labels. Plan: `docs/BANCO-CATEGORY-FUNNEL-PLAN.md`.
+
+## 🗄️ BL-CAT (orig handoff, done) — CATEGORY TAXONOMY CLEANUP · ✅ BL-CAT.1+.2 DONE 2026-07-16
 
 **✅ BL-CAT.1 (verify) + ✅ BL-CAT.2 (Felix review sheet) DONE 2026-07-16 — `docs/testing/banco/BANCO-CATEGORY-TAXONOMY-REVIEW.html`.**
 Verify caught + corrected 4 real mis-mappings (Oel Dabbing 157→dab gear, Raw Produkte→cones, Vape Co→prefilled, Treats→system).
