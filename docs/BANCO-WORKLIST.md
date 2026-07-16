@@ -19,9 +19,14 @@ Backup-gated (`/root/banco_prod-precat-20260716_055555.sql.gz`, 3.8M, gzip-OK, 5
 tobacco_nicotine 802 / cbd_hemp 292 / …). **Labels:** 49 categories + 9 groups × en/de/fr/it in POS_CATEGORY_LABELS
 (Felix's German shop shows Feuerzeuge/CBD Blüten/etc.). Verified live: 49 categories under 9 groups via the API;
 BIC lighter category = "Lighters" → de "Feuerzeuge"; app health/catalog 200; label map serving on prod.
-**▶ FOLLOW-ON (BL-CAT.4 writer funnel — so the mess can't REGROW, not yet shipped):** vision/snap-fill prompt
-(`vision.py:270`), adopt path (`pos_router.py:1110`), quick-add→Unsorted, enrichment map, `ensure_description`
-source_lang honesty; + kiosk category-label translation; + nl/es labels. Plan: `docs/BANCO-CATEGORY-FUNNEL-PLAN.md`.
+**✅ BL-CAT.4 WRITER FUNNEL — SHIPPED PROD 2026-07-16 (`1cf439f`) — the tree CAN'T REGROW.**
+`canonicalize_category(raw)→(category,group)` (catalog_taxonomy.py; 51 canonical, 106 synonyms) is now the
+chokepoint on every create: create_product + quick_create (blank/unknown→Unsorted + product_group set), adopt
+(supplier category canonicalized), and the snap-fill vision prompt (AI picks EXACT canonical English labels or
+Unsorted; desc forced English). 7 funnel tests; verified live in prod container (Feuerzeuge→Lighters, unknown→Unsorted).
+**▶ STILL OPEN (flagged, NOT routine-regrowth):** the BULK Artemis importer/enrichment should call the same
+canonicalizer on re-import; `ensure_description` source_lang honesty (description axis); kiosk category-chip
+translation (guest sees English); nl/es labels. Plan: `docs/BANCO-CATEGORY-FUNNEL-PLAN.md`.
 
 ## 🗄️ BL-CAT (orig handoff, done) — CATEGORY TAXONOMY CLEANUP · ✅ BL-CAT.1+.2 DONE 2026-07-16
 
