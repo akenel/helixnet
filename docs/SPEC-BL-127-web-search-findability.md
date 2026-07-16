@@ -1,6 +1,6 @@
 # BL-127 — "Search the web" findability + honest-label gap (scan/snap miss must never dead-ends)
 
-**Status:** ✅ BUILT + ON SANDBOX + STAGING 2026-07-16 (`42f7128`). Holding prod for Angel's staging
+**Status:** ✅ BUILT + SHIPPED PROD 2026-07-16 (`42f7128`). Holding prod for Angel's staging
 verify (AC-repro). Changes: catalog persistent "Not the right item?" row (🔎 Look it up on Google +
 ➕ Create from photo, no longer gated on results===0); snap-panel fallback offers Google AND Create;
 scan-miss web-card "not this → Google" escape (passes barcode); honest copy — all `search_web` →
