@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kiosk Terminal Setup — HelixPOS</title>
+<style>
+  :root{ --green:#1a4d2e; --em:#10b981; --ink:#12261c; --warn:#8B0000; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#12261c; background:#eef4f0; line-height:1.55; }
+  header{ background:radial-gradient(800px 380px at 30% -40%,#1c5138,#113024 60%,#0a1a14); color:#eafff2; padding:30px 26px; }
+  header .kick{ letter-spacing:.32em; text-transform:uppercase; font-size:12px; color:#7CFFB2; }
+  header h1{ margin:6px 0 4px; font-size:30px; font-weight:900; }
+  header .sub{ color:#bfe9cf; font-size:14px; }
+  .wrap{ max-width:860px; margin:0 auto; padding:22px 20px 70px; }
+  h2{ margin:30px 0 6px; font-size:20px; color:var(--green); display:flex; gap:10px; align-items:center; }
+  h2 .n{ background:var(--green); color:#fff; width:30px; height:30px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; font-size:15px; flex:none; }
+  p.note{ margin:4px 0 0 40px; color:#4a5a52; font-size:14px; }
+  pre{ background:#0d1f17; color:#d7ffe9; padding:12px 14px; border-radius:9px; overflow-x:auto; font-size:13.5px;
+       margin:10px 0 10px 40px; border:1px solid #123; }
+  pre b{ color:#7CFFB2; font-weight:700; }
+  .why{ background:#fff; border-left:4px solid var(--em); border-radius:9px; padding:12px 16px; margin:16px 0; font-size:14px; color:#37473f; box-shadow:0 1px 3px rgba(0,0,0,.05); }
+  .warn{ background:#fff4f4; border-left:4px solid var(--warn); border-radius:9px; padding:12px 16px; margin:14px 0 14px 40px; font-size:14px; color:#5b1e1e; }
+  .ok{ background:#effaf3; border-left:4px solid var(--em); border-radius:9px; padding:10px 14px; margin:10px 0 10px 40px; font-size:13.5px; color:#1a5636; }
+  code{ background:#e3ede8; padding:1px 6px; border-radius:5px; font-size:13px; }
+  .fork{ margin:8px 0 8px 40px; font-size:14px; }
+  .chk{ margin:8px 0 0 40px; }
+  .chk label{ display:block; font-size:14px; padding:3px 0; }
+  footer{ text-align:center; color:#7a8b82; font-size:12px; padding:20px; }
+</style></head>
+<body>
+<header>
+  <div class="kick">HelixPOS · Banco · Field Rig</div>
+  <h1>🖥️ Kiosk Terminal Setup</h1>
+  <div class="sub">Turn the €40 laptop into a locked-down kiosk that powers on straight into Banco. XFCE / Debian-family. 2026-07-15</div>
+</header>
+<div class="wrap">
+
+  <div class="why">
+    <b>What we're building:</b> a dedicated <code>kiosk</code> user with <b>no admin power</b>, that the machine
+    <b>auto-logs into on boot</b> and launches <b>Chromium fullscreen</b> at the Banco kiosk — camera on, no address bar,
+    no way to wander into your files. Your <code>angel</code> and <code>root</code> accounts are untouched.
+    <br><br><b>How to run it:</b> open a <b>Terminal on the kiosk laptop</b>, logged in as <code>angel</code>.
+    Every command uses <code>sudo</code> (it'll ask your password). Do the steps in order. After each ⓘ fork, tell Tigs
+    what you saw and he'll confirm your branch before you continue.
+  </div>
+
+  <h2><span class="n">0</span> Tell us the machine</h2>
+  <p class="note">Confirm the distro + which browser is already there. Paste the output to Tigs.</p>
+  <pre>cat /etc/os-release | head -2
+command -v chromium chromium-browser google-chrome firefox
+ls /etc/lightdm/ 2>/dev/null && echo "LightDM: yes"</pre>
+  <div class="fork">ⓘ <b>Fork:</b> note whether it says <code>chromium</code> or <code>chromium-browser</code>, and whether LightDM is present. That decides two commands below.</div>
+
+  <h2><span class="n">1</span> Create the <code>kiosk</code> account (no admin power)</h2>
+  <pre>sudo adduser kiosk</pre>
+  <p class="note">It'll prompt for a password (give it its OWN — <b>not</b> your root/angel one) and a few blank fields (just press Enter). This creates <code>/home/kiosk</code>.</p>
+  <div class="warn"><b>Do NOT</b> add <code>kiosk</code> to sudo. Verify it has no admin rights:
+    <pre style="margin-left:0">groups kiosk</pre>
+    The word <code>sudo</code> must <b>not</b> appear. If it does, remove it: <code>sudo deluser kiosk sudo</code>.</div>
+
+  <h2><span class="n">2</span> Install Chromium</h2>
+  <pre>sudo apt update
+sudo apt install -y chromium</pre>
+  <div class="fork">ⓘ If that says <i>"Unable to locate package chromium"</i>, use this instead:</div>
+  <pre>sudo apt install -y chromium-browser</pre>
+  <p class="note">In kiosk mode there's no address bar, so the guest never sees the brand — Chromium is the same engine as Chrome, camera works the same, and it's one line to install.</p>
+
+  <h2><span class="n">3</span> Auto-login the kiosk on boot (LightDM)</h2>
+  <pre>sudo mkdir -p /etc/lightdm/lightdm.conf.d
+sudo tee /etc/lightdm/lightdm.conf.d/50-kiosk.conf &gt;/dev/null &lt;&lt;'EOF'
+[Seat:*]
+autologin-user=kiosk
+autologin-user-timeout=0
+EOF
+sudo groupadd -f autologin
+sudo gpasswd -a kiosk autologin</pre>
+  <p class="note">This makes the machine boot straight into the <code>kiosk</code> session — no login screen. (The last two lines satisfy distros that require an <code>autologin</code> group; harmless otherwise.)</p>
+
+  <h2><span class="n">4</span> Auto-launch Banco fullscreen (with camera on)</h2>
+  <div class="fork">ⓘ Use <code>chromium</code> or <code>chromium-browser</code> below — <b>whichever Step 2 installed</b>.</div>
+  <pre>sudo mkdir -p /home/kiosk/.config/autostart
+sudo tee /home/kiosk/.config/autostart/banco-kiosk.desktop &gt;/dev/null &lt;&lt;'EOF'
+[Desktop Entry]
+Type=Application
+Name=Banco Kiosk
+Exec=chromium --kiosk --noerrdialogs --disable-infobars --disable-session-crashed-bubble --use-fake-ui-for-media-stream https://banco.lapiazza.app/pos/kiosk
+X-GNOME-Autostart-enabled=true
+EOF
+sudo chown -R kiosk:kiosk /home/kiosk/.config</pre>
+  <div class="ok"><b>The flags, in plain English:</b> <code>--kiosk</code> = fullscreen, no browser UI · <code>--use-fake-ui-for-media-stream</code> = auto-grants the camera so guests never see a permission popup · the rest suppress error/crash bubbles so it always boots clean.</div>
+  <div class="warn">Edit the word <code>chromium</code> to <code>chromium-browser</code> in that file if that's what you installed:
+    <code>sudo nano /home/kiosk/.config/autostart/banco-kiosk.desktop</code></div>
+
+  <h2><span class="n">5</span> Stop the screen from sleeping</h2>
+  <p class="note">Easiest, click-for-click (do this once logged in as kiosk, or from angel's XFCE):
+    <b>Settings → Power Manager → Display</b> → set <b>"Blank after"</b> and <b>"Put to sleep after"</b> to <b>Never</b>,
+    and untick <b>"Handle display power management"</b>. A kiosk should never go black.</p>
+
+  <h2><span class="n">5b</span> Wi-Fi must be SYSTEM-owned (not your login's)</h2>
+  <p class="note">The trap: wifi set up under your admin account is saved "me only" + the password sits in
+    <i>your</i> login keyring — so it connects for you but the auto-login <code>kiosk</code> account boots with
+    NO network. Fix it as root so the connection + password belong to the machine:</p>
+  <pre>su -
+nmcli connection show                      <b># find the wifi/hotspot NAME</b>
+nmcli connection modify "NAME" connection.permissions "" connection.autoconnect yes 802-11-wireless-security.psk-flags 0
+nmcli connection modify "NAME" 802-11-wireless-security.psk "YOUR_WIFI_PASSWORD"
+nmcli connection up "NAME"</pre>
+  <div class="ok"><code>permissions ""</code> = all users · <code>psk-flags 0</code> = password stored on the
+    MACHINE, not a login keyring · <code>autoconnect yes</code> = grabbed at boot. (GUI equivalent: tick
+    "All users may connect to this network" on the wifi.)</div>
+
+  <h2><span class="n">6</span> Reboot &amp; test</h2>
+  <pre>sudo reboot</pre>
+  <div class="chk">
+    <label><input type="checkbox"> Machine boots straight into the Banco kiosk, fullscreen</label>
+    <label><input type="checkbox"> The scanner gun types into the box + resolves (cursor's in the field)</label>
+    <label><input type="checkbox"> 📷 "Scan with camera" works with no permission popup</label>
+    <label><input type="checkbox"> No address bar, no way to reach files</label>
+    <label><input type="checkbox"> Screen doesn't blank after a few minutes</label>
+  </div>
+
+  <div class="warn" style="margin-left:0">
+    <b>🔑 Your escape hatch — read this BEFORE you reboot.</b> In <code>--kiosk</code> mode there's no window to close.
+    To get back to a normal desktop for maintenance: press <b>Ctrl + Alt + F3</b> (a text login appears) → log in as
+    <code>angel</code> → you're in. To fully undo the kiosk, delete the two files you made:
+    <code>sudo rm /etc/lightdm/lightdm.conf.d/50-kiosk.conf</code> and
+    <code>sudo rm /home/kiosk/.config/autostart/banco-kiosk.desktop</code>, then <code>sudo reboot</code>.
+    You can never lock yourself out — <code>angel</code> and <code>root</code> are always there behind Ctrl+Alt+F3.
+  </div>
+
+  <div class="why">
+    <b>What this does and doesn't cover.</b> This gives you the essential security — a guest account with <b>no admin
+    power</b>, no file access, boots into one app. A hardened public kiosk would also disable keyboard escapes
+    (Alt-Tab, virtual-terminal switching) so a clever guest can't break out — that's a later pass. For a shop counter
+    with staff nearby, kiosk-mode Chromium on a powerless account is the 90% that matters. Ship this; harden the last
+    10% when you're not demoing tomorrow.
+  </div>
+
+</div>
+<footer>HelixPOS · Kiosk Terminal Setup · one machine, one job · Tigs + Angel</footer>
+</body></html>
