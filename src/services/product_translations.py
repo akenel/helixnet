@@ -50,6 +50,30 @@ def _norm(lang: str | None) -> str:
     return (lang or "en").strip().lower()[:2]
 
 
+# German function words that do NOT appear in EN/FR/IT retail copy — an unambiguous German signal.
+_DE_WORDS = re.compile(
+    r"\b(und|oder|mit|für|ohne|nicht|auch|sowie|inkl|beim|zum|zur|Grösse|Größe|Stück|Zubehör|"
+    r"Farbe|geeignet|hochwertig|Packung|Beutel|Schachtel|Drehpapier|Feuerzeug|Blättchen)\b", re.I)
+_UMLAUT = re.compile(r"[äöüÄÖÜß]")
+
+
+def _guess_base_lang(text: str | None) -> str | None:
+    """Best-effort, CONSERVATIVE source-language guess for a product's base description.
+
+    Returns 'de' only when we're confident (a German function word, or umlauts in enough text) —
+    else None ("unknown, don't override"). Deliberately one-sided: the disease is German base text
+    stored with a lying source_lang='en' (see banco-category-language-mess), which makes English
+    users read German stamped as authoritative English. A false 'de' would wrongly translate real
+    English, so we only claim German on strong evidence; EN/FR/IT fall through to the stored source.
+    """
+    t = text or ""
+    if _DE_WORDS.search(t):
+        return "de"
+    if _UMLAUT.search(t) and len(t) > 40:   # umlauts + real length, not a lone brand like Motörhead
+        return "de"
+    return None
+
+
 def is_tamar_product(product) -> bool:
     """A product we can fetch native per-language text for (Tamar /xx/prod…/slug URL)."""
     return bool(_TAMAR_TAIL.search(product.source_url or ""))
@@ -129,34 +153,48 @@ async def ensure_description(db, product, lang: str) -> dict:
         return {"lang": lang, "description": hit.description, "name": hit.name,
                 "provenance": hit.provenance}
 
-    src_lang = _norm(product.source_lang or "en")
     base = (product.description or "").strip()
+    # HONEST source language (BL-CAT): source_lang lies 'en' all over the catalogue. A confident
+    # German smell overrides that lie; a stored value is used only if we have no counter-signal;
+    # else we assume 'en' but treat it as UNVERIFIED (never mint an authoritative skin from it).
+    stored_src = _norm(product.source_lang) if (product.source_lang or "").strip() else None
+    guessed = _guess_base_lang(base)
+    true_src = guessed or stored_src or "en"
+    source_verified = bool(guessed) or (stored_src is not None)
+    # Self-heal the lie: base is clearly German but stored en/null → correct source_lang for next time.
+    if guessed == "de" and stored_src != "de":
+        product.source_lang = "de"
+
     name = desc = None
     provenance = "machine"
+    needs_review = True
 
     if is_tamar_product(product):
         async with httpx.AsyncClient() as client:
             name, desc = await _fetch_tamar(client, product.source_url, lang)
         if desc:
-            provenance = "source"
+            provenance, needs_review = "source", False   # native per-language fetch is authoritative
 
     if not desc and base:
-        if lang == src_lang:
+        if lang == true_src:
+            # base IS in this language. Authoritative only if the source was verified; an assumed
+            # 'en' with no signal is served but flagged for review (don't claim authority on a guess).
             desc, provenance = base, "source"
+            needs_review = not source_verified
         else:
-            desc = await _translate(base, lang, src_lang)
-            provenance = "machine"
+            desc = await _translate(base, lang, true_src)
+            provenance, needs_review = "machine", True
 
     if desc:
         if hit:
             hit.description = desc
             hit.name = name or hit.name
             hit.provenance = provenance
-            hit.needs_review = provenance == "machine"
+            hit.needs_review = needs_review
         else:
             db.add(ProductTranslationModel(
                 product_id=product.id, lang=lang, name=name, description=desc,
-                provenance=provenance, needs_review=provenance == "machine"))
+                provenance=provenance, needs_review=needs_review))
         await db.commit()
         return {"lang": lang, "description": desc, "name": name, "provenance": provenance}
 
