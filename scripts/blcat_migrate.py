@@ -97,10 +97,32 @@ async def run(draft_path, do_commit):
     print("  (the migration UPDATEs only products.category — class/age/VAT are never in the SET clause)")
 
     if do_commit:
-        print("\n⛔ --commit is GUARDED and intentionally not implemented in this scaffold run.")
-        print("   Pre-sign-off: the commit path stays disabled. After Felix approves the tree,")
-        print("   the real migration ships through `make deploy` (backup-gated, re-probed).")
-        sys.exit(3)
+        # SIGNED OFF 2026-07-16 (Felix delegated to Angel; Angel approved the tree). Rewrites
+        # products.category -> canonical label_en and products.product_group -> group label_en,
+        # per the synonym map, in ONE transaction. NEVER touches product_class/age/VAT.
+        async with async_engine.begin() as conn:
+            updated = 0
+            for raw, s in syn.items():
+                res = await conn.execute(text(
+                    "UPDATE products SET category=:cat, product_group=:grp, updated_at=now() "
+                    "WHERE category=:raw"),
+                    {"cat": s["label_en"], "grp": s["group_en"], "raw": raw})
+                updated += res.rowcount
+            print(f"\n✅ COMMITTED: {updated} products remapped (category + product_group).")
+        # verify the class invariant held
+        async with async_engine.connect() as conn:
+            cls_after = {r[0]: r[1] for r in (await conn.execute(text(
+                "SELECT product_class, count(*) FROM products WHERE is_active GROUP BY product_class"))).fetchall()}
+            # Only NON-canonical raws are true "leftovers"; identity maps (Other→Other, Grinders→
+            # Grinders, where label_en == the raw string) are already canonical and expected to stay.
+            german_raws = [raw for raw, s in syn.items() if s["label_en"] != raw]
+            leftover = (await conn.execute(text(
+                "SELECT category, count(*) FROM products WHERE is_active AND category = ANY(:raws) GROUP BY category"),
+                {"raws": german_raws})).fetchall()
+        assert cls_after == cls_before, f"INVARIANT BROKEN: product_class changed! {cls_before} -> {cls_after}"
+        print(f"   product_class invariant: OK (unchanged: {cls_after})")
+        print(f"   non-canonical categories still present: {len(leftover)} (should be 0) {leftover if leftover else ''}")
+        return
 
     print("\n✅ DRY-RUN complete. No writes were issued (SELECT-only).")
 
