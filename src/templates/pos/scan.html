@@ -941,7 +941,10 @@
                     return;
                 }
 
-                const code = this.barcodeInput.trim();
+                // BL-129: scrub the gun's invisible tail (CR/space/control chars) AND any junk a
+                // dirty field prepended — a barcode is contiguous, so strip every whitespace/control
+                // char, not just the ends. Matches the server's _clean_barcode so read == store.
+                const code = this.barcodeInput.replace(/[\x00-\x20\x7f]+/g, '');
                 // Double-fire guard: a fast scanner (or holding the item on the beam) can trigger the
                 // SAME code twice in a blink → two rings / a garbage double-entry. Ignore an identical
                 // code within 700ms; a real "sell two" re-scan is always slower than that.
@@ -1147,6 +1150,10 @@
             },
 
             openLazyCapture(barcode, prefillName) {
+                // BL-129: clear the scan box the moment we open the miss panel, so a follow-up scan
+                // starts CLEAN — never concatenated onto the code that just missed ("scan it ten
+                // times and it stops picking up" was the field accumulating junk).
+                this.barcodeInput = '';
                 this.lazyBarcode = barcode || '';
                 this.lazyName = prefillName || '';
                 this.lazyPrice = '';

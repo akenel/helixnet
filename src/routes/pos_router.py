@@ -236,6 +236,16 @@ async def get_pos_config(db: AsyncSession = Depends(get_db_session)):
 # PRODUCT ENDPOINTS
 # ================================================================
 
+def _clean_barcode(raw) -> str:
+    """Scrub a scanned/typed barcode down to its bare code. Scanner guns append or embed invisible
+    characters (a trailing CR/LF/TAB "submit" signal, stray control chars) and a field that didn't
+    clear can prepend junk — so a DEAD-EXACT match reads a KNOWN code as unknown, the operator
+    thinks it's new, and a DUPLICATE is born (or the code binds to the wrong row). Strip every
+    control/whitespace char so a real barcode is contiguous digits/letters and every read AND write
+    compares the same clean value. The gun gotcha, fixed once, centrally. (BL-129)"""
+    return re.sub(r'[\x00-\x20\x7f]+', '', str(raw or ''))
+
+
 def _sanitize_product_codes(data: dict) -> dict:
     """Guard the immutable identity against NAME-shaped SKUs/barcodes — the receiving
     "typed the product name into the scan box" trap. A barcode/SKU is a code: no
@@ -245,7 +255,10 @@ def _sanitize_product_codes(data: dict) -> dict:
     edited out later). Backstop to the receiving-screen client guard; protects every caller."""
     def _is_code(s: str) -> bool:
         return bool(s) and len(s) <= 40 and not any(c.isspace() for c in s)
-    bc = (data.get("barcode") or "").strip()
+    # Strip control chars (a gun's CR/LF, a \x02 symbology prefix) + trim, but KEEP internal spaces
+    # so the name-shaped-barcode guard below still fires (a NAME has spaces → reject; the aggressive
+    # space-stripping _clean_barcode is only for the lookup/bind read path, not identity storage).
+    bc = re.sub(r'[\x00-\x1f\x7f]', '', str(data.get("barcode") or "")).strip()
     data["barcode"] = bc if _is_code(bc) else None
     sku = (data.get("sku") or "").strip()
     data["sku"] = sku if _is_code(sku) else f"LZ-{uuid4().hex[:10]}"
@@ -885,6 +898,11 @@ async def _find_product_by_any_barcode(db: AsyncSession, barcode: str) -> Option
     makes "scan once, known forever" hold even when a pack carries more than one
     barcode — every code the product has ever been scanned under resolves here.
     """
+    # BL-129: scrub the gun's invisible junk (CR/space/control chars) before matching, else a
+    # KNOWN code reads as unknown and the operator makes a duplicate. Clean read == clean store.
+    barcode = _clean_barcode(barcode)
+    if not barcode:
+        return None
     # Primary barcode first (the common case, indexed).
     result = await db.execute(select(ProductModel).where(ProductModel.barcode == barcode))
     product = result.scalar_one_or_none()
@@ -937,7 +955,7 @@ async def add_product_barcode(
     already points at THIS product (primary or alias) it's a no-op; if it points at
     a DIFFERENT product it's a 409.
     """
-    barcode = (body.barcode or "").strip()
+    barcode = _clean_barcode(body.barcode)   # BL-129: never store a gun-polluted code as an alias
     if not barcode:
         raise HTTPException(status_code=400, detail="Barcode is required")
 
