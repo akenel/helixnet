@@ -1,0 +1,158 @@
+{
+  "_meta": {
+    "version": "draft-1",
+    "authored": "2026-07-15",
+    "author": "Tig (from prod audit 2026-07-14)",
+    "status": "PROPOSAL — needs Felix sign-off before any prod write",
+    "source": "banco_prod, 5170 active products, 61 distinct category strings",
+    "hub_language": "en",
+    "note": "category = MERCHANDISING axis only. The 18+/VAT class (product_class) is a SEPARATE locked axis and is NOT touched by this remap. A canonical category maps to fr/it/de/nl/es labels via POS_CATEGORY_LABELS; the messy raw strings become SYNONYMS, never identities. Counts sum to exactly 5170 (validated against prod).",
+    "verify_flag": "rows marked verify=true need a spot-check of ~5 real product names before commit — the German slug is ambiguous (product-vs-gear, brand-as-category, or a legally sensitive name)."
+  },
+
+  "groups": [
+    { "key": "cbd",       "label_en": "CBD & Hemp",            "items": 232, "_note": "was 396; -157 Oel Dabbing (→dab gear) -7 Treats (→system) after 2026-07-16 verify" },
+    { "key": "papers",    "label_en": "Papers & Rolling",      "items": 598 },
+    { "key": "headshop",  "label_en": "Smoking Gear",          "items": 1521, "_note": "was 1364; +157 Oel Dabbing dab gear" },
+    { "key": "vape",      "label_en": "Vape",                  "items": 1888 },
+    { "key": "shisha",    "label_en": "Tobacco & Shisha",      "items": 379 },
+    { "key": "cafe",      "label_en": "Cafe & Food",           "items": 47 },
+    { "key": "lifestyle", "label_en": "Lifestyle & Gifts",     "items": 300 },
+    { "key": "growlab",   "label_en": "Grow & Lab",            "items": 41 },
+    { "key": "system",    "label_en": "Unsorted / System",     "items": 164, "_note": "was 157; +7 Treats giveaway items" }
+  ],
+
+  "canonical_categories": [
+    { "key": "cbd-flower",        "group": "cbd",       "label_en": "CBD Flower" },
+    { "key": "cbd-extracts",      "group": "cbd",       "label_en": "Extracts & Oils" },
+    { "key": "cbd-edibles",       "group": "cbd",       "label_en": "Edibles" },
+    { "key": "cbd-cosmetics",     "group": "cbd",       "label_en": "Cosmetics" },
+    { "key": "cbd-topicals",      "group": "cbd",       "label_en": "Creams & Topicals" },
+
+    { "key": "rolling-papers",    "group": "papers",    "label_en": "Rolling Papers" },
+    { "key": "filters-tips",      "group": "papers",    "label_en": "Filters & Tips" },
+    { "key": "blunts-wraps",      "group": "papers",    "label_en": "Blunts & Wraps" },
+    { "key": "cones-tubes",       "group": "papers",    "label_en": "Cones & Tubes" },
+    { "key": "rolling-trays",     "group": "papers",    "label_en": "Rolling Trays" },
+    { "key": "rolling-machines",  "group": "papers",    "label_en": "Rolling & Filling Machines" },
+    { "key": "cigarette-tubes",   "group": "papers",    "label_en": "Cigarette Tubes" },
+    { "key": "rolling-accessories","group": "papers",   "label_en": "Rolling Accessories" },
+
+    { "key": "bongs",             "group": "headshop",  "label_en": "Bongs" },
+    { "key": "pipes",             "group": "headshop",  "label_en": "Pipes" },
+    { "key": "grinders",          "group": "headshop",  "label_en": "Grinders" },
+    { "key": "bong-pipe-parts",   "group": "headshop",  "label_en": "Bong & Pipe Accessories" },
+    { "key": "lighters",          "group": "headshop",  "label_en": "Lighters" },
+    { "key": "ashtrays",          "group": "headshop",  "label_en": "Ashtrays" },
+    { "key": "scales",            "group": "headshop",  "label_en": "Scales" },
+    { "key": "presses",           "group": "headshop",  "label_en": "Presses" },
+    { "key": "snuff",             "group": "headshop",  "label_en": "Snuff Accessories" },
+    { "key": "storage-stash",     "group": "headshop",  "label_en": "Storage & Stash" },
+    { "key": "dab-concentrate",   "group": "headshop",  "label_en": "Dab & Concentrate Gear" },
+
+    { "key": "e-liquids",         "group": "vape",      "label_en": "E-Liquids" },
+    { "key": "coils-pods",        "group": "vape",      "label_en": "Coils & Pods" },
+    { "key": "vape-devices",      "group": "vape",      "label_en": "Vape Devices" },
+    { "key": "prefilled",         "group": "vape",      "label_en": "Prefilled & Disposables" },
+    { "key": "vaporizers",        "group": "vape",      "label_en": "Vaporizers" },
+    { "key": "nicotine-shots",    "group": "vape",      "label_en": "Nicotine Shots" },
+    { "key": "vape-accessories",  "group": "vape",      "label_en": "Vape Accessories" },
+
+    { "key": "tobacco",           "group": "shisha",    "label_en": "Tobacco" },
+    { "key": "shisha-tobacco",    "group": "shisha",    "label_en": "Shisha Tobacco" },
+    { "key": "shishas",           "group": "shisha",    "label_en": "Shishas & Hookahs" },
+    { "key": "shisha-bowls",      "group": "shisha",    "label_en": "Shisha Bowls" },
+    { "key": "shisha-coal",       "group": "shisha",    "label_en": "Shisha Coal" },
+    { "key": "shisha-hoses",      "group": "shisha",    "label_en": "Shisha Hoses" },
+
+    { "key": "food-snacks",       "group": "cafe",      "label_en": "Food & Snacks" },
+    { "key": "cafe",              "group": "cafe",      "label_en": "Cafe" },
+
+    { "key": "decor",             "group": "lifestyle", "label_en": "Decor" },
+    { "key": "incense",           "group": "lifestyle", "label_en": "Incense & Smudge" },
+    { "key": "apparel",           "group": "lifestyle", "label_en": "Apparel & Textiles" },
+    { "key": "gifts-gadgets",     "group": "lifestyle", "label_en": "Gifts & Gadgets" },
+    { "key": "entertainment",     "group": "lifestyle", "label_en": "Entertainment & Games" },
+    { "key": "knives-tools",      "group": "lifestyle", "label_en": "Knives & Tools" },
+    { "key": "packaging",         "group": "lifestyle", "label_en": "Packaging & Bags" },
+
+    { "key": "drug-testing",      "group": "growlab",   "label_en": "Drug Testing" },
+    { "key": "grow",              "group": "growlab",   "label_en": "Grow Supplies" },
+
+    { "key": "accessories",       "group": "system",    "label_en": "Accessories (general)" },
+    { "key": "unsorted",          "group": "system",    "label_en": "Unsorted" },
+    { "key": "other",             "group": "system",    "label_en": "Other" }
+  ],
+
+  "mapping": [
+    { "raw": "Liquids",              "count": 700, "to": "e-liquids" },
+    { "raw": "Pods Coils",           "count": 351, "to": "coils-pods" },
+    { "raw": "E Zigis",              "count": 290, "to": "vape-devices" },
+    { "raw": "Prefilled",            "count": 275, "to": "prefilled", "verified": "2026-07-16: confirmed — ELFBAR/Lost Mary/VOZOL prefilled pods + disposables. Correct." },
+    { "raw": "Vaporizer",            "count": 248, "to": "vaporizers", "verified": "2026-07-16: confirmed — Crafty/Mighty/PAX/Storz&Bickel Volcano dry-herb vaporizers + parts. Correct in Vape group." },
+    { "raw": "Vape Co",              "count": 17,  "to": "prefilled", "verified": "2026-07-16: all samples are CBD VAPE PENS (Kush/King Kush CBD Vapepen, CBD Ersatz-Pod) = disposable prefilled vapes, NOT accessories. Corrected vape-accessories -> prefilled." },
+    { "raw": "Nikotinshots",         "count": 7,   "to": "nicotine-shots" },
+
+    { "raw": "Filter",               "count": 258, "to": "filters-tips" },
+    { "raw": "Schalen Trays",        "count": 112, "to": "rolling-trays", "verified": "2026-07-16: confirmed — ~85% Rolling Trays (RAW/Kahlifa/glass); a few decorative brass/horn bowls bleed in. Correct." },
+    { "raw": "Drehpapier",           "count": 86,  "to": "rolling-papers" },
+    { "raw": "Blunts",               "count": 57,  "to": "blunts-wraps" },
+    { "raw": "Joint Huelsen Cones",  "count": 31,  "to": "cones-tubes" },
+    { "raw": "Stopfmaschinen",       "count": 14,  "to": "rolling-machines" },
+    { "raw": "Papers & Filters",     "count": 12,  "to": "rolling-papers", "verified": "2026-07-16: confirmed — ~80% rolls/papers (Elements/Juicy Jay/GIZEH Rolls); 2-3 GIZEH Active Filters bleed in. Dominant = rolling-papers." },
+    { "raw": "Drehmaschinen",        "count": 9,   "to": "rolling-machines" },
+    { "raw": "Raw Produkte",         "count": 9,   "to": "cones-tubes", "verified": "2026-07-16: all samples are CONES (RAW Cones, leere Konen mit Filter), not papers. Corrected rolling-papers -> cones-tubes." },
+    { "raw": "Zigaretten Huelsen",   "count": 9,   "to": "cigarette-tubes" },
+    { "raw": "Drehhilfen",           "count": 1,   "to": "rolling-accessories" },
+
+    { "raw": "Bong Pfeifenzubehoer", "count": 256, "to": "bong-pipe-parts" },
+    { "raw": "Aufbewahrung",         "count": 238, "to": "storage-stash" },
+    { "raw": "Grinder",              "count": 193, "to": "grinders" },
+    { "raw": "Bongs",                "count": 180, "to": "bongs" },
+    { "raw": "Pfeifen",              "count": 116, "to": "pipes" },
+    { "raw": "Schnupfutensilien",    "count": 114, "to": "snuff" },
+    { "raw": "Feuerzeuge",           "count": 96,  "to": "lighters" },
+    { "raw": "Aschenbecher",         "count": 84,  "to": "ashtrays" },
+    { "raw": "Waagen",               "count": 34,  "to": "scales" },
+    { "raw": "Verstecktresore",      "count": 31,  "to": "storage-stash", "verify": true, "note": "2026-07-16 confirmed = diversion/stash SAFES disguised as everyday objects (battery, deo, ring, lighter, phone bag). FELIX §4.5 = fold into Storage & Stash, or a fun standalone 'Stash Safes' shelf?" },
+    { "raw": "Pressen",              "count": 20,  "to": "presses" },
+    { "raw": "Grinders",             "count": 1,   "to": "grinders" },
+    { "raw": "Lighters",             "count": 1,   "to": "lighters" },
+
+    { "raw": "Marijuana",            "count": 203, "to": "cbd-flower", "verify": true, "note": "2026-07-16 confirmed content = CBD flower + pre-rolls + hashish (Starbuds, Tamar Offenverkauf, MRS Green, CBD joints, SWEED hash). Bucket correct. FELIX §4.1 = DISPLAY NAME ('CBD Flower' vs 'Hemp Flower' vs 'Marijuana')." },
+    { "raw": "Oel Dabbing",          "count": 157, "to": "dab-concentrate", "verified": "2026-07-16: spot-check = ALL dab GEAR (Focus V Carta e-rig, glass dabbers, NoGoo silicone containers, dab mats, BHO extractor) — NOT CBD oils. No split needed. Corrected cbd-extracts -> dab-concentrate. Moves 157 items CBD -> Smoking Gear." },
+    { "raw": "Extrakte",             "count": 10,  "to": "cbd-extracts" },
+    { "raw": "Kosmetik",             "count": 8,   "to": "cbd-cosmetics" },
+    { "raw": "Creams & Topicals",    "count": 7,   "to": "cbd-topicals" },
+    { "raw": "Treats",               "count": 7,   "to": "other", "verified": "2026-07-16: these are the CHECKOUT GIVEAWAY items (TREAT-* SKUs: sticker, lighter, lollipop, grinder card, gummy) — a system bucket, not CBD edibles. Corrected cbd-edibles -> other." },
+    { "raw": "CBD & Hemp",           "count": 4,   "to": "cbd-flower" },
+
+    { "raw": "Shishatabak",          "count": 126, "to": "shisha-tobacco" },
+    { "raw": "Tabak",                "count": 123, "to": "tobacco", "verified": "2026-07-16: confirmed bucket=Tobacco — mixed (rolling-tobacco pouches, nicotine strips, tobacco substitutes/MUZA). Not shisha. Felix §4.6 = tobacco/shisha grouping." },
+    { "raw": "Tabakkoepfe",          "count": 43,  "to": "shisha-bowls" },
+    { "raw": "Shishas",              "count": 38,  "to": "shishas" },
+    { "raw": "Kohle",                "count": 25,  "to": "shisha-coal" },
+    { "raw": "Schlaeuche",           "count": 24,  "to": "shisha-hoses" },
+
+    { "raw": "Food",                 "count": 46,  "to": "food-snacks" },
+    { "raw": "Café",                 "count": 1,   "to": "cafe" },
+
+    { "raw": "Verpackung",           "count": 108, "to": "packaging", "verified": "2026-07-16: confirmed SELLABLE — smell-proof Grip baggies w/ retail designs (Mushroom Lady, Cookies, Amsterdam). Correct = Packaging & Bags." },
+    { "raw": "Dekoration",           "count": 80,  "to": "decor" },
+    { "raw": "Unterhaltung",         "count": 32,  "to": "entertainment", "verified": "2026-07-16: it's BOOKS/COMICS (grow books, Freak Brothers comics, Kiffer Lexikon). Felix may prefer a 'Books & Media' category name; kept under Entertainment & Games for now." },
+    { "raw": "Raeucherartikel",      "count": 30,  "to": "incense" },
+    { "raw": "Textilien",            "count": 24,  "to": "apparel" },
+    { "raw": "Messer",               "count": 15,  "to": "knives-tools" },
+    { "raw": "Geschenke Gadgets",    "count": 11,  "to": "gifts-gadgets" },
+
+    { "raw": "Drogentests",          "count": 40,  "to": "drug-testing" },
+    { "raw": "Grow Supplies",        "count": 1,   "to": "grow" },
+
+    { "raw": "Zubehoer",             "count": 74,  "to": "accessories", "verify": true, "note": "2026-07-16 spot-check: DOMINANTLY vape parts (coils, drip tips, Clapton wire, atomizer stands, chargers) + some silicone coasters. Recommend re-map -> vape-accessories, OR a manual re-split. FELIX §4.4 decision." },
+    { "raw": "Diverses",             "count": 58,  "to": "other" },
+    { "raw": "Accessories",          "count": 12,  "to": "accessories" },
+    { "raw": "On the fly",           "count": 11,  "to": "unsorted", "note": "system bucket for quick-add — keep as the landing zone for new/on-the-fly items" },
+    { "raw": "Headshop",             "count": 1,   "to": "unsorted", "note": "a GROUP name leaked as a category — reassign the 1 item" },
+    { "raw": "Other",                "count": 1,   "to": "other" }
+  ]
+}

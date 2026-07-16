@@ -10,6 +10,25 @@
 
 ---
 
+## 🆕 BL-CAT — CATEGORY TAXONOMY CLEANUP (handed off 2026-07-15) · ✅ BL-CAT.1+.2 DONE 2026-07-16
+
+**✅ BL-CAT.1 (verify) + ✅ BL-CAT.2 (Felix review sheet) DONE 2026-07-16 — `docs/testing/banco/BANCO-CATEGORY-TAXONOMY-REVIEW.html`.**
+Verify caught + corrected 4 real mis-mappings (Oel Dabbing 157→dab gear, Raw Produkte→cones, Vape Co→prefilled, Treats→system).
+Sheet = 9 groups × 49 categories w/ live counts + 3 real samples + 7 tickable decisions; 0 unmapped.
+**✅ BL-CAT.3 (dry-run migration scaffold) DONE** — `scripts/blcat_migrate.py`, prod dry-run: 4,984 move / 0 gaps / class untouched
+(`docs/testing/reports/prod/blcat3-migration-dryrun-2026-07-16.txt`). **✅ BL-CAT.4 (code-funnel plan) DONE** — `docs/BANCO-CATEGORY-FUNNEL-PLAN.md`.
+**▶ ALL 4 pre-sign-off tasks DONE. NEXT (Angel + Felix): walk the sheet, tick the 7 decisions → fold ticks into the JSON → the migration
+ships post-sign-off through the gated ladder (BL-CAT.3 `--commit` + BL-CAT.4 writer fixes) as a separate deliberate session.**
+
+**READ [docs/BANCO-CATEGORY-TAXONOMY-HANDOFF.md](BANCO-CATEGORY-TAXONOMY-HANDOFF.md) and execute its
+task list (BL-CAT.1–.4). STOP at the Felix sign-off gate — read-only on prod, build artifacts, NO
+deploy, NO migration commit.** Root cause (measured prod 2026-07-14): the Artemis importer named
+categories from **German URL slugs** → 61 category strings, 49 raw German, "papers" split across 10.
+Descriptions are ~96% fine — this is a CATEGORY problem. Fix = ONE canonical 2-level tree, English
+hub, the 61 strings become synonyms. Draft tree + full 61→canonical mapping already built:
+**`docs/banco-category-taxonomy-draft.json`**. The real deliverable = **BL-CAT.2, the Felix review
+sheet** (HTML test-script) with the 6 business decisions §4. Memory: `banco-category-language-mess`.
+
 ## 🔴 BACKLOG — PRIORITY (Angel 2026-07-15, "damaging… fat-fingered all over the place")
 
 - **🛟 CLICK-OUTSIDE LOSES EDITS.** **DOCTRINE: clicking a form's backdrop must not discard; only

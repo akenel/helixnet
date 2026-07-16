@@ -1,0 +1,87 @@
+BL-CAT.3 — CATEGORY MIGRATION DRY-RUN (read-only, zero writes)
+==================================================================
+active products w/ a category : 5175
+would MOVE (category rewrites): 4984
+unchanged (already canonical) : 191
+distinct categories: 61 raw  ->  49 canonical
+coverage gaps (unmapped)      : 0  
+
+-- AFTER: canonical category -> item count (by group) --
+
+  CBD & Hemp  (232)
+       207  CBD Flower
+        10  Extracts & Oils
+         8  Cosmetics
+         7  Creams & Topicals
+
+  Papers & Rolling  (600)
+       258  Filters & Tips
+       112  Rolling Trays
+       100  Rolling Papers
+        57  Blunts & Wraps
+        40  Cones & Tubes
+        23  Rolling & Filling Machines
+         9  Cigarette Tubes
+         1  Rolling Accessories
+
+  Smoking Gear  (1521)
+       269  Storage & Stash
+       256  Bong & Pipe Accessories
+       194  Grinders
+       180  Bongs
+       157  Dab & Concentrate Gear
+       116  Pipes
+       114  Snuff Accessories
+        97  Lighters
+        84  Ashtrays
+        34  Scales
+        20  Presses
+
+  Vape  (1888)
+       700  E-Liquids
+       351  Coils & Pods
+       292  Prefilled & Disposables
+       290  Vape Devices
+       248  Vaporizers
+         7  Nicotine Shots
+
+  Tobacco & Shisha  (379)
+       126  Shisha Tobacco
+       123  Tobacco
+        43  Shisha Bowls
+        38  Shishas & Hookahs
+        25  Shisha Coal
+        24  Shisha Hoses
+
+  Cafe & Food  (47)
+        46  Food & Snacks
+         1  Cafe
+
+  Lifestyle & Gifts  (300)
+       108  Packaging & Bags
+        80  Decor
+        32  Entertainment & Games
+        30  Incense & Smudge
+        24  Apparel & Textiles
+        15  Knives & Tools
+        11  Gifts & Gadgets
+
+  Grow & Lab  (41)
+        40  Drug Testing
+         1  Grow Supplies
+
+  Unsorted / System  (167)
+        86  Accessories (general)
+        66  Other
+        15  Unsorted
+
+-- INVARIANT: product_class distribution (must be untouched by this migration) --
+      4057  standard
+       802  tobacco_nicotine
+       292  cbd_hemp
+        15  cbd_open
+         8  alcohol
+         1  age_restricted
+  (the migration UPDATEs only products.category — class/age/VAT are never in the SET clause)
+
+✅ DRY-RUN complete. No writes were issued (SELECT-only).
