@@ -7,6 +7,7 @@ Sprint 4: Added HTML interface routes for Pam's POS system.
 """
 import json
 import logging
+import re
 from fastapi import APIRouter, Depends, HTTPException, status, Request, UploadFile, File, Body
 from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
@@ -2041,6 +2042,27 @@ async def receive_stock(
 # FAST SEARCH ENDPOINTS (PostgreSQL Full-Text + Trigram)
 # ================================================================
 
+# BL-128 #2 — size-token boost. When the query names a pack size ("lemon haze 2g"), float products
+# whose NAME carries that exact size to the top (2g above 10g) instead of tying them. The mirror of
+# posProductSize() on the client; here it yields a Postgres regex, digit-boundary safe ('2g' must
+# never match '12g'/'20g'/'2mg'). None when the query has no size token → ordering is untouched.
+_SIZE_Q_RE = re.compile(r'(\d+(?:[.,]\d+)?)\s?(gr|kg|mg|g|ml|cl|stk|stück|pcs|blatt|er|x)\b', re.I)
+_SIZE_UNIT_FAMILY = {
+    "g": "gr?", "gr": "gr?", "kg": "kg", "mg": "mg", "ml": "ml", "cl": "cl",
+    "stk": "(stk|stück|pcs)", "stück": "(stk|stück|pcs)", "pcs": "(stk|stück|pcs)",
+    "blatt": "blatt", "er": "er", "x": "x",
+}
+
+
+def _query_size_regex(q: str) -> Optional[str]:
+    m = _SIZE_Q_RE.search(q or "")
+    if not m:
+        return None
+    num = m.group(1).replace(",", ".").replace(".", r"\.")   # escape the decimal dot for the PG regex
+    unit = _SIZE_UNIT_FAMILY.get(m.group(2).lower(), re.escape(m.group(2).lower()))
+    return r"\y" + num + r"\s?" + unit + r"\y"               # \y = word boundary in Postgres regex
+
+
 @router.get("/search")
 async def search_products_fast(
     q: str = "",
@@ -2103,6 +2125,11 @@ async def search_products_fast(
           # (Same trick the photo/capture search already uses — see search_reference_catalog.)
           "CASE WHEN name ILIKE :q || '%' THEN 0 ELSE 1 END, relevance DESC, name")
 
+    # BL-128 #2: the query named a pack size → float exact-size matches to the very top (2g over 10g).
+    size_rx = _query_size_regex(q)
+    if size_rx:
+        order_clause = "CASE WHEN name ~* :size_rx THEN 0 ELSE 1 END, " + order_clause
+
     # image fallback: a product's cover lives in products.image_url, but a cashier-
     # uploaded gallery photo only sets the cover when none exists yet — so a product can
     # have a perfectly good photo (visible in the edit gallery) while image_url is NULL,
@@ -2144,6 +2171,8 @@ async def search_products_fast(
     params = {"q": q or "", "category": category, "limit": limit, "skip": skip}
     if syn_like:
         params["syn_like"] = syn_like
+    if size_rx:
+        params["size_rx"] = size_rx
     rows = (await db.execute(query, params)).fetchall()
 
     from src.services.catalog_taxonomy import class_promo_restricted
