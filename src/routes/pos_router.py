@@ -4817,7 +4817,8 @@ async def import_catalog_worklist(
         raise HTTPException(status_code=400, detail="No rows with a SKU found in the Worklist tab.")
 
     results, counts = [], {"update": 0, "skip": 0, "conflict": 0, "error": 0, "nochange": 0,
-                           "enrich": 0, "photos_pulled": 0, "photos_missed": 0, "photos_deferred": 0}
+                           "enrich": 0, "photos_pulled": 0, "photos_missed": 0, "photos_deferred": 0,
+                           "barcode_enriched": 0, "barcode_missed": 0, "barcode_deferred": 0}
 
     # THE SAME PICTURE ON TWO DIFFERENT PRODUCTS IS A MISTAKE, NOT A SHORTCUT. Copy-paste down a
     # spreadsheet column is one keystroke, and a wrong-but-confident picture is the worst outcome we
@@ -4834,6 +4835,10 @@ async def import_catalog_worklist(
     # "we covered everything" when we didn't.
     PHOTO_BUDGET = 40
     photo_jobs = []          # [(product_id, page_url)] — run AFTER the data commits (see below)
+    # The free barcode database allows ~100 lookups/day. Spending them is a real, shared budget, so a
+    # sheet can't quietly burn the day's quota — whatever we don't spend is REPORTED, not dropped.
+    BARCODE_BUDGET = 50
+    barcode_jobs = []        # [(product_id, clean_barcode)] — the Zippo lane
 
     def _rec(row, status, detail, changes=None):
         counts[status] = counts.get(status, 0) + 1
@@ -4927,6 +4932,19 @@ async def import_catalog_worklist(
                 needs.append("photo")
         if not (product.description or "").strip():
             needs.append("description")
+
+        # THE ZIPPO CASE. A rack of 50 Zippos is 50 near-identical lighters whose only real difference
+        # is the model (207 Street Chrome vs 200 Brushed Chrome vs …) — unreadable from a shelf, brutal
+        # to type, hopeless to pick from an image search. But every one carries a real UPC, and Zippo is
+        # MAINSTREAM: the world already catalogued it (verified — 041689102074 → "Zippo Classic Street
+        # Chrome Pocket Lighter"). So when a row carries a barcode and no page link, the CODE does the
+        # identifying: scan the rack into the sheet, import, done. Niche head-shop stock stays orphaned
+        # in those databases (Tycoon Gas → not found) and still needs the URL/photo path — this lane is
+        # for the branded mainstream, which is exactly where the racks-of-50 problem lives.
+        if bc and not _su and action != "DONE" and (needs or not (product.name or "").strip()):
+            barcode_jobs.append((product.id, bc))
+            changes["lookup_by"] = f"barcode {bc}"
+
         if needs and action == "ENRICH":
             counts["enrich"] += 1
 
@@ -4975,6 +4993,48 @@ async def import_catalog_worklist(
 
     if not dry_run:
         await db.commit()          # the operator's data is safe BEFORE any network work is attempted
+
+        # --- The Zippo lane: let the CODE identify the product. ---
+        for pid, code in barcode_jobs[:BARCODE_BUDGET]:
+            product = (await db.execute(
+                select(ProductModel).where(ProductModel.id == pid))).scalar_one_or_none()
+            if product is None:
+                continue
+            try:
+                from src.services.web_product_lookup import lookup_product
+                hit = await lookup_product(code, "") or {}
+            except Exception as e:
+                logger.warning(f"Barcode lookup FAILED for {code}: {type(e).__name__}: {str(e)[:70]}")
+                counts["barcode_missed"] = counts.get("barcode_missed", 0) + 1
+                continue
+            if not hit.get("found"):
+                # Expected for niche stock — those databases only know the mainstream. Not an error.
+                counts["barcode_missed"] = counts.get("barcode_missed", 0) + 1
+                continue
+
+            got = []
+            title = (hit.get("title") or "").strip()
+            # The title is the point: it names the exact MODEL a shelf can't tell you (207 vs 200).
+            # Only into a blank/placeholder name, never over the operator's own words.
+            if title and not (product.name or "").strip():
+                product.name = title[:200]
+                got.append("name")
+            if hit.get("description") and not (product.description or "").strip():
+                product.description = str(hit["description"]).strip()[:4000]
+                product.source_lang = product.source_lang or "en"
+                got.append("description")
+            # NOTE: their `category` is deliberately IGNORED — upcitemdb filed a Zippo lighter under
+            # "Apparel & Accessories > Jewelry > Watches". Our funnel owns categories.
+            if got:
+                product.updated_at = datetime.now(timezone.utc)
+                await db.commit()
+                counts["barcode_enriched"] = counts.get("barcode_enriched", 0) + 1
+
+            imgs = hit.get("images") or []
+            if imgs and not (product.image_url or "").strip():
+                if await _copy_external_image_to_storage(db, product, str(imgs[0])):
+                    counts["photos_pulled"] += 1
+        counts["barcode_deferred"] = max(0, len(barcode_jobs) - BARCODE_BUDGET)
 
         # Photo pass: page URL -> og:image -> our storage. Capped, because each one costs two network
         # round-trips and a 500-row sheet would time out. Whatever we defer is REPORTED, never dropped
@@ -5049,7 +5109,14 @@ async def import_catalog_worklist(
                     + (f" Took {counts.get('prices_pulled', 0)} CHF price(s) off the page."
                        if counts.get('prices_pulled') else "")
                     + (f" {counts.get('prices_foreign', 0)} page price(s) were NOT in CHF — left for you."
-                       if counts.get('prices_foreign') else "")),
+                       if counts.get('prices_foreign') else "")
+                    + (f" Identified {counts.get('barcode_enriched', 0)} product(s) from their barcode."
+                       if counts.get('barcode_enriched') else "")
+                    + (f" {counts.get('barcode_missed', 0)} barcode(s) aren't in the public databases "
+                       f"(normal for niche stock) — those need a page link or a photo."
+                       if counts.get('barcode_missed') else "")
+                    + (f" {counts.get('barcode_deferred', 0)} barcode lookup(s) deferred (daily quota) "
+                       f"— import again tomorrow." if counts.get('barcode_deferred') else "")),
     }
 
 
