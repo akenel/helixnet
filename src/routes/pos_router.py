@@ -4980,9 +4980,30 @@ async def import_catalog_worklist(
         for pid, page_url in photo_jobs[:PHOTO_BUDGET]:
             product = (await db.execute(
                 select(ProductModel).where(ProductModel.id == pid))).scalar_one_or_none()
-            if product is None or (product.image_url or "").strip():
+            if product is None:
                 continue
-            img = await _page_main_image(page_url)
+            facts = await _page_product_facts(page_url)
+
+            # The page states more than a picture: its own title, description and price. Take them —
+            # but ONLY into blanks. The operator stood at the shelf with the thing in their hand; a
+            # web page never outranks that. And a EUR/USD number is NOT a Swiss shelf price, so a
+            # foreign price is deliberately left for a human rather than written in as if it were CHF.
+            if facts.get("description") and not (product.description or "").strip():
+                product.description = facts["description"]
+                product.source_lang = product.source_lang or "en"
+                counts["text_pulled"] = counts.get("text_pulled", 0) + 1
+            if facts.get("price") and (product.price or 0) == 0:
+                if (facts.get("currency") or "").upper() == "CHF":
+                    product.price = Decimal(str(facts["price"])).quantize(Decimal("0.01"))
+                    counts["prices_pulled"] = counts.get("prices_pulled", 0) + 1
+                else:
+                    counts["prices_foreign"] = counts.get("prices_foreign", 0) + 1
+            if facts.get("description") or facts.get("price"):
+                await db.commit()
+
+            if (product.image_url or "").strip():
+                continue
+            img = facts.get("image")
             if img and await _copy_external_image_to_storage(db, product, img):
                 counts["photos_pulled"] += 1
             else:
@@ -5006,7 +5027,13 @@ async def import_catalog_worklist(
                     + (f" {counts['photos_missed']} page(s) had no usable picture."
                        if counts['photos_missed'] else "")
                     + (f" {counts['photos_deferred']} photo(s) deferred — import again to finish them."
-                       if counts['photos_deferred'] else "")),
+                       if counts['photos_deferred'] else "")
+                    + (f" Filled {counts.get('text_pulled', 0)} description(s) from those pages."
+                       if counts.get('text_pulled') else "")
+                    + (f" Took {counts.get('prices_pulled', 0)} CHF price(s) off the page."
+                       if counts.get('prices_pulled') else "")
+                    + (f" {counts.get('prices_foreign', 0)} page price(s) were NOT in CHF — left for you."
+                       if counts.get('prices_foreign') else "")),
     }
 
 
