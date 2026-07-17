@@ -1832,6 +1832,7 @@ async def _reference_best_match(db: AsyncSession, name: str, barcode: str = "") 
     ("Weed Pipe Brass Rosewood 15cm" vs "Weed Pipe Brass Anato 15.5cm" score 1.00 vs 0.51), and binding
     the sibling is the wrong-picture failure we keep paying for. Below that, a human decides.
     """
+    from sqlalchemy import text          # module-level import is `select/func/...` only
     code = _clean_barcode(barcode)
     if code:
         r = (await db.execute(text("""
