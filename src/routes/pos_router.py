@@ -7756,7 +7756,7 @@ async def product_page(
         "description": desc.get("description") or product.description or "",
         "provenance": desc.get("provenance"),
         "price": f"{float(product.price):.2f}" if product.price is not None else None,
-        "currency": "CHF",
+        "currency": await _store_currency(db),
         "image_url": product.image_url,
         "specs": _product_page_specs(product.attributes, lang),
         "tiers": _product_page_tiers(product.price_tiers, product.price, product.tier_mode),
@@ -7790,7 +7790,7 @@ async def product_label(
         "size": "m" if (size or "s").lower().startswith("m") else "s",
         "name": product.name,
         "price": f"{float(product.price):.2f}" if product.price is not None else None,
-        "currency": "CHF",
+        "currency": await _store_currency(db),
         "barcode": product.barcode or "",
         "sku": product.sku or "",
         "store_name": (store or {}).get("name") or "",
@@ -7849,7 +7849,7 @@ async def _kiosk_payload(db: AsyncSession, product, lang: str) -> dict:
         "name": desc.get("name") or product.name,
         "description": desc.get("description") or product.description or "",
         "price": f"{float(product.price):.2f}" if product.price is not None else None,
-        "currency": "CHF",
+        "currency": await _store_currency(db),
         "image_url": product.image_url,
         "category": product.category,
         "specs": _product_page_specs(product.attributes, lang),
@@ -7912,12 +7912,13 @@ async def kiosk_search(
         return {"results": [], "q": ""}
     env = await search_products_fast(q=q, limit=8, db=db)
     items = env.get("items", []) if isinstance(env, dict) else []
+    cur = await _store_currency(db)          # resolve once — never assume CHF, and don't query per row
     results = [
         {
             "id": str(it.get("id")),
             "name": it.get("name"),
             "price": f"{float(it['price']):.2f}" if it.get("price") else None,
-            "currency": "CHF",
+            "currency": cur,
             "image_url": it.get("image_url"),
             "category": it.get("category"),
             "is_age_restricted": bool(it.get("is_age_restricted")),
@@ -8066,7 +8067,7 @@ async def _kiosk_cart_payload(db: AsyncSession, cart) -> dict:
     return {
         "found": True, "code": cart.code, "status": cart.status, "source": cart.source, "lang": cart.lang,
         "items": lines, "item_count": sum(l["qty"] for l in lines),
-        "total": f"{total:.2f}", "currency": "CHF",
+        "total": f"{total:.2f}", "currency": await _store_currency(db),
         "member_handle": (member.handle if member else None),
         "customer_id": (str(cart.customer_id) if cart.customer_id else None),
         "discount_pct": discount_pct, "discount_amount": f"{discount_amount:.2f}",
@@ -8247,7 +8248,7 @@ async def labels_batch(
         "request": request,
         "labels": labels,
         "size": "m" if (size or "s").lower().startswith("m") else "s",
-        "currency": "CHF",
+        "currency": await _store_currency(db),
         "store_name": (store or {}).get("name") or "",
     })
 
@@ -8312,7 +8313,7 @@ async def product_postcard(
         "description": desc.get("description") or product.description or "",
         "provenance": desc.get("provenance"),
         "price": f"{float(product.price):.2f}" if product.price is not None else None,
-        "currency": "CHF",
+        "currency": await _store_currency(db),
         "image_url": display_img or None,
         "supplier": product.supplier_name,
         "colour": (attrs.get("colour") or "").lower(),
@@ -8368,7 +8369,7 @@ async def product_postcard_sheet(
         "name": desc.get("name") or product.name,   # translated name → title matches the language
         "description": desc.get("description") or product.description or "",
         "price": f"{float(product.price):.2f}" if product.price is not None else None,
-        "currency": "CHF",
+        "currency": await _store_currency(db),
         "image_url": display_img or None,
         "supplier": product.supplier_name,
         "colour": (attrs.get("colour") or "").lower(),
