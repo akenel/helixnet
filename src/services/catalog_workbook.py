@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import io
 from datetime import date
-from typing import Iterable, Optional
+from typing import Iterable, List, Optional
 from urllib.parse import quote_plus
 
 from openpyxl import Workbook
@@ -265,3 +265,78 @@ def build_worklist_workbook(rows: Iterable[dict], *, section: Optional[str] = No
     buf = io.BytesIO()
     wb.save(buf)
     return buf.getvalue()
+
+
+# ---------------------------------------------------------------------------------------------
+# READ-BACK (BL-131 step 2) — parse the workbook the operator filled at the shelf.
+# ---------------------------------------------------------------------------------------------
+
+class WorkbookError(Exception):
+    """The uploaded file isn't a worklist we can read."""
+
+
+def _cell(ws, row: int, col: int):
+    v = ws.cell(row=row, column=col).value
+    if v is None:
+        return None
+    if isinstance(v, str):
+        v = v.strip()
+        return v or None
+    return v
+
+
+def parse_worklist_workbook(data: bytes) -> List[dict]:
+    """Read a filled Worklist tab back into plain dicts (one per row).
+
+    Deliberately forgiving about everything EXCEPT identity: we match the header row by NAME (so a
+    reordered/hidden column can't silently shift the data into the wrong field), and a row without a
+    SKU is skipped rather than guessed at. Values are returned RAW — validation, barcode-cleaning and
+    category-funnelling happen at the import endpoint, where the DB is there to check against.
+    """
+    from openpyxl import load_workbook
+    try:
+        wb = load_workbook(io.BytesIO(data), data_only=True)   # data_only: read formula RESULTS
+    except Exception as e:
+        raise WorkbookError(f"Not a readable .xlsx file ({str(e)[:80]})")
+    if "Worklist" not in wb.sheetnames:
+        raise WorkbookError("No 'Worklist' tab — is this the workbook Banco exported?")
+    ws = wb["Worklist"]
+
+    # header name -> column index (never trust position; a user may hide/reorder columns)
+    hdr = {}
+    for c in range(1, ws.max_column + 1):
+        h = ws.cell(row=1, column=c).value
+        if isinstance(h, str) and h.strip():
+            hdr[h.strip().lower()] = c
+    need = ["sku", "product name"]
+    missing = [n for n in need if n not in hdr]
+    if missing:
+        raise WorkbookError(f"Missing column(s): {', '.join(missing)}")
+
+    def col(name):
+        return hdr.get(name)
+
+    out = []
+    for r in range(2, ws.max_row + 1):
+        sku = _cell(ws, r, col("sku"))
+        if not sku:
+            continue                      # blank row, or a row the operator added without identity
+        row = {
+            "row": r,
+            "sku": str(sku),
+            "name": _cell(ws, r, col("product name")),
+            "barcode": _cell(ws, r, col("barcode / ean")) if col("barcode / ean") else None,
+            "category": _cell(ws, r, col("category")) if col("category") else None,
+            "price": _cell(ws, r, col("price chf")) if col("price chf") else None,
+            "cost": _cell(ws, r, col("cost chf")) if col("cost chf") else None,
+            "size": _cell(ws, r, col("size / variant")) if col("size / variant") else None,
+            "source_url": _cell(ws, r, col("source url")) if col("source url") else None,
+            "action": (_cell(ws, r, col("action")) or "ENRICH") if col("action") else "ENRICH",
+            "notes": _cell(ws, r, col("notes")) if col("notes") else None,
+        }
+        # a gun/keyboard can leave a number typed as a float ("42425700.0") — normalise to a code
+        if row["barcode"] is not None and not isinstance(row["barcode"], str):
+            row["barcode"] = format(row["barcode"], ".0f") if float(row["barcode"]).is_integer() else str(row["barcode"])
+        row["action"] = str(row["action"]).strip().upper()
+        out.append(row)
+    return out

@@ -4611,6 +4611,181 @@ async def export_catalog_worklist(
     )
 
 
+@router.post("/catalog/worklist/import")
+async def import_catalog_worklist(
+    file: UploadFile = File(...),
+    dry_run: bool = True,
+    source_site: Optional[str] = None,
+    supplier: Optional[str] = None,
+    default_category: Optional[str] = None,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_manager_or_admin()),
+):
+    """BL-131 step 2 — read the filled worklist back in. DRY-RUN BY DEFAULT.
+
+    This is where the gold lands: the BARCODES the operator scanned at the shelf. Every lesson we've
+    paid for is enforced here, because a bulk write is exactly where a small mistake becomes 500 of them:
+
+    • `_clean_barcode` (BL-129) — a gun's invisible CR would otherwise store a code that never scans back.
+    • `canonicalize_category` (BL-CAT) — the funnel; a hand-typed category can't reopen the German-slug mess.
+    • **Never blind-bind a barcode** (BL-100) — if a code already belongs to ANOTHER product it's a
+      CONFLICT we report and refuse, never a silent re-point. That cross-wire cost us a whole day.
+    • Money at CENT precision; a price is only taken when it's a sane positive number.
+    • SKU is identity: no SKU match = reported, never guessed at, never created blind.
+
+    `dry_run=True` returns exactly what WOULD change and touches nothing — the BL-CAT discipline that
+    caught the taxonomy mistakes before they shipped. The batch flags (`source_site`, `supplier`) are
+    recorded on the rows they apply to so a later enrichment pass can scope its lookups to the right site.
+    """
+    from decimal import InvalidOperation
+    from src.services.catalog_taxonomy import canonicalize_category
+    from src.services.catalog_workbook import parse_worklist_workbook, WorkbookError
+    raw = await file.read()
+    if not raw:
+        raise HTTPException(status_code=400, detail="Empty file")
+    try:
+        rows = parse_worklist_workbook(raw)
+    except WorkbookError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except ImportError:
+        raise HTTPException(status_code=503, detail="Spreadsheet support needs an app image rebuild (openpyxl).")
+    if not rows:
+        raise HTTPException(status_code=400, detail="No rows with a SKU found in the Worklist tab.")
+
+    results, counts = [], {"update": 0, "skip": 0, "conflict": 0, "error": 0, "nochange": 0, "enrich": 0}
+
+    def _rec(row, status, detail, changes=None):
+        counts[status] = counts.get(status, 0) + 1
+        results.append({"row": row["row"], "sku": row["sku"], "name": row.get("name"),
+                        "status": status, "detail": detail, "changes": changes or {}})
+
+    for row in rows:
+        action = row.get("action") or "ENRICH"
+        if action == "SKIP":
+            _rec(row, "skip", "Marked SKIP — left untouched"); continue
+
+        product = (await db.execute(
+            select(ProductModel).where(ProductModel.sku == row["sku"]))).scalar_one_or_none()
+        if product is None:
+            _rec(row, "error", f"No product with SKU {row['sku']} — row ignored (never created blind)"); continue
+
+        changes = {}
+
+        # --- barcode: the whole point. Clean it, then prove it's free before binding. ---
+        bc = _clean_barcode(row.get("barcode"))
+        alias_to_add = None
+        if bc:
+            owner = await _find_product_by_any_barcode(db, bc)
+            if owner is not None and owner.id != product.id:
+                _rec(row, "conflict",
+                     f"Barcode {bc} already belongs to '{owner.name}' — NOT bound. Check the pack; "
+                     f"if it's really this product, free the code from the other row first.")
+                continue
+            if owner is None:
+                if not (product.barcode or "").strip():
+                    changes["barcode"] = bc                    # primary: it had none
+                else:
+                    alias_to_add = bc                          # a second real code on the pack (BL-90)
+                    changes["barcode_alias"] = bc
+
+        # --- name / size (the human's variant call) ---
+        nm = (row.get("name") or "").strip()
+        if nm and nm != product.name:
+            changes["name"] = nm[:200]
+        sz = (row.get("size") or "").strip()
+        if sz and sz.lower() not in (product.name or "").lower():
+            changes["size_note"] = sz          # recorded; the operator's variant call, not auto-renamed
+
+        # --- category through the funnel ---
+        cat_raw = (row.get("category") or "").strip() or (default_category or "").strip()
+        if cat_raw:
+            cat, grp = canonicalize_category(cat_raw, nm or product.name)
+            if cat == "Unsorted" and cat_raw:
+                _rec(row, "error", f"'{cat_raw}' isn't a real category — use the dropdown"); continue
+            if cat != product.category:
+                changes["category"] = cat
+                changes["product_group"] = grp
+
+        # --- money, at cent precision ---
+        p = row.get("price")
+        if p is not None:
+            try:
+                pv = Decimal(str(p)).quantize(Decimal("0.01"))
+                if pv < 0:
+                    raise ValueError
+                if pv > 0 and pv != (product.price or Decimal("0")).quantize(Decimal("0.01")):
+                    changes["price"] = float(pv)
+            except (InvalidOperation, ValueError):
+                _rec(row, "error", f"Price '{p}' isn't a number"); continue
+        c = row.get("cost")
+        if c is not None:
+            try:
+                cv = Decimal(str(c)).quantize(Decimal("0.01"))
+                if cv >= 0 and (product.cost is None or cv != product.cost.quantize(Decimal("0.01"))):
+                    changes["cost"] = float(cv)
+            except (InvalidOperation, ValueError):
+                _rec(row, "error", f"Cost '{c}' isn't a number"); continue
+
+        # what a later AI pass would still have to find
+        needs = []
+        if not (product.image_url or "").strip():
+            needs.append("photo")
+        if not (product.description or "").strip():
+            needs.append("description")
+        if needs and action == "ENRICH":
+            counts["enrich"] += 1
+
+        if not changes:
+            _rec(row, "nochange", "Nothing new in this row" + (f" · AI still owes: {', '.join(needs)}" if needs else ""))
+            continue
+
+        if not dry_run:
+            for f in ("name", "category", "product_group"):
+                if f in changes:
+                    setattr(product, f, changes[f])
+            if "barcode" in changes:
+                product.barcode = changes["barcode"]
+            if "price" in changes:
+                product.price = Decimal(str(changes["price"]))
+            if "cost" in changes:
+                product.cost = Decimal(str(changes["cost"]))
+            if alias_to_add:
+                db.add(ProductBarcodeModel(product_id=product.id, barcode=alias_to_add))
+            # The sheet's own fields go to their REAL columns, not a notes blob.
+            if row.get("source_url"):
+                product.source_url = str(row["source_url"])[:500]
+            if supplier and not (product.supplier_name or "").strip():
+                product.supplier_name = supplier[:100]      # batch flag; never overwrite a known supplier
+            # Everything the operator observed that has no column of its own (their free-text note,
+            # the variant they read off the pack, the site this batch was scoped to) is provenance —
+            # it belongs with the enrichment metadata, where a later AI pass can actually use it.
+            meta = dict(product.enrichment_meta or {})
+            hand = {k: v for k, v in (("note", row.get("notes")),
+                                      ("variant", changes.get("size_note")),
+                                      ("source_site", source_site)) if v}
+            if hand:
+                hand["by"] = current_user["username"]
+                hand["at"] = datetime.now(timezone.utc).isoformat()
+                meta["worklist"] = hand
+                product.enrichment_meta = meta
+            product.updated_at = datetime.now(timezone.utc)
+        _rec(row, "update", ", ".join(f"{k}→{v}" for k, v in changes.items())[:200], changes)
+
+    if not dry_run:
+        await db.commit()
+        logger.info(f"Worklist import APPLIED by {current_user['username']}: {counts}")
+
+    return {
+        "dry_run": dry_run,
+        "rows": len(rows),
+        "counts": counts,
+        "flags": {"source_site": source_site, "supplier": supplier, "default_category": default_category},
+        "results": results[:400],
+        "message": ("Preview only — nothing changed. Review the conflicts, then apply."
+                    if dry_run else f"Applied to {counts['update']} product(s)."),
+    }
+
+
 @router.get("/catalog/cleanup-queue")
 async def get_cleanup_queue(
     mode: str = "sold",
