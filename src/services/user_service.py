@@ -128,15 +128,22 @@ async def create_initial_users(db: AsyncSession):
                 kc_resp = await kc_service.register_user(UserCreate(**u))
                 kc_id = kc_resp.get("id")
             except DuplicateUserError:
-                # This path runs if the user IS in Keycloak (we need to get the ID here if not None)
-                logger.warning(f"⚠️ User {u['username']} exists in Keycloak. Skipping.")
-                # We should try to LOOK UP the existing user's ID here if needed,
-                # but for simplicity, we rely on the DB check above. For now, leave kc_id = None.
-                pass # IMPORTANT: Do not assign new_user here!
+                # The user IS in Keycloak but NOT in our DB (we passed the DB check above). We don't
+                # have a KC lookup to fetch their existing id, so kc_id stays None.
+                logger.warning(f"⚠️ User {u['username']} exists in Keycloak but not locally.")
 
-            # Create locally (THIS BLOCK MUST BE EXECUTED WHETHER KC SUCCEEDED OR SKIPPED)
+            # keycloak_id is NOT NULL. Inserting None (the taxman case: already in KC → DuplicateUserError
+            # left kc_id None) violated the constraint and threw an IntegrityError on EVERY startup — a red
+            # 500 in the logs on every restart. If we couldn't resolve a real id, SKIP the local seed
+            # cleanly. It's not lost: the normal login flow provisions the local row with a valid
+            # keycloak_id the first time the user actually signs in. (BL-046)
+            if not kc_id:
+                logger.warning(f"⏭️ No Keycloak id for {u['username']} — skipping local seed; "
+                               f"it will provision on first login.")
+                continue
+
             new_user = UserModel(
-                keycloak_id=kc_id, # This will be the new ID or None if the user was skipped/existed
+                keycloak_id=kc_id,
                 username=u["username"],
                 email=u["email"],
                 first_name=u["first_name"],
@@ -146,7 +153,6 @@ async def create_initial_users(db: AsyncSession):
             )
 
             db.add(new_user)
-            # --- END FIX AREA ---
             
             try:
                 await db.commit()
