@@ -513,17 +513,68 @@ CATEGORY_SYNONYMS.update({
     "Grow Accessories": "Grow Supplies",
 })
 
+# BL-130 — the SHELF-PHOTO reader's vocabulary (the 5th writer into the funnel).
+# Reading the shop's shelves from photos (47 shots -> 256-product draft, 2026-07-16) invented its own
+# plain-English category names. They're sensible but they are NOT our canonical labels, so half the
+# seeded batch fell into "Unsorted". Map them here — at the ONE chokepoint — so every future photo-read
+# batch lands on the clean tree instead of needing a patch script. Same doctrine as the German-slug mess:
+# fix the funnel, not the rows.
+CATEGORY_SYNONYMS.update({
+    "Pre-Rolled Cones": "Cones & Tubes",
+    "Rolling Trays & Mats": "Rolling Trays",
+    "Blunt Wraps & Cigarillos": "Blunts & Wraps",
+    "Bongs & Water Pipes": "Bongs",
+    "Bong Accessories & Cleaning": "Bong & Pipe Accessories",
+    "Vapes & E-Liquids": "E-Liquids",          # mixed bucket; refined per-item by name (see _refine_vape)
+    "CBD & Hemp": "CBD Flower",                 # group name used as a category; flower is the default lane
+    "Tobacco Substitutes": "Tobacco",
+    "Incense": "Incense & Smudge",
+    "Smudge & Ritual": "Incense & Smudge",
+    "Aromatherapy & Room Spray": "Gifts & Gadgets",
+    "Cosmetics & Body Care": "Cosmetics",
+    "Humidity Control": "Storage & Stash",      # Boveda packs live with storage
+    "Growing Supplies": "Grow Supplies",
+    "Books & Media": "Entertainment & Games",
+    "Games": "Entertainment & Games",
+    "Jewelry & Decor": "Decor",
+    "Detox & Test Kits": "Drug Testing",
+    "Accessories": "Accessories (general)",
+})
+
 CANONICAL_CATEGORIES = sorted(CANONICAL_LABEL_GROUP.keys())
 _CATEGORY_SYNONYMS_LOWER = {k.lower(): v for k, v in CATEGORY_SYNONYMS.items()}
 
 
-def canonicalize_category(raw):
+# BL-130 — split the one MIXED vape bucket by what the product's name says it is. A source that files
+# disposables, nic-salt liquids and pods all under one "Vapes & E-Liquids" heading would otherwise dump
+# them into a single lane; the name is a reliable tell. Only consulted for that ambiguous label.
+_VAPE_REFINE = (
+    ("Prefilled & Disposables", ("disposable", "puff", "elf bar", "elfbar", "lost mary", "vozol", "einweg")),
+    ("Coils & Pods",            ("pod", "coil", "cartridge", "elfa")),
+    ("Nicotine Shots",          ("nic shot", "nikotin shot", "nicotine shot")),
+    ("Vape Devices",            ("kit", "device", "mod", "akku", "battery")),
+)
+
+
+def _refine_vape(name: str):
+    n = (name or "").lower()
+    for label, tells in _VAPE_REFINE:
+        if any(t in n for t in tells):
+            return label
+    return None
+
+
+def canonicalize_category(raw, name: str = None):
     """Funnel any free-text category string -> (canonical_category_label, group_label).
 
     Exact synonym (English canonical, German slug, or legacy string) wins; a case-insensitive
     retry catches minor casing drift; anything unknown or blank lands in ('Unsorted',
     'Unsorted / System') so a NEW item is never a fresh non-canonical category. This is BL-CAT's
     anti-regrowth backstop — every product create/adopt runs its category through here.
+
+    `name` is OPTIONAL (BL-130): when the source category is a known MIXED bucket, the product name
+    disambiguates it (a "Elf Bar 600 Disposable" filed under "Vapes & E-Liquids" is a disposable, not
+    an e-liquid). Callers that don't pass a name behave exactly as before.
     """
     s = (raw or "").strip()
     if not s:
@@ -531,4 +582,6 @@ def canonicalize_category(raw):
     lbl = CATEGORY_SYNONYMS.get(s) or _CATEGORY_SYNONYMS_LOWER.get(s.lower())
     if not lbl:
         return ("Unsorted", "Unsorted / System")
+    if lbl == "E-Liquids" and name:
+        lbl = _refine_vape(name) or lbl
     return (lbl, CANONICAL_LABEL_GROUP.get(lbl, "Unsorted / System"))
