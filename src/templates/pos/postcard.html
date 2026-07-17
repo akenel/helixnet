@@ -42,6 +42,7 @@
   .toolbar a, .toolbar button{ font-size:13px; border:1px solid var(--line); background:#fff; color:var(--ink);
     border-radius:8px; padding:8px 14px; cursor:pointer; text-decoration:none; font-family:inherit; }
   .toolbar .print{ background:var(--accent); color:#fff; border-color:var(--accent); font-weight:700; }
+  .toolbar .home{ font-size:16px; line-height:1; padding:7px 11px; text-decoration:none; }
   .lang{ color:var(--mut); font-size:12px; }
   .lang a{ color:var(--mut); text-decoration:none; padding:0 3px; } .lang a.on{ color:var(--accent); font-weight:700; }
 
@@ -122,6 +123,11 @@
 </head>
 <body>
   <div class="toolbar">
+    <!-- BL-144: a way OUT. Angel: "this is a dead-end page — no way back to kiosk. The header should
+         min point back to kiosk welcome (prod for prod)." Relative /pos/kiosk → same origin, so the
+         prod card returns to the prod kiosk and the sandbox card to the sandbox kiosk, automatically.
+         Hidden on print (the .toolbar rule) so it never lands on the printed card. -->
+    <a class="home" href="/pos/kiosk" title="Back to the shop">🏠</a>
     <span class="lang">
       <a href="?lang=de" class="{{ 'on' if lang=='de' else '' }}">DE</a>·<a href="?lang=en" class="{{ 'on' if lang=='en' else '' }}">EN</a>·<a href="?lang=fr" class="{{ 'on' if lang=='fr' else '' }}">FR</a>·<a href="?lang=it" class="{{ 'on' if lang=='it' else '' }}">IT</a>
     </span>
