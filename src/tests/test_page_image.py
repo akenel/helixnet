@@ -14,3 +14,15 @@ from src.routes.pos_router import _page_main_image
 async def test_rejects_non_http():
     for u in ("", None, "not a url", "ftp://x/y.jpg", "javascript:alert(1)", "file:///etc/passwd"):
         assert await _page_main_image(u) is None
+
+
+@pytest.mark.asyncio
+async def test_direct_image_urls_are_taken_as_is():
+    """An operator pastes whatever they were looking at — half the time that's the IMAGE, not the page
+    (right-click → copy image address, or straight out of Google Images). Both are legitimate answers
+    to 'where is this product's picture'. No network needed: the extension is proof enough."""
+    for u in ("https://lasalade.ch/1517-large_default/ol-cbd-10-bio.jpg",
+              "https://x.ch/a.PNG",
+              "https://greenpassion.ch/cdn/shop/files/hash.png?v=1746001808&width=640",
+              "https://x.ch/a.webp"):
+        assert await _page_main_image(u) == u
