@@ -4929,6 +4929,7 @@ async def import_catalog_worklist(
     # sheet can't quietly burn the day's quota — whatever we don't spend is REPORTED, not dropped.
     BARCODE_BUDGET = 50
     barcode_jobs = []        # [(product_id, clean_barcode)] — the Zippo lane
+    note_jobs = []           # [(product_id, pasted_text)] — pages the operator read FOR us
 
     def _rec(row, status, detail, changes=None):
         counts[status] = counts.get(status, 0) + 1
@@ -5089,6 +5090,15 @@ async def import_catalog_worklist(
             # after the data is safely committed.
             if want_image_from_page:
                 photo_jobs.append((product.id, row["source_url"]))
+
+            # THE OPERATOR PASTED A PAGE INTO Notes. Angel dumped a whole Amazon listing into the
+            # Notes cell and the import shrugged: "Nothing new in this row". He was making a point —
+            # amazon.ch answers our fetch with a 503 robot wall (verified), so a URL there is useless
+            # to us. But he already did the reading a browser can do and we can't, and pasted the
+            # result. Notes was being FILED as provenance and never READ. If a human hands us the
+            # text, use it — that's the whole division of labour.
+            if not (product.description or "").strip() and len(str(row.get("notes") or "")) > 180:
+                note_jobs.append((product.id, str(row["notes"])))
         _rec(row, "update", ", ".join(f"{k}→{v}" for k, v in changes.items())[:200], changes)
 
     if not dry_run:
@@ -5130,6 +5140,26 @@ async def import_catalog_worklist(
             if ref.get("image_url") and not (product.image_url or "").strip():
                 if await _copy_external_image_to_storage(db, product, str(ref["image_url"])):
                     counts["photos_pulled"] += 1
+
+        # --- Read what the operator pasted. A human beat the robot wall; use their work. ---
+        for pid, pasted in note_jobs[:PHOTO_BUDGET]:
+            product = (await db.execute(
+                select(ProductModel).where(ProductModel.id == pid))).scalar_one_or_none()
+            if product is None or (product.description or "").strip():
+                continue
+            from src.services.page_description import describe_from_page
+            # Same reader as a fetched page — it already strips markup and extracts ONLY stated facts,
+            # so a copy-pasted listing (nav junk, "Add to basket", sponsored rails and all) is the same
+            # problem it already solves. It returns "" rather than invent when there's nothing usable.
+            deep = await describe_from_page(product.name, pasted)
+            if deep:
+                product.description = deep[:4000]
+                product.source_lang = product.source_lang or "en"
+                product.updated_at = datetime.now(timezone.utc)
+                await db.commit()
+                counts["text_from_notes"] = counts.get("text_from_notes", 0) + 1
+            else:
+                counts["notes_unusable"] = counts.get("notes_unusable", 0) + 1
 
         # --- The Zippo lane: let the CODE identify the product. ---
         for pid, code in barcode_jobs[:BARCODE_BUDGET]:
@@ -5256,6 +5286,8 @@ async def import_catalog_worklist(
                        if counts.get('barcode_missed') else "")
                     + (f" {counts.get('barcode_deferred', 0)} barcode lookup(s) deferred (daily quota) "
                        f"— import again tomorrow." if counts.get('barcode_deferred') else "")
+                    + (f" Wrote {counts.get('text_from_notes', 0)} description(s) from the text you pasted in Notes."
+                       if counts.get('text_from_notes') else "")
                     + (f" ⚠ {counts.get('photos_thumbnail', 0)} link(s) were Google THUMBNAILS (small) — "
                        f"click the image in Google first and copy THAT address for a full-size shot."
                        if counts.get('photos_thumbnail') else "")),
