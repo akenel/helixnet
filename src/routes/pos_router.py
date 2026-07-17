@@ -2125,6 +2125,47 @@ async def _copy_external_image_to_storage(db: AsyncSession, product, source_url:
         return None
 
 
+class ImageFromUrlRequest(BaseModel):
+    url: str
+
+
+@router.post("/products/{product_id}/images/from-url")
+async def add_product_image_from_url(
+    product_id: UUID,
+    body: ImageFromUrlRequest,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_manager_or_admin()),
+):
+    """Paste a link, get the picture. BL-142.
+
+    Angel, on a bench card with only a "Choose file" button: "can we have a link for the article, not
+    just choose file and upload — the google images lookup link for example" and "[a gstatic url]
+    should be pasteable when editing an item".
+
+    Right: he's already got the picture open in a browser tab. Making him save-to-disk-then-upload is
+    the donkey-work the import already deleted — it just never reached the screen he actually works on.
+    Takes EITHER a product PAGE (og:image is read out of it) or a direct image URL, because an operator
+    pastes whatever they were looking at. Bytes are copied into our storage, so the source can rot.
+    """
+    product = (await db.execute(
+        select(ProductModel).where(ProductModel.id == product_id))).scalar_one_or_none()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    url = (body.url or "").strip()
+    if not (url.startswith("http://") or url.startswith("https://")):
+        raise HTTPException(status_code=400, detail="Paste a link that starts with http:// or https://")
+    img = await _page_main_image(url)
+    if not img:
+        raise HTTPException(status_code=422,
+                            detail="No picture found at that link — paste the product page, or the image itself")
+    served = await _copy_external_image_to_storage(db, product, img)
+    if not served:
+        raise HTTPException(status_code=422, detail="That picture couldn't be downloaded — try another link")
+    logger.info(f"Image from URL for {product.sku} by {current_user['username']}: {url[:70]}")
+    return {"image_url": served, "url": served, "source": url,
+            "thumbnail_warning": _is_thumbnail_url(url)}
+
+
 @router.post("/products/{product_id}/images")
 async def add_product_image(
     product_id: UUID,

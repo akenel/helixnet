@@ -580,6 +580,19 @@ _MIXED_REFINE = {
         ("Filters & Tips", ("filter", "tip", "aktivkohle", "activated carbon", "spitzen", "purize",
                             "slim size", "6mm", "carbon")),
     ),
+    "Accessories (general)": (   # the catch-all bucket hides whole real sections inside itself
+        # Angel, spot-checking the bench: "section for dabbers?? put in accessories for now, but still??"
+        # There IS a section — "Dab & Concentrate Gear" — nothing just ever routed to it, so every
+        # dabber, dab mat and banger sank into the catch-all. A category that exists but is unreachable
+        # is the same as no category.
+        ("Dab & Concentrate Gear", ("dabber", "dab mat", "dabmat", "banger", "carb cap", "carbcap",
+                                    "dab rig", "dab tool", "enail", "e-nail", "quartz nail",
+                                    "concentrate", "wax ", "shatter")),
+        ("Scales",                 ("waage", "scale ", "feinwaage", "pocket scale")),
+        ("Lighters",               ("feuerzeug", "lighter", "torch", "benzin", "flint", "stein ")),
+        ("Grinders",               ("grinder", "mühle", "muehle")),
+        ("Storage & Stash",        ("stash", "tabaktasche", "pouch", "tin box", "dose ", "tresor")),
+    ),
     "Pipes": (                   # from "Pipes & Bongs"
         ("Bongs", ("bong", "waterpipe", "wasserpfeife", "percolator", "beaker", "acryl bong")),
         ("Bong & Pipe Accessories", ("adapter", "diffusor", "diffuser", "kupplung", "coupling",

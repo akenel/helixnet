@@ -278,6 +278,13 @@
                                     <!-- BL-136: the currency follows the STORE (Rome trades in EUR) — a hardcoded
                                          "Cost (CHF)" asks the operator for money the shop doesn't take. -->
                                     <label class="block text-xs font-medium text-gray-500 mb-1">
+                                        <span data-i18n="cleanup.f_price">Sells for</span>
+                                        (<span x-text="_cfg('currency')"></span>)
+                                    </label>
+                                    <input type="number" step="0.05" min="0" x-model="p._price" placeholder="0.00" class="input-field">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 mb-1">
                                         <span data-i18n="cleanup.f_cost_bare">Cost</span>
                                         (<span x-text="_cfg('currency')"></span>)
                                         <!-- Angel: "should show the suggested retail selling price, then the user can
@@ -305,9 +312,30 @@
                                               placeholder="What is it? Two lines is plenty." data-i18n-placeholder="cleanup.ph_desc"></textarea>
                                 </div>
                                 <div x-show="mode === 'bench'" style="display:none;" class="sm:col-span-2">
-                                    <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="cleanup.f_photo">Photo</label>
+                                    <label class="block text-xs font-medium text-gray-500 mb-1">
+                                        <span data-i18n="cleanup.f_photo">Photo</span>
+                                        <!-- Angel: "can we have a link for the article, not just choose file
+                                             and upload — the google images lookup link for example." He's
+                                             already got the tab open; save-to-disk-then-upload is the exact
+                                             donkey-work the import already deleted. Brand-scoped when we know
+                                             the brand, so the results are the REAL pack, not gibberish. -->
+                                        <a :href="'https://www.google.com/search?tbm=isch&q=' + encodeURIComponent(p.name || '')"
+                                           target="_blank" class="text-indigo-600 font-semibold hover:underline ml-1"
+                                           data-i18n="cleanup.find_photo">🖼️ find one</a>
+                                    </label>
+                                    <div class="flex gap-1">
+                                        <!-- paste ANY link: the product page, or the image itself -->
+                                        <input type="url" x-model="p._imgUrl" @keydown.enter="photoFromUrl(p)"
+                                               placeholder="paste a link…" data-i18n-placeholder="cleanup.ph_imgurl"
+                                               class="input-field flex-1 min-w-0">
+                                        <button type="button" @click="photoFromUrl(p)"
+                                                :disabled="p._uploading || !p._imgUrl" class="btn-secondary px-2 text-xs whitespace-nowrap">
+                                            <span x-show="!p._uploading" data-i18n="cleanup.get_photo">Get it</span>
+                                            <span x-show="p._uploading" style="display:none;">…</span>
+                                        </button>
+                                    </div>
                                     <input type="file" accept="image/*" capture="environment"
-                                           @change="uploadPhoto(p, $event)" :disabled="p._uploading" class="input-field">
+                                           @change="uploadPhoto(p, $event)" :disabled="p._uploading" class="input-field mt-1">
                                     <p x-show="p._uploading" style="display:none;" class="text-xs text-gray-500 mt-1" data-i18n="cleanup.uploading">Uploading…</p>
                                 </div>
 
@@ -546,6 +574,8 @@
                         // editable working copies — blank the placeholder so the manager types a real one
                         _category: (p.gaps.category ? '' : (p.category || '')),
                         _cost: (p.cost != null ? p.cost : ''),
+                        _price: (p.price != null && p.price > 0 ? p.price : ''),   // BL-142: settable here
+                        _imgUrl: '',
                         _description: (p.description || ''),
                         _age: !!p.is_age_restricted,
                         _saving: false,
@@ -567,6 +597,27 @@
                     console.error('cleanup queue failed', e);
                     showToast(t('cleanup.toast_load_failed') || 'Could not load the queue', 'error');
                 } finally { this.loading = false; }
+            },
+
+            // BL-142: paste a link — a product page OR the image itself — and we fetch + store it.
+            async photoFromUrl(p) {
+                const url = (p._imgUrl || '').trim();
+                if (!url) return;
+                p._uploading = true;
+                try {
+                    const res = await API.post(`/api/v1/pos/products/${p.product_id}/images/from-url`, { url });
+                    p.image_url = (res && (res.image_url || res.url)) || p.image_url;
+                    p.gaps.photo = false;
+                    p._imgUrl = '';
+                    if (res && res.thumbnail_warning) {
+                        showToast(t('cleanup.toast_thumb') ||
+                            'Got it — but that was a Google thumbnail (small). Open the image first for a big one.', 'warning');
+                    } else {
+                        showToast(t('cleanup.toast_photo') || 'Photo added', 'success');
+                    }
+                } catch (e) {
+                    showToast(e.message || t('cleanup.toast_photo_failed') || 'Could not get that picture', 'error');
+                } finally { p._uploading = false; }
             },
 
             async uploadPhoto(p, ev) {
@@ -606,9 +657,17 @@
                 if (costRaw !== null && (isNaN(costRaw) || costRaw < 0)) {
                     showToast(t('cleanup.toast_bad_cost') || 'Enter a valid cost', 'warning'); return;
                 }
+                // BL-142 — Angel: "says cost and stuff but no listed price". The card asked what it COST
+                // us but never let you say what it SELLS for, so a 0.00 product could never be finished
+                // from the bench at all.
+                const priceRaw = (p._price === '' || p._price === null) ? null : parseFloat(p._price);
+                if (priceRaw !== null && (isNaN(priceRaw) || priceRaw < 0)) {
+                    showToast(t('cleanup.toast_bad_price') || 'Enter a valid price', 'warning'); return;
+                }
                 const payload = { is_age_restricted: !!p._age };
                 if (cat) payload.category = cat;
                 if (costRaw !== null) payload.cost = costRaw;
+                if (priceRaw !== null) payload.price = priceRaw;
                 if (this.mode === 'bench' && desc) payload.description = desc;
                 p._saving = true;
                 try {
