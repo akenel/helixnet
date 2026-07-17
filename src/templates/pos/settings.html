@@ -70,6 +70,12 @@
                         <div><label class="lbl" data-i18n="settings.country">Country</label><input type="text" x-model="form.country" class="input-field" placeholder="Switzerland"></div>
                         <div><label class="lbl" data-i18n="settings.founded_year">Founded (year)</label><input type="text" x-model="form.founded_year" class="input-field" placeholder="1999"></div>
                     </div>
+                    <!-- BL-047: tell the operator the address does double duty. Angel: "mention in Settings
+                         that the address drives the weather — this is your weather report, people." -->
+                    <p class="text-xs text-gray-500 flex items-start gap-1.5 mt-1">
+                        <span>🛰️</span>
+                        <span data-i18n="settings.address_weather_note">Your <b>city</b> is also your daily weather report — Banco fills the weather on each timesheet automatically from a real source, so nobody has to type (or guess) it. Keep the city accurate.</span>
+                    </p>
                 </div>
 
                 <!-- CONTACT & LINKS -->
