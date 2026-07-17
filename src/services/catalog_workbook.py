@@ -58,6 +58,7 @@ COLUMNS = [
     ("Size / variant", 16, True),
     ("Photo?",         8, False),
     ("Text?",          8, False),
+    ("We already have", 40, False),  # our own supplier catalog — ASK THIS BEFORE GOOGLE
     ("Look it up",    12, False),   # hyperlink → web search
     ("Find a photo",  12, False),   # hyperlink → image search (the operator picks the real one)
     ("Source URL",    34, True),
@@ -170,6 +171,17 @@ def build_worklist_workbook(rows: Iterable[dict], *, section: Optional[str] = No
         ws[f"{col['Size / variant']}{n}"] = row.get("size") or ""
         ws[f"{col['Photo?']}{n}"] = "yes" if row.get("has_image") else "no"
         ws[f"{col['Text?']}{n}"] = "yes" if row.get("has_text") else "no"
+        # What our OWN supplier catalog already knows. Shown BEFORE the Google links on purpose:
+        # 10,284 FourTwenty rows (99% images, 100% prices) sat unused while the sheet sent the
+        # operator to the web to find things we already own.
+        ref = row.get("ref")
+        if ref:
+            c = ws[f"{col['We already have']}{n}"]
+            price = f" · CHF {ref['price']}" if ref.get("price") else ""
+            exact = "✅" if ref.get("score", 0) >= 0.85 else "≈"
+            c.value = f"{exact} {ref['title'][:44]}{price}"
+            c.fill = PatternFill("solid", fgColor=OK_BG if ref.get("score", 0) >= 0.85 else WARN_BG)
+            c.font = Font(size=9.5, color=INK)
 
         # The operator's real workflow, one click each. Two links because they answer two different
         # questions: "what IS this exactly?" (web) and "which of these hundreds is the real pack?"

@@ -1817,6 +1817,46 @@ def _process_image_upload(raw: bytes, content_type: str) -> bytes:
         return raw
 
 
+async def _reference_best_match(db: AsyncSession, name: str, barcode: str = "") -> Optional[dict]:
+    """What our OWN supplier catalog already knows about this product. ASK THIS FIRST.
+
+    Angel, staring at a worklist row that said "Weed Pipe Brass Rosewood 15cm — needs work, price 0.00,
+    no photo": *"a lot of the products we have, they should be there already on Tamar or 420 — that's what
+    I don't understand, why we don't find it… it seems a little bit weird."* He was right. That exact
+    name sits in `reference_products` at similarity 1.00, with a barcode, CHF 9.00 and an image. We hold
+    10,284 FourTwenty rows — 99% with images, 100% with prices — and the workbench was sending him to
+    Google to find things we already own. Measured on his bench: 102/436 match at >0.55, 219/436 at >0.35.
+
+    Barcode is proof, so an exact code wins outright. A name is evidence, so it must be STRONG (>=0.80)
+    before we'd act on it unattended — the supplier's catalog is full of near-identical siblings
+    ("Weed Pipe Brass Rosewood 15cm" vs "Weed Pipe Brass Anato 15.5cm" score 1.00 vs 0.51), and binding
+    the sibling is the wrong-picture failure we keep paying for. Below that, a human decides.
+    """
+    code = _clean_barcode(barcode)
+    if code:
+        r = (await db.execute(text("""
+            SELECT title, barcode, description, image_url, suggested_price, our_category, supplier
+            FROM reference_products WHERE barcode = :b LIMIT 1"""), {"b": code})).fetchone()
+        if r:
+            return {"title": r.title, "barcode": r.barcode, "description": r.description,
+                    "image_url": r.image_url, "price": r.suggested_price, "category": r.our_category,
+                    "supplier": r.supplier, "score": 1.0, "how": "barcode"}
+    nm = (name or "").strip()
+    if len(nm) < 4:
+        return None
+    r = (await db.execute(text("""
+        SELECT title, barcode, description, image_url, suggested_price, our_category, supplier,
+               similarity(lower(title), lower(:n)) AS score
+        FROM reference_products
+        WHERE similarity(lower(title), lower(:n)) > 0.5
+        ORDER BY score DESC LIMIT 1"""), {"n": nm})).fetchone()
+    if not r:
+        return None
+    return {"title": r.title, "barcode": r.barcode, "description": r.description,
+            "image_url": r.image_url, "price": r.suggested_price, "category": r.our_category,
+            "supplier": r.supplier, "score": round(float(r.score), 3), "how": "name"}
+
+
 def _is_thumbnail_url(url: str) -> bool:
     """A search engine's cached THUMBNAIL rather than the source picture.
 
@@ -4768,8 +4808,17 @@ async def export_catalog_worklist(
         cat, _ = _canon(p.category, p.name)
         return "" if cat == "Unsorted" else cat
 
+    # Ask our own supplier catalog about every row BEFORE the operator goes anywhere near Google.
+    refs = {}
+    for p in rows:
+        try:
+            refs[p.id] = await _reference_best_match(db, p.name, p.barcode or "")
+        except Exception:
+            refs[p.id] = None
+
     data = build_worklist_workbook(
         [{
+            "ref": refs.get(p.id),
             "sku": p.sku,
             "name": p.name,
             "barcode": p.barcode,
@@ -5024,6 +5073,43 @@ async def import_catalog_worklist(
 
     if not dry_run:
         await db.commit()          # the operator's data is safe BEFORE any network work is attempted
+
+        # --- ASK OUR OWN CATALOG FIRST. Free, instant, no network, no quota, no guessing. ---
+        # This runs before the barcode DBs and before the web, because 10,284 FourTwenty rows (99%
+        # images, 100% prices) were sitting unused while the workbench sent the operator to Google.
+        for pid, _code in list(barcode_jobs) + [(p, "") for p, _u in photo_jobs]:
+            product = (await db.execute(
+                select(ProductModel).where(ProductModel.id == pid))).scalar_one_or_none()
+            if product is None:
+                continue
+            gaps = (not (product.image_url or "").strip()) or (not (product.description or "").strip()) \
+                or (product.price or 0) == 0
+            if not gaps:
+                continue
+            ref = await _reference_best_match(db, product.name, product.barcode or "")
+            # A name match must be STRONG to act unattended; a barcode is proof and always counts.
+            if not ref or (ref["how"] == "name" and ref["score"] < 0.80):
+                if ref:
+                    counts["ref_weak"] = counts.get("ref_weak", 0) + 1
+                continue
+            took = []
+            if ref.get("description") and not (product.description or "").strip():
+                product.description = str(ref["description"])[:4000]
+                took.append("description")
+            if ref.get("price") and (product.price or 0) == 0:
+                product.price = Decimal(str(ref["price"])).quantize(Decimal("0.01"))   # supplier CHF
+                took.append("price")
+            if not (product.barcode or "").strip() and ref.get("barcode"):
+                if await _find_product_by_any_barcode(db, ref["barcode"]) is None:
+                    product.barcode = _clean_barcode(ref["barcode"])
+                    took.append("barcode")
+            if took:
+                product.updated_at = datetime.now(timezone.utc)
+                await db.commit()
+                counts["ref_matched"] = counts.get("ref_matched", 0) + 1
+            if ref.get("image_url") and not (product.image_url or "").strip():
+                if await _copy_external_image_to_storage(db, product, str(ref["image_url"])):
+                    counts["photos_pulled"] += 1
 
         # --- The Zippo lane: let the CODE identify the product. ---
         for pid, code in barcode_jobs[:BARCODE_BUDGET]:
