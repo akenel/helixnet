@@ -29,6 +29,7 @@ from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.datavalidation import DataValidation
 
+from src.services.brand_registry import detect_brand, image_query, official_site, search_query
 from src.services.catalog_taxonomy import CANONICAL_CATEGORIES
 
 # La Piazza / Banco house colours (match the SOP + test-sheet artifacts)
@@ -49,6 +50,7 @@ COLUMNS = [
     ("Status",        11, False),   # formula
     ("SKU",           20, False),   # identity — never edit
     ("Product name",  46, True),
+    ("Brand",          14, False),  # detected from the name — tells the operator which registry we matched
     ("Barcode / EAN", 18, True),    # ← scan the gun straight into this cell
     ("Category",      24, True),    # dropdown, canonical only
     ("Price CHF",     11, True),
@@ -176,13 +178,20 @@ def build_worklist_workbook(rows: Iterable[dict], *, section: Optional[str] = No
         if name:
             link = ws[f"{col['Look it up']}{n}"]
             link.value = "🔎 Google"
-            link.hyperlink = f"https://www.google.com/search?q={quote_plus(name)}"
+            link.hyperlink = f"https://www.google.com/search?q={quote_plus(search_query(name))}"
             link.font = Font(color="0563C1", underline="single", size=10)
 
+            # Scoped to the brand's official site when we know it → every image on that page IS the
+            # real pack. The label says WHICH site, so the operator knows what they're looking at.
+            brand = detect_brand(name)
+            site = official_site(brand)
             img = ws[f"{col['Find a photo']}{n}"]
-            img.value = "🖼️ Images"
-            img.hyperlink = f"https://www.google.com/search?tbm=isch&q={quote_plus(name)}"
+            img.value = f"🖼️ {site}" if site else "🖼️ Images"
+            img.hyperlink = f"https://www.google.com/search?tbm=isch&q={quote_plus(image_query(name))}"
             img.font = Font(color="0563C1", underline="single", size=10)
+            if brand:
+                ws[f"{col['Brand']}{n}"] = brand
+                ws[f"{col['Brand']}{n}"].fill = locked_fill
 
         ws[f"{col['Action']}{n}"] = "ENRICH"
         # Status formula: ready only when the human bits are in
