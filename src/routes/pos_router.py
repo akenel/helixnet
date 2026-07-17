@@ -13,7 +13,7 @@ from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_, update
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, DataError
 from datetime import datetime, timezone, date, timedelta
 from decimal import Decimal, ROUND_HALF_UP
 from uuid import UUID, uuid4
@@ -396,6 +396,14 @@ async def create_product(
             detail["existing_id"] = str(existing.id)
             detail["existing_name"] = existing.name
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=detail)
+    except DataError:
+        # BL-042: an over-long field (a fat-fingered paste into supplier/category/…) must never 500.
+        # The DB caps some fields (supplier/category/sku/barcode = 100 chars); hand back a clean
+        # message instead of a raw crash. Angel: "never a 500 — give them something graceful."
+        await db.rollback()
+        raise HTTPException(status_code=422,
+            detail="One of your fields is too long — shorten it (supplier, category, SKU and barcode "
+                   "each hold up to 100 characters) and save again.")
     await db.refresh(new_product)
 
     logger.info(f"Product created: {new_product.sku} by user {current_user['username']}")
@@ -443,6 +451,14 @@ async def quick_create_product(
             status_code=status.HTTP_409_CONFLICT,
             detail="A product with this barcode or SKU already exists.",
         )
+    except DataError:
+        # BL-042: an over-long field (a fat-fingered paste into supplier/category/…) must never 500.
+        # The DB caps some fields (supplier/category/sku/barcode = 100 chars); hand back a clean
+        # message instead of a raw crash. Angel: "never a 500 — give them something graceful."
+        await db.rollback()
+        raise HTTPException(status_code=422,
+            detail="One of your fields is too long — shorten it (supplier, category, SKU and barcode "
+                   "each hold up to 100 characters) and save again.")
     await db.refresh(new_product)
     logger.info(f"Quick on-the-fly product: {new_product.sku} by {current_user['username']}")
     return new_product
@@ -1284,6 +1300,14 @@ async def update_product(
             status_code=status.HTTP_409_CONFLICT,
             detail="A product with this barcode or SKU already exists.",
         )
+    except DataError:
+        # BL-042: an over-long field (a fat-fingered paste into supplier/category/…) must never 500.
+        # The DB caps some fields (supplier/category/sku/barcode = 100 chars); hand back a clean
+        # message instead of a raw crash. Angel: "never a 500 — give them something graceful."
+        await db.rollback()
+        raise HTTPException(status_code=422,
+            detail="One of your fields is too long — shorten it (supplier, category, SKU and barcode "
+                   "each hold up to 100 characters) and save again.")
     await db.refresh(product)
 
     # A rewritten name/description makes the cached translations stale — clear them so the
