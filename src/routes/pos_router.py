@@ -1835,6 +1835,7 @@ async def _product_display_image(db: AsyncSession, product) -> Optional[str]:
     then render the 📦 placeholder on the postcard/catalog. If it has ANY image, show it."""
     if (product.image_url or "").strip():
         return product.image_url
+    from sqlalchemy import text          # module-level import is select/func only
     row = (await db.execute(text(
         "SELECT id FROM product_images WHERE product_id = :pid "
         "ORDER BY sort_order ASC NULLS LAST, created_at ASC LIMIT 1"), {"pid": str(product.id)})).fetchone()
