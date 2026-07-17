@@ -152,6 +152,29 @@
                     </div>
                 </div>
 
+                <!-- Big preview — the whole point is to STOP squinting, so show it big and say what it is. -->
+                <div x-show="zoom" x-transition class="fixed inset-0 z-[90] bg-black/80 flex items-center justify-center p-4"
+                     style="display:none;" @click="zoom = null" @keydown.escape.window="zoom = null">
+                    <div class="max-w-3xl w-full" @click.stop>
+                        <img :src="zoom && zoom.image_url" class="w-full max-h-[70vh] object-contain rounded-lg bg-white" alt="">
+                        <div class="mt-3 bg-white rounded-lg p-3 flex items-start justify-between gap-3 flex-wrap">
+                            <div class="min-w-0">
+                                <p class="font-bold text-gray-900 break-words" x-text="zoom && zoom.name"></p>
+                                <p class="text-xs text-gray-400" x-text="zoom && zoom.sku"></p>
+                                <p class="text-sm text-gray-600 mt-1">
+                                    <span x-show="zoom && zoom.price" x-text="zoom && formatPrice(zoom.price)"></span>
+                                    <span x-show="zoom && zoom.category" class="text-gray-400"> · <span x-text="zoom && zoom.category"></span></span>
+                                </p>
+                            </div>
+                            <div class="flex gap-2 flex-none">
+                                <a :href="zoom ? '/pos/catalog?edit=' + zoom.product_id : '#'" target="_blank" class="btn-secondary text-sm">🔎 <span data-i18n="cleanup.open_details">Details</span></a>
+                                <a :href="zoom ? '/pos/products/' + zoom.product_id + '/postcard' : '#'" target="_blank" class="btn-secondary text-sm">📇 <span data-i18n="cleanup.open_postcard">Postcard</span></a>
+                                <button @click="zoom = null" class="btn-secondary text-sm" data-i18n="cleanup.close">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- SOLD: summary -->
                 <div x-show="mode === 'sold'" class="card mb-4 flex items-center justify-between">
                     <div>
@@ -200,14 +223,31 @@
                                 <input type="checkbox" class="w-5 h-5 accent-indigo-600 mt-1 flex-none"
                                        :checked="!!selected[p.product_id]" @change="toggle(p.product_id)"
                                        :aria-label="'Select ' + p.name">
-                                <!-- Photo / placeholder -->
-                                <div class="w-16 h-16 rounded-lg border bg-white flex-none flex items-center justify-center overflow-hidden">
-                                    <img x-show="p.image_url" :src="p.image_url" class="w-full h-full object-cover" alt="">
-                                    <span x-show="!p.image_url" class="text-2xl">📦</span>
+                                <!-- Photo. CLICK IT TO SEE IT BIG. Angel, working the bench: "this looks
+                                     like a duplicate and I'm not sure if it's king size or regular from the
+                                     small pic — big preview so I don't have to squint." He's deciding
+                                     dupe-or-not and which VARIANT off a 64px thumbnail; that's the exact
+                                     moment he needs to actually SEE the pack. -->
+                                <button type="button" x-show="p.image_url" @click="zoom = p"
+                                        class="w-16 h-16 rounded-lg border bg-white flex-none overflow-hidden hover:ring-2 hover:ring-indigo-400 cursor-zoom-in"
+                                        :title="'Look closer: ' + p.name">
+                                    <img :src="p.image_url" class="w-full h-full object-cover" alt="">
+                                </button>
+                                <div x-show="!p.image_url" class="w-16 h-16 rounded-lg border bg-white flex-none flex items-center justify-center">
+                                    <span class="text-2xl">📦</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <p class="font-bold text-gray-900 truncate" x-text="p.name"></p>
+                                    <p class="font-bold text-gray-900 break-words" x-text="p.name"></p>
                                     <p class="text-xs text-gray-400 truncate" x-text="p.sku"></p>
+                                    <!-- Get OFF this card to the full record without losing your place. -->
+                                    <p class="flex gap-3 mt-1 text-xs">
+                                        <a :href="'/pos/catalog?edit=' + p.product_id" target="_blank"
+                                           class="text-indigo-600 font-semibold hover:underline"
+                                           data-i18n="cleanup.open_details">🔎 Details</a>
+                                        <a :href="'/pos/products/' + p.product_id + '/postcard'" target="_blank"
+                                           class="text-indigo-600 font-semibold hover:underline"
+                                           data-i18n="cleanup.open_postcard">📇 Postcard</a>
+                                    </p>
                                     <p x-show="mode === 'sold'" class="text-sm text-gray-600 mt-1">
                                         <span class="font-semibold text-indigo-600" x-text="'× ' + p.qty_sold"></span>
                                         <span data-i18n="cleanup.sold"> sold</span>
@@ -321,6 +361,7 @@
             offset: 0,
             limit: 20,
             catFilter: '',
+            zoom: null,            // BL-141: the product being previewed big (stop squinting)
             exporting: false,      // BL-131: xlsx worklist download in flight
             importing: false,      // BL-131 step 2: dry-run in flight
             impSaving: false,      // …and the apply
