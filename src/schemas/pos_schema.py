@@ -487,6 +487,7 @@ class StoreSettingsBase(BaseModel):
 
     # Discount Settings
     cashier_max_discount: Decimal = Field(default=Decimal("10.0"), ge=0, le=100)
+    default_markup_pct: Decimal = Field(default=Decimal("50.0"), ge=0, lt=100)  # BL-047b cost eyeball
     manager_max_discount: Decimal = Field(default=Decimal("100.0"), ge=0, le=100)
 
     # Customer Loyalty Settings
@@ -531,6 +532,7 @@ class StoreSettingsUpdate(BaseModel):
     instagram_url: Optional[str] = Field(None, max_length=255)
     founded_year: Optional[str] = Field(None, max_length=10)
     cashier_max_discount: Optional[Decimal] = Field(None, ge=0, le=100)
+    default_markup_pct: Optional[Decimal] = Field(None, ge=0, lt=100)  # BL-047b
     manager_max_discount: Optional[Decimal] = Field(None, ge=0, le=100)
     loyalty_tier1_threshold: Optional[Decimal] = Field(None, ge=0)
     loyalty_tier1_discount: Optional[Decimal] = Field(None, ge=0, le=100)

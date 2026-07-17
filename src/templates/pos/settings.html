@@ -160,6 +160,20 @@
 
                 <!-- DISCOUNTS -->
                 <div x-show="tab==='discounts'" class="space-y-4">
+                    <!-- BL-047b — Cost markup (manager-editable, NOT admin-locked like the discount caps).
+                         Drives the cost EYEBALL on the Catalog Cockpit. Angel: "like a discount section for
+                         the markup — default from settings, and the guesses are semi-educated by type." -->
+                    <div class="bg-white rounded-lg border p-4 space-y-2">
+                        <label class="lbl font-semibold" data-i18n="settings.markup_title">💰 Default cost markup</label>
+                        <div class="max-w-xs">
+                            <div class="flex items-center gap-2">
+                                <input type="number" step="1" min="0" max="99" x-model="form.default_markup_pct" class="input-field" placeholder="50">
+                                <span class="text-gray-500">%</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500" data-i18n="settings.markup_hint">Powers the cost <b>eyeball</b> on the Catalog Cockpit: <b>cost = price − markup</b>. It's a semi-educated <b>guess</b> — tobacco, CBD, papers and café each get their own industry-standard default automatically; this is the fallback for everything else. Nothing is written until a manager enters it, and a real delivery-slip cost always wins.</p>
+                    </div>
+
                     <!-- ADMIN-ONLY nested fieldset: a manager can open this tab and SEE the caps but
                          not change them (self-cap risk) — only an admin edits. Nested inside the outer
                          fieldset, so a cashier (outer disabled) is locked out here too. -->

@@ -217,6 +217,16 @@ class StoreSettingsModel(Base):
         comment="Maximum discount percentage cashiers can apply (e.g., 10.0 = 10%)"
     )
 
+    # BL-047b — the shop's default cost markup (%). Drives the cost-EYEBALL on the cleanup card:
+    # cost = price × (1 − markup%). A GUESS the manager accepts/tweaks, never an auto-written cost.
+    # Per-class industry defaults live in services/costing.py; this is the shop's fallback.
+    default_markup_pct: Mapped[Decimal] = mapped_column(
+        Numeric(5, 2),
+        nullable=False,
+        default=Decimal("50.0"),
+        comment="Default cost markup % for the eyeball estimate (cost = price × (1 − markup/100))"
+    )
+
     manager_max_discount: Mapped[Decimal] = mapped_column(
         Numeric(5, 2),
         nullable=False,

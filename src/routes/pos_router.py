@@ -219,6 +219,10 @@ async def get_pos_config(db: AsyncSession = Depends(get_db_session)):
     # the client denom grids stop being hardcoded CHF. denoms_for() falls back to CHF for
     # an unknown currency, so a CH tenant gets the byte-identical Swiss set.
     denominations = [str(d) for d in denoms_for(regime.get("currency", settings.POS_CURRENCY))]
+    from src.services.costing import CLASS_MARKUP as _CLASS_MARKUP, MARKUP_CHOICES as _MARKUP_CHOICES
+    _store = (await db.execute(
+        select(StoreSettingsModel).order_by(StoreSettingsModel.store_number))).scalars().first()
+    store_markup = getattr(_store, "default_markup_pct", None) if _store else None
     return {
         "vat_rate": settings.POS_VAT_RATE,
         "vat_rate_reduced": settings.POS_VAT_RATE_REDUCED,  # 2.6% — cafe takeaway food/drink
@@ -229,6 +233,11 @@ async def get_pos_config(db: AsyncSession = Depends(get_db_session)):
         "regime": regime,  # additive (PHASE 0): per-tenant regime/currency/locale + CH rates
         "store_name": store_name,  # PHASE 2: the tenant store name (closeout/Z-report header)
         "denominations": denominations,  # additive (PHASE 1): face values for the tenant currency
+        # BL-047b — the cost-eyeball config the cleanup card uses: the shop's default markup, the
+        # per-class ABC defaults, and the pull-down choices. All estimates; a real cost always wins.
+        "default_markup_pct": float(store_markup) if store_markup is not None else 50.0,
+        "class_markup": _CLASS_MARKUP,
+        "markup_choices": _MARKUP_CHOICES,
     }
 
 
