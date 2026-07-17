@@ -1828,6 +1828,19 @@ def _gallery_image_key(product_id, image_id) -> str:
     return f"pos-products/{product_id}/{image_id}.jpg"
 
 
+async def _product_display_image(db: AsyncSession, product) -> Optional[str]:
+    """The image to SHOW for a product: its cover (products.image_url) if set, else the first gallery
+    photo. BL-043 — a cashier-added gallery photo only promotes to cover when none exists yet, so a
+    product can carry a real picture with a NULL cover (the Muffin: 1 gallery image, cover NULL) and
+    then render the 📦 placeholder on the postcard/catalog. If it has ANY image, show it."""
+    if (product.image_url or "").strip():
+        return product.image_url
+    row = (await db.execute(text(
+        "SELECT id FROM product_images WHERE product_id = :pid "
+        "ORDER BY sort_order ASC NULLS LAST, created_at ASC LIMIT 1"), {"pid": str(product.id)})).fetchone()
+    return _image_serve_url(product.id, row.id) if row else None
+
+
 def _image_serve_url(product_id, image_id) -> str:
     return f"/api/v1/pos/products/{product_id}/images/{image_id}"
 
@@ -8259,7 +8272,8 @@ async def product_postcard(
     # og:image must be an ABSOLUTE, publicly-fetchable URL — the WhatsApp/iMessage/Telegram
     # scraper fetches it server-side to build the rich share preview. Mama Cynthia's photos are
     # already absolute (hotlinked from her site); Banco-hosted images get the origin prefixed.
-    img = product.image_url or ""
+    display_img = await _product_display_image(db, product) or ""   # BL-043: cover, else first gallery photo
+    img = display_img
     if img and not img.startswith(("http://", "https://")):
         img = origin + (img if img.startswith("/") else "/" + img)
     og_image = img or None
@@ -8280,7 +8294,7 @@ async def product_postcard(
         "provenance": desc.get("provenance"),
         "price": f"{float(product.price):.2f}" if product.price is not None else None,
         "currency": "CHF",
-        "image_url": product.image_url,
+        "image_url": display_img or None,
         "supplier": product.supplier_name,
         "colour": (attrs.get("colour") or "").lower(),
         "serial": serial,
@@ -8335,7 +8349,7 @@ async def product_postcard_sheet(
         "description": desc.get("description") or product.description or "",
         "price": f"{float(product.price):.2f}" if product.price is not None else None,
         "currency": "CHF",
-        "image_url": product.image_url,
+        "image_url": display_img or None,
         "supplier": product.supplier_name,
         "colour": (attrs.get("colour") or "").lower(),
         "share_url": share_url,
