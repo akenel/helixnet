@@ -90,7 +90,13 @@ async def describe_from_page(name: str, page_html: str) -> str:
         out = (res.text or "").strip()
         # reasoning models leak <think> blocks — strip before use (same as the recipe runner)
         out = re.sub(r"<think>.*?</think>", "", out, flags=re.S).strip()
+        # The model reliably produces the BULLETS but not reliably the LINE BREAKS — it returns
+        # "…resolution. • Capacity: 400 g • Readability: 0.01 g" all on one line, which renders as
+        # another wall. Don't re-prompt for formatting a regex can guarantee: collapse whitespace,
+        # then force every bullet onto its own line.
         out = _WS.sub(" ", out)
+        out = re.sub(r"\s*[•·]\s*", "\n• ", out).strip()
+        out = re.sub(r"\n{2,}", "\n", out)
         if not out or out.upper().startswith("NONE") or len(out) < 25:
             return ""
         return out[:1200]
