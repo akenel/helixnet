@@ -35,11 +35,22 @@ PRODUCT: {name}
 PAGE TEXT:
 {text}
 
-Write ONE paragraph (max 60 words) describing this product for a shop catalog, using ONLY facts stated
-on that page. Lead with the details that IDENTIFY it and let someone confirm they have the right one:
-material, dimensions, leaf/piece count, size/variant, strength/%, volume, weight, and any pack/tier
-info (e.g. single vs 50-box). Plain English. No marketing language, no "premium quality", no invented
-claims.
+Write a SCANNABLE product description for a shop catalog using ONLY facts stated on that page.
+
+FORMAT — exactly this shape, nothing else:
+<one plain sentence, max 20 words, saying what it is>
+• <Spec>: <value>
+• <Spec>: <value>
+(3 to 6 bullets, max 8 words each)
+
+Bullet the details that IDENTIFY it and let someone confirm they have the right pack: size/dimensions,
+leaf or piece count, material, strength/%, volume, weight, colour/variant, and pack/tier pricing
+(single vs display box) when the page states it. Most useful first.
+
+RULES:
+- Plain English. No marketing words ("premium", "high quality", "perfect for").
+- Never invent. If the page doesn't state it, leave it out.
+- A cashier reads this in 3 seconds standing up. No paragraphs, no essay.
 
 If the page is not clearly about this product, or states no usable details, reply with exactly: NONE
 """

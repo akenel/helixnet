@@ -351,7 +351,9 @@
                                     </template>
                                 </span>
                             </h3>
-                            <p class="text-gray-700" x-text="detailProduct?.description"></p>
+                            <!-- whitespace-pre-line: the enriched descriptions carry real line breaks + • bullets. Without
+                                 this the browser collapses them into the "wall of text" nobody reads at a till. -->
+                            <p class="text-gray-700 whitespace-pre-line" x-text="detailProduct?.description"></p>
                         </div>
                     </template>
                     <!-- Enriched key:value tags (brand/material/flavor…) surface as attribute chips,
