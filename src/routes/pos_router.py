@@ -1817,6 +1817,119 @@ def _process_image_upload(raw: bytes, content_type: str) -> bytes:
         return raw
 
 
+async def _page_product_facts(page_url: str) -> dict:
+    """A product PAGE url -> everything the page already states about the product.
+
+    Angel: "if you have the url for the page you have everything — the html source???" Correct, and
+    pulling only the image was leaving the best part on the table. A shop's product page usually
+    carries a machine-readable record of its own product (schema.org/Product as JSON-LD, published so
+    Google can list it), and failing that, OpenGraph tags. So one paste yields the OFFICIAL TITLE, the
+    DESCRIPTION (the specs — the field that actually proves what the thing is), the PRICE, and the
+    IMAGE. Deterministic: this is the shop STATING its own facts, not a model guessing them.
+
+    Returns {name, description, price, currency, image} — keys present only when found. NEVER raises;
+    never invents. An unreadable page yields {} and the row simply keeps its blanks.
+    """
+    out: dict = {}
+    url = (page_url or "").strip()
+    if not (url.startswith("http://") or url.startswith("https://")):
+        return out
+    if re.search(r'\.(jpe?g|png|webp|gif|avif)(\?|$)', url, re.I):
+        return {"image": url}          # they pasted the picture itself — nothing else to read
+    try:
+        import httpx
+        from urllib.parse import urljoin
+        async with httpx.AsyncClient(timeout=12.0, follow_redirects=True) as c:
+            resp = await c.get(url, headers={"User-Agent": "Mozilla/5.0 (compatible; BancoCatalog/1.0)"})
+        if resp.status_code != 200:
+            return out
+        ctype = resp.headers.get("content-type", "")
+        if ctype.startswith("image/"):
+            return {"image": str(resp.url)}
+        if "html" not in ctype:
+            return out
+        html = resp.text[:400_000]
+        base = str(resp.url)
+
+        # 1) schema.org/Product as JSON-LD — the shop's own structured record. Best source by far.
+        for m in re.finditer(r'<script[^>]+type=["\']application/ld\+json["\'][^>]*>(.*?)</script>',
+                             html, re.I | re.S):
+            try:
+                blob = json.loads(m.group(1).strip())
+            except Exception:
+                continue
+            # a page may ship a list, or an @graph, or a bare object
+            cands = blob if isinstance(blob, list) else (blob.get("@graph") if isinstance(blob, dict) and isinstance(blob.get("@graph"), list) else [blob])
+            for node in cands:
+                if not isinstance(node, dict):
+                    continue
+                t = node.get("@type")
+                types = t if isinstance(t, list) else [t]
+                if "Product" not in [str(x) for x in types if x]:
+                    continue
+                if node.get("name") and "name" not in out:
+                    out["name"] = str(node["name"]).strip()[:200]
+                if node.get("description") and "description" not in out:
+                    out["description"] = re.sub(r"\s+", " ", str(node["description"])).strip()[:4000]
+                img = node.get("image")
+                if isinstance(img, list) and img:
+                    img = img[0]
+                if isinstance(img, dict):
+                    img = img.get("url")
+                if img and "image" not in out:
+                    out["image"] = urljoin(base, str(img))
+                offers = node.get("offers")
+                if isinstance(offers, list) and offers:
+                    offers = offers[0]
+                if isinstance(offers, dict):
+                    if offers.get("price") is not None and "price" not in out:
+                        try:
+                            out["price"] = float(str(offers["price"]).replace(",", "."))
+                        except (TypeError, ValueError):
+                            pass
+                    if offers.get("priceCurrency") and "currency" not in out:
+                        out["currency"] = str(offers["priceCurrency"]).upper()[:3]
+                break
+
+        # 2) OpenGraph / meta — the fallback when a shop publishes no JSON-LD.
+        def meta(*props):
+            for p in props:
+                mm = re.search(rf'<meta[^>]+(?:property|name)=["\']{re.escape(p)}["\'][^>]+content=["\']([^"\']*)["\']',
+                               html, re.I) or re.search(
+                     rf'<meta[^>]+content=["\']([^"\']*)["\'][^>]+(?:property|name)=["\']{re.escape(p)}["\']',
+                     html, re.I)
+                if mm and mm.group(1).strip():
+                    return mm.group(1).strip()
+            return None
+
+        if "image" not in out:
+            i = meta("og:image:secure_url", "og:image", "twitter:image")
+            if i:
+                out["image"] = urljoin(base, i)
+        if "name" not in out:
+            n = meta("og:title", "twitter:title")
+            if n:
+                out["name"] = n[:200]
+        if "description" not in out:
+            d = meta("og:description", "twitter:description", "description")
+            if d:
+                out["description"] = re.sub(r"\s+", " ", d).strip()[:4000]
+        if "price" not in out:
+            p = meta("product:price:amount", "og:price:amount")
+            if p:
+                try:
+                    out["price"] = float(p.replace(",", "."))
+                except ValueError:
+                    pass
+        if "currency" not in out:
+            cur = meta("product:price:currency", "og:price:currency")
+            if cur:
+                out["currency"] = cur.upper()[:3]
+    except Exception as e:
+        logger.info(f"Page facts lookup failed ({url[:70]}): {str(e)[:60]}")
+    return out
+
+
 async def _page_main_image(page_url: str) -> Optional[str]:
     """A product PAGE url -> the URL of the picture that page says represents the product.
 
