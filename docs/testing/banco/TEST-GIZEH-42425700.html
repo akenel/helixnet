@@ -1,0 +1,60 @@
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test Sheet — GIZEH 42425700</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: -apple-system, Segoe UI, Roboto, sans-serif; max-width: 640px; margin: 0 auto; padding: 18px; line-height: 1.5; }
+  h1 { font-size: 1.35rem; color: #8B0000; margin: 0 0 2px; }
+  .sub { color: #666; margin: 0 0 16px; font-size: .95rem; }
+  .card { border: 1px solid #ccc; border-radius: 12px; padding: 14px 16px; margin: 12px 0; }
+  .card h2 { font-size: 1.05rem; margin: 0 0 6px; }
+  .do { font-weight: 600; }
+  .expect { background: #eef7ee; border-left: 4px solid #2e8b57; padding: 8px 10px; border-radius: 6px; margin: 8px 0; }
+  .pf { margin-top: 8px; font-size: 1.05rem; }
+  .pf label { margin-right: 18px; cursor: pointer; }
+  .barcode { font-family: monospace; font-size: 1.1rem; background: #f2f2f2; color:#111; padding: 1px 6px; border-radius: 4px; }
+  .note { color: #8B0000; font-weight: 600; }
+  @media (prefers-color-scheme: dark) {
+    .card { border-color:#444; } .expect { background:#14301c; } .barcode{ background:#333; color:#eee; }
+    .sub{color:#aaa;}
+  }
+</style>
+
+<h1>Test Sheet — GIZEH papers <span class="barcode">42425700</span></h1>
+<p class="sub">One product. 5 quick checks. Just tick Pass or Fail and tell me the fails. — 2026-07-16</p>
+
+<div class="card">
+  <h2>1. Scan rings up the RIGHT product</h2>
+  <p class="do">At the till / New Sale, scan <span class="barcode">42425700</span>.</p>
+  <div class="expect">✅ You should see <b>“Gizeh King Size Slim Extra Fine Black 34”</b> — NOT Tycoon Gas, NOT a miss.</div>
+  <div class="pf"><label><input type="checkbox"> Pass</label><label><input type="checkbox"> Fail</label></div>
+</div>
+
+<div class="card">
+  <h2>2. The picture shows when you scan it out</h2>
+  <p class="do">Look at the item in the cart / on screen after the scan.</p>
+  <div class="expect">✅ The GIZEH black paper photo shows — no broken image, no blank box.<br><span class="note">This is your ticket “image in catalog but not when you scan out” — so look hard.</span></div>
+  <div class="pf"><label><input type="checkbox"> Pass</label><label><input type="checkbox"> Fail</label></div>
+</div>
+
+<div class="card">
+  <h2>3. Search finds it by name</h2>
+  <p class="do">In the catalog search, type <b>gizeh</b> (or <b>gizeh king size</b>).</p>
+  <div class="expect">✅ “Gizeh King Size Slim Extra Fine Black 34” appears in the list, with its size and picture.</div>
+  <div class="pf"><label><input type="checkbox"> Pass</label><label><input type="checkbox"> Fail</label></div>
+</div>
+
+<div class="card">
+  <h2>4. The price is right</h2>
+  <p class="do">Check the price on the item.</p>
+  <div class="expect">✅ Shows <b>CHF 2.00</b>. If that’s wrong, write the correct shelf price here: __________</div>
+  <div class="pf"><label><input type="checkbox"> Pass</label><label><input type="checkbox"> Fail</label></div>
+</div>
+
+<div class="card">
+  <h2>5. Tycoon Gas is clean (the cross-wire is gone)</h2>
+  <p class="do">If you have a Tycoon Gas can, scan it. If not, search <b>tycoon</b>.</p>
+  <div class="expect">✅ Tycoon Gas 250ml still rings up as itself. Scanning <span class="barcode">42425700</span> must NEVER show Tycoon.</div>
+  <div class="pf"><label><input type="checkbox"> Pass</label><label><input type="checkbox"> Fail</label></div>
+</div>
+
+<p class="sub">Done? Just tell me which numbers passed and which failed. That’s the whole job. 🐯</p>

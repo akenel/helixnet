@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Catalog Playbook — Which Pile Is This?</title>
+<style>
+  :root{ --red:#C0392B; --dark:#8B0000; --ink:#1f2937; --mut:#6b7280; --line:#e5e7eb; --bg:#f7f7f8;
+         --fast:#059669; --fastbg:#e7f6ef; --care:#b45309; --carebg:#fef3e2; --slow:#b91c1c; --slowbg:#fdeaea; --spec:#6d28d9; --specbg:#f1ecfd; }
+  *{ box-sizing:border-box; }
+  body{ font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--bg); margin:0; line-height:1.5; }
+  header{ background:#fff; border-bottom:2px solid var(--red); padding:16px 20px; }
+  h1{ font-size:20px; margin:0; }
+  h1 small{ color:var(--mut); font-weight:500; font-size:13px; display:block; margin-top:3px; }
+  .stamp{ color:var(--red); font-weight:700; letter-spacing:.05em; font-size:12px; margin-top:4px; display:block; }
+  main{ max-width:960px; margin:0 auto; padding:24px 20px 80px; }
+  section{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:18px 22px; margin-bottom:18px; }
+  h2{ font-size:17px; margin:0 0 12px; color:var(--dark); border-bottom:1px solid var(--line); padding-bottom:6px; }
+  h2 .n{ display:inline-block; background:var(--red); color:#fff; width:24px; height:24px; border-radius:99px; text-align:center; line-height:24px; font-size:14px; margin-right:8px; }
+  p{ margin:0 0 10px; }
+  .lead{ background:#fff7f6; border:1px solid #f3c9c4; border-radius:10px; padding:14px 18px; margin-bottom:20px; font-size:14.5px; }
+  .lead b{ color:var(--dark); }
+  /* decision tree */
+  .tree{ display:flex; flex-direction:column; gap:8px; }
+  .branch{ display:flex; gap:14px; align-items:center; padding:12px 14px; border-radius:9px; border:1px solid var(--line); flex-wrap:wrap; }
+  .branch .q{ font-weight:600; flex:1 1 240px; color:#111; }
+  .branch .a{ font-weight:700; flex:0 1 auto; color:#111; }
+  .b-done{ background:var(--fastbg); border-color:#a7e0c6; }
+  .b-fast{ background:var(--fastbg); border-color:#a7e0c6; }
+  .b-care{ background:var(--carebg); border-color:#f4d19a; }
+  .b-slow{ background:var(--slowbg); border-color:#f2b8b8; }
+  .b-spec{ background:var(--specbg); border-color:#d3c3f5; }
+  .b-park{ background:#111; color:#fff; border-color:#111; }
+  .b-park .q{ color:#fff; }
+  table{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  th,td{ text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th{ background:#f9fafb; font-size:12px; text-transform:uppercase; letter-spacing:.03em; color:var(--mut); }
+  .lane{ font-weight:700; font-size:11px; padding:2px 8px; border-radius:99px; white-space:nowrap; }
+  .l-fast{ background:var(--fastbg); color:var(--fast); }
+  .l-care{ background:var(--carebg); color:var(--care); }
+  .l-slow{ background:var(--slowbg); color:var(--slow); }
+  .l-spec{ background:var(--specbg); color:var(--spec); }
+  .callout{ border-left:4px solid var(--red); background:#fff7f6; padding:10px 14px; border-radius:0 8px 8px 0; margin:10px 0; font-size:14px; }
+  .big{ font-size:15px; font-weight:700; color:var(--dark); }
+  ol,ul{ margin:6px 0 10px; padding-left:22px; }
+  li{ margin:4px 0; }
+  footer{ text-align:center; color:var(--mut); font-size:12px; padding:20px; }
+  /* Dark mode: the tinted blocks (tree branches, lead, callouts) keep their LIGHT backgrounds,
+     so every bit of text inside them must stay DARK — otherwise red-on-dark / ghost text. */
+  @media (prefers-color-scheme:dark){
+    body{ background:#15171a; color:#e5e7eb; }
+    header,section{ background:#1c1f23; border-color:#3a3a3a; }
+    h1{ color:#f3f4f6; }
+    h1 small{ color:#9aa3af; }
+    h2{ color:#ff8a7a; border-color:#3a3a3a; }
+    td{ border-color:#3a3a3a; color:#e5e7eb; }
+    th{ background:#23262b; border-color:#3a3a3a; color:#9aa3af; }
+    .mut, .mut *{ color:#9aa3af !important; }
+    /* tinted blocks stay light → force dark ink inside them */
+    .lead, .lead *, .callout, .callout *{ color:#1f2937 !important; }
+    .lead b, .callout b, .callout .big{ color:#8B0000 !important; }
+    .branch, .branch *{ color:#111 !important; }
+    .b-park, .b-park *{ color:#fff !important; }
+    .lane{ /* pills keep their own light bg + colored text */ }
+    .l-fast{ color:#046c4e !important; } .l-care{ color:#8a4708 !important; }
+    .l-slow{ color:#991b1b !important; } .l-spec{ color:#5b21b6 !important; }
+  }
+  @media print{ body{ background:#fff; } section{ break-inside:avoid; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>🗂️ The Catalog Playbook — “Which Pile Is This?”<small>Pick it up · zap it · know instantly whether it's 30 seconds or 15 minutes — and never fight one item</small>
+  <span class="stamp">🐺 La Piazza · № LP-PLAYBOOK-20260717-CATALOG-INTAKE · rev.1 · for the Artemis shop</span></h1>
+</header>
+<main>
+
+  <div class="lead">
+    <b>The whole idea:</b> you do <b>not</b> treat every product the same. ~80% of the shop is a <b>fast lane</b> — zap it, confirm, done.
+    ~20% is <b>craft</b> — slow on purpose. The skill isn't speed, it's <b>knowing which pile something is in the second you pick it up</b>,
+    so you rip through the easy stuff and save your patience for the hard stuff. <b>If an item doesn't fit the pile it should fit — stop. Put it aside.</b>
+    Something went wrong; that's a desk job, not a floor fight. Never burn 15 minutes on one thing at the counter.
+  </div>
+
+  <!-- 1 · THE ONE RULE -->
+  <section>
+    <h2><span class="n">1</span>The one rule — pick it up, ZAP it</h2>
+    <p>Every product starts the same way: scan the barcode. What happens next tells you the pile.</p>
+    <div class="tree">
+      <div class="branch b-done"><div class="q">It rings up a product</div><div class="a">✅ DONE — sell it (already catalogued)</div></div>
+      <div class="branch b-fast"><div class="q">“Not on file” <b>but it has a barcode</b></div><div class="a">① FAST LANE → find / adopt / enrich → save (born once)</div></div>
+      <div class="branch b-care"><div class="q">The barcode <b>won't read</b> (curved can, glossy) after 2–3 tries</div><div class="a">→ print OUR clean label → then Fast Lane</div></div>
+      <div class="branch b-slow"><div class="q"><b>No barcode at all</b> — generic glass, one-off</div><div class="a">③ SLOW LANE → delivery slip → our photo/name/price + our label</div></div>
+      <div class="branch b-spec"><div class="q"><b>No barcode</b> — artisan line (jewelry, oils)</div><div class="a">④ LINE solution → attributes + tiers, our label on display</div></div>
+      <div class="branch b-park"><div class="q">It <b>doesn't fit</b> the pile it should, OR it's dragging past ~2–3 min</div><div class="a">🅿️ PARK IT — desk job</div></div>
+    </div>
+  </section>
+
+  <!-- 2 · THE PRODUCT TYPES -->
+  <section>
+    <h2><span class="n">2</span>The 6 product types — know them by sight</h2>
+    <table>
+      <tr><th>Type</th><th>Lane</th><th>What to expect</th><th>The move</th><th>Time</th></tr>
+      <tr>
+        <td><b>A · Barcoded consumables</b><br><span class="mut" style="font-size:12px">papers, filters, cones, e-liquids, lighters, grow, scales</span></td>
+        <td><span class="lane l-fast">FAST</span></td>
+        <td>Real barcode, in a supplier catalog, well documented. Zaps or enriches cleanly.</td>
+        <td>Scan → it comes up or auto-fills → confirm price → save.</td>
+        <td>secs–1 min</td>
+      </tr>
+      <tr>
+        <td><b>B · Variant families</b><br><span class="mut" style="font-size:12px">same brand, 50 sizes/flavors — papers, incense, e-liquids</span></td>
+        <td><span class="lane l-care">CONFIRM</span></td>
+        <td>Barcode resolves, but 50 packs look identical. <b>GIZEH/OCB run clean; ELEMENTS are a nightmare</b> — all look the same.</td>
+        <td>Read the pack, pick the exact size/flavor, capture the barcode → <b>then it's Fast forever.</b> First time only.</td>
+        <td>1–2 min once</td>
+      </tr>
+      <tr>
+        <td><b>C · Marquee vapes</b><br><span class="mut" style="font-size:12px">Storz &amp; Bickel, PAX, DynaVap, Wolkenkraft</span></td>
+        <td><span class="lane l-care">CONFIRM</span></td>
+        <td>Branded &amp; catalogued, but pricey → confirm the exact model/edition.</td>
+        <td>Match the model → enrich → save. Worth the extra look.</td>
+        <td>1–2 min</td>
+      </tr>
+      <tr>
+        <td><b>D · Generic glass</b><br><span class="mut" style="font-size:12px">bongs, pipes, no-brand accessories</span></td>
+        <td><span class="lane l-slow">SLOW</span></td>
+        <td>No brand, no barcode, no catalog — every one a bit different.</td>
+        <td>Delivery slip for a code+cost → your own photo → name it by what it IS → judgment price → our label.</td>
+        <td>5–15 min</td>
+      </tr>
+      <tr>
+        <td><b>E · CBD / hemp flower</b><br><span class="mut" style="font-size:12px">strains, hash</span></td>
+        <td><span class="lane l-slow">SLOW</span></td>
+        <td>Its own lane: strain × size × batch, regulated labels, poorly tracked online.</td>
+        <td>Treat like a careful variant but slower — get the strain, size, batch right.</td>
+        <td>3–5 min</td>
+      </tr>
+      <tr>
+        <td><b>F · Artisan lines</b><br><span class="mut" style="font-size:12px">jewelry, Cynthia's oils, Sylvie's cases</span></td>
+        <td><span class="lane l-spec">LINE</span></td>
+        <td>Unique, no EAN, no supplier. <b>Do NOT name every single piece.</b> A necklace wall isn't 40 products.</td>
+        <td><b>Different solution</b> → §4. One “line” with color/size options + price tiers, our own label.</td>
+        <td>set up once</td>
+      </tr>
+    </table>
+  </section>
+
+  <!-- 3 · LABELS -->
+  <section>
+    <h2><span class="n">3</span>Our own labels — who gets one, what size, where it goes</h2>
+    <div class="callout"><b>The rule Felix needs to hear:</b> we are <b>NOT</b> putting a barcode on a barcode. <b>90% already has one.</b> We print our own <b>only</b> when there's none, or the printed one is unreadable (curved/glossy — after you've genuinely tried 2–3 times, not given up on the first zap).</div>
+    <table>
+      <tr><th>Situation</th><th>Own label?</th><th>Where it goes</th></tr>
+      <tr><td>Product already has a working barcode</td><td><b>NO</b></td><td>— use the one that's there</td></tr>
+      <tr><td>Barcode won't read (curved can, tiny, glossy)</td><td><b>YES</b> — clean reprint</td><td>Flat spot on the item, or on the shelf tag</td></tr>
+      <tr><td>No barcode — generic glass / one-off</td><td><b>YES</b></td><td>On the item if flat; else on its box</td></tr>
+      <tr><td>Artisan display (oils, testers)</td><td><b>YES</b></td><td>On the <b>tester/display bottle</b> so it can be scanned</td></tr>
+      <tr><td>Papers sold from an open display box</td><td>Maybe one</td><td><b>In a catalog / label book</b> at the till — not 50 stickers on 50 packs</td></tr>
+    </table>
+    <p class="mut" style="font-size:13px">Each product type has its own label size + placement — we lock those per type as we go, so it's the same every time.</p>
+  </section>
+
+  <!-- 4 · ARTISAN LINES -->
+  <section>
+    <h2><span class="n">4</span>Artisan &amp; jewelry — the “line,” not the piece</h2>
+    <p>This is the trap: someone (Sylvie) comes in next week with 5 more unique pieces, and you're <b>not</b> spending 20 minutes photographing and naming every one. That's madness. Handle it as a <b>line</b>:</p>
+    <ul>
+      <li><b>One product = the line</b> (e.g. “Sylvie — Wool-Felt Glasses Case”), with <b>options</b>: colour (red/blue/black), all same size, all same price.</li>
+      <li><b>Jewelry that's just… jewelry</b> → price <b>tiers by look</b>: the CHF 20 pieces, the CHF 30 pieces, the CHF 80 pieces. Pick the tier at the till; don't catalog each stone.</li>
+      <li>If it needs to scan → <b>our own barcode</b> on the display/tester, one per line or per tier.</li>
+      <li>No supplier catalog, so the maker's own photos + descriptions go in by hand (Cynthia's already looked great).</li>
+    </ul>
+  </section>
+
+  <!-- 5 · SECTIONS -->
+  <section>
+    <h2><span class="n">5</span>Work it in sections — the shop already sorted itself</h2>
+    <p>The shop is laid out in <b>sections</b>: all the papers here, all the trays there, all the CBD over there — the same product isn't scattered. <b>Use that.</b></p>
+    <ul>
+      <li>Do a <b>whole section</b> start to finish, then mark it <b>DONE</b>. Don't ping-pong across the shop.</li>
+      <li>A section is mostly one or two <b>types</b> (papers = A+B; glass = D) → you get into a rhythm and the type barely changes.</li>
+      <li>“Papers section: OCB + GIZEH ran clean, ELEMENTS parked for the desk. Section 90% done.” — that's the unit of progress.</li>
+    </ul>
+  </section>
+
+  <!-- 6 · NEW STOCK -->
+  <section>
+    <h2><span class="n">6</span>After the shelf is done — new stock comes through the back door</h2>
+    <p>Once the store is catalogued, the job is small forever: <b>only new products</b>, and they all arrive the same way — in the back, with a <b>delivery slip</b>.</p>
+    <div class="callout"><span class="big">Catalog it at intake — before it hits the shelf.</span><br>The slip has the name, the article code, and the cost. That's the moment to do it right, cleanly. <b>Never “put it on the shelf now, catalog it later.”</b> That's exactly where the duplicates and the chaos start — the next person can't find it, makes a twin, and now you're patching at the till.</div>
+  </section>
+
+  <!-- 7 · WHAT TO EXPECT -->
+  <section>
+    <h2><span class="n">7</span>What you're up against — set the expectation</h2>
+    <ul>
+      <li>The store carries <b>well over 1,000 products — likely ~2,000.</b> The supplier catalog behind it is <b>5,000–7,000.</b> The catalog never truly “ends.”</li>
+      <li>But <b>~80% is the fast lane</b> (types A–C) and can be secured <b>systematically in days, not weeks.</b></li>
+      <li>The <b>~20% craft tail</b> (D, E, F) is fine to be slow on — because you're <b>not</b> slow everywhere.</li>
+      <li>If you find yourself spending <b>weeks</b> or fighting <b>every single item as its own special case</b> — stop. That means the system broke down, not that the work is that hard. Re-sort into the piles above.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <div style="border-top:2px solid #C0392B;max-width:960px;margin:0 auto;padding-top:10px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:11px">
+      <span><strong style="color:#C0392B">🐺 La Piazza</strong> · Catalog Intake Playbook · which pile, which move, how long</span>
+      <span style="font-variant-numeric:tabular-nums">№ LP-PLAYBOOK-20260717-CATALOG-INTAKE · rev.1 · 2026-07-17</span>
+    </div>
+    <div style="margin-top:6px">Zap it. Know the pile. Rip the easy 80%, respect the hard 20%, and never fight one item. 🐺</div>
+  </footer>
+</main>
+</body>
+</html>
