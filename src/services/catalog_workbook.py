@@ -56,7 +56,8 @@ COLUMNS = [
     ("Size / variant", 16, True),
     ("Photo?",         8, False),
     ("Text?",          8, False),
-    ("Look it up",    14, False),   # hyperlink
+    ("Look it up",    12, False),   # hyperlink → web search
+    ("Find a photo",  12, False),   # hyperlink → image search (the operator picks the real one)
     ("Source URL",    34, True),
     ("Action",        12, True),    # dropdown
     ("Notes",         34, True),
@@ -168,12 +169,20 @@ def build_worklist_workbook(rows: Iterable[dict], *, section: Optional[str] = No
         ws[f"{col['Photo?']}{n}"] = "yes" if row.get("has_image") else "no"
         ws[f"{col['Text?']}{n}"] = "yes" if row.get("has_text") else "no"
 
-        # the operator's real workflow, one click
+        # The operator's real workflow, one click each. Two links because they answer two different
+        # questions: "what IS this exactly?" (web) and "which of these hundreds is the real pack?"
+        # (images). The machine can search hundreds; only the person holding the box can pick the
+        # right one — so we hand them the shortlist and let them choose.
         if name:
             link = ws[f"{col['Look it up']}{n}"]
             link.value = "🔎 Google"
             link.hyperlink = f"https://www.google.com/search?q={quote_plus(name)}"
             link.font = Font(color="0563C1", underline="single", size=10)
+
+            img = ws[f"{col['Find a photo']}{n}"]
+            img.value = "🖼️ Images"
+            img.hyperlink = f"https://www.google.com/search?tbm=isch&q={quote_plus(name)}"
+            img.font = Font(color="0563C1", underline="single", size=10)
 
         ws[f"{col['Action']}{n}"] = "ENRICH"
         # Status formula: ready only when the human bits are in
@@ -225,18 +234,24 @@ def build_worklist_workbook(rows: Iterable[dict], *, section: Optional[str] = No
     s = wb.create_sheet("Summary")
     _title(s, "📊 Progress", f"Live — it updates as you fill the Worklist · {stamp}")
     W = "Worklist"
+    # Derived from the COLUMNS map, never hardcoded: adding one column would otherwise silently point
+    # every counter at the wrong field — a Summary that lies is worse than no Summary.
+    def rng(header):
+        c = col[header]
+        return f"{W}!{c}2:{c}{last}"
     stats = [
-        ("Products in this list", f'=COUNTA({W}!B2:B{last})'),
-        ("✅ Ready to import", f'=COUNTIF({W}!A2:A{last},"*ready*")'),
-        ("⏳ Still need work", f'=COUNTIF({W}!A2:A{last},"*needs*")'),
-        ("⏭ Skipped", f'=COUNTIF({W}!A2:A{last},"*skip*")'),
+        ("Products in this list", f'=COUNTA({rng("SKU")})'),
+        ("✅ Ready to import", f'=COUNTIF({rng("Status")},"*ready*")'),
+        ("⏳ Still need work", f'=COUNTIF({rng("Status")},"*needs*")'),
+        ("⏭ Skipped", f'=COUNTIF({rng("Status")},"*skip*")'),
         ("", ""),
-        ("Barcodes captured 🔫", f'=COUNTA({W}!D2:D{last})'),
-        ("Prices filled 💰", f'=COUNTIF({W}!F2:F{last},">0")'),
-        ("Categories set 🗂", f'=COUNTA({W}!E2:E{last})'),
+        ("Barcodes captured 🔫", f'=COUNTA({rng("Barcode / EAN")})'),
+        ("Prices filled 💰", f'=COUNTIF({rng("Price CHF")},">0")'),
+        ("Categories set 🗂", f'=COUNTA({rng("Category")})'),
+        ("Pages linked 🔗", f'=COUNTA({rng("Source URL")})'),
         ("", ""),
-        ("Photos Banco already has 📷", f'=COUNTIF({W}!I2:I{last},"yes")'),
-        ("Descriptions it already has ✍", f'=COUNTIF({W}!J2:J{last},"yes")'),
+        ("Photos Banco already has 📷", f'=COUNTIF({rng("Photo?")},"yes")'),
+        ("Descriptions it already has ✍", f'=COUNTIF({rng("Text?")},"yes")'),
     ]
     r = 4
     for label, formula in stats:

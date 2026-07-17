@@ -1850,6 +1850,8 @@ async def _page_product_facts(page_url: str) -> dict:
             return out
         html = resp.text[:400_000]
         base = str(resp.url)
+        out["_html"] = html          # kept so a caller can READ the body (the specs live in the prose,
+                                     # not the tags) without fetching the page a second time
 
         # 1) schema.org/Product as JSON-LD — the shop's own structured record. Best source by far.
         for m in re.finditer(r'<script[^>]+type=["\']application/ld\+json["\'][^>]*>(.*?)</script>',
@@ -4988,17 +4990,31 @@ async def import_catalog_worklist(
             # but ONLY into blanks. The operator stood at the shelf with the thing in their hand; a
             # web page never outranks that. And a EUR/USD number is NOT a Swiss shelf price, so a
             # foreign price is deliberately left for a human rather than written in as if it were CHF.
-            if facts.get("description") and not (product.description or "").strip():
-                product.description = facts["description"]
-                product.source_lang = product.source_lang or "en"
-                counts["text_pulled"] = counts.get("text_pulled", 0) + 1
+            if not (product.description or "").strip():
+                # The page's own og:description is usually SEO fluff ("… – CBD Oil – Cannabis
+                # Products"). The details that IDENTIFY the product — 33 leaves, rice paper, watermark
+                # — are in the BODY. Read it. Fall back to the tag only if the read comes back empty.
+                deep = ""
+                if facts.get("_html"):
+                    from src.services.page_description import describe_from_page
+                    deep = await describe_from_page(product.name, facts["_html"])
+                text = deep or facts.get("description") or ""
+                if text:
+                    product.description = text[:4000]
+                    product.source_lang = product.source_lang or "en"
+                    counts["text_pulled"] = counts.get("text_pulled", 0) + 1
+                    if deep:
+                        counts["text_deep"] = counts.get("text_deep", 0) + 1
             if facts.get("price") and (product.price or 0) == 0:
                 if (facts.get("currency") or "").upper() == "CHF":
                     product.price = Decimal(str(facts["price"])).quantize(Decimal("0.01"))
                     counts["prices_pulled"] = counts.get("prices_pulled", 0) + 1
                 else:
                     counts["prices_foreign"] = counts.get("prices_foreign", 0) + 1
-            if facts.get("description") or facts.get("price"):
+            # Commit whatever this row actually gained — the SESSION is the truth here, not `facts`
+            # (a body-read description never appears in `facts`, so testing that would silently drop it).
+            if db.dirty or db.new:
+                product.updated_at = datetime.now(timezone.utc)
                 await db.commit()
 
             if (product.image_url or "").strip():
