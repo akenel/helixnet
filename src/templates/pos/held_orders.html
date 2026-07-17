@@ -35,7 +35,7 @@
                             <div class="text-3xl font-black tracking-wider text-indigo-700" x-text="c.code"></div>
                             <div class="text-sm text-gray-500 mt-1">
                                 <span x-text="c.item_count"></span> <span data-i18n="held.items">items</span> ·
-                                <span class="font-semibold text-gray-800" x-text="'CHF ' + c.total"></span>
+                                <span class="font-semibold text-gray-800" x-text="formatPrice(c.total)"></span>
                             </div>
                         </div>
                         <div class="text-right">
@@ -66,16 +66,16 @@
                         <template x-for="l in (detail.items || [])" :key="l.product_id">
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-700"><span class="font-semibold" x-text="l.qty + '×'"></span> <span x-text="l.name"></span></span>
-                                <span class="text-gray-500" x-text="'CHF ' + l.line_total"></span>
+                                <span class="text-gray-500" x-text="formatPrice(l.line_total)"></span>
                             </div>
                         </template>
                         <div x-show="detail.discount_pct > 0" style="display:none;" class="flex justify-between text-sm text-emerald-700 pt-1 border-t">
                             <span>@<span x-text="detail.member_handle"></span> −<span x-text="detail.discount_pct"></span>%</span>
-                            <span x-text="'− CHF ' + detail.discount_amount"></span>
+                            <span x-text="'− ' + formatPrice(detail.discount_amount)"></span>
                         </div>
                         <div class="flex justify-between font-bold pt-1 border-t">
                             <span data-i18n="held.to_ring">To ring</span>
-                            <span x-text="'CHF ' + (detail.total_after || detail.total)"></span>
+                            <span x-text="formatPrice(detail.total_after || detail.total)"></span>
                         </div>
                     </div>
                 </div>

@@ -604,9 +604,12 @@
                 if (!iso) return '';
                 try { return new Date(iso).toLocaleDateString(); } catch (e) { return iso.slice(0, 10); }
             },
-            formatPrice(v) {
-                return 'CHF ' + (Number(v) || 0).toFixed(2);
-            },
+            // Deliberately NOT a local formatter. This page used to define its own
+            //   formatPrice(v) { return 'CHF ' + v.toFixed(2) }
+            // which SHADOWED base.html's shared seam — "the ONE money-display seam" — and printed
+            // "sells for CHF 4.95" one line away from a label reading "Cost (EUR)" in an EUR shop
+            // (Artemis Roma). Delegate, so the currency follows /config like everywhere else.
+            formatPrice(v) { return window.formatPrice(Number(v) || 0); },
             goDashboard() { window.location.href = '/pos/dashboard'; },
             goCatalog() { window.location.href = '/pos/catalog'; },
             goReports() { window.location.href = '/pos/reports'; },
