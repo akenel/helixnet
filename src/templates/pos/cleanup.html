@@ -80,8 +80,76 @@
                             <span x-show="!exporting">📊 <span data-i18n="cleanup.export_xlsx">Export worklist (Excel)</span></span>
                             <span x-show="exporting" style="display:none;" data-i18n="cleanup.exporting">Building…</span>
                         </button>
+                        <!-- step 2: bring the filled sheet back -->
+                        <button @click="$refs.wbFile.click()" class="btn-secondary" :disabled="importing">
+                            <span x-show="!importing">📥 <span data-i18n="cleanup.import_xlsx">Import filled worklist</span></span>
+                            <span x-show="importing" style="display:none;" data-i18n="cleanup.importing">Reading…</span>
+                        </button>
+                        <input type="file" x-ref="wbFile" class="hidden" accept=".xlsx"
+                               @change="previewImport($event.target.files[0]); $event.target.value=''">
                     </div>
                     <p class="text-xs text-gray-500 mt-2" data-i18n="cleanup.export_hint">Take it to the shelf: fill in the variant, the price and scan the barcode straight into the sheet — then import it back and the AI finishes the rest.</p>
+
+                    <!-- Batch flags — scope the whole sheet in one line before importing it. -->
+                    <div class="flex gap-2 mt-3 flex-wrap items-end border-t pt-3">
+                        <div class="flex-1 min-w-[160px]">
+                            <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="cleanup.f_site">Look things up on (optional)</label>
+                            <input type="text" x-model="impSourceSite" placeholder="e.g. gizeh.online" class="input-field">
+                        </div>
+                        <div class="flex-1 min-w-[140px]">
+                            <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="cleanup.f_supplier">Supplier for this batch (optional)</label>
+                            <input type="text" x-model="impSupplier" placeholder="e.g. FourTwenty" class="input-field">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BL-131 step 2: the import preview — nothing is written until you approve it. -->
+                <div x-show="imp" x-transition class="fixed inset-0 z-[80] bg-black/60 flex items-center justify-center p-4"
+                     style="display:none;" @click.self="imp=null">
+                    <div class="bg-white rounded-2xl shadow-xl max-w-3xl w-full p-5 space-y-4 max-h-[90vh] flex flex-col">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900" data-i18n="cleanup.imp_title">Preview — nothing has changed yet</h3>
+                            <p class="text-sm text-gray-600 mt-1" x-text="imp && imp.message"></p>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+                            <div class="border rounded-lg p-2 bg-green-50 border-green-200">
+                                <div class="text-xl font-bold text-green-700" x-text="imp && imp.counts.update"></div>
+                                <div class="text-xs text-gray-600" data-i18n="cleanup.imp_update">will update</div>
+                            </div>
+                            <div class="border rounded-lg p-2 bg-amber-50 border-amber-200">
+                                <div class="text-xl font-bold text-amber-700" x-text="imp && imp.counts.conflict"></div>
+                                <div class="text-xs text-gray-600" data-i18n="cleanup.imp_conflict">conflicts</div>
+                            </div>
+                            <div class="border rounded-lg p-2 bg-red-50 border-red-200">
+                                <div class="text-xl font-bold text-red-700" x-text="imp && imp.counts.error"></div>
+                                <div class="text-xs text-gray-600" data-i18n="cleanup.imp_error">errors</div>
+                            </div>
+                            <div class="border rounded-lg p-2 bg-gray-50">
+                                <div class="text-xl font-bold text-gray-600" x-text="imp && (imp.counts.nochange + imp.counts.skip)"></div>
+                                <div class="text-xs text-gray-600" data-i18n="cleanup.imp_untouched">untouched</div>
+                            </div>
+                        </div>
+                        <div class="overflow-y-auto border rounded-lg divide-y flex-1 text-sm">
+                            <template x-for="r in (imp ? imp.results : [])" :key="r.row">
+                                <div class="p-2 flex gap-2 items-start"
+                                     :class="{'bg-amber-50': r.status==='conflict', 'bg-red-50': r.status==='error'}">
+                                    <span class="font-mono text-xs text-gray-400 flex-none pt-0.5" x-text="'r'+r.row"></span>
+                                    <span class="flex-none" x-text="{update:'✅',conflict:'⚠️',error:'❌',skip:'⏭',nochange:'·'}[r.status]"></span>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="font-medium text-gray-900 truncate" x-text="r.name || r.sku"></div>
+                                        <div class="text-xs" :class="r.status==='update' ? 'text-gray-500' : 'text-gray-700'" x-text="r.detail"></div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <button @click="applyImport()" :disabled="impSaving || !imp || !imp.counts.update" class="btn-success w-full">
+                                <span x-show="!impSaving">✅ <span data-i18n="cleanup.imp_apply">Apply</span> <span x-text="imp && imp.counts.update"></span> <span data-i18n="cleanup.imp_changes">change(s)</span></span>
+                                <span x-show="impSaving" style="display:none;" data-i18n="cleanup.imp_applying">Applying…</span>
+                            </button>
+                            <button @click="imp=null" :disabled="impSaving" class="w-full text-gray-600 text-sm py-2 hover:underline" data-i18n="cleanup.imp_cancel">Cancel — change nothing</button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- SOLD: summary -->
@@ -235,6 +303,15 @@
             limit: 20,
             catFilter: '',
             exporting: false,      // BL-131: xlsx worklist download in flight
+            importing: false,      // BL-131 step 2: dry-run in flight
+            impSaving: false,      // …and the apply
+            imp: null,             // the dry-run result awaiting approval
+            impFile: null,         // the file we previewed — re-sent verbatim on apply
+            // Batch flags: scope the whole sheet in one line. "source_site: gizeh.online" is the one
+            // that matters most — a lookup pointed at the right site is the difference between a 0.95
+            // match and a 0.60 guess.
+            impSourceSite: '',
+            impSupplier: '',
             progress: { done: 0, total: 0, remaining: 0 },
             selected: {},          // product_id -> true (bulk-delete selection)
             bulkBusy: false,
@@ -336,6 +413,49 @@
                 } catch (e) {
                     showToast(e.message || t('cleanup.export_failed'), 'error');
                 } finally { this.exporting = false; }
+            },
+
+            // BL-131 step 2: preview FIRST — the same dry-run discipline that caught the BL-CAT
+            // mistakes before they shipped. Nothing is written until the operator approves.
+            async _sendWorkbook(fileObj, dryRun) {
+                const fd = new FormData();
+                fd.append('file', fileObj);
+                const q = new URLSearchParams({ dry_run: dryRun });
+                if (this.impSourceSite) q.set('source_site', this.impSourceSite);
+                if (this.impSupplier) q.set('supplier', this.impSupplier);
+                const r = await fetch(`/api/v1/pos/catalog/worklist/import?${q}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${AuthHelper.getToken()}` },
+                    body: fd,
+                });
+                const d = await r.json().catch(() => ({}));
+                if (!r.ok) throw new Error(d.detail || `Import failed (${r.status})`);
+                return d;
+            },
+
+            async previewImport(fileObj) {
+                if (!fileObj) return;
+                this.importing = true;
+                try {
+                    this.impFile = fileObj;
+                    this.imp = await this._sendWorkbook(fileObj, true);
+                } catch (e) {
+                    showToast(e.message || t('cleanup.import_failed'), 'error');
+                    this.impFile = null;
+                } finally { this.importing = false; }
+            },
+
+            async applyImport() {
+                if (!this.impFile) return;
+                this.impSaving = true;
+                try {
+                    const d = await this._sendWorkbook(this.impFile, false);
+                    showToast(d.message || t('cleanup.import_done'), 'success');
+                    this.imp = null; this.impFile = null;
+                    this.load();                       // the bench shrinks — show it
+                } catch (e) {
+                    showToast(e.message || t('cleanup.import_failed'), 'error');
+                } finally { this.impSaving = false; }
             },
 
             nextBatch() { this.offset += this.limit; this.load(); },
