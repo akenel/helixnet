@@ -1833,12 +1833,22 @@ async def _page_main_image(page_url: str) -> Optional[str]:
     url = (page_url or "").strip()
     if not (url.startswith("http://") or url.startswith("https://")):
         return None
+    # An operator pastes whatever they were looking at. Half the time that's the product PAGE; the
+    # other half it's the IMAGE itself (right-click → copy image address, or straight out of Google
+    # Images). Both are legitimate answers to "where is this product's picture" — take either.
+    if re.search(r'\.(jpe?g|png|webp|gif|avif)(\?|$)', url, re.I):
+        return url
     try:
         import httpx
         from urllib.parse import urljoin
         async with httpx.AsyncClient(timeout=12.0, follow_redirects=True) as c:
             resp = await c.get(url, headers={"User-Agent": "Mozilla/5.0 (compatible; BancoCatalog/1.0)"})
-        if resp.status_code != 200 or "html" not in resp.headers.get("content-type", ""):
+        if resp.status_code != 200:
+            return None
+        ctype = resp.headers.get("content-type", "")
+        if ctype.startswith("image/"):
+            return str(resp.url)          # an image URL with no file extension (a CDN/handler link)
+        if "html" not in ctype:
             return None
         html = resp.text[:300_000]                      # a product page's head is at the top; cap the read
         for prop in ("og:image:secure_url", "og:image", "twitter:image"):
@@ -4693,6 +4703,17 @@ async def import_catalog_worklist(
 
     results, counts = [], {"update": 0, "skip": 0, "conflict": 0, "error": 0, "nochange": 0,
                            "enrich": 0, "photos_pulled": 0, "photos_missed": 0, "photos_deferred": 0}
+
+    # THE SAME PICTURE ON TWO DIFFERENT PRODUCTS IS A MISTAKE, NOT A SHORTCUT. Copy-paste down a
+    # spreadsheet column is one keystroke, and a wrong-but-confident picture is the worst outcome we
+    # have: it gets rubber-stamped and only surfaces at the till, weeks later, when a cashier is
+    # holding the wrong thing (the "Freddy's Parisian" bug). Caught here for free — no AI needed.
+    _url_users = {}
+    for _r in rows:
+        _u = (_r.get("source_url") or "").strip().lower()
+        if _u and (_r.get("action") or "").upper() != "SKIP":
+            _url_users.setdefault(_u, []).append(_r["sku"])
+    _shared_urls = {u: skus for u, skus in _url_users.items() if len(skus) > 1}
     # Each photo costs two network round-trips (page → image), so a 500-row sheet can't do them all
     # inline without timing out. Cap it, and REPORT what was deferred — a silent cap reads as
     # "we covered everything" when we didn't.
@@ -4776,10 +4797,17 @@ async def import_catalog_worklist(
         # right-click → save → upload.
         needs = []
         want_image_from_page = False
+        _su = (row.get("source_url") or "").strip()
+        if _su and _su.lower() in _shared_urls:
+            others = [s for s in _shared_urls[_su.lower()] if s != row["sku"]]
+            _rec(row, "conflict",
+                 f"That same picture URL is also on {len(others)} other row(s) ({', '.join(others[:3])}) — "
+                 f"two different products can't share one photo. Fix the URL, or clear it here.")
+            continue
         if not (product.image_url or "").strip():
-            if (row.get("source_url") or "").strip() and action != "DONE":
+            if _su and action != "DONE":
                 want_image_from_page = True
-                changes["photo_from"] = str(row["source_url"])[:60]
+                changes["photo_from"] = _su[:60]
             else:
                 needs.append("photo")
         if not (product.description or "").strip():
