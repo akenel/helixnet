@@ -44,6 +44,11 @@ claims.
 If the page is not clearly about this product, or states no usable details, reply with exactly: NONE
 """
 
+# BYO-brain: the model is DATA and the caller names it (src/llm). Turbo when BH_OLLAMA_KEY is set,
+# else the local fallback — same pair the translation service uses.
+DESC_MODEL = "gpt-oss:120b"
+LOCAL_MODEL = "tinyllama:latest"
+
 _TAG_RE = re.compile(r"<(script|style|noscript|svg|nav|footer|header)[^>]*>.*?</\1>", re.I | re.S)
 _ANY_TAG = re.compile(r"<[^>]+>")
 _WS = re.compile(r"\s+")
@@ -68,7 +73,7 @@ async def describe_from_page(name: str, page_html: str) -> str:
         from src.llm import run_llm, turbo_or_local
         res = await run_llm(
             _PROMPT.format(name=(name or "")[:160], text=text),
-            target=turbo_or_local(),
+            target=turbo_or_local(DESC_MODEL, LOCAL_MODEL),
             system=_SYSTEM,
         )
         out = (res.text or "").strip()
@@ -79,5 +84,9 @@ async def describe_from_page(name: str, page_html: str) -> str:
             return ""
         return out[:1200]
     except Exception as e:
-        logger.info(f"describe_from_page failed for {name[:40]!r}: {str(e)[:70]}")
+        # WARNING, not info: this returns "" on failure, and an empty description is indistinguishable
+        # from "the page had nothing to say". A silent fallback that looks like a real answer is how a
+        # broken call hides — a mis-called turbo_or_local() swallowed EVERY description here until the
+        # log was turned up. If enrichment is dead, the log must say so.
+        logger.warning(f"describe_from_page FAILED for {name[:40]!r}: {type(e).__name__}: {str(e)[:90]}")
         return ""
