@@ -53,8 +53,8 @@ COLUMNS = [
     ("Brand",          14, False),  # detected from the name — tells the operator which registry we matched
     ("Barcode / EAN", 18, True),    # ← scan the gun straight into this cell
     ("Category",      24, True),    # dropdown, canonical only
-    ("Price CHF",     11, True),
-    ("Cost CHF",      11, True),
+    ("Price",         11, True),   # header re-labelled with the store's currency at build time
+    ("Cost",          11, True),
     ("Size / variant", 16, True),
     ("Photo?",         8, False),
     ("Text?",          8, False),
@@ -86,7 +86,8 @@ def _title(ws, text, sub=""):
 
 
 def build_worklist_workbook(rows: Iterable[dict], *, section: Optional[str] = None,
-                            env: str = "sandbox", stamp: Optional[str] = None) -> bytes:
+                            env: str = "sandbox", stamp: Optional[str] = None,
+                            currency: str = "CHF") -> bytes:
     """rows: dicts with sku/name/barcode/category/price/cost/size/has_image/has_text.
 
     Returns .xlsx bytes: START HERE · Worklist · Summary · Lists.
@@ -148,7 +149,9 @@ def build_worklist_workbook(rows: Iterable[dict], *, section: Optional[str] = No
     # ---------------- Worklist ----------------
     ws = wb.create_sheet("Worklist")
     for i, (h, w, _) in enumerate(COLUMNS, start=1):
-        ws.cell(row=1, column=i, value=h)
+        # Money headers carry THIS shop's currency — sandbox trades in EUR (Artemis Roma), so a
+        # hardcoded "Price CHF" would ask the operator for the wrong money.
+        ws.cell(row=1, column=i, value=(f"{h} {currency}" if h in ("Price", "Cost") else h))
         ws.column_dimensions[get_column_letter(i)].width = w
     _style_header(ws)
 
@@ -163,11 +166,11 @@ def build_worklist_workbook(rows: Iterable[dict], *, section: Optional[str] = No
         ws[f"{col['Barcode / EAN']}{n}"].number_format = "@"      # text — never mangle a long EAN
         ws[f"{col['Category']}{n}"] = row.get("category") or ""
         if row.get("price") is not None:
-            ws[f"{col['Price CHF']}{n}"] = float(row["price"])
-        ws[f"{col['Price CHF']}{n}"].number_format = '#,##0.00'
+            ws[f"{col['Price']}{n}"] = float(row["price"])
+        ws[f"{col['Price']}{n}"].number_format = '#,##0.00'
         if row.get("cost") is not None:
-            ws[f"{col['Cost CHF']}{n}"] = float(row["cost"])
-        ws[f"{col['Cost CHF']}{n}"].number_format = '#,##0.00'
+            ws[f"{col['Cost']}{n}"] = float(row["cost"])
+        ws[f"{col['Cost']}{n}"].number_format = '#,##0.00'
         ws[f"{col['Size / variant']}{n}"] = row.get("size") or ""
         ws[f"{col['Photo?']}{n}"] = "yes" if row.get("has_image") else "no"
         ws[f"{col['Text?']}{n}"] = "yes" if row.get("has_text") else "no"
@@ -209,7 +212,7 @@ def build_worklist_workbook(rows: Iterable[dict], *, section: Optional[str] = No
         # Status formula: ready only when the human bits are in
         ws[f"{col['Status']}{n}"] = (
             f'=IF({col["Action"]}{n}="SKIP","⏭ skip",'
-            f'IF(AND({col["Product name"]}{n}<>"",{col["Price CHF"]}{n}>0,{col["Category"]}{n}<>""),"✅ ready",'
+            f'IF(AND({col["Product name"]}{n}<>"",{col["Price"]}{n}>0,{col["Category"]}{n}<>""),"✅ ready",'
             f'IF({col["Product name"]}{n}="","❌ no name","⏳ needs work")))'
         )
         for h in ("Status", "SKU", "Photo?", "Text?"):
@@ -244,8 +247,8 @@ def build_worklist_workbook(rows: Iterable[dict], *, section: Optional[str] = No
         formula=[f'ISNUMBER(SEARCH("no name",{col["Status"]}2))'],
         fill=PatternFill("solid", fgColor=BAD_BG), stopIfTrue=False))
     # highlight a missing price — the #1 thing only a human at the shelf can supply
-    ws.conditional_formatting.add(f"{col['Price CHF']}2:{col['Price CHF']}{last}", FormulaRule(
-        formula=[f'AND({col["Action"]}2<>"SKIP",OR({col["Price CHF"]}2="",{col["Price CHF"]}2=0))'],
+    ws.conditional_formatting.add(f"{col['Price']}2:{col['Price']}{last}", FormulaRule(
+        formula=[f'AND({col["Action"]}2<>"SKIP",OR({col["Price"]}2="",{col["Price"]}2=0))'],
         fill=PatternFill("solid", fgColor=WARN_BG), stopIfTrue=False))
 
     ws.freeze_panes = "C2"
@@ -267,7 +270,7 @@ def build_worklist_workbook(rows: Iterable[dict], *, section: Optional[str] = No
         ("⏭ Skipped", f'=COUNTIF({rng("Status")},"*skip*")'),
         ("", ""),
         ("Barcodes captured 🔫", f'=COUNTA({rng("Barcode / EAN")})'),
-        ("Prices filled 💰", f'=COUNTIF({rng("Price CHF")},">0")'),
+        ("Prices filled 💰", f'=COUNTIF({rng("Price")},">0")'),
         ("Categories set 🗂", f'=COUNTA({rng("Category")})'),
         ("Pages linked 🔗", f'=COUNTA({rng("Source URL")})'),
         ("", ""),
@@ -352,6 +355,14 @@ def parse_worklist_workbook(data: bytes) -> List[dict]:
     def col(name):
         return hdr.get(name)
 
+    def col_starts(prefix):
+        """Money headers carry the shop's currency ("Price EUR" / "Price CHF"), so they can't be
+        matched by an exact name — a sheet exported from a EUR shop must still import."""
+        for h, i in hdr.items():
+            if h.startswith(prefix):
+                return i
+        return None
+
     out = []
     for r in range(2, ws.max_row + 1):
         sku = _cell(ws, r, col("sku"))
@@ -363,8 +374,8 @@ def parse_worklist_workbook(data: bytes) -> List[dict]:
             "name": _cell(ws, r, col("product name")),
             "barcode": _cell(ws, r, col("barcode / ean")) if col("barcode / ean") else None,
             "category": _cell(ws, r, col("category")) if col("category") else None,
-            "price": _cell(ws, r, col("price chf")) if col("price chf") else None,
-            "cost": _cell(ws, r, col("cost chf")) if col("cost chf") else None,
+            "price": _cell(ws, r, col_starts("price")) if col_starts("price") else None,
+            "cost": _cell(ws, r, col_starts("cost")) if col_starts("cost") else None,
             "size": _cell(ws, r, col("size / variant")) if col("size / variant") else None,
             "source_url": _cell(ws, r, col("source url")) if col("source url") else None,
             "action": (_cell(ws, r, col("action")) or "ENRICH") if col("action") else "ENRICH",

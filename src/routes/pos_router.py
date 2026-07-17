@@ -1817,6 +1817,23 @@ def _process_image_upload(raw: bytes, content_type: str) -> bytes:
         return raw
 
 
+async def _store_currency(db: AsyncSession) -> str:
+    """The currency THIS shop actually trades in — never assume.
+
+    Caught by Angel: sandbox is configured as "Artemis Roma - Headshop" (Artemis Italia S.r.l.,
+    currency EUR, locale it-IT) — an Italian test shop. Today's enrichment refused a €0.80 price for
+    "not being CHF" in a shop whose currency IS EUR, and left the product at 0.00. The data was right;
+    the hardcoded rule was wrong. The store row has carried `currency` all along — read it.
+    """
+    try:
+        store = (await db.execute(
+            select(StoreSettingsModel).order_by(StoreSettingsModel.store_number))).scalars().first()
+        cur = (getattr(store, "currency", None) or "").strip().upper()
+        return cur or "CHF"
+    except Exception:
+        return "CHF"
+
+
 async def _reference_best_match(db: AsyncSession, name: str, barcode: str = "") -> Optional[dict]:
     """What our OWN supplier catalog already knows about this product. ASK THIS FIRST.
 
@@ -4835,6 +4852,7 @@ async def export_catalog_worklist(
         } for p in rows],
         section=category,
         env=os.getenv("HELIX_ENV", "sandbox"),
+        currency=await _store_currency(db),
     )
     slug = (category or "all").lower().replace(" ", "-").replace("&", "and")[:24]
     fname = f"banco-worklist-{slug}-{datetime.now(timezone.utc).date().isoformat()}.xlsx"
@@ -4874,6 +4892,7 @@ async def import_catalog_worklist(
     """
     from decimal import InvalidOperation
     from src.services.catalog_taxonomy import canonicalize_category
+    store_cur = await _store_currency(db)      # never assume CHF — this shop may trade in EUR
     from src.services.catalog_workbook import parse_worklist_workbook, WorkbookError
     raw = await file.read()
     if not raw:
@@ -5184,7 +5203,9 @@ async def import_catalog_worklist(
                     if deep:
                         counts["text_deep"] = counts.get("text_deep", 0) + 1
             if facts.get("price") and (product.price or 0) == 0:
-                if (facts.get("currency") or "").upper() == "CHF":
+                # FOREIGN means "not this shop's currency" — not "not CHF". Sandbox trades in EUR
+                # (Artemis Roma); hardcoding CHF refused correct euro prices and left them at 0.00.
+                if (facts.get("currency") or "").upper() == store_cur:
                     product.price = Decimal(str(facts["price"])).quantize(Decimal("0.01"))
                     counts["prices_pulled"] = counts.get("prices_pulled", 0) + 1
                 else:
@@ -5226,7 +5247,7 @@ async def import_catalog_worklist(
                        if counts.get('text_pulled') else "")
                     + (f" Took {counts.get('prices_pulled', 0)} CHF price(s) off the page."
                        if counts.get('prices_pulled') else "")
-                    + (f" {counts.get('prices_foreign', 0)} page price(s) were NOT in CHF — left for you."
+                    + (f" {counts.get('prices_foreign', 0)} page price(s) were not in {store_cur} — left for you."
                        if counts.get('prices_foreign') else "")
                     + (f" Identified {counts.get('barcode_enriched', 0)} product(s) from their barcode."
                        if counts.get('barcode_enriched') else "")
