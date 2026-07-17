@@ -1817,6 +1817,45 @@ def _process_image_upload(raw: bytes, content_type: str) -> bytes:
         return raw
 
 
+async def _page_main_image(page_url: str) -> Optional[str]:
+    """A product PAGE url -> the URL of the picture that page says represents the product.
+
+    The operator's real workflow ends with a browser tab open on the right product page ("I found it
+    in ten seconds"). Making them then right-click → save → upload is exactly the kind of manual
+    donkey-work this system exists to delete. So: fetch the page and read its `og:image` — the tag a
+    shop publishes precisely so a link unfurls with the correct product shot. `twitter:image` is the
+    fallback. We deliberately do NOT go hunting through <img> tags: on a shop page those are as likely
+    to be a logo, a banner or a "customers also bought" thumbnail, and a confidently-wrong picture is
+    worse than none (it gets rubber-stamped). None = we couldn't tell; the row keeps its blank.
+
+    Returns an absolute image URL, or None. NEVER raises — a page we can't read must not fail a row.
+    """
+    url = (page_url or "").strip()
+    if not (url.startswith("http://") or url.startswith("https://")):
+        return None
+    try:
+        import httpx
+        from urllib.parse import urljoin
+        async with httpx.AsyncClient(timeout=12.0, follow_redirects=True) as c:
+            resp = await c.get(url, headers={"User-Agent": "Mozilla/5.0 (compatible; BancoCatalog/1.0)"})
+        if resp.status_code != 200 or "html" not in resp.headers.get("content-type", ""):
+            return None
+        html = resp.text[:300_000]                      # a product page's head is at the top; cap the read
+        for prop in ("og:image:secure_url", "og:image", "twitter:image"):
+            m = re.search(
+                rf'<meta[^>]+(?:property|name)=["\']{re.escape(prop)}["\'][^>]+content=["\']([^"\']+)["\']',
+                html, re.I) or re.search(
+                rf'<meta[^>]+content=["\']([^"\']+)["\'][^>]+(?:property|name)=["\']{re.escape(prop)}["\']',
+                html, re.I)
+            if m:
+                found = urljoin(str(resp.url), m.group(1).strip())
+                if found.startswith(("http://", "https://")):
+                    return found
+    except Exception as e:
+        logger.info(f"Page image lookup failed ({url[:70]}): {str(e)[:60]}")
+    return None
+
+
 async def _copy_external_image_to_storage(db: AsyncSession, product, source_url: str):
     """Best-effort: pull an external image (e.g. a supplier's reference URL) into MinIO as a
     gallery photo + cover, so we own the bytes instead of hotlinking a URL that may rot. (BL-97c)
@@ -4652,7 +4691,13 @@ async def import_catalog_worklist(
     if not rows:
         raise HTTPException(status_code=400, detail="No rows with a SKU found in the Worklist tab.")
 
-    results, counts = [], {"update": 0, "skip": 0, "conflict": 0, "error": 0, "nochange": 0, "enrich": 0}
+    results, counts = [], {"update": 0, "skip": 0, "conflict": 0, "error": 0, "nochange": 0,
+                           "enrich": 0, "photos_pulled": 0, "photos_missed": 0, "photos_deferred": 0}
+    # Each photo costs two network round-trips (page → image), so a 500-row sheet can't do them all
+    # inline without timing out. Cap it, and REPORT what was deferred — a silent cap reads as
+    # "we covered everything" when we didn't.
+    PHOTO_BUDGET = 40
+    photo_jobs = []          # [(product_id, page_url)] — run AFTER the data commits (see below)
 
     def _rec(row, status, detail, changes=None):
         counts[status] = counts.get(status, 0) + 1
@@ -4726,10 +4771,17 @@ async def import_catalog_worklist(
             except (InvalidOperation, ValueError):
                 _rec(row, "error", f"Cost '{c}' isn't a number"); continue
 
-        # what a later AI pass would still have to find
+        # what still has to be found. A pasted Source URL means the operator already DID the finding —
+        # the picture on that page is the one they meant. Pull it (on apply) instead of making them
+        # right-click → save → upload.
         needs = []
+        want_image_from_page = False
         if not (product.image_url or "").strip():
-            needs.append("photo")
+            if (row.get("source_url") or "").strip() and action != "DONE":
+                want_image_from_page = True
+                changes["photo_from"] = str(row["source_url"])[:60]
+            else:
+                needs.append("photo")
         if not (product.description or "").strip():
             needs.append("description")
         if needs and action == "ENRICH":
@@ -4769,10 +4821,34 @@ async def import_catalog_worklist(
                 meta["worklist"] = hand
                 product.enrichment_meta = meta
             product.updated_at = datetime.now(timezone.utc)
+
+            # The operator pasted the page they found it on → go get the picture off it. QUEUED, not
+            # done here: _copy_external_image_to_storage commits on success and ROLLS BACK on failure,
+            # so calling it mid-loop would discard every pending row change before it. Photos run
+            # after the data is safely committed.
+            if want_image_from_page:
+                photo_jobs.append((product.id, row["source_url"]))
         _rec(row, "update", ", ".join(f"{k}→{v}" for k, v in changes.items())[:200], changes)
 
     if not dry_run:
-        await db.commit()
+        await db.commit()          # the operator's data is safe BEFORE any network work is attempted
+
+        # Photo pass: page URL -> og:image -> our storage. Capped, because each one costs two network
+        # round-trips and a 500-row sheet would time out. Whatever we defer is REPORTED, never dropped
+        # silently — run the import again and it picks up where it stopped.
+        for pid, page_url in photo_jobs[:PHOTO_BUDGET]:
+            product = (await db.execute(
+                select(ProductModel).where(ProductModel.id == pid))).scalar_one_or_none()
+            if product is None or (product.image_url or "").strip():
+                continue
+            img = await _page_main_image(page_url)
+            if img and await _copy_external_image_to_storage(db, product, img):
+                counts["photos_pulled"] += 1
+            else:
+                counts["photos_missed"] += 1
+        counts["photos_deferred"] = max(0, len(photo_jobs) - PHOTO_BUDGET)
+        if counts["photos_deferred"]:
+            logger.info(f"Worklist import: {counts['photos_deferred']} photo(s) deferred past the budget")
         logger.info(f"Worklist import APPLIED by {current_user['username']}: {counts}")
 
     return {
@@ -4782,7 +4858,14 @@ async def import_catalog_worklist(
         "flags": {"source_site": source_site, "supplier": supplier, "default_category": default_category},
         "results": results[:400],
         "message": ("Preview only — nothing changed. Review the conflicts, then apply."
-                    if dry_run else f"Applied to {counts['update']} product(s)."),
+                    if dry_run else
+                    f"Applied to {counts['update']} product(s)."
+                    + (f" Pulled {counts['photos_pulled']} photo(s) from the pages you linked."
+                       if counts['photos_pulled'] else "")
+                    + (f" {counts['photos_missed']} page(s) had no usable picture."
+                       if counts['photos_missed'] else "")
+                    + (f" {counts['photos_deferred']} photo(s) deferred — import again to finish them."
+                       if counts['photos_deferred'] else "")),
     }
 
 
