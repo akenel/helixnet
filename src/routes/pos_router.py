@@ -8350,6 +8350,7 @@ async def product_postcard_sheet(
 
     desc = await ensure_description(db, product, lang)
     attrs = product.attributes or {}
+    display_img = await _product_display_image(db, product) or ""   # BL-043: cover, else first gallery photo
     run = secrets.token_hex(2).upper()                    # per-sheet run id (Banksy provenance)
     base_serial = hashlib.sha1(f"{product.sku}|{product.updated_at}".encode()).hexdigest()[:4].upper()
     proto = request.headers.get("x-forwarded-proto", "https")
