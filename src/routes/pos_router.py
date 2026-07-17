@@ -2535,6 +2535,15 @@ async def search_products_fast(
           # (Same trick the photo/capture search already uses — see search_reference_catalog.)
           "CASE WHEN name ILIKE :q || '%' THEN 0 ELSE 1 END, relevance DESC, name")
 
+    # BL-045: a text query must float REAL name matches to the top under ANY sort. The explicit sorts
+    # (recent/name/price) dropped the substring boost, so picking "Recently added" (the catalog default)
+    # let fuzzy junk win: word_similarity rates 0.40 for a 4-letter query against long German text
+    # ("muff" ~ "…Powermatic mini") even though the name does NOT contain it, and by recency that junk
+    # buried the actual "Muffin" at the BOTTOM (Angel found it there). A name that CONTAINS the query
+    # always beats one that doesn't; the chosen sort then orders within each tier.
+    if (q or "").strip():
+        order_clause = "CASE WHEN name ILIKE '%' || :q || '%' THEN 0 ELSE 1 END, " + order_clause
+
     # BL-128 #2: the query named a pack size → float exact-size matches to the very top (2g over 10g).
     size_rx = _query_size_regex(q)
     if size_rx:
