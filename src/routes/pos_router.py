@@ -1817,6 +1817,16 @@ def _process_image_upload(raw: bytes, content_type: str) -> bytes:
         return raw
 
 
+def _is_thumbnail_url(url: str) -> bool:
+    """A search engine's cached THUMBNAIL rather than the source picture.
+
+    Right-clicking inside the Google Images grid copies `encrypted-tbn0.gstatic.com/...` — measured at
+    225x225 (4KB) and 330x600. It resolves and stores fine, it's just SMALL, and the operator can't
+    tell which they grabbed until it's already the product photo."""
+    u = (url or "").lower()
+    return ("gstatic.com" in u and "/images" in u) or "tbn:and9gc" in u or "bing.net/th?" in u
+
+
 async def _page_product_facts(page_url: str) -> dict:
     """A product PAGE url -> everything the page already states about the product.
 
@@ -4938,7 +4948,17 @@ async def import_catalog_worklist(
         if not (product.image_url or "").strip():
             if _su and action != "DONE":
                 want_image_from_page = True
-                changes["photo_from"] = _su[:60]
+                # A right-click INSIDE the Google Images grid copies Google's THUMBNAIL cache, not the
+                # shop's picture — measured at 225x225 (4KB) and 330x600. Fine on a till, useless for a
+                # display or a postcard, and you can't tell which you got until it's stored. It still
+                # works (we copy the bytes, so Google rotating the URL later can't hurt us) — so warn,
+                # don't refuse. The fix is one extra click: open the image first, then copy THAT address.
+                if _is_thumbnail_url(_su):
+                    changes["photo_from"] = ("⚠ Google THUMBNAIL (small) — for a full-size shot, click the "
+                                             "image in Google first, then copy that address")
+                    counts["photos_thumbnail"] = counts.get("photos_thumbnail", 0) + 1
+                else:
+                    changes["photo_from"] = _su[:60]
             else:
                 needs.append("photo")
         if not (product.description or "").strip():
@@ -5127,7 +5147,10 @@ async def import_catalog_worklist(
                        f"(normal for niche stock) — those need a page link or a photo."
                        if counts.get('barcode_missed') else "")
                     + (f" {counts.get('barcode_deferred', 0)} barcode lookup(s) deferred (daily quota) "
-                       f"— import again tomorrow." if counts.get('barcode_deferred') else "")),
+                       f"— import again tomorrow." if counts.get('barcode_deferred') else "")
+                    + (f" ⚠ {counts.get('photos_thumbnail', 0)} link(s) were Google THUMBNAILS (small) — "
+                       f"click the image in Google first and copy THAT address for a full-size shot."
+                       if counts.get('photos_thumbnail') else "")),
     }
 
 
