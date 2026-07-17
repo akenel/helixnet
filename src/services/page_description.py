@@ -107,3 +107,45 @@ async def describe_from_page(name: str, page_html: str) -> str:
         # log was turned up. If enrichment is dead, the log must say so.
         logger.warning(f"describe_from_page FAILED for {name[:40]!r}: {type(e).__name__}: {str(e)[:90]}")
         return ""
+
+
+async def tidy_operator_note(note: str) -> str:
+    """The operator's OWN note -> a description. Their words, tidied. Never re-imagined.
+
+    Angel: "sometimes I'm taking the notes, and that could be just as good and valuable for a
+    description — that's our secret sauce." Exactly: a note like "34 leaves, ultra thin, blue pack" is
+    a person who picked the pack up and read it. That beats any scrape. So this only reshapes it into
+    the house format — it must never add a fact they didn't write, and never drop one they did.
+
+    Short enough to be a note (not a pasted page); the caller routes long text to describe_from_page.
+    Returns "" only if there's nothing there.
+    """
+    n = _WS.sub(" ", (note or "").strip())
+    if len(n) < 12:
+        return ""
+    # Already shaped? Leave it completely alone.
+    if "•" in n or "\n" in note:
+        return note.strip()[:1200]
+    try:
+        from src.llm import run_llm, turbo_or_local
+        res = await run_llm(
+            "Reshape this shop-floor note into a catalog description.\n\n"
+            f"THE NOTE: {note.strip()[:900]}\n\n"
+            "RULES — this is a human's own observation, so:\n"
+            "- Use ONLY the facts in the note. Add nothing. Drop nothing.\n"
+            "- If it names specs, bullet them: one short lead line, then '• Spec: value' lines.\n"
+            "- If it's one plain remark, just return it cleanly as one line.\n"
+            "- Keep the writer's language (do NOT translate).\n"
+            "- No marketing words. Reply with the description only.",
+            target=turbo_or_local(DESC_MODEL, LOCAL_MODEL),
+            system="You tidy a shop worker's product note. You never invent or remove facts.",
+        )
+        out = re.sub(r"<think>.*?</think>", "", (res.text or ""), flags=re.S).strip()
+        out = _WS.sub(" ", out)
+        out = re.sub(r"\s*[•·]\s*", "\n• ", out).strip()
+        out = re.sub(r"\n{2,}", "\n", out)
+        # If the model gave us less than the human wrote, trust the human.
+        return (out or n)[:1200] if len(out) >= 12 else n[:1200]
+    except Exception as e:
+        logger.warning(f"tidy_operator_note FAILED — keeping the operator's words verbatim: {str(e)[:70]}")
+        return n[:1200]      # their note is ALWAYS better than nothing

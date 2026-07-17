@@ -1050,6 +1050,20 @@ window.POS_STRINGS = {
       "toast_moved": "Updated",
       "confirm_remove": "Remove this line?"
     },
+      "held": {
+        "title": "🧾 Held Orders",
+        "intro": "Baskets guests built at the kiosk, waiting to be rung out.",
+        "refresh": "Refresh",
+        "loading": "Loading…",
+        "empty": "Nothing waiting",
+        "empty_sub": "When a guest sends a basket from the kiosk, it lands here.",
+        "items": "items",
+        "view": "View",
+        "hide": "Hide",
+        "ring": "Ring it out",
+        "to_ring": "to ring out",
+        "done": "Done"
+      },
     "cleanup": {
       "title": "🧹 Catalog Cockpit",
       "catalog": "📦 Catalog",
@@ -2749,6 +2763,20 @@ window.POS_STRINGS = {
       "toast_moved": "Mis à jour",
       "confirm_remove": "Supprimer cette ligne ?"
     },
+      "held": {
+        "title": "🧾 Commandes en attente",
+        "intro": "Paniers créés par les clients à la borne, en attente d'encaissement.",
+        "refresh": "Actualiser",
+        "loading": "Chargement…",
+        "empty": "Rien en attente",
+        "empty_sub": "Quand un client envoie un panier depuis la borne, il apparaît ici.",
+        "items": "articles",
+        "view": "Voir",
+        "hide": "Masquer",
+        "ring": "Encaisser",
+        "to_ring": "à encaisser",
+        "done": "Terminé"
+      },
     "cleanup": {
       "title": "🧹 Cockpit du catalogue",
       "catalog": "📦 Catalogue",
@@ -4438,6 +4466,20 @@ window.POS_STRINGS = {
       "toast_moved": "Aggiornato",
       "confirm_remove": "Rimuovere questa riga?"
     },
+      "held": {
+        "title": "🧾 Ordini in attesa",
+        "intro": "Carrelli creati dai clienti al totem, in attesa di essere incassati.",
+        "refresh": "Aggiorna",
+        "loading": "Caricamento…",
+        "empty": "Nessun ordine in attesa",
+        "empty_sub": "Quando un cliente invia un carrello dal totem, arriva qui.",
+        "items": "articoli",
+        "view": "Vedi",
+        "hide": "Nascondi",
+        "ring": "Incassa",
+        "to_ring": "da incassare",
+        "done": "Fatto"
+      },
     "cleanup": {
       "title": "🧹 Coda di sistemazione",
       "catalog": "📦 Catalogo",
@@ -6127,6 +6169,20 @@ window.POS_STRINGS = {
       "toast_moved": "Aktualisiert",
       "confirm_remove": "Diese Zeile entfernen?"
     },
+      "held": {
+        "title": "🧾 Wartende Bestellungen",
+        "intro": "Warenkörbe, die Gäste am Kiosk erstellt haben — warten aufs Kassieren.",
+        "refresh": "Aktualisieren",
+        "loading": "Wird geladen…",
+        "empty": "Nichts wartet",
+        "empty_sub": "Wenn ein Gast am Kiosk einen Warenkorb sendet, erscheint er hier.",
+        "items": "Artikel",
+        "view": "Ansehen",
+        "hide": "Ausblenden",
+        "ring": "Kassieren",
+        "to_ring": "zu kassieren",
+        "done": "Fertig"
+      },
     "cleanup": {
       "title": "🧹 Aufräum-Liste",
       "catalog": "📦 Katalog",

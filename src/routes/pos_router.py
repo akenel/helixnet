@@ -5123,8 +5123,12 @@ async def import_catalog_worklist(
             # to us. But he already did the reading a browser can do and we can't, and pasted the
             # result. Notes was being FILED as provenance and never READ. If a human hands us the
             # text, use it — that's the whole division of labour.
-            if not (product.description or "").strip() and len(str(row.get("notes") or "")) > 180:
-                note_jobs.append((product.id, str(row["notes"])))
+            # ANY note, not just a long one. The 180-char floor threw away exactly the notes worth
+            # keeping: Angel's own words. "Sometimes I'm taking the notes, and that could be just as
+            # good and valuable for a description — that's our secret sauce." A 30-char note like
+            # "34 leaves, ultra thin, blue pack" IS the description; it was being silently binned.
+            if not (product.description or "").strip() and len(str(row.get("notes") or "").strip()) >= 12:
+                note_jobs.append((product.id, str(row["notes"]).strip()))
         _rec(row, "update", ", ".join(f"{k}→{v}" for k, v in changes.items())[:200], changes)
 
     if not dry_run:
@@ -5173,14 +5177,27 @@ async def import_catalog_worklist(
                 select(ProductModel).where(ProductModel.id == pid))).scalar_one_or_none()
             if product is None or (product.description or "").strip():
                 continue
-            from src.services.page_description import describe_from_page
-            # Same reader as a fetched page — it already strips markup and extracts ONLY stated facts,
-            # so a copy-pasted listing (nav junk, "Add to basket", sponsored rails and all) is the same
-            # problem it already solves. It returns "" rather than invent when there's nothing usable.
-            deep = await describe_from_page(product.name, pasted)
-            if deep:
-                product.description = deep[:4000]
-                product.source_lang = product.source_lang or "en"
+            from src.services.page_description import describe_from_page, tidy_operator_note
+            # TWO KINDS OF NOTE, and treating them the same destroys the good one:
+            #  • A SHORT note is the operator's own description ("34 leaves, ultra thin, blue pack").
+            #    It's already the answer — tidy it, never "extract" from it, never send it to a model
+            #    that might paraphrase away the one fact they bothered to write down.
+            #  • A LONG note is a pasted page (Angel dumps Amazon listings, since amazon.ch 503s our
+            #    fetch). That needs the extractor to pull the facts out of the nav junk.
+            if len(pasted) > 220:
+                text = await describe_from_page(product.name, pasted)
+            else:
+                text = await tidy_operator_note(pasted)
+            if text:
+                product.description = text[:4000]
+                # The hub is ENGLISH (lp-language-architecture): store English, translate outward on
+                # demand. Angel writes his notes in English, but he reads German packs — so a note may
+                # arrive in German. Record what it ACTUALLY is; ensure_description() self-heals and
+                # translates from there. Claiming 'en' over German text is the source_lang lie we
+                # already paid to fix once.
+                from src.services.product_translations import _guess_base_lang
+                product.source_lang = _guess_base_lang(text) or "en"
+                product.needs_translation = True
                 product.updated_at = datetime.now(timezone.utc)
                 await db.commit()
                 counts["text_from_notes"] = counts.get("text_from_notes", 0) + 1
