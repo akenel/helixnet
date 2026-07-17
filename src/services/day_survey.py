@@ -171,15 +171,34 @@ def _facts_prompt(facts: dict) -> str:
     )
 
 
+async def _shop_weather(db: AsyncSession) -> str:
+    """Today's weather at the shop, from its own address — so the note's weather is REAL, not typed.
+    Angel: "when it's a rainy day and only two sales, she shouldn't have to fake it." Never raises."""
+    try:
+        from sqlalchemy import select as _select
+        from src.db.models.store_settings_model import StoreSettingsModel
+        from src.services.weather import daily_weather_line
+        store = (await db.execute(
+            _select(StoreSettingsModel).order_by(StoreSettingsModel.store_number))).scalars().first()
+        if not store or not (getattr(store, "city", "") or "").strip():
+            return ""
+        return await daily_weather_line(store.city, getattr(store, "country", "") or "")
+    except Exception:
+        return ""
+
+
 async def draft_day_survey(db: AsyncSession, user_id: str, target_date: datetime | None = None) -> dict:
     """The recipe: gather the day's facts → ask the brain to draft the survey → resilient
-    fallback. Returns {busy_level, footfall_estimate, summary, highlight, ai, facts}."""
+    fallback. Returns {busy_level, footfall_estimate, summary, highlight, weather, ai, facts}.
+    `weather` is auto-fetched from the shop's address (free, keyless) so the operator never types it."""
     facts = await gather_day_facts(db, user_id, target_date)
+    weather = await _shop_weather(db)
 
     # No sales = nothing for the brain to say better than the honest fallback. Skip the call.
     if facts["transaction_count"] == 0:
         out = _fallback_draft(facts)
         out["facts"] = facts
+        out["weather"] = weather
         return out
 
     try:
@@ -199,11 +218,14 @@ async def draft_day_survey(db: AsyncSession, user_id: str, target_date: datetime
         if not draft["summary"]:
             draft = _fallback_draft(facts)
         draft["facts"] = facts
+        draft["weather"] = weather
         return draft
     except Exception:  # noqa: BLE001 — any brain failure degrades to the honest fallback.
         logger.warning("day-survey brain call failed; using deterministic draft", exc_info=True)
         out = _fallback_draft(facts)
         out["facts"] = facts
+        out["weather"] = weather
+        out["weather"] = weather
         return out
 
 

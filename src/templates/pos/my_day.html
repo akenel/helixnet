@@ -212,6 +212,7 @@
                             <label class="block text-xs font-semibold text-gray-600 mb-1" data-i18n="myday.weather">Weather</label>
                             <input type="text" x-model="survey.weather" maxlength="40"
                                    placeholder="sunny, rain…" data-i18n-placeholder="myday.weather_placeholder" class="input-field">
+                            <p x-show="survey.weather && survey.ai" style="display:none;" class="text-[10px] text-gray-400 mt-1" data-i18n="myday.weather_auto">🛰️ auto — from the shop's location today</p>
                         </div>
                     </div>
 
@@ -414,6 +415,9 @@ function myDayData() {
                 this.survey.busy_level = d.busy_level || '';
                 this.survey.footfall = (d.footfall_estimate != null) ? d.footfall_estimate : null;
                 this.survey.summary = d.summary || this.survey.summary;
+                // Weather comes from the SHOP'S OWN ADDRESS (Open-Meteo, free, keyless) — a real source,
+                // never typed. Only fills a blank so it never stomps a value the operator already set.
+                if (d.weather && !((this.survey.weather || '').trim())) this.survey.weather = d.weather;
                 this.survey.ai = !!d.ai;
                 this.survey.drafted = true;
             } catch (e) {
