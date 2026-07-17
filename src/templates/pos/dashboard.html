@@ -212,6 +212,10 @@
                         <span class="text-6xl mb-4 block">🧹</span>
                         <h3 class="text-2xl font-bold text-gray-900 mb-2" data-i18n="dashboard.cleanup">Cleanup Queue</h3>
                         <p class="text-gray-600" data-i18n="dashboard.cleanup_desc">Finish setting up quick-added products that sold</p>
+                        <!-- BL-131: the migration backlog — quiet on purpose (see loadCleanupCount) -->
+                        <p x-show="benchRemaining > 0" style="display:none;" class="text-gray-400 text-sm mt-2">
+                            🛠️ <span x-text="benchRemaining"></span> <span data-i18n="dashboard.bench_remaining">products to finish on the bench</span>
+                        </p>
                     </div>
                 </div>
             </template>
@@ -311,6 +315,7 @@
             salesIsMine: false,
             drawer: null,        // /shift/current when this cashier has an open drawer
             cleanupCount: 0,     // sold-but-half-baked products awaiting manager setup (badge)
+            benchRemaining: 0,   // BL-131: migration backlog (bench mode) — quiet line, not a red badge
             newMembers: [],      // members who self-signed-up at the kiosk TODAY
             heldCount: 0,        // kiosk guest carts waiting at the counter (badge)
 
@@ -399,10 +404,18 @@
             },
 
             async loadCleanupCount() {
+                // Two DIFFERENT numbers, deliberately shown differently (BL-131):
+                //  • cleanupCount (red badge) = SOLD but half-baked. Urgent, small, act today.
+                //  • benchRemaining (quiet line) = the migration backlog, sold or not. Big and slow —
+                //    a permanent red "439" would just become wallpaper and get ignored.
                 try {
                     const data = await API.get('/api/v1/pos/catalog/cleanup-queue');
                     this.cleanupCount = data.count || 0;
                 } catch (e) { this.cleanupCount = 0; }  // badge is optional, never blocks the dash
+                try {
+                    const b = await API.get('/api/v1/pos/catalog/cleanup-queue?mode=bench&limit=1');
+                    this.benchRemaining = b.remaining || 0;
+                } catch (e) { this.benchRemaining = 0; }
             },
 
             async loadNewMembers() {

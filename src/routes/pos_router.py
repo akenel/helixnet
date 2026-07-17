@@ -4545,6 +4545,72 @@ def _bench_gap_clause():
     )
 
 
+@router.get("/catalog/worklist.xlsx")
+async def export_catalog_worklist(
+    category: Optional[str] = None,
+    limit: int = 500,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_manager_or_admin()),
+):
+    """BL-131 — the MIGRATION WORKBENCH, as a spreadsheet the operator can actually work.
+
+    Everything that enriches the catalog today is a SCRIPT a developer runs from a terminal — the shop
+    can't drive it. This is the front door: export the unfinished rows, walk the shelf filling in what
+    only a human standing there knows (the exact variant, the shelf price, and the BARCODE — scanned
+    straight into the cell, because a scanner gun is just a keyboard), then import it back and let the
+    AI fill what a machine can find. Filter by `category` to work ONE SHELF at a time (the playbook's
+    unit of progress). Same `_bench_gap_clause()` definition of "unfinished" as the bench queue, so the
+    workbook and the on-screen counter can never disagree.
+    """
+    scope = [ProductModel.is_active == True]
+    if category:
+        scope.append(func.lower(_bench_category_expr()) == category.strip().lower())
+    rows = (await db.execute(
+        select(ProductModel)
+        .where(and_(*scope, _bench_gap_clause()))
+        .order_by(_bench_category_expr().asc(), ProductModel.name.asc())
+        .limit(max(1, min(limit, 2000)))
+    )).scalars().all()
+
+    # Lazy import + explicit 503: openpyxl is baked into the image via requirements, but
+    # deploy-banco.py only RESTARTS the container — a fresh dependency needs an image rebuild.
+    # Say so plainly instead of a raw 500 (this is exactly how Pillow bit us before).
+    try:
+        from src.services.catalog_workbook import build_worklist_workbook
+    except ImportError as e:
+        logger.error(f"Worklist export unavailable — openpyxl missing from the image: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail="The spreadsheet export needs an app image rebuild (openpyxl). Ask Tigs to rebuild this env.",
+        )
+    data = build_worklist_workbook(
+        [{
+            "sku": p.sku,
+            "name": p.name,
+            "barcode": p.barcode,
+            "category": p.category,
+            "price": float(p.price) if p.price is not None else None,
+            "cost": float(p.cost) if p.cost is not None else None,
+            # Size stays BLANK on purpose: pinning the exact variant (2g vs 10g, Premium vs Ultimate)
+            # is the one judgement only the human holding the pack can make. Pre-filling a guess here
+            # would be read as fact and rubber-stamped — the exact way a wrong variant gets locked in.
+            "size": None,
+            "has_image": bool((p.image_url or "").strip()),
+            "has_text": bool((p.description or "").strip()),
+        } for p in rows],
+        section=category,
+        env=os.getenv("HELIX_ENV", "sandbox"),
+    )
+    slug = (category or "all").lower().replace(" ", "-").replace("&", "and")[:24]
+    fname = f"banco-worklist-{slug}-{datetime.now(timezone.utc).date().isoformat()}.xlsx"
+    logger.info(f"Worklist export: {len(rows)} rows ({slug}) by {current_user['username']}")
+    return Response(
+        content=data,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{fname}"'},
+    )
+
+
 @router.get("/catalog/cleanup-queue")
 async def get_cleanup_queue(
     mode: str = "sold",

@@ -66,3 +66,9 @@ Pillow
 #   white-background cleanup. "headless" = no GUI/X11 libs, correct for a slim server image.
 #   This ALWAYS works (deterministic), unlike AI identification which only guesses.
 opencv-python-headless
+
+# --- Migration workbench (BL-131): the XLSX worklist export ---
+# openpyxl: builds the multi-tab .xlsx an operator fills at the shelf (dropdowns bound to the
+#   canonical categories, per-row Google lookup links, live progress formulas). Formulas + data
+#   validation deliberately over macros — they survive Excel AND Google Sheets AND LibreOffice.
+openpyxl
