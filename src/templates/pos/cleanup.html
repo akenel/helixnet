@@ -235,8 +235,27 @@
                                     <datalist :id="'cats-' + p.product_id"><template x-for="c in categories" :key="c.name"><option :value="c.name"></option></template></datalist>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="cleanup.f_cost">Cost (CHF)</label>
-                                    <input type="number" step="0.05" min="0" x-model="p._cost" placeholder="0.00" class="input-field">
+                                    <!-- BL-136: the currency follows the STORE (Rome trades in EUR) — a hardcoded
+                                         "Cost (CHF)" asks the operator for money the shop doesn't take. -->
+                                    <label class="block text-xs font-medium text-gray-500 mb-1">
+                                        <span data-i18n="cleanup.f_cost_bare">Cost</span>
+                                        (<span x-text="_cfg('currency')"></span>)
+                                        <!-- Angel: "should show the suggested retail selling price, then the user can
+                                             eyeball a cost and move on quickly, or look it up on an old delivery slip."
+                                             You cannot guess a cost against a price you can't see. -->
+                                        <span x-show="p.price" class="text-gray-400 font-normal">
+                                            · <span data-i18n="cleanup.sells_for">sells for</span>
+                                            <span class="font-semibold text-gray-600" x-text="formatPrice(p.price)"></span>
+                                        </span>
+                                    </label>
+                                    <div class="flex gap-1">
+                                        <input type="number" step="0.05" min="0" x-model="p._cost" placeholder="0.00" class="input-field">
+                                        <!-- one tap = a defensible eyeball. Head-shop margin runs ~50%; the operator
+                                             overwrites it the moment they find the real slip. -->
+                                        <button type="button" x-show="p.price" @click="p._cost = (p.price/2).toFixed(2)"
+                                                class="btn-secondary whitespace-nowrap px-2 text-xs"
+                                                :title="'Eyeball it: half of ' + formatPrice(p.price)">½</button>
+                                    </div>
                                 </div>
 
                                 <!-- BENCH ONLY: description + photo (the other two master-data gaps) -->
