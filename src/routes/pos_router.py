@@ -469,7 +469,11 @@ async def ai_suggest_product(
     raw = await file.read()
     if len(raw) > _MAX_IMAGE_BYTES:
         raise HTTPException(status_code=413, detail="Image too large (max 15 MB)")
-    if not (file.content_type or "").lower().startswith("image/"):
+    # BL-139: content_type is a HINT. Firefox/Windows send application/octet-stream for a
+    # perfectly good .webp — gating on the LABEL rejected real photos before anything read
+    # the bytes. Only refuse what clearly isn't a picture; let the decoder be the judge.
+    if (file.content_type or "").lower().startswith(("text/", "application/json",
+                                                     "application/pdf", "video/", "audio/")):
         raise HTTPException(status_code=415, detail="Please upload an image")
 
     from src.services.vision_product_analyzer import suggest_product_from_image
@@ -504,7 +508,11 @@ async def read_delivery_slip(
     raw = await file.read()
     if len(raw) > _MAX_IMAGE_BYTES:
         raise HTTPException(status_code=413, detail="Image too large (max 15 MB)")
-    if not (file.content_type or "").lower().startswith("image/"):
+    # BL-139: content_type is a HINT. Firefox/Windows send application/octet-stream for a
+    # perfectly good .webp — gating on the LABEL rejected real photos before anything read
+    # the bytes. Only refuse what clearly isn't a picture; let the decoder be the judge.
+    if (file.content_type or "").lower().startswith(("text/", "application/json",
+                                                     "application/pdf", "video/", "audio/")):
         raise HTTPException(status_code=415, detail="Please upload an image of the delivery slip")
 
     from src.services.vision import analyze_image, DELIVERY_SLIP
@@ -673,7 +681,11 @@ async def snap_find_product(
     raw = await file.read()
     if len(raw) > _MAX_IMAGE_BYTES:
         raise HTTPException(status_code=413, detail="Image too large (max 15 MB)")
-    if not (file.content_type or "").lower().startswith("image/"):
+    # BL-139: content_type is a HINT. Firefox/Windows send application/octet-stream for a
+    # perfectly good .webp — gating on the LABEL rejected real photos before anything read
+    # the bytes. Only refuse what clearly isn't a picture; let the decoder be the judge.
+    if (file.content_type or "").lower().startswith(("text/", "application/json",
+                                                     "application/pdf", "video/", "audio/")):
         raise HTTPException(status_code=415, detail="Please upload an image")
 
     from src.services.vision_product_analyzer import suggest_product_from_image
@@ -1797,21 +1809,35 @@ def _image_serve_url(product_id, image_id) -> str:
 
 
 def _process_image_upload(raw: bytes, content_type: str) -> bytes:
-    """Validate + (optionally) tidy/shrink an uploaded photo. Raises HTTPException."""
+    """Take ANY picture the operator has and turn it into our one internal format. Raises HTTPException.
+
+    BL-139 — "Photo upload failed, .webp files hurt but common" (Angel). The format was never the
+    problem: Pillow reads WEBP and AVIF fine and this pipeline already converts everything to JPEG
+    (verified on his own Sylvken .webp 1588x1191 -> 136KB jpeg, and an .avif too). The problem was this
+    guard REJECTING ON THE BROWSER'S LABEL before Pillow ever saw the bytes — Firefox/Windows routinely
+    send `application/octet-stream` for a .webp, and a perfectly good photo got a 415.
+
+    So: don't trust the label, look at the content. Pillow decoding it IS the check — it's the only one
+    that can't lie. Angel's rule: "any image uploader should accept all types and adapt or convert to
+    the HelixPOS format — snappy, quick, flex, universal."
+    """
     if not raw:
         raise HTTPException(status_code=400, detail="Empty file")
     if len(raw) > _MAX_IMAGE_BYTES:
         raise HTTPException(status_code=413, detail="Image too large (max 15 MB)")
-    if not (content_type or "").lower().startswith("image/"):
-        raise HTTPException(status_code=415, detail="Please upload an image")
-    # Pillow pipeline if it's in the image; otherwise keep the original bytes so the
-    # feature works before any image rebuild (Pillow==10.4.0 is queued in requirements).
+    # content_type is a HINT, never a gate: it's whatever the client felt like sending.
+    if content_type and not content_type.lower().startswith(("image/", "application/octet-stream",
+                                                             "binary/", "multipart/")):
+        logger.info(f"Image upload declared {content_type!r} — sniffing the bytes anyway")
     try:
         from src.services.image_intake import process, PRODUCT, ImageIntakeError
         try:
             return process(raw, PRODUCT).main
-        except ImageIntakeError:
-            raise HTTPException(status_code=400, detail="That doesn't look like a usable photo")
+        except ImageIntakeError as e:
+            # Now the message can be honest about WHY, instead of "please upload an image" at a file
+            # that WAS an image.
+            raise HTTPException(status_code=400,
+                                detail=f"That file couldn't be read as a picture ({str(e)[:80]})")
     except ImportError:
         logger.warning("Pillow not in image — storing product photo as-is (no resize).")
         return raw
