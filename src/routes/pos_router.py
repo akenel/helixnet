@@ -4747,12 +4747,23 @@ async def export_catalog_worklist(
             status_code=503,
             detail="The spreadsheet export needs an app image rebuild (openpyxl). Ask Tigs to rebuild this env.",
         )
+    from src.services.catalog_taxonomy import canonicalize_category as _canon
+
+    def _sheet_category(p):
+        """The Category cell is dropdown-validated to canonical labels ONLY, and the import rejects
+        anything else — so the export must never write a value its own import would refuse. A legacy
+        label like "Pipes & Bongs" sitting in the cell is a row the operator CANNOT round-trip: the
+        dropdown flags it, the import errors "use the dropdown", and they're stuck. Funnel it here;
+        if it strands, leave the cell BLANK so they simply pick from the list."""
+        cat, _ = _canon(p.category, p.name)
+        return "" if cat == "Unsorted" else cat
+
     data = build_worklist_workbook(
         [{
             "sku": p.sku,
             "name": p.name,
             "barcode": p.barcode,
-            "category": p.category,
+            "category": _sheet_category(p),
             "price": float(p.price) if p.price is not None else None,
             "cost": float(p.cost) if p.cost is not None else None,
             # Size stays BLANK on purpose: pinning the exact variant (2g vs 10g, Premium vs Ultimate)

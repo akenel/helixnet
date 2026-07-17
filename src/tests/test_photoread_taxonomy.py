@@ -49,3 +49,40 @@ def test_name_is_optional_and_unknown_still_unsorted():
     assert canonicalize_category("Vapes & E-Liquids")[0] == "E-Liquids"
     assert canonicalize_category("Some Invented Category")[0] == "Unsorted"
     assert canonicalize_category("")[0] == "Unsorted"
+
+
+# --- BL-134: the FourTwenty supplier catalog's own headings (10,284 reference rows) ---
+
+FOURTWENTY_LABELS = [
+    "CBD & Hemp", "Grinders", "Pipes & Bongs", "Lighters", "Merch", "Grow Supplies", "Other",
+    "Accessories", "Vaporizers", "E-Liquids", "Creams & Topicals", "Papers & Filters",
+    "Tobacco & Cigarettes", "Edibles",
+]
+
+
+@pytest.mark.parametrize("label", FOURTWENTY_LABELS)
+def test_every_fourtwenty_label_lands(label):
+    cat, _ = canonicalize_category(label)
+    assert cat != "Unsorted", f"FourTwenty's {label!r} strands — those rows can't round-trip"
+
+
+def test_papers_and_filters_splits_by_name():
+    """The silently WRONG one: 'Papers & Filters' sent every FILTER into Rolling Papers (772 rows)."""
+    assert canonicalize_category("Papers & Filters", "RAW Classic Papers")[0] == "Rolling Papers"
+    assert canonicalize_category("Papers & Filters", "PURIZE Xtra Slim Aktivkohlefilter 50 Stk")[0] == "Filters & Tips"
+    assert canonicalize_category("Papers & Filters", "GIZEH 200 Procell Green 6mm")[0] == "Filters & Tips"
+    assert canonicalize_category("Papers & Filters", "Mascotte Filter Tips")[0] == "Filters & Tips"
+
+
+def test_pipes_and_bongs_splits_by_name():
+    """A hand pipe, a bong, and a bong PART are three different things under one supplier heading —
+    the exact confusion a 'Chillum' search surfaces (hand pipe vs 18.8 downstem)."""
+    assert canonicalize_category("Pipes & Bongs", "Chillum Glas bunt 10cm")[0] == "Pipes"
+    assert canonicalize_category("Pipes & Bongs", "Acryl Bong zylindrisch 600mm")[0] == "Bongs"
+    assert canonicalize_category("Pipes & Bongs", "Glas Adapterchillum 14.5 21cm")[0] == "Bong & Pipe Accessories"
+
+
+def test_mixed_refine_needs_a_name_and_is_safe_without_one():
+    # no name → the base label, never a guess
+    assert canonicalize_category("Papers & Filters")[0] == "Rolling Papers"
+    assert canonicalize_category("Pipes & Bongs")[0] == "Pipes"

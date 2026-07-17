@@ -541,6 +541,23 @@ CATEGORY_SYNONYMS.update({
     "Accessories": "Accessories (general)",
 })
 
+# BL-134 — the FOURTWENTY supplier catalog's own headings (10,284 reference rows in prod, the biggest
+# single source we have). Three of its fourteen stranded in Unsorted and one was silently WRONG, which
+# is worse: "Papers & Filters" sent every FILTER into Rolling Papers. Mixed headings are split by name
+# via _MIXED_REFINE above — a supplier lumping two lanes together is not a reason to mis-file half of them.
+CATEGORY_SYNONYMS.update({
+    "Papers & Filters": "Rolling Papers",        # → Filters & Tips when the NAME says filter/tip
+    "Pipes & Bongs": "Pipes",                    # → Bongs / Bong & Pipe Accessories by name
+    "Tobacco & Cigarettes": "Tobacco",
+    "Merch": "Gifts & Gadgets",
+    "Papers": "Rolling Papers",
+    "CBD": "CBD Flower",
+    "Gas": "Accessories (general)",              # lighter gas refills
+    "Equipment": "Accessories (general)",
+    "Bar": "Cafe",
+    "books": "Entertainment & Games",
+})
+
 CANONICAL_CATEGORIES = sorted(CANONICAL_LABEL_GROUP.keys())
 _CATEGORY_SYNONYMS_LOWER = {k.lower(): v for k, v in CATEGORY_SYNONYMS.items()}
 
@@ -555,12 +572,35 @@ _VAPE_REFINE = (
     ("Vape Devices",            ("kit", "device", "mod", "akku", "battery")),
 )
 
+# A supplier's own headings lump two real lanes under one name. Splitting them by NAME is the only
+# honest option — otherwise a whole side of the bucket is silently mis-filed (FourTwenty's
+# "Papers & Filters" was sending every FILTER into Rolling Papers: 772 reference rows).
+_MIXED_REFINE = {
+    "Rolling Papers": (          # from "Papers & Filters"
+        ("Filters & Tips", ("filter", "tip", "aktivkohle", "activated carbon", "spitzen", "purize",
+                            "slim size", "6mm", "carbon")),
+    ),
+    "Pipes": (                   # from "Pipes & Bongs"
+        ("Bongs", ("bong", "waterpipe", "wasserpfeife", "percolator", "beaker", "acryl bong")),
+        ("Bong & Pipe Accessories", ("adapter", "diffusor", "diffuser", "kupplung", "coupling",
+                                     "downstem", "vorkühler", "steckkopf", "ersatz")),
+    ),
+}
+
 
 def _refine_vape(name: str):
     n = (name or "").lower()
     for label, tells in _VAPE_REFINE:
         if any(t in n for t in tells):
             return label
+    return None
+
+
+def _refine_mixed(label: str, name: str):
+    n = (name or "").lower()
+    for alt, tells in _MIXED_REFINE.get(label, ()):
+        if any(t in n for t in tells):
+            return alt
     return None
 
 
@@ -584,4 +624,6 @@ def canonicalize_category(raw, name: str = None):
         return ("Unsorted", "Unsorted / System")
     if lbl == "E-Liquids" and name:
         lbl = _refine_vape(name) or lbl
+    if name:
+        lbl = _refine_mixed(lbl, name) or lbl
     return (lbl, CANONICAL_LABEL_GROUP.get(lbl, "Unsorted / System"))
