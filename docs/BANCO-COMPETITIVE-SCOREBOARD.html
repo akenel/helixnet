@@ -1,0 +1,360 @@
+<title>Banco — Honest Competitive Scoreboard</title>
+<style>
+  :root {
+    --paper: #f7f4ee;
+    --panel: #fffdf9;
+    --ink: #17191d;
+    --ink-soft: #4b5058;
+    --ink-faint: #7c8189;
+    --line: #e4ddd0;
+    --accent: #b9552a;
+    --accent-soft: rgba(185, 85, 42, 0.10);
+    --win: #3d8a58;
+    --win-soft: rgba(61, 138, 88, 0.10);
+    --gap: #a9741d;
+    --gap-soft: rgba(169, 116, 29, 0.10);
+    --risk: #bf4438;
+    --band: #17191d;
+    --band-ink: #efe9df;
+
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    --serif: "Iowan Old Style", Palatino, Georgia, ui-serif, serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #131519;
+      --panel: #1a1d23;
+      --ink: #ece7dd;
+      --ink-soft: #a4aab2;
+      --ink-faint: #767c85;
+      --line: #292d34;
+      --accent: #d97a4a;
+      --accent-soft: rgba(217, 122, 74, 0.14);
+      --win: #5cae76;
+      --win-soft: rgba(92, 174, 118, 0.13);
+      --gap: #d6a94a;
+      --gap-soft: rgba(214, 169, 74, 0.13);
+      --risk: #d96a5e;
+      --band: #0d0e11;
+      --band-ink: #efe9df;
+    }
+  }
+  :root[data-theme="light"] {
+    --paper: #f7f4ee; --panel: #fffdf9; --ink: #17191d; --ink-soft: #4b5058;
+    --ink-faint: #7c8189; --line: #e4ddd0; --accent: #b9552a; --accent-soft: rgba(185,85,42,0.10);
+    --win: #3d8a58; --win-soft: rgba(61,138,88,0.10); --gap: #a9741d; --gap-soft: rgba(169,116,29,0.10);
+    --risk: #bf4438; --band: #17191d; --band-ink: #efe9df;
+  }
+  :root[data-theme="dark"] {
+    --paper: #131519; --panel: #1a1d23; --ink: #ece7dd; --ink-soft: #a4aab2;
+    --ink-faint: #767c85; --line: #292d34; --accent: #d97a4a; --accent-soft: rgba(217,122,74,0.14);
+    --win: #5cae76; --win-soft: rgba(92,174,118,0.13); --gap: #d6a94a; --gap-soft: rgba(214,169,74,0.13);
+    --risk: #d96a5e; --band: #0d0e11; --band-ink: #efe9df;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: clamp(1.4rem, 4vw, 3.4rem) clamp(1.2rem, 4vw, 2.4rem) 4rem;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* ---- Masthead ---- */
+  .masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding-bottom: 1.4rem;
+    border-bottom: 2px solid var(--ink);
+    flex-wrap: wrap;
+  }
+  .mark {
+    display: flex; align-items: center; gap: 0.55rem;
+    font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.04em;
+    color: var(--ink-soft);
+  }
+  .mark .wolf { font-size: 1.35rem; line-height: 1; }
+  .mark b { color: var(--ink); letter-spacing: 0.14em; }
+  .stamp {
+    text-align: right; font-family: var(--mono); font-size: 0.62rem;
+    letter-spacing: 0.08em; color: var(--ink-faint); line-height: 1.7;
+  }
+  .stamp .serial { color: var(--accent); font-weight: 600; }
+
+  h1 {
+    font-size: clamp(2.05rem, 5.4vw, 3.25rem);
+    line-height: 1.02;
+    letter-spacing: -0.025em;
+    font-weight: 800;
+    margin: 1.6rem 0 0;
+    text-wrap: balance;
+  }
+  h1 .em { color: var(--accent); }
+  .dek {
+    font-size: clamp(1rem, 2vw, 1.12rem);
+    color: var(--ink-soft);
+    max-width: 60ch;
+    margin: 0.9rem 0 0;
+  }
+
+  /* ---- Thesis ---- */
+  .thesis {
+    margin: 2.4rem 0;
+    padding: 1.5rem 1.6rem 1.5rem 1.7rem;
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    border-radius: 0 6px 6px 0;
+  }
+  .thesis p {
+    margin: 0;
+    font-family: var(--serif);
+    font-size: clamp(1.2rem, 2.6vw, 1.5rem);
+    line-height: 1.4;
+    font-style: italic;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+  .thesis .who {
+    display: block; margin-top: 0.7rem;
+    font-family: var(--mono); font-style: normal;
+    font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  h2 {
+    font-size: 0.82rem; font-family: var(--mono); text-transform: uppercase;
+    letter-spacing: 0.16em; color: var(--ink-faint); font-weight: 600;
+    margin: 3.2rem 0 1.1rem; display: flex; align-items: center; gap: 0.7rem;
+  }
+  h2::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+  /* ---- Scoreboard ---- */
+  .board { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+  @media (max-width: 720px) { .board { grid-template-columns: 1fr; } }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 1.3rem 1.4rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .panel::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  }
+  .panel.win::before { background: var(--win); }
+  .panel.gap::before { background: var(--gap); }
+  .panel-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 0.6rem; margin-bottom: 1rem;
+  }
+  .panel-head h3 {
+    margin: 0; font-size: 1.14rem; font-weight: 800; letter-spacing: -0.01em;
+  }
+  .panel.win .panel-head h3 { color: var(--win); }
+  .panel.gap .panel-head h3 { color: var(--gap); }
+  .panel-head .tally {
+    font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.1em;
+    color: var(--ink-faint); text-transform: uppercase;
+  }
+  .rows { display: flex; flex-direction: column; gap: 0.85rem; }
+  .row { display: grid; grid-template-columns: 1.1rem 1fr; gap: 0.55rem; }
+  .row .glyph {
+    font-family: var(--mono); font-weight: 700; font-size: 0.95rem; line-height: 1.5;
+  }
+  .win .row .glyph { color: var(--win); }
+  .gap .row .glyph { color: var(--gap); }
+  .row .lead { font-weight: 700; }
+  .row .gloss { color: var(--ink-soft); font-size: 0.92rem; display: block; margin-top: 0.1rem; }
+
+  /* ---- Empty lane band ---- */
+  .band {
+    margin: 3rem 0;
+    background: var(--band);
+    color: var(--band-ink);
+    border-radius: 12px;
+    padding: clamp(1.6rem, 4vw, 2.4rem);
+  }
+  .band .eyebrow { color: var(--accent); }
+  .band h3 {
+    font-size: clamp(1.4rem, 3.4vw, 1.9rem); font-weight: 800; letter-spacing: -0.02em;
+    margin: 0.6rem 0 0.7rem; text-wrap: balance; color: #fff;
+  }
+  :root[data-theme="light"] .band h3 { color: #fff; }
+  .band p { margin: 0; color: rgba(239,233,223,0.82); max-width: 62ch; }
+  .band .lane {
+    margin-top: 1.2rem; display: flex; flex-wrap: wrap; gap: 0.5rem;
+  }
+  .band .lane span {
+    font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em;
+    padding: 0.3rem 0.6rem; border: 1px solid rgba(239,233,223,0.28);
+    border-radius: 100px; color: rgba(239,233,223,0.9);
+  }
+
+  /* ---- Roadmap ---- */
+  .tier { margin-top: 1.7rem; }
+  .tier-head {
+    display: flex; align-items: baseline; gap: 0.7rem; flex-wrap: wrap;
+    padding-bottom: 0.6rem; margin-bottom: 0.9rem; border-bottom: 1px solid var(--line);
+  }
+  .tier-tag {
+    font-family: var(--mono); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em;
+    color: var(--paper); background: var(--ink); padding: 0.22rem 0.55rem; border-radius: 5px;
+    text-transform: uppercase;
+  }
+  .tier.t1 .tier-tag { background: var(--accent); }
+  .tier-head h3 { margin: 0; font-size: 1.16rem; font-weight: 800; letter-spacing: -0.015em; }
+  .tier-head .sub { color: var(--ink-soft); font-size: 0.9rem; flex-basis: 100%; margin-top: 0.15rem; }
+
+  .item {
+    display: grid; grid-template-columns: 1.9rem 1fr auto; gap: 0.5rem 0.75rem;
+    align-items: baseline; padding: 0.75rem 0; border-bottom: 1px solid var(--line);
+  }
+  .item:last-child { border-bottom: 0; }
+  .item .n {
+    font-family: var(--mono); font-size: 0.9rem; font-weight: 700; color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .item .body .t { font-weight: 700; }
+  .item .body .d { color: var(--ink-soft); font-size: 0.92rem; margin-top: 0.12rem; }
+  .chip {
+    font-family: var(--mono); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; padding: 0.24rem 0.5rem; border-radius: 100px; white-space: nowrap;
+    border: 1px solid transparent; align-self: center;
+  }
+  .chip.shipped { color: var(--win); background: var(--win-soft); border-color: var(--win); }
+  .chip.arch { color: var(--gap); background: var(--gap-soft); border-color: var(--gap); }
+  .chip.partial { color: var(--gap); background: var(--gap-soft); }
+  .chip.planned { color: var(--ink-soft); border-color: var(--line); }
+  .chip.none { color: var(--risk); border-color: var(--risk); background: rgba(191,68,56,0.07); }
+  @media (max-width: 560px) {
+    .item { grid-template-columns: 1.6rem 1fr; }
+    .item .chip { grid-column: 2; justify-self: start; margin-top: 0.2rem; }
+  }
+
+  /* ---- Verdict foot ---- */
+  .foot {
+    margin-top: 3.4rem; padding-top: 1.4rem; border-top: 2px solid var(--ink);
+    display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; flex-wrap: wrap;
+  }
+  .foot .line { font-family: var(--serif); font-style: italic; font-size: 1.05rem; color: var(--ink); max-width: 46ch; }
+  .foot .sig { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.08em; color: var(--ink-faint); text-align: right; line-height: 1.8; }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="mark"><span class="wolf">🐺</span> <span>La&nbsp;Piazza · <b>BANCO POS</b></span></div>
+    <div class="stamp">
+      <div class="serial">№ LP-STRAT-20260718-SCOREBOARD</div>
+      <div>Competitive position · rev 1</div>
+      <div>Internal + investor · 2026-07-18</div>
+    </div>
+  </header>
+
+  <p class="eyebrow" style="margin-top:1.8rem;">The honest scoreboard</p>
+  <h1>Best POS for Felix's shop, <span class="em">full stop.</span> World-class is two features away.</h1>
+  <p class="dek">No brochure. What Banco genuinely beats everyone at, where the incumbents still win, the lane nobody else is in — and the exact build list that closes the gap from <em>best for one shop</em> to <em>best, period.</em></p>
+
+  <div class="thesis">
+    <p>“We don't need to beat Square globally — that's unwinnable and pointless. We need to be undeniable in our lane. And that lane is empty.”</p>
+    <span class="who">The verdict, in one line</span>
+  </div>
+
+  <h2>The scoreboard</h2>
+  <div class="board">
+
+    <section class="panel win">
+      <div class="panel-head"><h3>Where Banco wins</h3><span class="tally">nobody else ships these</span></div>
+      <div class="rows">
+        <div class="row"><span class="glyph">✓</span><span><span class="lead">Postcards &amp; the UFA experience.</span><span class="gloss">The till produces a keepsake. Square rings a receipt; Banco makes a thing the tourist keeps.</span></span></div>
+        <div class="row"><span class="glyph">✓</span><span><span class="lead">The guest kiosk.</span><span class="gloss">Scan → view → print → cart → retrieve, no account, no cashier. Self-service that none of them offer.</span></span></div>
+        <div class="row"><span class="glyph">✓</span><span><span class="lead">Snap &amp; fill.</span><span class="gloss">Photo → a finished product in seconds. AI reads the box, picks the category, writes the copy.</span></span></div>
+        <div class="row"><span class="glyph">✓</span><span><span class="lead">Enrich-not-dump master data.</span><span class="gloss">One identity per item with a provenance stamp — the thing that lets shop #2 onboard in hours.</span></span></div>
+        <div class="row"><span class="glyph">✓</span><span><span class="lead">Born-once matching doctrine.</span><span class="gloss">A miss gets captured on first sale, then hits forever. The catalog heals itself as it's used.</span></span></div>
+        <div class="row"><span class="glyph">✓</span><span><span class="lead">Banco ⇄ La Piazza loop.</span><span class="gloss">The till feeds a town square. The sale isn't the end — it's the top of a community funnel.</span></span></div>
+        <div class="row"><span class="glyph">✓</span><span><span class="lead">SOP-shaped verticals.</span><span class="gloss">Head-shop 18+ gating, the café VAT brain — the shop's own know-how encoded, not configured.</span></span></div>
+        <div class="row"><span class="glyph">✓</span><span><span class="lead">The founder at the counter.</span><span class="gloss">A bug found at 2pm ships by evening. Proximity + TCO is a moat they can't buy at their scale.</span></span></div>
+      </div>
+    </section>
+
+    <section class="panel gap">
+      <div class="panel-head"><h3>Where they still win</h3><span class="tally">the honest gaps</span></div>
+      <div class="rows">
+        <div class="row"><span class="glyph">▲</span><span><span class="lead">They move the money.</span><span class="gloss">Square / SumUp / Lightspeed <em>are</em> the processor — the card settles, francs land. We ring; we don't yet settle. The #1 gap, not close.</span></span></div>
+        <div class="row"><span class="glyph">▲</span><span><span class="lead">Fiscal + hardware certification.</span><span class="gloss">Certified terminals, EMV, German TSE, Italian RT — shipped across dozens of countries today. We have the plan.</span></span></div>
+        <div class="row"><span class="glyph">▲</span><span><span class="lead">Offline that just works.</span><span class="gloss">Keeps ringing in a dead-zone, syncs when it's back. Our PWA/offline path is designed, not built.</span></span></div>
+        <div class="row"><span class="glyph">▲</span><span><span class="lead">The boring ecosystem.</span><span class="gloss">Accounting sync (bexio/Xero/QuickBooks), payroll, e-commerce, PCI, chargebacks — decades of plumbing.</span></span></div>
+        <div class="row"><span class="glyph">▲</span><span><span class="lead">Someone answers the phone.</span><span class="gloss">24/7 support with an SLA, uptime proven across millions of merchants. When it breaks Saturday 3pm, they respond.</span></span></div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="band">
+    <p class="eyebrow">The lane nobody else is in</p>
+    <h3>Small CH/IT cross-border, multi-fiscal, SOP-shaped, owner-at-the-counter.</h3>
+    <p>The incumbents can't customize for one head shop in Littau — they serve millions they'll never meet. The big ERPs (SAP B1, Odoo, Zoho) are too heavy and too far away. That leaves a real, empty gap: a small cross-border till that speaks German <em>and</em> Italian, handles two countries' fiscal rules, and is built by someone who sits next to the shopkeeper. In that lane, Banco isn't competing. It's alone.</p>
+    <div class="lane">
+      <span>CH + IT cross-border</span><span>multi-fiscal</span><span>DE / IT / FR / EN native</span><span>SOP-encoded verticals</span><span>owner-operated</span><span>low TCO</span>
+    </div>
+  </div>
+
+  <h2>The build list — from best-for-Felix to best, period</h2>
+  <p class="dek" style="margin-bottom:0.5rem;">Ordered by leverage. Tier 1 is the entire difference between the two claims — everything below it widens an already-winning lead.</p>
+
+  <div class="tier t1">
+    <div class="tier-head"><span class="tier-tag">Tier 1</span><h3>Close the two world-class gaps</h3><span class="sub">The only things standing between “best for Felix” and “best in the world.” Two features wide, not two hundred.</span></div>
+    <div class="item"><span class="n">01</span><div class="body"><div class="t">Move the money — card payments.</div><div class="d">Integrate a real acquirer/terminal (SumUp, Stripe Terminal, or Worldline) so the card actually charges at the till. The single highest-leverage build in the whole plan.</div></div><span class="chip none">Not built</span></div>
+    <div class="item"><span class="n">02</span><div class="body"><div class="t">Fiscal certification — TSE / RT / CH.</div><div class="d">fiskaly for the German TSE (rent-the-cert), Italian RT, Swiss baseline. Architecture is ready and rentable — it's a plug-in, not a rebuild.</div></div><span class="chip arch">Architected</span></div>
+  </div>
+
+  <div class="tier">
+    <div class="tier-head"><span class="tier-tag">Tier 2</span><h3>Reliability &amp; trust</h3><span class="sub">The unglamorous plumbing that keeps a shop alive on a bad day.</span></div>
+    <div class="item"><span class="n">03</span><div class="body"><div class="t">Offline + PWA.</div><div class="d">Ship the PWA first, then an outbox that queues sales offline and syncs on reconnect. For a market stall or a spotty line, non-negotiable.</div></div><span class="chip planned">Planned</span></div>
+    <div class="item"><span class="n">04</span><div class="body"><div class="t">Accounting sync.</div><div class="d">bexio first (the Swiss SME standard), then Xero / QuickBooks. Push sales + VAT out so the shop's books close themselves.</div></div><span class="chip none">Not built</span></div>
+    <div class="item"><span class="n">05</span><div class="body"><div class="t">Monitoring + SLA.</div><div class="d">Uptime alerting, a status page, a defined response promise. Backups already done (box + laptop + Drive + B2 immutable); watch-and-alert is the missing half.</div></div><span class="chip partial">Partial</span></div>
+  </div>
+
+  <div class="tier">
+    <div class="tier-head"><span class="tier-tag">Tier 3</span><h3>Scale — onboard shop #2 in hours</h3><span class="sub">Turn a one-shop product into a repeatable one without a rebuild each time.</span></div>
+    <div class="item"><span class="n">06</span><div class="body"><div class="t">Multi-tenant.</div><div class="d">Organization = tenant inside a realm, hard tenant_id isolation. Designed; the switch that makes “shop #2” a config, not a fork.</div></div><span class="chip planned">Designed</span></div>
+    <div class="item"><span class="n">07</span><div class="body"><div class="t">Supplier-catalog master data.</div><div class="d">The 155k FourTwenty spec rows (names, brands, real categories, cost) with provenance stamps — the actual moat. Roughly a third imported so far.</div></div><span class="chip partial">~⅓ in</span></div>
+    <div class="item"><span class="n">08</span><div class="body"><div class="t">Certified hardware bundle.</div><div class="d">Terminal + Zebra scanners + Brother label printer + drawer, as one warrantied kit. Scanners &amp; printer procured; the terminal waits on payments (01).</div></div><span class="chip partial">Procured</span></div>
+  </div>
+
+  <div class="tier">
+    <div class="tier-head"><span class="tier-tag">Tier 4</span><h3>Widen the moat</h3><span class="sub">The things nobody else will ever bother to build — because they can't customize for one shop.</span></div>
+    <div class="item"><span class="n">09</span><div class="body"><div class="t">CRM &amp; loyalty.</div><div class="d">Wire CustomerModel; member tiers with an auto-discount that correctly skips tobacco &amp; alcohol. The community loop's engine.</div></div><span class="chip partial">Partial</span></div>
+    <div class="item"><span class="n">10</span><div class="body"><div class="t">Deepen the differentiators.</div><div class="d">Postcard staff/member deep-links (BL-144), kiosk polish, the Banco ⇄ La Piazza loop. Push the lead where the lead already is.</div></div><span class="chip shipped">In flight</span></div>
+    <div class="item"><span class="n">11</span><div class="body"><div class="t">Bulk-intake front door.</div><div class="d">Drop a folder of photos / a CSV / a supplier URL → review board → create. Turns the migration workbench into a shop-owned tool, not a dev script.</div></div><span class="chip planned">Planned</span></div>
+  </div>
+
+  <footer class="foot">
+    <p class="line">“It's the only POS that could have been built for Felix — and the day it moves the money and stamps the fiscal receipt, there's no reason a hundred shops like his shouldn't run it.”</p>
+    <div class="sig">
+      🐺 LA PIAZZA · BANCO<br>
+      № LP-STRAT-20260718-SCOREBOARD<br>
+      HelixNet · Trapani → Beckenried
+    </div>
+  </footer>
+
+</div>

@@ -17,6 +17,33 @@ cross-wires (read-only, confirm physically); (2) Receiving/Ecolution cost-auto-f
 human-green sbx then ladder; (3) BL-98 bench human-green + backlog edit-guard rollout. Detail in the
 tiers below; this banner is the only new thing — nothing below was re-planned.
 
+---
+
+## 🌍 BEST-IN-THE-WORLD SPRINT — TIER 1 (the two gaps that block world-class) · added 2026-07-18
+
+**The honest competitive read:** Banco is already the best POS *for Felix's shop* — nothing else ships
+postcards, the guest kiosk, snap-fill, enrich-not-dump master data, or the founder at the counter. The gap
+to "best, **period**" is **two features wide, not two hundred.** Full one-pager (scoreboard + build list):
+**[docs/BANCO-COMPETITIVE-SCOREBOARD.html](BANCO-COMPETITIVE-SCOREBOARD.html)** (published artifact + repo).
+
+These two are the entire difference between "best for Felix" and "best in the world." Everything else in the
+worklist widens an already-winning lead; **these unlock selling beyond Felix.** Do NOT start mid-flight — this
+is the north-star sprint, teed up behind the current NEXT ACTIONABLE hypercare items, not ahead of them.
+
+- **🌍-1 · MOVE THE MONEY — card payments.** 🧍👥 Integrate a real acquirer/terminal (SumUp / Stripe
+  Terminal / Worldline) so the card actually *charges* at the till. We ring the sale beautifully; we don't
+  yet settle it. **The single highest-leverage build in the whole plan** — a real shop can't run without it.
+  Status: **NOT BUILT.** Needs Angel's decision on acquirer (fees, CH+IT coverage, hardware) before any code.
+- **🌍-2 · FISCAL CERTIFICATION — TSE / RT / CH.** 🐯👥 fiskaly for the German TSE (rent-the-cert), Italian
+  RT, Swiss baseline. Architecture is ready — it's a **rentable plug-in, not a rebuild** (memory
+  `banco-fiskaly-integration-brief`, `banco-fiscalized-markets-italy-germany`). Status: **ARCHITECTED, not
+  built.** Small REST POC against fiskaly sandbox is the first actionable slice.
+
+*(Tiers 2–4 — offline/PWA, accounting sync, monitoring/SLA, multi-tenant, supplier master-data, hardware
+bundle, CRM/loyalty, bulk-intake — are in the scoreboard doc. They widen the lead; Tier 1 changes the game.)*
+
+---
+
 *Open this, work top-down, finish one tier before opening the next. Don't fan out across five things. 2026-06-28.*
 
 *Owners: 🧍 = Angel's hands needed (physical / decision / external call) · 🐯 = Tigs can do it · 👥 = both, together.*
