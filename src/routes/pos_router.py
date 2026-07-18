@@ -4237,16 +4237,20 @@ async def create_sale(
         cashier_uid, transaction_number)
 
     # --- Cash drawer gate + cent-precision tender (identical rules to legacy checkout). ---
+    home_tendered = sale.amount_tendered
     if sale.payment_method == PaymentMethod.CASH:
         if not await _open_shift_for(db, cashier_uid):
             raise HTTPException(status_code=409, detail="Open your cash drawer before taking a cash sale.")
         if not sale.amount_tendered:
             raise HTTPException(status_code=400, detail="Cash payment requires amount_tendered")
-        tendered = Decimal(str(sale.amount_tendered)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        # Multi-currency (Block 1): FOREIGN cash → home equivalent (stamps tender_currency/amount/rate).
+        home_tendered = await _apply_tender(db, txn, sale.amount_tendered, sale.tender_currency)
+        tendered = Decimal(str(home_tendered)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         total_due = Decimal(str(txn.total)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         if tendered < total_due:
             raise HTTPException(status_code=400, detail="Insufficient payment amount")
         txn.change_given = tendered - total_due
+        home_tendered = tendered
 
     # 🌍-1 payments seam (M1): same no-op-today hook as the legacy checkout path (seal lesson —
     # both sale-completion paths get the seam). Default 'manual' → None → byte-identical today.
@@ -4254,7 +4258,7 @@ async def create_sale(
     await capture_on_terminal_if_configured(db, txn)
 
     txn.payment_method = sale.payment_method
-    txn.amount_tendered = sale.amount_tendered
+    txn.amount_tendered = home_tendered   # home-currency equivalent (foreign cash converted)
     txn.status = TransactionStatus.COMPLETED
     txn.completed_at = datetime.now(timezone.utc)
     txn.updated_at = datetime.now(timezone.utc)

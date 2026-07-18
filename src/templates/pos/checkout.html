@@ -204,10 +204,29 @@
             <div x-show="paymentMethod === 'cash'" x-transition class="mb-6">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">💵 <span data-i18n="cash.cash_received">Cash Received</span></h2>
 
+                <!-- Multi-currency (Block 1): which cash currency is the customer paying with? Home is the
+                     default; accepted foreign currencies come from the shop's rates. Change is ALWAYS in home. -->
+                <div x-show="foreignTenders().length" class="flex flex-wrap gap-2 mb-3">
+                    <button @click="tenderCcy=''; calculateChange()"
+                            :class="!tenderCcy ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'"
+                            class="px-4 py-2 rounded-lg font-bold text-sm" x-text="homeCcy()"></button>
+                    <template x-for="ft in foreignTenders()" :key="ft.ccy">
+                        <button @click="tenderCcy=ft.ccy; calculateChange()"
+                                :class="tenderCcy===ft.ccy ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-800 border border-amber-300'"
+                                class="px-4 py-2 rounded-lg font-bold text-sm">💱 <span x-text="ft.ccy"></span></button>
+                    </template>
+                </div>
+                <!-- Collect hint when paying in foreign cash -->
+                <div x-show="tenderCcy && tenderCcy !== homeCcy()" style="display:none" class="text-sm text-amber-800 bg-amber-50 rounded-lg px-3 py-2 mb-3">
+                    💱 Collect ≈ <strong><span x-text="tenderCcy"></span> <span x-text="exactTender().toFixed(2)"></span></strong>
+                    · 1 <span x-text="tenderCcy"></span> = <span x-text="tenderRate()"></span> <span x-text="homeCcy()"></span>
+                    · change in <strong x-text="homeCcy()"></strong>
+                </div>
+
                 <!-- Type the EXACT amount handed over (Swiss pay over: a 50 for a pack of gum, or
                      72.50 with a 75.00, and take clean coins back). Free-form field is primary. -->
                 <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="cash.amount_received">Amount received (CHF)</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"><span data-i18n="cash.received_word">Amount received</span> (<span x-text="tenderCcy || homeCcy()"></span>)</label>
                     <input type="number" inputmode="decimal" step="0.05" min="0"
                            x-model.number="cashReceived" @input="calculateChange()"
                            placeholder="0.00"
@@ -223,8 +242,8 @@
 
                 <!-- Exact + Clear -->
                 <div class="grid grid-cols-2 gap-3 mb-4">
-                    <button @click="setCashReceived(cartData.totals.total)"
-                        :class="Math.round(cashReceived*100) === Math.round((cartData.totals.total||0)*100) && cashReceived > 0 ? 'bg-blue-500 text-white' : 'bg-blue-100'"
+                    <button @click="setCashReceived(exactTender())"
+                        :class="Math.round(cashReceived*100) === Math.round(exactTender()*100) && cashReceived > 0 ? 'bg-blue-500 text-white' : 'bg-blue-100'"
                         class="btn-secondary py-3 font-bold" data-i18n="cash.exact">EXACT</button>
                     <button @click="clearCash()" class="btn-secondary py-3 font-bold bg-gray-100 hover:bg-gray-200" data-i18n="cash.clear">CLEAR</button>
                 </div>
@@ -233,7 +252,7 @@
                 <div x-show="cashReceived > 0" class="bg-green-50 rounded-lg p-4 mb-4">
                     <div class="flex justify-between text-lg">
                         <span data-i18n="cash.cash_received_label">Cash Received:</span>
-                        <span class="font-bold text-green-700" x-text="formatPrice(cashReceived)"></span>
+                        <span class="font-bold text-green-700" x-text="(tenderCcy && tenderCcy !== homeCcy()) ? (tenderCcy + ' ' + (Number(cashReceived)||0).toFixed(2)) : formatPrice(cashReceived)"></span>
                     </div>
                     <div class="flex justify-between text-lg">
                         <span data-i18n="cash.total_due">Total Due:</span>
@@ -253,7 +272,7 @@
                 </div>
 
                 <!-- Quick Round + Treat -- always available once cash is on the counter -->
-                <div x-show="cashReceived > 0" class="mb-4">
+                <div x-show="cashReceived > 0 && (!tenderCcy || tenderCcy === homeCcy())" class="mb-4">
                     <h3 class="text-md font-semibold text-gray-700 mb-2">🎯 <span data-i18n="checkout.quick_options">Quick Options</span></h3>
                     <div class="grid grid-cols-2 gap-2">
                         <button x-show="changeAmount > 0" @click="applyQuickRound()"
@@ -430,8 +449,9 @@
             consumption: 'dine_in',   // dine-in (8.1%) vs takeaway (2.6%) — cafe food/drink only
 
             // Cash Quick Round
-            cashReceived: 0,
-            changeAmount: 0,
+            cashReceived: 0,      // amount handed over — in tenderCcy when a foreign currency is picked
+            changeAmount: 0,      // change to give, ALWAYS in the home currency
+            tenderCcy: '',        // '' = home currency; else an accepted foreign cash currency (Block 1)
             changeGap: 0,
             showChangeProducts: false,
             quickRoundApplied: false,
@@ -523,16 +543,26 @@
             // (integer-cent compare avoids float dust failing an exactly-paid sale).
             cashShort() {
                 if (this.paymentMethod !== 'cash') return false;
-                return Math.round((Number(this.cashReceived) || 0) * 100) < Math.round((this.cartData.totals.total || 0) * 100);
+                // Compare the HOME-currency equivalent of what was handed over against the total.
+                const recvHome = (Number(this.cashReceived) || 0) * this.tenderRate();
+                return Math.round(recvHome * 100) < Math.round((this.cartData.totals.total || 0) * 100);
+            },
+            // The exact amount to collect in the current tender currency (foreign: total ÷ rate).
+            exactTender() {
+                const total = Number(this.cartData.totals.total) || 0;
+                const r = this.tenderRate();
+                return Math.round((r === 1 ? total : total / r) * 100) / 100;
             },
 
             calculateChange() {
                 const total = this.cartData.totals.total;
-                const recv = Number(this.cashReceived) || 0;   // empty field / NaN -> 0
+                // cashReceived is in the tender currency; convert to the HOME currency for the change.
+                // Change is ALWAYS given in the home currency (the drawer's float). rate = home per 1 foreign.
+                const recvHome = (Number(this.cashReceived) || 0) * this.tenderRate();   // empty/NaN -> 0
                 // Round to whole cents -- the discount/VAT math leaves float dust
                 // (e.g. 10.0000001), which otherwise reads as a "0.00 short" on an
                 // exactly-paid sale. Compare in cents, not raw floats.
-                this.changeAmount = Math.round((recv - total) * 100) / 100;
+                this.changeAmount = Math.round((recvHome - total) * 100) / 100;
                 // Gap is the cents part that could be rounded
                 this.changeGap = this.changeAmount > 0 ? (this.changeAmount % 1) : Math.abs(this.changeAmount);
                 // (Treats are free now -- no affordability filtering; the old filter
@@ -700,19 +730,28 @@
             // Multi-currency tender (Block 0): the total shown in each accepted FOREIGN cash currency,
             // at the shop's plan-rate (home ÷ rate). Read-only courtesy for the cashier. Only when the
             // fx table's base matches this shop's home currency (else those rates aren't for this shop).
+            homeCcy() { return (_cfg('currency') || 'CHF').toUpperCase(); },
+            // Accepted FOREIGN cash currencies (from the shop's fx table, base = home currency), each with
+            // its plan-rate and the amount to collect for the current total. Reads _cfg (reactive) — fixes
+            // the earlier window.POSConfig bug (POSConfig is a const, so it was always empty).
             foreignTenders() {
-                const fx = (window.POSConfig && POSConfig.fx) || null;
-                const home = ((window.POSConfig && POSConfig.currency) || 'CHF').toUpperCase();
+                const fx = _cfg('fx');
+                const home = this.homeCcy();
                 if (!fx || !fx.rates || (fx.base || '').toUpperCase() !== home) return [];
                 const total = Number(this.cartData.totals.total) || 0;
-                if (total <= 0) return [];
                 const out = [];
                 for (const ccy of Object.keys(fx.rates)) {
                     const rate = Number(fx.rates[ccy]);
                     if (!(rate > 0) || ccy.toUpperCase() === home) continue;
-                    out.push({ ccy: ccy.toUpperCase(), amount: (total / rate).toFixed(2) });
+                    out.push({ ccy: ccy.toUpperCase(), rate, amount: total > 0 ? (total / rate).toFixed(2) : '0.00' });
                 }
                 return out;
+            },
+            // The plan-rate for the currently-picked tender currency (1 for the home currency).
+            tenderRate() {
+                if (!this.tenderCcy || this.tenderCcy === this.homeCcy()) return 1;
+                const ft = this.foreignTenders().find(f => f.ccy === this.tenderCcy);
+                return ft ? ft.rate : 1;
             },
 
             clearMember() {
@@ -961,7 +1000,10 @@
                         age_verified: this.ageVerified
                     };
                     if (this.paymentMethod === 'cash') {
-                        body.amount_tendered = (Number(this.cashReceived) || 0).toFixed(2);   // from the Quick Round buttons (blank-safe)
+                        body.amount_tendered = (Number(this.cashReceived) || 0).toFixed(2);   // in the tender currency
+                        // Multi-currency (Block 1): tell the server which foreign cash was handed over — it
+                        // converts to home, computes change in home, and stamps the tender detail on the sale.
+                        if (this.tenderCcy && this.tenderCcy !== this.homeCcy()) body.tender_currency = this.tenderCcy;
                     }
                     // Attach the loyalty member -> server applies tier discount + earns points.
                     if (this.member && this.member.id) {
