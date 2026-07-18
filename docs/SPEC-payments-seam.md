@@ -86,7 +86,19 @@ reconciliation (memory `banco-money-cent-precision`). **Currency rule:** `intent
 
 ## 3. Adapter A — SumUp Cloud (build first)
 
-Flow (all HTTPS from our FastAPI backend; no native app, no SDK embed):
+**Use the official SumUp Python SDK — it IS our adapter, and it's our exact stack.** `pip install sumup`
+ships an **async client (`AsyncSumup`, httpx-powered) + Pydantic request models** — FastAPI-native, no
+hand-rolled HTTP. The Cloud API adapter is a thin wrapper:
+- `await client.readers.list(merchant_code)` → find the paired Solo (`reader.device.model == "solo"`).
+- `await client.readers.create_checkout(merchant_code, reader_id, CreateReaderCheckoutBody(total_amount=…))`
+  → **this call IS `initiate_payment`.** `total_amount` takes `currency` + `minor_unit=2` + `value` (integer
+  **cents**) → we pass our already-quantized cents straight in (money-cent-precision rule, zero float drift).
+  Returns `checkout.data.client_transaction_id` → save as `intent.intent_id`.
+- Key format: `sup_sk_…` (newer than the older `sk_test_`/`sk_live_` docs; test vs live is the same split).
+- ⚠️ **New pip dependency** → follow the openpyxl pattern: add `sumup` to requirements AND bake into the
+  container (deploy = restart-not-rebuild won't pull a new dep on its own).
+
+Flow (all via the SDK's async client from our FastAPI backend; no native app, no SDK embed):
 
 1. **Pair the Solo once** (setup, per store): generate a pairing code on the Solo → `POST Create Reader` with the
    code → reader enrolled to the merchant account. Store `reader_id` in `_sumup_config`.
