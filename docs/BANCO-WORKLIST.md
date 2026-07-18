@@ -30,14 +30,20 @@ These two are the entire difference between "best for Felix" and "best in the wo
 worklist widens an already-winning lead; **these unlock selling beyond Felix.** Do NOT start mid-flight — this
 is the north-star sprint, teed up behind the current NEXT ACTIONABLE hypercare items, not ahead of them.
 
-- **🌍-1 · MOVE THE MONEY — card payments.** 🧍👥 Integrate a real acquirer/terminal (SumUp / Stripe
-  Terminal / Worldline) so the card actually *charges* at the till. We ring the sale beautifully; we don't
-  yet settle it. **The single highest-leverage build in the whole plan** — a real shop can't run without it.
-  Status: **NOT BUILT.** Needs Angel's decision on acquirer (fees, CH+IT coverage, hardware) before any code.
+- **🌍-1 · MOVE THE MONEY — card payments.** 🧍👥 **ACQUIRER DECIDED 2026-07-18: SumUp first + Worldline
+  for Felix.** Build **ONE payment seam, TWO adapters, provider-is-data per store** (like `_store_currency`).
+  Full spec: **[docs/SPEC-payments-seam.md](SPEC-payments-seam.md)** (memory `banco-payments-provider-seam`).
+  - **SumUp first** — its **Cloud API is web-native** (HTTPS + webhook, fits FastAPI) + a **Virtual Solo
+    sandbox** → build the whole round-trip **today, zero hardware.** Fees CH ~1.1–1.3% / IT ~0.95%.
+  - **Worldline = Felix's existing acquirer** — TIM drives ep2 terminals over LAN/WiFi, **he keeps his rates,
+    zero new hardware** IF his terminal is ep2+ECR. **▶ FIRST ACTION (Angel): get Felix's terminal MODEL
+    NUMBER** — that decides "already ready?".
+  - 🇮🇹 Italy welds this to 🌍-2: since 1 Jan 2026 IT law requires the POS wired to the RT (auto-corrispettivi).
+  - Status: **NOT BUILT.** Next: open a free SumUp sandbox dev account (M1) + get Felix's terminal model (M4 unblock).
 - **🌍-2 · FISCAL CERTIFICATION — TSE / RT / CH.** 🐯👥 fiskaly for the German TSE (rent-the-cert), Italian
   RT, Swiss baseline. Architecture is ready — it's a **rentable plug-in, not a rebuild** (memory
   `banco-fiskaly-integration-brief`, `banco-fiscalized-markets-italy-germany`). Status: **ARCHITECTED, not
-  built.** Small REST POC against fiskaly sandbox is the first actionable slice.
+  built.** Small REST POC against fiskaly sandbox is the first actionable slice. **Coupled to 🌍-1 in Italy.**
 
 *(Tiers 2–4 — offline/PWA, accounting sync, monitoring/SLA, multi-tenant, supplier master-data, hardware
 bundle, CRM/loyalty, bulk-intake — are in the scoreboard doc. They widen the lead; Tier 1 changes the game.)*
