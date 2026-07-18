@@ -36,8 +36,10 @@ is the north-star sprint, teed up behind the current NEXT ACTIONABLE hypercare i
   - **Why the pivot:** **SumUp does NOT do TWINT** — the dominant CH mobile payment (~5.5M users); a Swiss
     counter without it bleeds sales. SumUp's sandbox is also KYC-walled (forces real company+IBAN). **PARKED.**
   - **Worldline first** = Felix's *existing* acquirer, does **TWINT + PostFinance + all cards** on his ep2
-    terminal via TIM. **He keeps his acquirer + rates, zero new hardware.** ▶ **FIRST ACTION (Angel): get
-    Felix's terminal MODEL NUMBER** + confirm TWINT is already active on it.
+    terminal via TIM. **He keeps his acquirer + rates, zero new hardware.**
+  - ✅ **TERMINALS IDENTIFIED 2026-07-18** (off shop photos): 2× Worldline/Ingenico, both TIM-capable —
+    **Move/5000 (TID 25145450, WiFi, preferred)** + **Axium DX8000 (TID 25409030)**. ▶ **NEXT ACTION (Angel):
+    send Worldline the TIM-activation request (drafted, German — in the payments memory)** → get TIM package + terminal IP.
   - **Buildable NOW with no terminal:** M1 = the provider-agnostic seam (protocol + `payments` table + checkout
     wiring + waiting-for-card UI, null provider = no regression). M2 = the Worldline TIM adapter (needs the terminal).
   - Status: **NOT BUILT.** Next: (Tigs) build M1 seam · (Angel) Felix's terminal model → unblocks M2.
