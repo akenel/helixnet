@@ -55,9 +55,17 @@ is the north-star sprint, teed up behind the current NEXT ACTIONABLE hypercare i
        terminal, verify receipt records the txn ref, refund → sandbox human-green → gate ladder → prod, backup-gated.
     5. Once proven stable, **optionally activate the second terminal** too (or leave it as the manual backup). Reconcile
        `payments` rows vs Worldline settlement in **myPortal** at cent precision.
-  - ⏳ **STATUS: awaiting Worldline activation** (external dependency — no code progress possible on M2 until they reply with
-    the ep2 spec + terminal IP). M1 seam already BUILT/committed (provider-agnostic, null provider = no regression).
-  - **M2 = the Worldline ep2-ECR adapter** — unblocked the moment Worldline enables the interface + returns the spec/IP.
+  - ✅ **M2 ADAPTER + MOCK TERMINAL BUILT 2026-07-18 (against the mock — no hardware, `f0fa2856`):**
+    `src/payments/worldline.py` (`WorldlineTIMAdapter` = PaymentProvider + `charge()` capture loop; `TimTcpTerminalLink`
+    = go-live TCP transport skeleton, raises until spec) + `src/payments/mock_terminal.py` (scriptable
+    approve/decline/abort/timeout; `axium_dx8000()`/`move_5000()` with real TIDs) + 12 unit tests (**full suite 2046 pass**).
+    Go-live = fill `TimTcpTerminalLink`'s 3 methods to the real wire + register 'worldline' in `resolver._ADAPTERS` +
+    point `capture_on_terminal_if_configured` at `adapter.charge()`. Nothing above the transport changes.
+  - 🖥️ **VISUAL SIM + TESTSHEET (sandbox-safe, no hardware/money):** `docs/testing/banco/WORLDLINE-TERMINAL-SIM.html`
+    (watch the till→terminal→receipt flow on both terminals, card+TWINT+decline, live ep2/TIM message log) +
+    `docs/testing/banco/WORLDLINE-SIM-TESTSHEET.html` (№ LP-UAT-20260718-WL-SIM, tri-state runbook, headless-verified 0 errors).
+  - ⏳ **STATUS: everything buildable-without-hardware DONE; awaiting Worldline activation** (external dependency — the
+    ONLY remaining unblock is Worldline enabling ECR + returning the spec/SDK + terminal IP; the email is drafted, Angel to send).
   - **📇 Worldline CH contacts:** email `customerservices@worldline.com` · Worldline Schweiz AG, Hardturmstrasse 201, 8021
     Zürich · tel +41 848 83 20 00 / hotline 0800 111 600. **myPortal** = merchant portal where Artemis's terminals + the
     contract no. live. **TIM** = Worldline's own name for the integration we're requesting. (Full block in SPEC §4.)
