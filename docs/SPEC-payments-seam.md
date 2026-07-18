@@ -162,6 +162,28 @@ fallback and the portable option. The email to Worldline asks them to confirm wh
 IP/port** → we build M2 (send amount → await approve/decline → record txn ref). No hardware purchase; no
 merchant-account change; TWINT rides the same integrated flow (must be confirmed by Worldline).
 
+### 🛡️ Rollout sequencing — ONE terminal first, the other stays live (locked 2026-07-18)
+
+Felix has **two** ep2 terminals — this is a gift: we integrate one and keep the other as a fully-working
+fallback, so the counter **never goes dark** during the build. The plan:
+
+1. **Felix picks ONE terminal** for the test setup — recommend the **AXIUM DX8000** (fixed at the counter,
+   cleaner Android ep2). The **Move/5000 stays untouched and fully operational** as the live fallback.
+2. **Worldline enables ECR/TIM on that one terminal only** — AND we explicitly ask them to **keep manual /
+   standalone amount entry working, NOT flip the terminal to "integrated-only"** until our POS integration is
+   proven live. *Why this guardrail:* when a terminal is switched to integrated mode it can be set to expect the
+   amount from the till and disable keypad entry — if that happens before our software is ready, Felix can't take
+   payments. The guardrail keeps him selling throughout.
+3. **Worldline returns** spec/SDK + terminal IP/port + TWINT confirmation. **API key?** Local TIM/ep2 has **no
+   cloud API key** (POS↔terminal over the LAN; PCI scope stays on the terminal). Only the cloud path (Worldline
+   **Terminal API** / Saferpay) issues API credentials — and if so they go through `set-banco-secret.py`, never
+   chat/DB-plaintext (§6).
+4. **Build M2 vs a mock terminal** (no hardware, no money) → **one real low-value charge + a TWINT test** on the
+   chosen terminal, verify the receipt records the txn ref, refund → **sandbox store human-green → gate ladder →
+   prod, backup-gated.** The Move/5000 remains the fallback the whole time.
+5. **Once the first terminal's integrated flow is proven stable**, optionally activate the Move/5000 too (or leave
+   it as the manual backup). Reconcile `payments` rows vs Worldline settlement in **myPortal** at cent precision.
+
 ### 📇 Worldline CH — contacts & reference pages (verified 2026-07-18)
 
 - **Email (send the ECR request here):** `customerservices@worldline.com`

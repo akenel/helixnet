@@ -40,12 +40,27 @@ is the north-star sprint, teed up behind the current NEXT ACTIONABLE hypercare i
   - ✅ **TERMINALS IDENTIFIED 2026-07-18** (off shop photos, full labels in `docs/testing/banco/field-2026-07-08/BL-19-card-readers.md`):
     2× Ingenico/Worldline ep2, both integration-capable — **Axium DX8000 (TID 25409030, PN TWT52011865A, SN 22BNHD885709 —
     preferred/cleaner target, Android ep2)** + **Move/5000 (TID 25145450, PN TWB32012105T, CL/4G/WiFi/BT — fallback)**.
-  - 📧 **EMAIL DRAFTED 2026-07-18 (EN, in Angel's Gmail)** — "Enable ECR/ep2 till integration on 2 Worldline terminals":
-    names BOTH exact units (TID + serials), asks Worldline to **register/activate integrated-payment mode** + hand back the
-    ep2-ECR spec/SDK + terminal IP/port + TWINT confirmation. ▶ **NEXT ACTION (Angel): fill customer/contract no. → SEND to Worldline.**
+  - 📧 **EMAIL DRAFTED 2026-07-18 (DE, to Felix → forwards to Worldline `customerservices@worldline.com`)** — the KEEPER
+    draft is the one titled "**EIN Terminal zuerst**" (supersedes the earlier English + "both terminals" German drafts).
+    ▶ **NEXT ACTION (Angel): fill customer/contract no. + Felix picks the first terminal → SEND to Worldline.**
+  - 🛡️ **SEQUENCING PLAN (locked 2026-07-18) — activate ONE terminal, keep the other live:**
+    1. Felix chooses **ONE** terminal for the test setup (recommend **AXIUM DX8000** — fixed at the counter); the **Move/5000
+       stays UNTOUCHED and fully operational as the live fallback** so the shop never goes dark during the build.
+    2. Ask Worldline to **enable ECR/TIM on that one terminal only** AND to **keep manual/standalone entry working — NOT flip
+       it to "integrated-only"** until our POS integration is proven live. (A well-meaning tech flipping it to integrated-only
+       early = Felix's till offline. This guardrail prevents that.)
+    3. Worldline returns spec/SDK + terminal IP/port (+ credentials ONLY if they route us to the cloud Terminal API/Saferpay
+       path — local TIM has no API key; any creds → `set-banco-secret.py`, never in chat/DB-plaintext).
+    4. Build M2 vs a **mock terminal** (no hardware/no money) → **one real low-value charge + TWINT test** on the chosen
+       terminal, verify receipt records the txn ref, refund → sandbox human-green → gate ladder → prod, backup-gated.
+    5. Once proven stable, **optionally activate the second terminal** too (or leave it as the manual backup). Reconcile
+       `payments` rows vs Worldline settlement in **myPortal** at cent precision.
   - ⏳ **STATUS: awaiting Worldline activation** (external dependency — no code progress possible on M2 until they reply with
     the ep2 spec + terminal IP). M1 seam already BUILT/committed (provider-agnostic, null provider = no regression).
   - **M2 = the Worldline ep2-ECR adapter** — unblocked the moment Worldline enables the interface + returns the spec/IP.
+  - **📇 Worldline CH contacts:** email `customerservices@worldline.com` · Worldline Schweiz AG, Hardturmstrasse 201, 8021
+    Zürich · tel +41 848 83 20 00 / hotline 0800 111 600. **myPortal** = merchant portal where Artemis's terminals + the
+    contract no. live. **TIM** = Worldline's own name for the integration we're requesting. (Full block in SPEC §4.)
 - **🌍-2 · FISCAL CERTIFICATION — TSE / RT / CH.** 🐯👥 fiskaly for the German TSE (rent-the-cert), Italian
   RT, Swiss baseline. Architecture is ready — it's a **rentable plug-in, not a rebuild** (memory
   `banco-fiskaly-integration-brief`, `banco-fiscalized-markets-italy-germany`). Status: **ARCHITECTED, not
