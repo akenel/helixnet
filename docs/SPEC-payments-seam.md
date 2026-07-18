@@ -170,9 +170,13 @@ payments alone. Design the `on_approved` hook so the fiscal emit is a pluggable 
 
 ## 8. Build order (milestones) — WORLDLINE-FIRST (amended 2026-07-18)
 
-1. **M1 — Provider-agnostic seam.** `src/payments/` protocol + resolver + `payments` table + checkout wiring +
-   "waiting for card" UI, with a **null/manual provider** (today's behaviour, no regression). Fully buildable NOW,
-   no terminal, no account. ← start here.
+1. ✅ **M1 — Provider-agnostic seam — BUILT 2026-07-18 (`8e7fe326`).** `src/payments/` (base protocol +
+   `to_minor_units` cent-precision + resolver `get_payment_provider`/`capture_on_terminal_if_configured`),
+   `PaymentModel` (`payments` table), `store_settings.payment_provider` (NOT NULL DEFAULT 'manual', additive
+   ALTER), hook wired into BOTH sale paths (checkout_transaction + create_sale) as a strict no-op today
+   (adapter registry empty → resolves None → zero regression). 13 tests; full suite 2034 pass / 3 known-flaky.
+   NOT deployed (invisible no-op — nothing to demo until an adapter lands). The "waiting for card" UI is
+   deferred to M2 (nothing to wait for without a provider).
 2. **M2 — Worldline TIM adapter.** Drive Felix's **existing ep2 terminal** (TWINT + cards) via TIM. *Blocked on:*
    his terminal **model number** + confirming TWINT is activated + Worldline enabling the **ECR/TIM package**.
 3. **M3 — Human-green on the sandbox store, then the gate ladder** sandbox→staging→prod, backup-gated. One live
