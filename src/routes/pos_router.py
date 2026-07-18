@@ -226,12 +226,15 @@ async def get_pos_config(db: AsyncSession = Depends(get_db_session)):
     from src.services.currency import load_fx as _load_fx
     _fx = _load_fx(getattr(_store, "fx_rates", None) if _store else None)
     return {
-        "vat_rate": settings.POS_VAT_RATE,
-        "vat_rate_reduced": settings.POS_VAT_RATE_REDUCED,  # 2.6% — cafe takeaway food/drink
+        # VAT comes from the STORE (Angel): the effective standard/reduced rate derived from the shop's
+        # vat_rates table (resolve_regime), NOT the hardcoded CH default. A CH shop with a NULL table
+        # falls back to 8.1/2.6 → byte-identical. Fixed a 22.1%-shop showing/charging 8.1% at checkout.
+        "vat_rate": regime["vat_rate"],
+        "vat_rate_reduced": regime["vat_rate_reduced"],  # lowest non-default rate (cafe takeaway etc.)
         "vat_year": settings.POS_VAT_YEAR,
         "currency": regime["currency"],  # PHASE 1: per-tenant (regime reads the store; CH tenant -> CHF, byte-identical)
         "locale": regime["locale"],      # PHASE 1: per-tenant (CH tenant -> de-CH, byte-identical)
-        "vat_decimal": settings.POS_VAT_RATE / 100,  # 0.081 for calculations
+        "vat_decimal": regime["vat_rate"] / 100,  # for client calcs
         "regime": regime,  # additive (PHASE 0): per-tenant regime/currency/locale + CH rates
         "store_name": store_name,  # PHASE 2: the tenant store name (closeout/Z-report header)
         "denominations": denominations,  # additive (PHASE 1): face values for the tenant currency

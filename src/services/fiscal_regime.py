@@ -149,12 +149,32 @@ def resolve_regime(store=None) -> dict:
     # config default (POS_VAT_RATE / _REDUCED). A CH shop with NULL vat_rates → _rate_table_for → the
     # exact A/B table split_vat used before, so the resolved dict is BYTE-IDENTICAL to today.
     stored = _stored_rate_table(store)
+    table = stored if stored else _rate_table_for(code)
+    # DERIVE the scalar standard/reduced from the effective table so POSConfig.vat_rate (client
+    # checkout display + calc) matches the store's CONFIGURED rate — not the hardcoded CH 8.1.
+    # Bug (Angel, EUR/IT sandbox): standard set to 22.1 but checkout charged 8.1. A CH shop with a
+    # NULL table → _rate_table_for → the A/B 8.1/2.6 default, so vat_rate stays byte-identical.
+    _fallback = _ch_rates()
+    _default_row = next((r for r in table if r.get("default")), (table[0] if table else None))
+    try:
+        _std = float(_default_row["rate"]) if _default_row else _fallback["vat_rate"]
+    except (TypeError, ValueError, KeyError):
+        _std = _fallback["vat_rate"]
+    _reduced_rows = []
+    for r in table:
+        if not r.get("default"):
+            try:
+                _reduced_rows.append(float(r["rate"]))
+            except (TypeError, ValueError, KeyError):
+                pass
+    _reduced = min(_reduced_rows) if _reduced_rows else _fallback["vat_rate_reduced"]
     return {
         **meta,
         "currency": currency,
         "locale": locale,
-        **_ch_rates(),
+        "vat_rate": _std,
+        "vat_rate_reduced": _reduced,
         # P3/Piece C N-rate: the ordered rate table in force. The receipt + Z-report loop over this
         # instead of the two hardwired A/B scalars. CH with no stored table = byte-identical.
-        "vat_rates": stored if stored else _rate_table_for(code),
+        "vat_rates": table,
     }
