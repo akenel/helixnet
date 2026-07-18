@@ -487,6 +487,7 @@ window.POS_STRINGS = {
     "catalog": {
       "title": "Catalog",
       "subtitle": "Manage products — edit, discontinue, add",
+      "back_to_cleanup": "Cleanup",
       "new_product": "New product",
       "not_right_item": "Not the right item?",
       "create_from_photo": "Create from photo",
@@ -2218,6 +2219,7 @@ window.POS_STRINGS = {
     "catalog": {
       "title": "Catalogue",
       "subtitle": "Gérer les produits — modifier, retirer, ajouter",
+      "back_to_cleanup": "Nettoyage",
       "new_product": "Nouveau produit",
       "not_right_item": "Pas le bon article ?",
       "create_from_photo": "Créer depuis la photo",
@@ -3949,6 +3951,7 @@ window.POS_STRINGS = {
     "catalog": {
       "title": "Catalogo",
       "subtitle": "Gestisci i prodotti — modifica, dismetti, aggiungi",
+      "back_to_cleanup": "Pulizia",
       "new_product": "Nuovo prodotto",
       "not_right_item": "Non è l'articolo giusto?",
       "create_from_photo": "Crea dalla foto",
@@ -5675,6 +5678,7 @@ window.POS_STRINGS = {
     "catalog": {
       "title": "Katalog",
       "subtitle": "Produkte verwalten — bearbeiten, einstellen, hinzufügen",
+      "back_to_cleanup": "Aufräumen",
       "new_product": "Neues Produkt",
       "not_right_item": "Nicht der richtige Artikel?",
       "create_from_photo": "Aus Foto erstellen",

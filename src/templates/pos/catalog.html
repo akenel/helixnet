@@ -102,6 +102,9 @@
             <div class="flex items-center space-x-3">
                 <button @click="window.location.href='/pos/dashboard'" class="btn-secondary flex-none" title="Dashboard" aria-label="Dashboard">🏠
                 </button>
+                <!-- Back to the cleanup bench — always available, and returns to your exact spot when
+                     you came from there (Angel: "no link back to cleanup makes it clunky"). -->
+                <a :href="returnUrl || '/pos/cleanup?mode=bench'" class="btn-secondary flex-none" title="Back to cleanup">🧹 <span data-i18n="catalog.back_to_cleanup">Cleanup</span></a>
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900">📦 <span data-i18n="catalog.title">Catalog</span></h1>
                     <p class="text-sm text-gray-600" data-i18n="catalog.subtitle">Manage products — edit, discontinue, add</p>
@@ -846,6 +849,7 @@
     function catalogData() {
         return {
             user: {},
+            returnUrl: '',   // where to go "back" — set when opened from the cleanup bench (Details)
             q: '',
             category: '',
             categories: [],
@@ -917,7 +921,11 @@
                 this.search();   // list the catalogue by default — no need to type first
                 // Deep-link from the product page's manager "Edit" button: /pos/catalog?edit={id}
                 // opens that product straight into the edit modal (openEdit fetches the full record).
-                const editId = new URLSearchParams(location.search).get('edit');
+                const _p = new URLSearchParams(location.search);
+                const editId = _p.get('edit');
+                // Came from the cleanup bench? Remember where to send them back after saving.
+                const ret = _p.get('return');
+                if (ret && ret.startsWith('/pos/')) this.returnUrl = ret;   // same-origin path only
                 if (editId && this.user.isManager) this.$nextTick(() => this.openEdit({ id: editId }));
                 // Infinite scroll: load the next page as the sentinel nears the viewport.
                 this.$nextTick(() => {
@@ -1565,6 +1573,12 @@
                     }
                     showToast(this.editing ? t('catalog.saved') : t('catalog.product_created'), 'success');
                     this.modalOpen = false;
+                    // Came from the cleanup bench via Details → send them straight back to their
+                    // spot (that item is now finished and drops off the list). Buttery loop.
+                    if (this.editing && this.returnUrl) {
+                        setTimeout(() => { window.location.href = this.returnUrl; }, 500);
+                        return;
+                    }
                     this.showDiscontinued ? this.loadDiscontinued() : this.search();
                 } catch (e) {
                     // BL-128 #3: a same-size, near-identical NAME already exists → the #1 dupe source.

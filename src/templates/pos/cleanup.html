@@ -212,7 +212,7 @@
                                 </p>
                             </div>
                             <div class="flex gap-2 flex-none">
-                                <a :href="zoom ? '/pos/catalog?edit=' + zoom.product_id : '#'" target="_blank" class="btn-secondary text-sm">🔎 <span data-i18n="cleanup.open_details">Details</span></a>
+                                <a :href="zoom ? detailsUrl(zoom.product_id) : '#'" class="btn-secondary text-sm">🔎 <span data-i18n="cleanup.open_details">Details</span></a>
                                 <a :href="zoom ? '/pos/products/' + zoom.product_id + '/postcard' : '#'" target="_blank" @click="pcOpening()" class="btn-secondary text-sm">📇 <span data-i18n="cleanup.open_postcard">Postcard</span></a>
                                 <button @click="zoom = null" class="btn-secondary text-sm" data-i18n="cleanup.close">Close</button>
                             </div>
@@ -286,7 +286,7 @@
                                     <p class="text-xs text-gray-400 truncate" x-text="p.sku"></p>
                                     <!-- Get OFF this card to the full record without losing your place. -->
                                     <p class="flex gap-3 mt-1 text-xs">
-                                        <a :href="'/pos/catalog?edit=' + p.product_id" target="_blank"
+                                        <a :href="detailsUrl(p.product_id)"
                                            class="text-indigo-600 font-semibold hover:underline"
                                            data-i18n="cleanup.open_details">🔎 Details</a>
                                         <a :href="'/pos/products/' + p.product_id + '/postcard'" target="_blank"
@@ -524,11 +524,30 @@
                 const info = AuthHelper.getUserInfo();
                 this.user = { ...info, isManager: AuthHelper.isManager(), isAdmin: AuthHelper.isAdmin() };
                 if (!this.user.isManager) return;
-                // Deep-link: /pos/cleanup?mode=bench lands straight on the workbench.
+                // Deep-link: /pos/cleanup?mode=bench lands straight on the workbench. Returning
+                // from a Details edit carries gap/category/offset too, so you land back on the
+                // EXACT batch you left (the buttery "edit one, back to my spot" loop).
                 const qs = new URLSearchParams(window.location.search);
                 if (qs.get('mode') === 'bench') this.mode = 'bench';
+                if (qs.get('gap')) this.gapFilter = qs.get('gap');
+                if (qs.get('category')) this.catFilter = qs.get('category');
+                if (qs.get('offset')) this.offset = parseInt(qs.get('offset'), 10) || 0;
                 await this.loadCategories();
                 await this.load();
+            },
+
+            // The bench view as a URL — so Details can send us back to the same spot after save.
+            benchUrl() {
+                const p = new URLSearchParams({ mode: 'bench' });
+                if (this.gapFilter) p.set('gap', this.gapFilter);
+                if (this.catFilter) p.set('category', this.catFilter);
+                if (this.offset) p.set('offset', String(this.offset));
+                return '/pos/cleanup?' + p.toString();
+            },
+            // Details opens the full product editor IN THIS TAB, carrying a return link so saving
+            // sends you straight back to the bench where you left off (Angel: "that's buttery").
+            detailsUrl(pid) {
+                return '/pos/catalog?edit=' + pid + '&return=' + encodeURIComponent(this.benchUrl());
             },
 
             setMode(m) {
