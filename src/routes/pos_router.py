@@ -223,8 +223,17 @@ async def get_pos_config(db: AsyncSession = Depends(get_db_session)):
     _store = (await db.execute(
         select(StoreSettingsModel).order_by(StoreSettingsModel.store_number))).scalars().first()
     store_markup = getattr(_store, "default_markup_pct", None) if _store else None
-    from src.services.currency import load_fx as _load_fx
-    _fx = _load_fx(getattr(_store, "fx_rates", None) if _store else None)
+    # Accepted-currency table for the TENDER picker — the store's OWN configured rates, or None. Do NOT
+    # fall back to currency.DEFAULT_FX here (that's the supplier-DISPLAY default): a shop must EXPLICITLY
+    # opt into accepting foreign cash, so a shop that configured NONE shows NO picker (byte-identical).
+    import json as _json_fx
+    _fxraw = getattr(_store, "fx_rates", None) if _store else None
+    try:
+        _fx = _json_fx.loads(_fxraw) if _fxraw else None
+        if not (isinstance(_fx, dict) and isinstance(_fx.get("rates"), dict) and _fx["rates"]):
+            _fx = None
+    except Exception:
+        _fx = None
     return {
         # VAT comes from the STORE (Angel): the effective standard/reduced rate derived from the shop's
         # vat_rates table (resolve_regime), NOT the hardcoded CH default. A CH shop with a NULL table
