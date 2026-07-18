@@ -3,7 +3,82 @@
 {% block title %}Checkout - HelixPOS{% endblock %}
 
 {% block content %}
+<style>
+  @keyframes wlPop{0%{transform:scale(.55);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+  @keyframes wlBeep{0%{box-shadow:0 0 0 0 rgba(55,194,106,.6)}100%{box-shadow:0 0 0 26px rgba(55,194,106,0)}}
+  @keyframes wlWave{0%{width:12px;height:12px;opacity:.9}100%{width:58px;height:58px;opacity:0}}
+  @keyframes wlSpin{to{transform:rotate(360deg)}}
+  .wl-pop{animation:wlPop .5s cubic-bezier(.2,1.3,.4,1)}
+  .wl-tap{background:linear-gradient(180deg,#37c26a,#0f8f4c);color:#04120a;font-weight:800;border:0;border-radius:12px;padding:12px 22px;font-size:15px;cursor:pointer;letter-spacing:.03em;box-shadow:0 6px 16px rgba(55,194,106,.3)}
+  .wl-tap:hover{filter:brightness(1.07)}
+  .wl-spin{width:36px;height:36px;border-radius:50%;border:3px solid rgba(95,211,169,.2);border-top-color:#5fd3a9;animation:wlSpin .8s linear infinite}
+  .wl-wave{width:58px;height:58px;position:relative;margin:2px auto}
+  .wl-wave i,.wl-wave::before,.wl-wave::after{content:"";position:absolute;inset:0;margin:auto;border:2.5px solid #37c26a;border-radius:50%;opacity:0;animation:wlWave 1.5s ease-out infinite}
+  .wl-wave i{animation-delay:.5s}.wl-wave::after{animation-delay:1s}
+  @media (prefers-reduced-motion:reduce){.wl-pop,.wl-spin,.wl-wave i,.wl-wave::before,.wl-wave::after{animation:none!important}}
+  [x-cloak]{display:none!important}
+</style>
+
 <div class="min-h-screen bg-gray-50" x-data="checkoutData()">
+<!-- 🌍-1 M2 SANDBOX — Worldline terminal overlay. Only shown for a card/TWINT sale on a
+     worldline_sim store; on prod ('manual') terminal.show never becomes true. -->
+<div x-cloak x-show="terminal.show" x-transition.opacity
+     @keydown.escape.window="terminalCancel()"
+     style="position:fixed;inset:0;z-index:70;background:rgba(15,17,22,.74);display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="width:340px;max-width:92vw;border-radius:26px;padding:16px;background:linear-gradient(160deg,#20262f,#12161c);border:1px solid #333b46;box-shadow:0 30px 60px rgba(0,0,0,.6)">
+    <div style="display:flex;justify-content:space-between;align-items:center;color:#8b95a3;font-size:10px;font-family:ui-monospace,monospace;letter-spacing:.12em;padding:0 6px 10px">
+      <span style="color:#c9d2dd;font-weight:700">worldline</span>
+      <span x-text="terminal.name + ' · TID ' + terminal.tid"></span>
+    </div>
+    <div style="border-radius:16px;background:radial-gradient(120% 90% at 50% 0%, #0e3a2a, #0b1f18 70%);min-height:240px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;gap:12px;border:1px solid #0a2a1f">
+      <!-- amount / awaiting a tap -->
+      <template x-if="terminal.stage==='amount' || terminal.stage==='await'">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+          <div :class="terminal.stage==='amount' ? 'wl-pop' : ''" style="color:#eafff5;font-weight:800;font-size:30px;letter-spacing:-.5px" x-text="formatPrice(terminal.amount)"></div>
+          <template x-if="terminal.stage==='await'">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+              <div class="wl-wave"><i></i></div>
+              <div style="color:#9fe6c8;font-size:13px;font-weight:600" x-text="terminal.method==='twint' ? 'TWINT auflegen' : 'Karte auflegen'"></div>
+              <button class="wl-tap" @click="terminalTap()"><span x-text="terminal.method==='twint' ? '📱 TWINT' : '💳 Karte'"></span> auflegen</button>
+            </div>
+          </template>
+        </div>
+      </template>
+      <!-- processing -->
+      <template x-if="terminal.stage==='processing'">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+          <div class="wl-spin"></div>
+          <div style="color:#9fe6c8;font-size:13px;font-weight:600">Verarbeitung…</div>
+        </div>
+      </template>
+      <!-- approved -->
+      <template x-if="terminal.stage==='approved'">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <div class="wl-pop" style="width:54px;height:54px;border-radius:50%;background:#37c26a;color:#04120a;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;animation:wlPop .4s cubic-bezier(.2,1.3,.4,1),wlBeep 1.4s ease-out">✓</div>
+          <div style="color:#8affc0;font-size:14px;font-weight:800;letter-spacing:.08em">GENEHMIGT</div>
+          <div style="color:#eafff5;font-weight:700;font-size:18px" x-text="formatPrice(terminal.amount)"></div>
+        </div>
+      </template>
+      <!-- declined -->
+      <template x-if="terminal.stage==='declined'">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <div class="wl-pop" style="width:54px;height:54px;border-radius:50%;background:#ec5b5b;color:#1a0505;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800">✕</div>
+          <div style="color:#ff9d9d;font-size:14px;font-weight:800;letter-spacing:.08em">ABGELEHNT</div>
+          <div style="color:#ffbcbc;font-size:12px">Warenkorb behalten — erneut oder Bar</div>
+        </div>
+      </template>
+    </div>
+    <!-- controls: arm a decline (sim testing) + cancel — only while waiting -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding:0 4px;min-height:26px">
+      <label x-show="terminal.stage==='await'" style="color:#8b95a3;font-size:11px;display:flex;gap:6px;align-items:center;cursor:pointer">
+        <input type="checkbox" x-model="terminal.declineArmed" style="accent-color:#ec5b5b"> simulate decline
+      </label>
+      <button x-show="terminal.stage==='await' || terminal.stage==='amount'" @click="terminalCancel()"
+              style="margin-left:auto;background:#232a33;border:1px solid #333b46;color:#aeb8c4;border-radius:8px;padding:5px 12px;font-size:12px;cursor:pointer">Cancel</button>
+    </div>
+  </div>
+</div>
+
     <div class="max-w-4xl mx-auto px-4 py-8">
         <div class="card">
             <h1 class="text-3xl font-bold text-gray-900 mb-6">💳 <span data-i18n="checkout.title">Checkout</span></h1>
@@ -462,6 +537,47 @@
             treatEmoji: {
                 'TREAT-LOLLIPOP': '🍭', 'TREAT-GUMMY': '🍬', 'TREAT-PAPERS': '📄',
                 'TREAT-STICKER': '✨', 'TREAT-LIGHTER': '🔥', 'TREAT-GRINDERCARD': '🃏'
+            },
+
+            // 🌍-1 M2 SANDBOX — the in-checkout Worldline terminal overlay (worldline_sim only).
+            // The amount reaches the terminal, the customer "taps", approved/declined flows back —
+            // the same experience Pam gets when the real terminal is wired. State + tiny machine below.
+            terminal: { show: false, stage: 'idle', amount: 0, method: '', name: 'AXIUM DX8000', tid: '25409030', declineArmed: false },
+            _termResolve: null, _termReject: null,
+
+            // Returns a Promise that resolves with the capture {method, outcome, terminal, tid} on
+            // approval, or REJECTS on decline/cancel (caller keeps the cart). method: 'twint' | 'card'.
+            runTerminal(amount, payMethod) {
+                return new Promise((resolve, reject) => {
+                    this._termResolve = resolve; this._termReject = reject;
+                    this.terminal = {
+                        show: true, stage: 'amount', amount: Number(amount) || 0,
+                        method: (payMethod === 'twint' ? 'twint' : 'card'),
+                        name: 'AXIUM DX8000', tid: '25409030', declineArmed: false
+                    };
+                    // amount pops, then the terminal asks for the card/phone
+                    setTimeout(() => { if (this.terminal.show) this.terminal.stage = 'await'; }, 750);
+                });
+            },
+            terminalTap() {
+                if (this.terminal.stage !== 'await') return;
+                const declined = this.terminal.declineArmed;
+                const cap = { method: this.terminal.method, outcome: declined ? 'decline' : 'approve',
+                              terminal: this.terminal.name, tid: this.terminal.tid };
+                this.terminal.stage = 'processing';
+                setTimeout(() => {
+                    this.terminal.stage = declined ? 'declined' : 'approved';
+                    setTimeout(() => {
+                        this.terminal.show = false;
+                        if (declined) { if (this._termReject) this._termReject('declined'); }
+                        else { if (this._termResolve) this._termResolve(cap); }
+                    }, declined ? 1500 : 1150);
+                }, 1250);
+            },
+            terminalCancel() {
+                if (!this.terminal.show) return;
+                this.terminal.show = false;
+                if (this._termReject) this._termReject('cancelled');
             },
 
             async init() {
@@ -950,8 +1066,20 @@
                     confirmMsg += `\n\n${t('cash.confirm_cash_received_label')} ${formatPrice(this.cashReceived)}\n${t('cash.confirm_change_label')} ${formatPrice(this.changeAmount)}`;
                 }
 
-                if (!confirm(confirmMsg)) {
-                    return;
+                // 🌍-1 M2 SANDBOX: for a CARD/TWINT sale on a worldline_sim store, the terminal overlay
+                // IS the confirmation — the amount goes to the (mock) terminal, the customer taps, and the
+                // result flows back. Approved → proceed; declined/cancelled → keep the cart, no sale.
+                let terminalCapture = null;
+                const _isCard = (this.paymentMethod === 'visa' || this.paymentMethod === 'debit' || this.paymentMethod === 'twint');
+                if (_isCard && _cfg('payment_provider') === 'worldline_sim') {
+                    try {
+                        terminalCapture = await this.runTerminal(this.cartData.totals.total, this.paymentMethod);
+                    } catch (e) {
+                        if (e === 'declined') showToast('Card declined — cart kept. Retry, or take cash.', 'warning');
+                        return;   // cart preserved, no sale
+                    }
+                } else {
+                    if (!confirm(confirmMsg)) { return; }
                 }
 
                 this.processing = true;
@@ -1014,6 +1142,9 @@
                     if (this.kioskCartCode) {
                         body.kiosk_cart_code = this.kioskCartCode;
                     }
+                    // 🌍-1 M2 SANDBOX: hand the mock-terminal capture to the server → it drives the sim
+                    // adapter, records the PaymentModel row, and gates the sale on approval.
+                    if (terminalCapture) body.terminal_capture = terminalCapture;
 
                     const sale = await API.post('/api/v1/pos/sales', body);
 

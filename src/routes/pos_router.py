@@ -248,6 +248,10 @@ async def get_pos_config(db: AsyncSession = Depends(get_db_session)):
         "store_name": store_name,  # PHASE 2: the tenant store name (closeout/Z-report header)
         "denominations": denominations,  # additive (PHASE 1): face values for the tenant currency
         "fx": _fx,  # accepted-currency plan rates {base, as_of, rates} — foreign-tender display (Block 0)
+        # 🌍-1 M2 — the electronic payment provider (default 'manual'). When it's the SANDBOX
+        # 'worldline_sim', the checkout shows the terminal overlay + drives the mock capture; any
+        # other value (incl. 'manual' on prod) → no overlay, byte-identical. Never a secret.
+        "payment_provider": (getattr(_store, "payment_provider", None) or "manual").strip().lower() if _store else "manual",
         # BL-047b — the cost-eyeball config the cleanup card uses: the shop's default markup, the
         # per-class ABC defaults, and the pull-down choices. All estimates; a real cost always wins.
         "default_markup_pct": float(store_markup) if store_markup is not None else 50.0,
@@ -1947,6 +1951,47 @@ async def _apply_tender(db: AsyncSession, txn, amount_tendered, tender_currency)
     txn.tender_amount = Decimal(str(amount_tendered)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
     txn.tender_rate = conv["rate"]
     return Decimal(str(conv["base_amount"]))
+
+
+async def _capture_terminal_sim(db: AsyncSession, txn, capture):
+    """🌍-1 M2 SANDBOX "full mock capture" — drive the Worldline sim adapter for real.
+
+    Active ONLY when the store's payment_provider is 'worldline_sim' (a sandbox data-setting); for
+    every other provider (incl. 'manual' on prod) this returns None and the sale completes exactly
+    as today — byte-identical, zero regression. When active it: builds the PaymentIntent from the
+    sale total (integer minor units, store currency), drives the SAME WorldlineTIMAdapter + mock
+    terminal the tests cover (scripted to what the overlay captured), records a PaymentModel row,
+    and returns the PaymentResult so the caller GATES the sale on approval (declined → 402, cart
+    kept). No card data, no settlement — it's a simulation of the real ep2/TIM flow.
+    """
+    from src.payments import _store_payment_provider
+    if (await _store_payment_provider(db)) != "worldline_sim":
+        return None
+    from src.payments import (
+        PaymentIntent, WorldlineTIMAdapter, MockTerminal, to_minor_units)
+    from src.db.models.payment_model import PaymentModel
+    method = (getattr(capture, "method", None) or "twint")
+    outcome = (getattr(capture, "outcome", None) or "approve")
+    tid = (getattr(capture, "tid", None) or "25409030")
+    tname = (getattr(capture, "terminal", None) or "AXIUM DX8000")
+    ccy = await _store_currency(db)
+    await db.flush()   # assign txn.id for the PaymentModel FK
+    ref = txn.transaction_number or str(txn.id)
+    intent = PaymentIntent(
+        intent_id=ref, provider="worldline_sim",
+        amount_minor=to_minor_units(txn.total), currency=ccy, reference=ref)
+    adapter = WorldlineTIMAdapter(
+        MockTerminal(name=tname, tid=tid, outcome=outcome, method=method))
+    result = await adapter.charge(intent, timeout=5.0, poll_interval=0.01)
+    db.add(PaymentModel(
+        transaction_id=txn.id, provider="worldline_sim", intent_id=ref,
+        amount_minor=intent.amount_minor, currency=ccy, status=result.status.value,
+        provider_txn_id=result.provider_txn_id, card_scheme=result.card_scheme,
+        raw=json.dumps(result.raw),
+        settled_at=(datetime.now(timezone.utc) if result.approved else None)))
+    logger.info("worldline_sim capture: txn=%s %s %s → %s (%s)",
+                ref, ccy, txn.total, result.status.value, result.provider_txn_id)
+    return result
 
 
 async def _tenant_vat_rates(db: AsyncSession):
@@ -4005,9 +4050,17 @@ async def checkout_transaction(
         transaction.change_given = tendered - total_due
         home_tendered = tendered   # the home-currency value we store on the sale
 
-    # 🌍-1 payments seam (M1): if this store has an electronic terminal provider configured,
+    # 🌍-1 M2 (SANDBOX sim): if the store is 'worldline_sim', drive the mock terminal, record a
+    # PaymentModel row, and GATE the sale on approval — a declined card never completes (cart kept).
+    # Any other provider → None → unchanged. Prod ('manual') is byte-identical.
+    _sim = await _capture_terminal_sim(db, transaction, getattr(checkout, "terminal_capture", None))
+    if _sim is not None and not _sim.approved:
+        raise HTTPException(status_code=402,
+                            detail=f"Card terminal {_sim.status.value} — sale not completed; cart kept")
+
+    # 🌍-1 payments seam (M1): if this store has a REAL electronic terminal provider configured,
     # drive it here. Default 'manual' → returns None → the sale completes exactly as today
-    # (zero regression). M2 (Worldline TIM) implements the real capture behind this call.
+    # (zero regression). M2 (real Worldline TIM) implements the hardware capture behind this call.
     from src.payments import capture_on_terminal_if_configured
     await capture_on_terminal_if_configured(db, transaction)
 
@@ -4283,6 +4336,13 @@ async def create_sale(
             raise HTTPException(status_code=400, detail="Insufficient payment amount")
         txn.change_given = tendered - total_due
         home_tendered = tendered
+
+    # 🌍-1 M2 (SANDBOX sim): drive the mock terminal, record a PaymentModel row, GATE on approval
+    # (seal lesson — BOTH sale paths get the seam, so the sim works from the atomic path too).
+    _sim = await _capture_terminal_sim(db, txn, getattr(sale, "terminal_capture", None))
+    if _sim is not None and not _sim.approved:
+        raise HTTPException(status_code=402,
+                            detail=f"Card terminal {_sim.status.value} — sale not completed; cart kept")
 
     # 🌍-1 payments seam (M1): same no-op-today hook as the legacy checkout path (seal lesson —
     # both sale-completion paths get the seam). Default 'manual' → None → byte-identical today.

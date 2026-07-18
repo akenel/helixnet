@@ -656,6 +656,7 @@
             // overwrites this with the tenant currency's ordered face values on load.
             denominations: ['1000','200','100','50','20','10','5','2','1','0.50','0.20','0.10','0.05'],
             fx: null,   // accepted-currency plan rates {base,as_of,rates} from /config (multi-currency tender)
+            payment_provider: 'manual',  // 🌍-1 M2: 'worldline_sim' (sandbox) lights up the checkout terminal overlay
             loaded: false,
 
             async load() {
@@ -679,11 +680,12 @@
                         if (Array.isArray(config.denominations) && config.denominations.length)
                             this.denominations = config.denominations;
                         this.fx = config.fx || null;   // accepted-currency plan rates
+                        this.payment_provider = config.payment_provider || 'manual';  // 🌍-1 M2 terminal sim flag
                         this.loaded = true;
                         // push into the reactive store so already-painted money/dates re-render
                         try {
                             const s = (window.Alpine && Alpine.store) ? Alpine.store('cfg') : null;
-                            if (s) { s.currency = this.currency; s.locale = this.locale; s.denominations = this.denominations; s.regime = this.regime; s.store_name = this.store_name; s.vat_rate = this.vat_rate; s.vat_rate_reduced = this.vat_rate_reduced; s.fx = this.fx; }
+                            if (s) { s.currency = this.currency; s.locale = this.locale; s.denominations = this.denominations; s.regime = this.regime; s.store_name = this.store_name; s.vat_rate = this.vat_rate; s.vat_rate_reduced = this.vat_rate_reduced; s.fx = this.fx; s.payment_provider = this.payment_provider; }
                         } catch (e) {}
                         // PHASE 2 i18n: if the language was only a default guess (no ?lang / stored
                         // pref / JWT locale), the tenant locale from /config may now imply a
@@ -717,6 +719,7 @@
                 vat_rate: POSConfig.vat_rate,             // reactive so the "incl. VAT (X%)" label
                 vat_rate_reduced: POSConfig.vat_rate_reduced,  // follows /config, not the 8.1 default
                 fx: POSConfig.fx,                          // accepted-currency plan rates (foreign tender)
+                payment_provider: POSConfig.payment_provider,  // 🌍-1 M2 terminal sim flag
             });
         });
         function _cfg(k) {

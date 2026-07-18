@@ -265,6 +265,20 @@ class TransactionUpdate(BaseModel):
     notes: Optional[str] = None
 
 
+class TerminalCapture(BaseModel):
+    """🌍-1 M2 SANDBOX sim — what the customer 'did' on the mock Worldline terminal.
+
+    The in-checkout terminal overlay collects this and passes it so the server drives the mock
+    adapter, records a PaymentModel row, and gates the sale on approval. Honoured ONLY when the
+    store's payment_provider is 'worldline_sim' (a sandbox data-setting) — ignored everywhere
+    else, so prod (provider 'manual') is byte-identical. A REAL terminal sends none of this;
+    the hardware returns the result over TIM."""
+    method: str = Field("twint", max_length=16, description="card scheme / 'twint' the customer used")
+    outcome: str = Field("approve", max_length=16, description="'approve' | 'decline' (sim only)")
+    terminal: Optional[str] = Field(None, max_length=32, description="terminal name for the receipt")
+    tid: Optional[str] = Field(None, max_length=16, description="terminal id — which of the shop's terminals")
+
+
 class CheckoutRequest(BaseModel):
     """Schema for checkout (payment processing)"""
     payment_method: PaymentMethod
@@ -279,6 +293,8 @@ class CheckoutRequest(BaseModel):
     # of-age member attached — the client 🔞 alert is bypassable, this flag is the audited
     # server-side proof. Default False (fail-closed: no attestation, no 18+ sale).
     age_verified: bool = Field(False, description="Cashier attests the walk-in is 18+ (ID checked) — unlocks 18+ lines")
+    # 🌍-1 M2 SANDBOX sim: the mock-terminal capture result (worldline_sim provider only; else ignored).
+    terminal_capture: Optional[TerminalCapture] = None
 
 
 class SaleCreate(BaseModel):
@@ -306,6 +322,8 @@ class SaleCreate(BaseModel):
     # the attached member's ONE-TIME welcome discount on the eligible portion, marks it used, and
     # claims the cart — all atomically inside this sale. Ignored if the cart is gone/already claimed.
     kiosk_cart_code: Optional[str] = Field(None, description="Kiosk held-order code — applies + consumes the first-order welcome discount")
+    # 🌍-1 M2 SANDBOX sim: the mock-terminal capture result (worldline_sim provider only; else ignored).
+    terminal_capture: Optional[TerminalCapture] = None
 
 
 class RefundRequest(BaseModel):
