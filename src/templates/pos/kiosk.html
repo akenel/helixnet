@@ -351,14 +351,57 @@
     <p class="text-emerald-200/50 mb-8" x-text="lastBarcode"></p>
     <!-- Assisted mode: a miss isn't a dead end — Pam creates the product now. Hands off to the
          till's born-once create flow with the scanned barcode prefilled (SPEC-assisted-kiosk M1). -->
-    <button x-show="staff" style="display:none"
-            @click="location.href='/pos/scan?capture=' + encodeURIComponent(lastBarcode || '')"
+    <button x-show="staff" style="display:none" @click="openCreate()"
             class="mb-4 px-7 py-4 rounded-2xl bg-amber-400 hover:bg-amber-300 text-emerald-950 text-lg font-bold">
       ➕ <span x-text="t('createProduct')"></span>
     </button>
     <button @click="reset()" class="px-7 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-emerald-950 text-lg font-bold">
       ← <span x-text="t('another')"></span>
     </button>
+  </section>
+
+  <!-- ============ CREATE (assisted mode, staff only) ============ -->
+  <section x-show="view==='create'" style="display:none" class="min-h-screen flex flex-col items-center justify-center px-6 py-10">
+    <div class="w-full max-w-md glass rounded-3xl p-6">
+      <h2 class="text-2xl font-bold mb-5 text-center">➕ <span x-text="t('createTitle')"></span></h2>
+
+      <!-- Photo — kiosk camera on capable devices (capture), else file pick. The picture is the label. -->
+      <label class="block mb-4">
+        <div class="rounded-2xl border-2 border-dashed border-white/25 h-44 flex items-center justify-center overflow-hidden cursor-pointer bg-black/20">
+          <template x-if="cPhotoPreview"><img :src="cPhotoPreview" class="h-full w-full object-cover" alt=""></template>
+          <template x-if="!cPhotoPreview"><span class="text-emerald-200/70 text-lg">📷 <span x-text="t('fldPhoto')"></span></span></template>
+        </div>
+        <input type="file" accept="image/*" capture="environment" class="hidden" @change="onCreatePhoto($event)">
+      </label>
+
+      <label class="block text-sm text-emerald-100/80 mb-1" x-text="t('fldName')"></label>
+      <input x-model="cName" type="text" :placeholder="t('fldName')"
+             class="w-full mb-4 px-4 py-3 rounded-xl bg-black/25 border border-white/15 text-lg text-white">
+
+      <div class="flex gap-3 mb-4">
+        <div class="flex-1">
+          <label class="block text-sm text-emerald-100/80 mb-1" x-text="t('fldPrice')"></label>
+          <input x-model="cPrice" type="number" inputmode="decimal" min="0" step="0.05" placeholder="0.00"
+                 class="w-full px-4 py-3 rounded-xl bg-black/25 border border-white/15 text-lg text-white">
+        </div>
+        <div class="flex-1">
+          <label class="block text-sm text-emerald-100/80 mb-1">Barcode</label>
+          <input x-model="cBarcode" type="text" placeholder="—"
+                 class="w-full px-4 py-3 rounded-xl bg-black/25 border border-white/15 text-lg text-white">
+        </div>
+      </div>
+
+      <p x-show="createErr" style="display:none" class="text-red-300 text-sm mb-3" x-text="createErr"></p>
+
+      <div class="flex gap-3">
+        <button @click="reset()" class="flex-1 px-5 py-4 rounded-2xl bg-white/10 hover:bg-white/20 text-lg font-semibold" x-text="t('cancel')"></button>
+        <button @click="saveCreate()" :disabled="cSaving"
+                class="flex-1 px-5 py-4 rounded-2xl bg-amber-400 hover:bg-amber-300 text-emerald-950 text-lg font-bold disabled:opacity-60">
+          <span x-show="!cSaving" x-text="t('createSave')"></span>
+          <span x-show="cSaving" style="display:none">…</span>
+        </button>
+      </div>
+    </div>
   </section>
 
 <script>
@@ -386,6 +429,8 @@
       pQty: 1,            // quantity stepper on the product view
       staff: false,       // assisted mode: a cashier launched this (?staff=1 + a valid pos_token in-tab)
       staffName: '',      // the cashier's handle, shown in the assisted-mode badge
+      staffToken: '',     // Pam's POS token — authorises the in-kiosk create/image calls (M2)
+      cName: '', cPrice: '', cBarcode: '', cPhotoFile: null, cPhotoPreview: '', cSaving: false, createErr: '',
 
       langs: [
         { code:'de', flag:'🇩🇪', label:'Deutsch' },
@@ -398,22 +443,26 @@
              typeHint:'nach Name oder Barcode suchen', looking:'Suche…', printCard:'Karte drucken', details:'Details', another:'Neu scannen',
              scanNext:'Einfach das nächste Produkt scannen', age:'18+ Ausweis nötig', pickOne:'Welches Produkt?',
              useCamera:'Mit Kamera scannen', onPhone:'Oder auf deinem Handy öffnen', noCamera:'Keine Kamera verfügbar. Bitte den Scanner oder die Eingabe nutzen.',
-             notFound:'Dieses Produkt haben wir nicht gefunden. Bitte frag unser Team.', createProduct:'Produkt jetzt anlegen' },
+             notFound:'Dieses Produkt haben wir nicht gefunden. Bitte frag unser Team.', createProduct:'Produkt jetzt anlegen',
+             createTitle:'Neues Produkt', fldName:'Name', fldPrice:'Preis', fldPhoto:'Foto aufnehmen', createSave:'Anlegen & verkaufen', cancel:'Abbrechen' },
         fr:{ head:'Scannez un produit', sub:'Tous les détails — dans votre langue.', s1:'Scanner', s2:'Voir', s3:'Imprimer une carte',
              typeHint:'rechercher par nom ou code-barres', looking:'Recherche…', printCard:'Imprimer une carte', details:'Détails', another:'Nouveau scan',
              scanNext:'Scannez simplement le produit suivant', age:'18+ pièce d’identité requise', pickOne:'Quel produit ?',
              useCamera:'Scanner avec la caméra', onPhone:'Ou ouvrez-le sur votre téléphone', noCamera:'Pas de caméra. Utilisez le scanner ou la saisie.',
-             notFound:'Nous n’avons pas trouvé ce produit. Merci de demander à notre équipe.', createProduct:'Créer le produit' },
+             notFound:'Nous n’avons pas trouvé ce produit. Merci de demander à notre équipe.', createProduct:'Créer le produit',
+             createTitle:'Nouveau produit', fldName:'Nom', fldPrice:'Prix', fldPhoto:'Prendre une photo', createSave:'Créer & vendre', cancel:'Annuler' },
         it:{ head:'Scansiona un prodotto', sub:'Tutti i dettagli — nella tua lingua.', s1:'Scansiona', s2:'Guarda', s3:'Stampa una card',
              typeHint:'cerca per nome o codice a barre', looking:'Ricerca…', printCard:'Stampa una card', details:'Dettagli', another:'Nuova scansione',
              scanNext:'Scansiona semplicemente il prossimo prodotto', age:'18+ documento richiesto', pickOne:'Quale prodotto?',
              useCamera:'Scansiona con la fotocamera', onPhone:'Oppure aprilo sul tuo telefono', noCamera:'Nessuna fotocamera. Usa lo scanner o digita.',
-             notFound:'Non abbiamo trovato questo prodotto. Chiedi al nostro team.', createProduct:'Crea il prodotto' },
+             notFound:'Non abbiamo trovato questo prodotto. Chiedi al nostro team.', createProduct:'Crea il prodotto',
+             createTitle:'Nuovo prodotto', fldName:'Nome', fldPrice:'Prezzo', fldPhoto:'Scatta una foto', createSave:'Crea & vendi', cancel:'Annulla' },
         en:{ head:'Scan a product', sub:'Every detail — in your language.', s1:'Scan', s2:'See it', s3:'Print a card',
              typeHint:'search by name or barcode', looking:'Looking…', printCard:'Print a card', details:'Details', another:'Scan another',
              scanNext:'Just scan the next product', age:'18+ ID required', pickOne:'Which one?',
              useCamera:'Scan with camera', onPhone:'Or open it on your phone', noCamera:'No camera available. Use the scanner or type it in.',
-             notFound:'We couldn’t find that product. Please ask our team.', createProduct:'Create this product' },
+             notFound:'We couldn’t find that product. Please ask our team.', createProduct:'Create this product',
+             createTitle:'New product', fldName:'Name', fldPrice:'Price', fldPhoto:'Take a photo', createSave:'Create & sell', cancel:'Cancel' },
       },
 
       t(k){ return (this.STR[this.lang] || this.STR.en)[k] || (this.STR.en[k] || k); },
@@ -483,7 +532,7 @@
         try {
           const sp = new URLSearchParams(location.search);
           const tok = sessionStorage.getItem('pos_token');
-          if (sp.get('staff') === '1' && tok) { this.staff = true; this.staffName = this._jwtName(tok); }
+          if (sp.get('staff') === '1' && tok) { this.staff = true; this.staffName = this._jwtName(tok); this.staffToken = tok; }
         } catch(e){}
         // remember the guest's language choice within a session
         const saved = sessionStorage.getItem('kiosk_lang');
@@ -609,6 +658,58 @@
           console.error('kiosk view failed', e);
           if (!silent) this.view = 'notfound';
         } finally { this.refocus(); }
+      },
+
+      // ===== Assisted-kiosk M2 — create a product right here (staff only) =====
+      openCreate(){
+        if (!this.staff) return;                    // guard: guests can never reach this
+        this.cBarcode = this.lastBarcode || '';
+        this.cName = ''; this.cPrice = ''; this.cPhotoFile = null; this.cPhotoPreview = ''; this.createErr = '';
+        this.view = 'create'; this.bumpIdle();
+      },
+      onCreatePhoto(e){
+        const f = e.target.files && e.target.files[0];
+        if (!f) return;
+        this.cPhotoFile = f;
+        try { this.cPhotoPreview = URL.createObjectURL(f); } catch(_){}
+      },
+      async saveCreate(){
+        if (this.cSaving) return;
+        const name = (this.cName || '').trim();
+        const price = parseFloat(this.cPrice);
+        this.createErr = '';
+        if (!name)                       { this.createErr = this.t('fldName'); return; }
+        if (isNaN(price) || price <= 0)  { this.createErr = this.t('fldPrice'); return; }
+        this.cSaving = true;
+        try {
+          const bc = (this.cBarcode || '').trim();
+          // Same cashier-safe endpoint + SKU rule as the till's born-once flow, so the create funnel
+          // (canonical category, 18+ class, compliance) runs identically. Auth = Pam's token.
+          const sku = bc ? ('LZ-' + bc) : ('LZ-' + Date.now());
+          const res = await fetch('/api/v1/pos/products/quick', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.staffToken}` },
+            body: JSON.stringify({ barcode: bc || null, sku, name, price, cost: null, image_url: null, description: null }),
+          });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const product = await res.json();
+          // Attach the photo (kiosk camera / gallery) — the picture is the label. Non-fatal if it fails.
+          if (this.cPhotoFile && product && product.id) {
+            try {
+              const fd = new FormData(); fd.append('file', this.cPhotoFile);
+              await fetch(`/api/v1/pos/products/${product.id}/images`, {
+                method: 'POST', headers: { 'Authorization': `Bearer ${this.staffToken}` }, body: fd });
+            } catch(_){}
+          }
+          this.cSaving = false;
+          // Render the brand-new product in the normal product view → Pam adds it to the basket like
+          // any scan (and in M3 rings it out right here). Reuses the public kiosk view-by-id.
+          if (product && product.id) { await this.pickResult(product.id); }
+          else { this.view = 'attract'; }
+        } catch(e){
+          this.cSaving = false;
+          this.createErr = 'HTTP ' + (e && e.message ? e.message : 'error');
+        }
       },
 
       startSignup(){
