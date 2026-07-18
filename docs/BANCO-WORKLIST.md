@@ -70,8 +70,11 @@ is the north-star sprint, teed up behind the current NEXT ACTIONABLE hypercare i
     store set `payment_provider='worldline_sim'` (data-setting; **prod stays 'manual' → byte-identical**). E2E-verified on
     sandbox: approve → sale + PaymentModel (500 EUR, twint, TID 25409030) → receipt; decline → cart kept, 0 orphan rows.
     ▶ **NEXT (Angel): human-green the in-POS overlay on sandbox** (log in → ring an item → pay TWINT/card → watch it).
-  - ⏳ **STATUS: everything buildable-without-hardware DONE; awaiting Worldline activation** (external dependency — the
-    ONLY remaining unblock is Worldline enabling ECR + returning the spec/SDK + terminal IP; the email is drafted, Angel to send).
+  - 📨 **EMAIL SENT TO FELIX 2026-07-18 19:25** (the dead-simple "forward 1 mail, no risk" version → Felix forwards to
+    `customerservices@worldline.com`). Ball is now Felix → Worldline. When Worldline replies with spec + terminal IP,
+    Angel forwards it → Tigs finishes the real adapter (swap mock → `TimTcpTerminalLink`, register 'worldline').
+  - ⏳ **STATUS: everything buildable-without-hardware DONE; awaiting Worldline reply** (external dependency — the ONLY
+    remaining unblock is Worldline enabling ECR + returning the spec/SDK + terminal IP).
   - **📇 Worldline CH contacts:** email `customerservices@worldline.com` · Worldline Schweiz AG, Hardturmstrasse 201, 8021
     Zürich · tel +41 848 83 20 00 / hotline 0800 111 600. **myPortal** = merchant portal where Artemis's terminals + the
     contract no. live. **TIM** = Worldline's own name for the integration we're requesting. (Full block in SPEC §4.)
