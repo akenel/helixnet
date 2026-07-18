@@ -126,9 +126,23 @@
                     <span data-i18n="checkout.total">TOTAL:</span>
                     <span class="text-indigo-600" x-text="formatPrice(cartData.totals.total)"></span>
                 </div>
-                <div class="flex justify-between text-sm text-gray-500">
-                    <span data-i18n="checkout.incl_vat">incl. VAT:</span>
+                <div class="flex justify-between text-sm text-gray-500 cursor-pointer select-none" @click="showVatInfo = !showVatInfo" title="Tap for the VAT breakdown">
+                    <span>
+                        <span data-i18n="checkout.incl_vat">incl. VAT:</span>
+                        (<span x-text="_cfg('vat_rate')"></span>%) <span class="text-gray-400">ⓘ</span>
+                    </span>
                     <span x-text="formatPrice(cartData.totals.vat)"></span>
+                </div>
+                <!-- VAT breakdown tooltip (Angel): prices are VAT-INCLUSIVE, so the tax is contained IN
+                     the total, not added on top. Net = total − VAT. Reads the store's rate + currency. -->
+                <div x-show="showVatInfo" style="display:none" class="text-xs bg-blue-50 border border-blue-200 rounded-lg p-3 mt-1 space-y-1">
+                    <div class="flex justify-between"><span data-i18n="checkout.vat_net">Net goods (ex-VAT)</span>
+                        <span x-text="formatPrice((cartData.totals.total || 0) - (cartData.totals.vat || 0))"></span></div>
+                    <div class="flex justify-between"><span><span data-i18n="checkout.vat_only">VAT</span> (<span x-text="_cfg('vat_rate')"></span>%)</span>
+                        <span x-text="formatPrice(cartData.totals.vat)"></span></div>
+                    <div class="flex justify-between font-semibold border-t border-blue-200 pt-1"><span data-i18n="checkout.vat_total">Total paid</span>
+                        <span x-text="formatPrice(cartData.totals.total)"></span></div>
+                    <p class="text-blue-700 pt-1" data-i18n="checkout.vat_note">Prices include VAT — the tax is contained in the total, not added on top.</p>
                 </div>
                 <!-- Multi-currency tender (Block 0): what to collect if the customer pays in a foreign
                      CASH currency, at the shop's plan-rate. Read-only courtesy — cards convert bank-side. -->
@@ -397,6 +411,7 @@
         return {
             cartData: {cart: [], totals: {}, discount: 0, transactionId: ''},
             showDiscountModal: false,  // custom-discount modal (replaces native prompt)
+            showVatInfo: false,        // tap the "incl. VAT" line → net/VAT/total breakdown tooltip
             discountInput: '',
             member: null,              // loyalty member attached to this sale
             memberDiscountAmount: 0,   // display-only; the server applies it once at checkout
