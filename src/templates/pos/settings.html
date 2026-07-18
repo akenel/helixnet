@@ -101,6 +101,15 @@
                 <!-- TAX -->
                 <div x-show="tab==='tax'" class="space-y-5">
                     <div class="grid md:grid-cols-2 gap-4">
+                        <div><label class="lbl">Currency 🔒</label>
+                            <select x-model="form.currency" :disabled="!isAdmin" class="input-field">
+                                <option value="CHF">CHF — Swiss Franc</option>
+                                <option value="EUR">EUR — Euro</option>
+                                <option value="USD">USD — US Dollar</option>
+                                <option value="GBP">GBP — Pound Sterling</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1" x-show="!isAdmin">🔒 Admin only. The shop's trading currency — how every price is shown &amp; charged. Not derived from the address or VAT number.</p>
+                            <p class="text-xs text-amber-600 mt-1" x-show="isAdmin">Changes how <strong>every</strong> price is displayed and charged — a provisioning decision, not a daily toggle.</p></div>
                         <div><label class="lbl" data-i18n="settings.vat_number">VAT number (UID)</label>
                             <input type="text" x-model="form.vat_number" class="input-field font-mono" placeholder="CHE-XXX.XXX.XXX MWST">
                             <p class="text-xs text-amber-600 mt-1" x-show="!form.vat_number || (form.vat_number||'').includes('X')" data-i18n="settings.vat_number_warn">⟶ enter the real CHE-UID before going live</p></div>
@@ -593,6 +602,7 @@
                     store_name: F.store_name, legal_name: F.legal_name,
                     address_line1: F.address_line1, address_line2: F.address_line2,
                     city: F.city, postal_code: F.postal_code, country: F.country, founded_year: F.founded_year,
+                    currency: F.currency,   // admin-only; server strips it for non-admins
                     phone: F.phone, email: F.email, website: F.website,
                     facebook_url: F.facebook_url, instagram_url: F.instagram_url, opening_hours: F.opening_hours,
                     vat_number: F.vat_number, vat_rate: defRow ? defRow.rate : F.vat_rate,

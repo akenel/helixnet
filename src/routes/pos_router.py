@@ -5734,7 +5734,8 @@ async def update_store_settings(
     _roles = current_user.get("user_roles", []) or []
     _is_admin = any("pos-admin" in r for r in _roles)
     if not _is_admin:
-        _admin_only = ("cashier_max_discount", "manager_max_discount",
+        _admin_only = ("currency",   # fiscal identity — admin-only (not a manager/daily toggle)
+                       "cashier_max_discount", "manager_max_discount",
                        "loyalty_tier1_threshold", "loyalty_tier1_discount",
                        "loyalty_tier2_threshold", "loyalty_tier2_discount",
                        "loyalty_tier3_threshold", "loyalty_tier3_discount")
@@ -5750,6 +5751,10 @@ async def update_store_settings(
     # shop that never touches the Tax editor never sends this key → column stays NULL → byte-identical.
     # NOTE: this manages the rate LIST only; class→rate ASSIGNMENT (which product is 8.1/2.6, or 22/
     # 10/5/4 for IT) is a SEPARATE deferred layer — not decided here.
+    # Currency (admin-only; already stripped above for a non-admin) — normalise to an ISO-ish code.
+    if "currency" in update_data:
+        update_data["currency"] = ((update_data["currency"] or "CHF").strip().upper()[:8]) or "CHF"
+
     if "vat_rates" in update_data:
         rows = update_data.pop("vat_rates")
         if rows is None:

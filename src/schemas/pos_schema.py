@@ -446,6 +446,11 @@ class StoreSettingsBase(BaseModel):
     city: str = Field(..., max_length=100)
     postal_code: str = Field(..., max_length=20)
     country: str = Field(default="Switzerland", max_length=100)
+    # Fiscal seam: the shop's trading currency (ISO code). CHF (CH) / EUR (IT). Read by
+    # _store_currency and used to format + charge every price. ADMIN-ONLY to change (see the
+    # update endpoint) — it's a provisioning decision, not a daily toggle. NOT derived from the
+    # address or VAT number; it's an explicit stored value.
+    currency: str = Field(default="CHF", max_length=8, description="ISO currency code (CHF/EUR)")
 
     # Contact Information
     phone: Optional[str] = Field(None, max_length=50)
@@ -514,6 +519,7 @@ class StoreSettingsUpdate(BaseModel):
     city: Optional[str] = Field(None, max_length=100)
     postal_code: Optional[str] = Field(None, max_length=20)
     country: Optional[str] = Field(None, max_length=100)
+    currency: Optional[str] = Field(None, max_length=8)   # ADMIN-ONLY — stripped for managers in the endpoint
     phone: Optional[str] = Field(None, max_length=50)
     email: Optional[str] = Field(None, max_length=255)
     website: Optional[str] = Field(None, max_length=255)
