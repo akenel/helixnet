@@ -534,10 +534,15 @@ both the list and the counts, so the counter can't drift from the list. `mode=so
 - 📋 **ROOKIE-WORKFLOW ROADMAP (Angel's ideas 2026-07-18, captured — next blocks, NOT built):**
   1. **🤖 AI deep-review** — beyond the rule score: "looks good BUT the description is weak / the photo is blurry or
      missing." On-demand LLM (desc quality) + vision (blur/missing). The real anti-lazy-done.
-  2. **📊 Daily margin+sales report (Felix would love)** — the WHY behind closing costs: it can't run until costs are in,
+  2. **🧾 COST = slip↔invoice MATCH (the "real work of finding costs", Angel 2026-07-18):** delivery slip = what/qty (no
+     price); **INVOICE = the cost.** Today cost is a markup ESTIMATE (BL-047b eyeball). Build an **invoice reader** mirroring
+     the slip reader → attach invoice → AI extracts lines+unit-cost → match to received products → REAL cost; flag qty/line
+     mismatches. Sits UPSTREAM of the report (real cost = honest margin, else the report is circular). Memory
+     `banco-cost-discovery-slip-invoice-match`. v1 = attach + AI-suggest + human-confirm.
+  3. **📊 Daily margin+sales report (Felix would love)** — the WHY behind closing costs: it can't run until costs are in,
      so it highlights the gaps ("yesterday covered · Monday still needs the bong prices · weekly report ready when the
-     cracks are closed"). Report gives the kid a deadline + makes him look good.
-  3. **🪪 Master-data audit** — who CREATED + who LAST EDITED each item (provenance stamp, ties to `banco-master-data-vision`).
+     cracks are closed"). Needs REAL costs (block 2) to be honest. Gives the kid a deadline + makes him look good.
+  4. **🪪 Master-data audit** — who CREATED + who LAST EDITED each item (provenance stamp, ties to `banco-master-data-vision`).
 - ▶ **On sandbox now — needs Angel human-green (run the testsheet), then the gated ladder to staging→prod.**
 
 **🐯 BL-99 · Label renderer size×flags** — widen `scripts/generate_label.py` (today: one fixed 62×37,
