@@ -504,10 +504,14 @@ both the list and the counts, so the counter can't drift from the list. `mode=so
   expr drives list + count so a chip's number matches its rows. i18n ×4 (en/fr/it/de), sw v160, 4 tests (suite 2054).
   **SHIPPED TO SANDBOX + live-verified** (sandbox catalog: cost 417 · photo 78 · desc 68 · cat 0 — Angel was right).
 - 📋 **Testsheet:** `docs/testing/banco/BL98-BENCH-TESTSHEET.html` (№ LP-UAT-20260718-BL98-BENCH, tri-state, sandbox).
-- 🐛 **2 bench fixes 2026-07-18 (`bb17e9b6`, on sandbox):** (1) **"Details" logged you out** in a new tab (as ralph) —
-  POS token was sessionStorage-only (per-tab); now mirrored to localStorage + each tab hydrates from it, so
-  Details/Postcard `target=_blank` tabs stay logged in (verified live). (2) **Postcard slow** → added an indeterminate
-  progress bar + "Building postcard…" pill on click (Angel's ask). i18n ×4, sw v161.
+- 🐛 **3 bench UX fixes 2026-07-18 (on sandbox, all verified live):**
+  (1) **`bb17e9b6` — "Details" logged you out** in a new tab (as ralph): POS token was sessionStorage-only (per-tab);
+  now mirrored to localStorage + each tab hydrates from it, so `target=_blank` tabs stay logged in.
+  (2) **`bb17e9b6` — Postcard slow** → indeterminate progress bar + "Building postcard…" pill on click.
+  (3) **`f238c096` — Details is now an edit-and-RETURN-to-bench loop** (Angel: "should go back to where I left off"):
+  Details opens the editor IN-TAB with a `return` link encoding the bench view (mode/gap/category/offset); the bench
+  restores that spot from the URL; after an edit-save catalog redirects back → the finished item drops off the list,
+  you're right where you were. Catalog header gained a 🧹 Cleanup link. i18n ×4, sw v162.
 - ▶ **On sandbox now — needs Angel human-green (run the testsheet), then the gated ladder to staging→prod.**
 
 **🐯 BL-99 · Label renderer size×flags** — widen `scripts/generate_label.py` (today: one fixed 62×37,
