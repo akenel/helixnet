@@ -170,9 +170,10 @@
                 </div>
             </template>
 
-            <!-- MANAGER ACTIONS -->
-            <!-- Guest kiosk — launch/preview the self-service scan & shop screen -->
-            <template x-if="user.isManager">
+            <!-- Guest kiosk — a FRONT-COUNTER tool: launch the self-service scan & shop screen on a
+                 guest-facing device. Gated isCashier (true for cashier/manager/admin) so Pam can open
+                 it at the counter too — the /pos/kiosk route is public (no login), so this is safe. -->
+            <template x-if="user.isCashier">
                 <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.open('/pos/kiosk','_blank')">
                     <div class="text-center py-8">
                         <span class="text-6xl mb-4 block">🖥️</span>
@@ -182,6 +183,7 @@
                 </div>
             </template>
 
+            <!-- MANAGER ACTIONS -->
             <template x-if="user.isManager">
                 <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.location.href='/pos/reports'">
                     <div class="text-center py-8">
