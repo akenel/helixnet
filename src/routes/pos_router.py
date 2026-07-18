@@ -1913,6 +1913,33 @@ async def _store_currency(db: AsyncSession) -> str:
         return "CHF"
 
 
+async def _apply_tender(db: AsyncSession, txn, amount_tendered, tender_currency):
+    """Multi-currency tender (Block 1) — resolve FOREIGN cash into the HOME currency.
+
+    Returns the HOME-currency amount tendered (Decimal). A home-currency or empty tender is returned
+    UNCHANGED (byte-identical to today). For a foreign cash tender we convert the face amount at the
+    shop's plan-rate, stamp txn.tender_currency/amount/rate, and hand back the home equivalent so the
+    cash gate + change are computed AND GIVEN in the home currency. No accepted rate → 400 (never guess).
+    """
+    home = await _store_currency(db)
+    tc = (tender_currency or "").strip().upper()
+    if amount_tendered is None or not tc or tc == home:
+        return amount_tendered
+    from src.services.currency import load_fx, convert
+    store = (await db.execute(
+        select(StoreSettingsModel).order_by(StoreSettingsModel.store_number))).scalars().first()
+    fx = load_fx(getattr(store, "fx_rates", None) if store else None)
+    conv = convert(amount_tendered, tc, home, fx)
+    if not conv:
+        raise HTTPException(
+            status_code=400,
+            detail=f"No accepted rate for {tc}. Set it in Settings → Tax, or take {home} cash.")
+    txn.tender_currency = tc
+    txn.tender_amount = Decimal(str(amount_tendered)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    txn.tender_rate = conv["rate"]
+    return Decimal(str(conv["base_amount"]))
+
+
 async def _reference_best_match(db: AsyncSession, name: str, barcode: str = "") -> Optional[dict]:
     """What our OWN supplier catalog already knows about this product. ASK THIS FIRST.
 
@@ -3922,6 +3949,9 @@ async def checkout_transaction(
         cart_age_restricted, customer, checkout.age_verified, current_user,
         await _resolve_cashier_uid(db, current_user), transaction.transaction_number)
 
+    # amount_tendered defaults to the home currency; the cash branch converts a FOREIGN tender to the
+    # home equivalent (Block 1) so the gate, change, and stored amount are all in the home currency.
+    home_tendered = checkout.amount_tendered
     # Validate cash payment
     if checkout.payment_method == PaymentMethod.CASH:
         # A cash sale physically lands in the drawer, so it MUST belong to an OPEN
@@ -3935,15 +3965,16 @@ async def checkout_transaction(
                 detail="Open your cash drawer before taking a cash sale.")
         if not checkout.amount_tendered:
             raise HTTPException(status_code=400, detail="Cash payment requires amount_tendered")
-        # Compare money at CENT precision. A JSON number like 226.17 reaches us as an
-        # imprecise Decimal (226.16999…), so a strict `tendered < total` falsely rejected an
-        # EXACT payment (the till already cent-rounds, so it showed change 0.00 then got a
-        # 400). Quantize both to cents before comparing + computing change.
-        tendered = Decimal(str(checkout.amount_tendered)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        # Multi-currency (Block 1): if paid in FOREIGN cash, convert the face amount to the home
+        # currency (stamps tender_currency/amount/rate on the sale). Then compare money at CENT
+        # precision — a JSON 226.17 arrives as 226.16999…, so quantize both before comparing/change.
+        home_tendered = await _apply_tender(db, transaction, checkout.amount_tendered, checkout.tender_currency)
+        tendered = Decimal(str(home_tendered)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         total_due = Decimal(str(transaction.total)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         if tendered < total_due:
             raise HTTPException(status_code=400, detail="Insufficient payment amount")
         transaction.change_given = tendered - total_due
+        home_tendered = tendered   # the home-currency value we store on the sale
 
     # 🌍-1 payments seam (M1): if this store has an electronic terminal provider configured,
     # drive it here. Default 'manual' → returns None → the sale completes exactly as today
@@ -3952,7 +3983,7 @@ async def checkout_transaction(
     await capture_on_terminal_if_configured(db, transaction)
 
     transaction.payment_method = checkout.payment_method
-    transaction.amount_tendered = checkout.amount_tendered
+    transaction.amount_tendered = home_tendered   # home-currency equivalent (foreign cash converted)
     transaction.status = TransactionStatus.COMPLETED
     transaction.completed_at = datetime.now(timezone.utc)
     transaction.updated_at = datetime.now(timezone.utc)

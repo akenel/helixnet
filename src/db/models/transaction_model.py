@@ -134,8 +134,22 @@ class TransactionModel(Base):
     change_given: Mapped[float | None] = mapped_column(
         Numeric(10, 2),
         nullable=True,
-        comment="Change returned to customer (cash only)"
+        comment="Change returned to customer (cash only), in the HOME currency"
     )
+
+    # Multi-currency TENDER (Block 1): when a customer pays in FOREIGN cash, the sale stays recorded in
+    # the home currency (subtotal/total/tax above stay home) — we stamp what was physically handed over
+    # so the drawer + receipt are honest. NULL tender_currency = paid in the home currency (byte-identical
+    # to today). amount_tendered/change_given are always the HOME-currency equivalents.
+    tender_currency: Mapped[str | None] = mapped_column(
+        String(8), nullable=True,
+        comment="Foreign cash currency handed over (NULL = paid in the home currency)")
+    tender_amount: Mapped[float | None] = mapped_column(
+        Numeric(12, 2), nullable=True,
+        comment="Face amount handed over in tender_currency (e.g. EUR 10.00)")
+    tender_rate: Mapped[float | None] = mapped_column(
+        Numeric(12, 6), nullable=True,
+        comment="Plan-rate applied: home_amount = tender_amount * tender_rate")
 
     # Receipt Information
     receipt_number: Mapped[str | None] = mapped_column(

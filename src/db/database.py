@@ -222,6 +222,12 @@ _ADDITIVE_COLUMNS: list[str] = [
     # backfill is a no-op and existing rows never collide. (Mirrors TransactionModel.client_uuid.)
     "ALTER TABLE transactions ADD COLUMN IF NOT EXISTS client_uuid UUID",
     "CREATE UNIQUE INDEX IF NOT EXISTS ix_transactions_client_uuid ON transactions (client_uuid)",
+    # Multi-currency tender (Block 1, 2026-07-18): foreign-cash detail on the sale. All nullable —
+    # NULL = paid in the home currency, byte-identical to today. total/subtotal/tax stay home currency;
+    # amount_tendered/change_given are the home-currency equivalents. See docs/SPEC-multi-currency-tender.md.
+    "ALTER TABLE transactions ADD COLUMN IF NOT EXISTS tender_currency VARCHAR(8)",
+    "ALTER TABLE transactions ADD COLUMN IF NOT EXISTS tender_amount NUMERIC(12,2)",
+    "ALTER TABLE transactions ADD COLUMN IF NOT EXISTS tender_rate NUMERIC(12,6)",
     # Artemis enriched-catalog foundation (2026-06-30, migration 010): store the enriched
     # record losslessly on products + a per-language translations table (the latter is a
     # NEW table, created by create_all() — only the column adds need ALTERs here).

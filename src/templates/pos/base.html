@@ -681,7 +681,7 @@
                         // push into the reactive store so already-painted money/dates re-render
                         try {
                             const s = (window.Alpine && Alpine.store) ? Alpine.store('cfg') : null;
-                            if (s) { s.currency = this.currency; s.locale = this.locale; s.denominations = this.denominations; s.regime = this.regime; s.store_name = this.store_name; }
+                            if (s) { s.currency = this.currency; s.locale = this.locale; s.denominations = this.denominations; s.regime = this.regime; s.store_name = this.store_name; s.vat_rate = this.vat_rate; s.vat_rate_reduced = this.vat_rate_reduced; }
                         } catch (e) {}
                         // PHASE 2 i18n: if the language was only a default guess (no ?lang / stored
                         // pref / JWT locale), the tenant locale from /config may now imply a
@@ -712,6 +712,8 @@
                 denominations: POSConfig.denominations,
                 regime: POSConfig.regime,
                 store_name: POSConfig.store_name,
+                vat_rate: POSConfig.vat_rate,             // reactive so the "incl. VAT (X%)" label
+                vat_rate_reduced: POSConfig.vat_rate_reduced,  // follows /config, not the 8.1 default
             });
         });
         function _cfg(k) {

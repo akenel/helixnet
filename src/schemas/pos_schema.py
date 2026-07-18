@@ -269,6 +269,10 @@ class CheckoutRequest(BaseModel):
     """Schema for checkout (payment processing)"""
     payment_method: PaymentMethod
     amount_tendered: Optional[Decimal] = Field(None, ge=0, description="For cash payments")
+    # Multi-currency tender (Block 1): the FOREIGN cash currency handed over (NULL = home currency).
+    # When set, amount_tendered is the FACE amount in THIS currency; the server converts to home at the
+    # shop's plan-rate, computes change in the HOME currency, and stamps the tender detail on the sale.
+    tender_currency: Optional[str] = Field(None, max_length=8, description="Foreign cash currency (NULL = home)")
     customer_id: Optional[UUID] = Field(None, description="Loyalty member this sale belongs to (CRM)")
     # Age gate: the cashier's explicit attestation that a walk-in (no of-age member) is 18+
     # (ID checked). REQUIRED by the server to sell an age-restricted (18+) line without an
@@ -290,6 +294,7 @@ class SaleCreate(BaseModel):
     lines: list[LineItemCreate] = Field(..., min_length=1, description="The cart (≥1 line)")
     payment_method: PaymentMethod
     amount_tendered: Optional[Decimal] = Field(None, ge=0, description="For cash payments")
+    tender_currency: Optional[str] = Field(None, max_length=8, description="Foreign cash currency (NULL = home); amount_tendered is then in it")
     customer_id: Optional[UUID] = Field(None, description="Loyalty member this sale belongs to (CRM)")
     discount_percent: Decimal = Field(default=Decimal("0.00"), ge=0, le=100,
                                       description="Cart-wide % discount applied once to the total")

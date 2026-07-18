@@ -143,9 +143,9 @@
                 <!-- Per-rate split: appears once any line carries the reduced (takeaway) rate -->
                 <div x-show="cartData.totals.vatReduced > 0" class="flex justify-between text-xs">
                     <span class="text-gray-400">
-                        <span x-text="POSConfig.vat_rate"></span>% <span x-text="formatPrice(cartData.totals.vatStandard)"></span>
+                        <span x-text="_cfg('vat_rate')"></span>% <span x-text="formatPrice(cartData.totals.vatStandard)"></span>
                         ·
-                        <span class="text-teal-600 font-semibold"><span x-text="POSConfig.vat_rate_reduced"></span>% <span x-text="formatPrice(cartData.totals.vatReduced)"></span></span>
+                        <span class="text-teal-600 font-semibold"><span x-text="_cfg('vat_rate_reduced')"></span>% <span x-text="formatPrice(cartData.totals.vatReduced)"></span></span>
                     </span>
                     <span class="text-teal-600 font-semibold uppercase tracking-wide" data-i18n="checkout.takeaway_tag">takeaway</span>
                 </div>
