@@ -58,3 +58,25 @@ def convert(amount, from_ccy: str, base_ccy: str = "CHF", fx: dict | None = None
         return None
     return {"base_amount": float(base_amt), "base_ccy": base_ccy,
             "rate": float(rate), "as_of": fx.get("as_of")}
+
+
+def to_tender(base_amount, to_ccy: str, base_ccy: str = "CHF", fx: dict | None = None) -> dict | None:
+    """A HOME/base amount → the foreign TENDER equivalent (what to collect if the customer pays in
+    ``to_ccy``). The inverse of ``convert``: ``tender = base / rate`` (rate = base units per 1 foreign).
+    Returns ``{tender_amount, to_ccy, rate, as_of}`` or None (same currency / no rate / bad amount)."""
+    if base_amount is None:
+        return None
+    to_ccy = (to_ccy or "").upper().strip()
+    base_ccy = (base_ccy or "CHF").upper().strip()
+    if not to_ccy or to_ccy == base_ccy:
+        return None
+    fx = fx or DEFAULT_FX
+    rate = (fx.get("rates") or {}).get(to_ccy)
+    if rate in (None, 0):
+        return None
+    try:
+        amt = (Decimal(str(base_amount)) / Decimal(str(rate))).quantize(Decimal("0.01"), ROUND_HALF_UP)
+    except (InvalidOperation, ValueError, TypeError, ZeroDivisionError):
+        return None
+    return {"tender_amount": float(amt), "to_ccy": to_ccy, "rate": float(rate), "as_of": fx.get("as_of")}
+

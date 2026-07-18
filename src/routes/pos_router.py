@@ -223,6 +223,8 @@ async def get_pos_config(db: AsyncSession = Depends(get_db_session)):
     _store = (await db.execute(
         select(StoreSettingsModel).order_by(StoreSettingsModel.store_number))).scalars().first()
     store_markup = getattr(_store, "default_markup_pct", None) if _store else None
+    from src.services.currency import load_fx as _load_fx
+    _fx = _load_fx(getattr(_store, "fx_rates", None) if _store else None)
     return {
         "vat_rate": settings.POS_VAT_RATE,
         "vat_rate_reduced": settings.POS_VAT_RATE_REDUCED,  # 2.6% — cafe takeaway food/drink
@@ -233,6 +235,7 @@ async def get_pos_config(db: AsyncSession = Depends(get_db_session)):
         "regime": regime,  # additive (PHASE 0): per-tenant regime/currency/locale + CH rates
         "store_name": store_name,  # PHASE 2: the tenant store name (closeout/Z-report header)
         "denominations": denominations,  # additive (PHASE 1): face values for the tenant currency
+        "fx": _fx,  # accepted-currency plan rates {base, as_of, rates} — foreign-tender display (Block 0)
         # BL-047b — the cost-eyeball config the cleanup card uses: the shop's default markup, the
         # per-class ABC defaults, and the pull-down choices. All estimates; a real cost always wins.
         "default_markup_pct": float(store_markup) if store_markup is not None else 50.0,
@@ -5735,6 +5738,7 @@ async def update_store_settings(
     _is_admin = any("pos-admin" in r for r in _roles)
     if not _is_admin:
         _admin_only = ("currency",   # fiscal identity — admin-only (not a manager/daily toggle)
+                       "fx_rates",    # accepted-currency plan rates — admin-only (touches money)
                        "cashier_max_discount", "manager_max_discount",
                        "loyalty_tier1_threshold", "loyalty_tier1_discount",
                        "loyalty_tier2_threshold", "loyalty_tier2_discount",
@@ -5754,6 +5758,25 @@ async def update_store_settings(
     # Currency (admin-only; already stripped above for a non-admin) — normalise to an ISO-ish code.
     if "currency" in update_data:
         update_data["currency"] = ((update_data["currency"] or "CHF").strip().upper()[:8]) or "CHF"
+
+    # Accepted-currency plan rates (admin-only; stripped for a non-admin). Validate + JSON-serialise:
+    # keep only positive numeric rates under uppercase codes; base = the shop's (home) currency; a shop
+    # that clears it falls back to currency.DEFAULT_FX. Never charge/derive from an unvalidated blob.
+    if "fx_rates" in update_data:
+        _fxr = update_data.pop("fx_rates")
+        _clean = {}
+        if isinstance(_fxr, dict):
+            for _k, _v in (_fxr.get("rates") or {}).items():
+                try:
+                    _r = float(_v)
+                except (TypeError, ValueError):
+                    continue
+                if _r > 0 and _k:
+                    _clean[str(_k).strip().upper()[:8]] = _r
+        _base = (update_data.get("currency") or settings.currency or "CHF")
+        _asof = str((_fxr or {}).get("as_of") or "custom")[:40] if isinstance(_fxr, dict) else "custom"
+        import json as _json
+        settings.fx_rates = _json.dumps({"base": _base, "as_of": _asof, "rates": _clean}) if _clean else None
 
     if "vat_rates" in update_data:
         rows = update_data.pop("vat_rates")

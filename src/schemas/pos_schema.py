@@ -481,6 +481,25 @@ class StoreSettingsBase(BaseModel):
                 return None
         return v if isinstance(v, list) else None
 
+    # Accepted-currency plan rates (multi-currency TENDER): {base, as_of, rates:{EUR:0.96,…}}. Stored as
+    # a JSON string; None → the currency.DEFAULT_FX table. ADMIN-only to change (update endpoint strips it).
+    fx_rates: Optional[dict] = Field(
+        default=None, description="Accepted currencies + plan rates {base, as_of, rates}. None → default table.")
+
+    @field_validator("fx_rates", mode="before")
+    @classmethod
+    def _parse_fx_rates(cls, v):
+        """JSON string (ORM TEXT via from_attributes) or a dict (API payload) → dict, else None."""
+        if v is None or v == "":
+            return None
+        if isinstance(v, str):
+            import json
+            try:
+                v = json.loads(v)
+            except Exception:
+                return None
+        return v if isinstance(v, dict) else None
+
     # Receipt Settings
     receipt_header: Optional[str] = Field(None, max_length=500)
     receipt_footer: Optional[str] = Field(None, max_length=500)
@@ -530,6 +549,7 @@ class StoreSettingsUpdate(BaseModel):
     # stays byte-identical. Server validation (≥1 row, exactly 1 default, unique codes, 0–100) runs
     # in the endpoint before it is JSON-serialised to the column.
     vat_rates: Optional[List[dict]] = Field(None)
+    fx_rates: Optional[dict] = Field(None)   # ADMIN-ONLY — accepted-currency plan rates {base,as_of,rates}
     receipt_header: Optional[str] = Field(None, max_length=500)
     receipt_footer: Optional[str] = Field(None, max_length=500)
     receipt_logo_url: Optional[str] = Field(None, max_length=500)

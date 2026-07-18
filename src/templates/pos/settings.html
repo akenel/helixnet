@@ -153,6 +153,28 @@
                         </div>
                         <p x-show="vatError" class="text-sm text-red-600 mt-2" x-text="vatError"></p>
                     </div>
+
+                    <!-- ACCEPTED CURRENCIES & RATES (multi-currency TENDER) — admin only -->
+                    <div class="border-t pt-4">
+                        <div class="flex items-center justify-between flex-wrap gap-2 mb-1">
+                            <h3 class="text-base font-bold text-gray-900">💱 Accepted currencies &amp; rates 🔒</h3>
+                            <button type="button" @click="fxRows.push({ccy:'',rate:''})" x-show="isAdmin" class="btn-secondary text-sm">➕ Add currency</button>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-3">Foreign <strong>cash</strong> you accept, at your own plan-rate. Rate = how many <strong x-text="form.currency||'CHF'"></strong> you give per 1 unit of that currency. Set once, review when you like. 🔒 Admin only. (Cards are unaffected — the customer's bank converts.)</p>
+                        <div class="space-y-2">
+                            <template x-for="(r, i) in fxRows" :key="i">
+                                <div class="grid grid-cols-12 gap-2 items-center">
+                                    <input type="text" x-model="r.ccy" :disabled="!isAdmin" class="col-span-4 md:col-span-2 input-field font-mono" placeholder="EUR">
+                                    <input type="number" step="0.0001" min="0" x-model="r.rate" :disabled="!isAdmin" class="col-span-4 md:col-span-3 input-field" placeholder="0.96">
+                                    <div class="col-span-3 md:col-span-5 text-xs text-gray-500">1 <span class="font-mono" x-text="(r.ccy||'?').toUpperCase()"></span> = <span x-text="r.rate||'?'"></span> <span x-text="form.currency||'CHF'"></span></div>
+                                    <div class="col-span-1 md:col-span-2 flex justify-end">
+                                        <button type="button" @click="fxRows.splice(i,1)" x-show="isAdmin" class="px-3 py-2 rounded-lg text-red-700 bg-red-50 hover:bg-red-100">🗑️</button>
+                                    </div>
+                                </div>
+                            </template>
+                            <p x-show="!fxRows.length" class="text-xs text-gray-400">No foreign currencies accepted yet — cash only in <span x-text="form.currency||'CHF'"></span>.</p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- RECEIPT & GRAPHICS -->
@@ -374,6 +396,7 @@
             canEditDiscounts: false, // discount caps are admin-only (self-cap risk)
             saving: false,
             form: {},
+            fxRows: [],            // editable accepted-currency rows [{ccy, rate}] (multi-currency tender)
             vatError: '',
             tab: 'identity',
             tabs: [
@@ -545,6 +568,9 @@
                             { code: 'B', label: 'reduced',  rate: '2.6', default: false },
                         ];
                     }
+                    // Multi-currency tender: build editable FX rows from the fx_rates dict the API returns.
+                    const _fxr = (this.form.fx_rates && this.form.fx_rates.rates) || {};
+                    this.fxRows = Object.keys(_fxr).map(k => ({ ccy: k, rate: _fxr[k] }));
                 }
                 catch (e) { console.error('load settings failed', e); showToast(t('settings.toast_load_settings_failed'), 'error'); }
             },
@@ -603,6 +629,16 @@
                     address_line1: F.address_line1, address_line2: F.address_line2,
                     city: F.city, postal_code: F.postal_code, country: F.country, founded_year: F.founded_year,
                     currency: F.currency,   // admin-only; server strips it for non-admins
+                    fx_rates: (() => {      // accepted-currency plan rates → {base, as_of, rates} (admin-only)
+                        const rates = {};
+                        (this.fxRows || []).forEach(r => {
+                            const c = (r.ccy || '').trim().toUpperCase();
+                            const v = parseFloat(r.rate);
+                            if (c && v > 0) rates[c] = v;
+                        });
+                        return Object.keys(rates).length
+                            ? { base: (F.currency || 'CHF'), as_of: 'custom', rates } : null;
+                    })(),
                     phone: F.phone, email: F.email, website: F.website,
                     facebook_url: F.facebook_url, instagram_url: F.instagram_url, opening_hours: F.opening_hours,
                     vat_number: F.vat_number, vat_rate: defRow ? defRow.rate : F.vat_rate,

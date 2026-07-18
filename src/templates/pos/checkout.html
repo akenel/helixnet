@@ -130,6 +130,16 @@
                     <span data-i18n="checkout.incl_vat">incl. VAT:</span>
                     <span x-text="formatPrice(cartData.totals.vat)"></span>
                 </div>
+                <!-- Multi-currency tender (Block 0): what to collect if the customer pays in a foreign
+                     CASH currency, at the shop's plan-rate. Read-only courtesy — cards convert bank-side. -->
+                <div x-show="foreignTenders().length" class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-amber-800 bg-amber-50 rounded-lg px-3 py-2 mt-1">
+                    <span class="font-semibold whitespace-nowrap">💱 pay in cash:</span>
+                    <span class="flex flex-wrap gap-x-3 gap-y-1 justify-end">
+                        <template x-for="ft in foreignTenders()" :key="ft.ccy">
+                            <span>≈ <span class="font-bold" x-text="ft.ccy"></span> <span x-text="ft.amount"></span></span>
+                        </template>
+                    </span>
+                </div>
                 <!-- Per-rate split: appears once any line carries the reduced (takeaway) rate -->
                 <div x-show="cartData.totals.vatReduced > 0" class="flex justify-between text-xs">
                     <span class="text-gray-400">
@@ -670,6 +680,24 @@
                 this.cartData.totals.vat = vatStd + vatRed;
                 this.cartData.totals.total = gross;
                 this.cartData.consumption = this.consumption;
+            },
+
+            // Multi-currency tender (Block 0): the total shown in each accepted FOREIGN cash currency,
+            // at the shop's plan-rate (home ÷ rate). Read-only courtesy for the cashier. Only when the
+            // fx table's base matches this shop's home currency (else those rates aren't for this shop).
+            foreignTenders() {
+                const fx = (window.POSConfig && POSConfig.fx) || null;
+                const home = ((window.POSConfig && POSConfig.currency) || 'CHF').toUpperCase();
+                if (!fx || !fx.rates || (fx.base || '').toUpperCase() !== home) return [];
+                const total = Number(this.cartData.totals.total) || 0;
+                if (total <= 0) return [];
+                const out = [];
+                for (const ccy of Object.keys(fx.rates)) {
+                    const rate = Number(fx.rates[ccy]);
+                    if (!(rate > 0) || ccy.toUpperCase() === home) continue;
+                    out.push({ ccy: ccy.toUpperCase(), amount: (total / rate).toFixed(2) });
+                }
+                return out;
             },
 
             clearMember() {
