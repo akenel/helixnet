@@ -512,6 +512,17 @@ both the list and the counts, so the counter can't drift from the list. `mode=so
   Details opens the editor IN-TAB with a `return` link encoding the bench view (mode/gap/category/offset); the bench
   restores that spot from the URL; after an edit-save catalog redirects back → the finished item drops off the list,
   you're right where you were. Catalog header gained a 🧹 Cleanup link. i18n ×4, sw v162.
+- 🍷 **`5dfee3fe` — Alcohol category added** (Angel: "no cat for alcohol??"): the 18+ CLASS existed but no
+  merchandising category; added end-to-end (skeleton + dropdown + emoji + canonical 'Alcohol'→group 'Bar & Alcohol'
+  + synonyms + classifier rule placed LAST so flavoured papers stay Papers). Real bottle → Alcohol+18+. Verified.
+- 🐛 **`5dfee3fe` — image_url 422 on save FIXED**: the edit form auto-pulls a supplier/CDN image URL that can exceed
+  500 chars → PUT rejected, blocking the save + return-to-bench. Widened image_url → Text (model) / 2048 (schema);
+  ALTERed sandbox VARCHAR(500)→TEXT. **⚠ PROD needs the same ALTER at promotion** (`ALTER TABLE products ALTER COLUMN
+  image_url TYPE TEXT;`). Verified: a 712-char URL saves. **⚠ create_all won't widen it — manual ALTER per env.**
+- ⚠️ **CATEGORY DATA MESS (seed) — do NOT blanket re-classify:** dry-run shows 613/618 "mismatch" but that's the lossy
+  classify→canonical funnel (CBD Gummies would wrongly become "CBD Flower"). Classifier is right on obvious cases
+  (Volcano→Vaporizers) but a blind sweep would corrupt others. Fix mis-seeded items **on the bench as you go**; a
+  careful targeted pass (esp. the 127 age-18 flag mismatches → compliance) is a separate, deliberate task, not a sweep.
 - ▶ **On sandbox now — needs Angel human-green (run the testsheet), then the gated ladder to staging→prod.**
 
 **🐯 BL-99 · Label renderer size×flags** — widen `scripts/generate_label.py` (today: one fixed 62×37,
