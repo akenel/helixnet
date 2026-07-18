@@ -238,7 +238,15 @@ payments alone. Design the `on_approved` hook so the fiscal emit is a pluggable 
    deferred to M2 (nothing to wait for without a provider).
 2. **M2 — Worldline TIM adapter.** Drive Felix's **existing ep2 terminals** (§4 matrix: AXIUM DX8000 / Move/5000,
    TWINT + cards) via TIM. ✅ terminals identified · 📧 ECR-activation email drafted 2026-07-18 (Felix → Worldline).
-   *Blocked on:* Worldline enabling the **ECR/ep2 package** + returning the **spec/SDK + terminal IP/port**.
+   - ✅ **ADAPTER + MOCK TERMINAL BUILT 2026-07-18 (against the mock — no hardware):** `src/payments/worldline.py`
+     (`WorldlineTIMAdapter` = the `PaymentProvider` + a `charge()` capture loop; `TimTcpTerminalLink` = the go-live
+     TCP transport skeleton, raises until spec) + `src/payments/mock_terminal.py` (`MockTerminal`, scriptable
+     approve/decline/abort/timeout, `axium_dx8000()`/`move_5000()`) + 12 tests in `test_worldline_adapter.py`
+     (2046 pass total). Visual twin: `docs/testing/banco/WORLDLINE-TERMINAL-SIM.html`.
+   - *Still blocked on:* Worldline enabling the **ECR/ep2 package** + returning the **spec/SDK + terminal IP/port**.
+     Go-live = fill in `TimTcpTerminalLink`'s 3 methods to the real wire format + register 'worldline' in
+     `resolver._ADAPTERS` + wire `capture_on_terminal_if_configured` to `adapter.charge()`. Nothing above the
+     transport changes — the sim/tests already prove the flow.
 3. **M3 — Human-green on the sandbox store, then the gate ladder** sandbox→staging→prod, backup-gated. One live
    low-value TWINT + card test charge on Felix's counter.
 4. **M4 — Refund/void + reconciliation report** (cent-precision match of `payments` vs Worldline settlement).
