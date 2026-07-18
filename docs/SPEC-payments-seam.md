@@ -162,6 +162,19 @@ fallback and the portable option. The email to Worldline asks them to confirm wh
 IP/port** → we build M2 (send amount → await approve/decline → record txn ref). No hardware purchase; no
 merchant-account change; TWINT rides the same integrated flow (must be confirmed by Worldline).
 
+### 📇 Worldline CH — contacts & reference pages (verified 2026-07-18)
+
+- **Email (send the ECR request here):** `customerservices@worldline.com`
+- **Address:** Worldline Schweiz AG, Hardturmstrasse 201, Postfach, 8021 Zürich · **Tel** +41 (0)848 83 20 00 ·
+  terminal hotline 0800 111 600 / 0848 000 601 (both off the terminal label).
+- **myPortal** — the merchant portal where Felix's terminals + transactions live (this is "the ref page for
+  Artemis's devices"). Access is requested by emailing a signed myPortal agreement to the address above.
+  `worldline.com/de-ch/home/main-navigation/solutions/merchants/products/value-added-solutions/myportal`
+- **TIM (Till Integration Module)** — Worldline's own product page for exactly what we're asking to enable:
+  "seamless automatic communication between your POS application and the ep2 payment terminals."
+  `worldline.com/de-ch/home/main-navigation/solutions/merchants/solutions-and-services/terminals/integration/tim`
+- **Support portal:** `support.worldline.com/de-ch` (merchant FAQ + terminal support).
+
 ---
 
 ## 5. Checkout integration (where it plugs in)
