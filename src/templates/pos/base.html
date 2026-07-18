@@ -724,10 +724,14 @@
         // Price formatting helper — currency + locale from /config (CHF/de-CH default).
         // The ONE money-display seam: every 'CHF ' + toFixed(2) leak routes through here.
         function formatPrice(amount) {
+            // Coerce non-finite (undefined / NaN / a bad parse) to 0 so no price field ever
+            // renders "CHF NaN" (Angel hit this on the checkout Subtotal). Degrade to CHF 0.00
+            // — visibly wrong is recoverable; "NaN" reads as broken. Seal-fix for ALL callers.
+            const n = Number(amount);
             return new Intl.NumberFormat(_cfg('locale'), {
                 style: 'currency',
                 currency: _cfg('currency')
-            }).format(amount);
+            }).format(Number.isFinite(n) ? n : 0);
         }
 
         // BL-26: the effective LINE total for a cart item at its quantity, honouring quantity-break

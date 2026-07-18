@@ -659,6 +659,10 @@
                     const v = lineGross * rate / (100 + rate);         // inclusive VAT contained in the gross
                     if (reduced) vatRed += v; else vatStd += v;
                 });
+                // Persist the freshly-summed subtotal so the "Subtotal" line renders the real value.
+                // BUGFIX: recalc wrote total/vat/discount but never subtotal, so the display kept the
+                // cart's stale/undefined totals.subtotal → "CHF NaN" (total was right, subtotal wasn't).
+                this.cartData.totals.subtotal = subtotal;
                 this.cartData.totals.discountAmount = this.discountAmount;
                 this.cartData.totals.memberDiscountAmount = this.memberDiscountAmount;
                 this.cartData.totals.vatStandard = vatStd;
