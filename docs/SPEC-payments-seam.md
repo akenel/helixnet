@@ -129,14 +129,38 @@ Fees at time of writing (verify at contract): **CH ~1.1–1.3%** in-person; **IT
 - **TIM** = Worldline's interface to drive **ep2** terminals from POS software over **LAN/WiFi**, OS-independent.
   (Modern alternative: Worldline **Terminal API** — Nexo Retailer v5.1, JSON.) The adapter is a thin local-network
   client speaking TIM to the terminal on the counter.
-- **What makes a terminal "ready" (the open question Angel is checking):** the terminal must be **ep2 + ECR-provisioned**
-  — Worldline flips it into till-integration mode and issues the **TIM integration package**. Most current CH models
-  (Yomani, Yoximo, Valina, Desk/Move series) support it; a standalone "manual" terminal needs Worldline to enable the
-  ECR profile — **usually a config on their side, not new hardware.**
-- **First action (Angel):** get Felix's terminal **model number** + whether it already talks to any till. That single
-  fact decides: ep2+ECR → we integrate; standalone-only → one call to Worldline to enable ECR.
+- **What makes a terminal "ready":** the terminal must be **ep2 + ECR-provisioned** — Worldline flips it into
+  till-integration mode and issues the **TIM integration package**. Most current CH models (Yomani, Yoximo, Valina,
+  Desk/Move series) support it; a standalone "manual" terminal needs Worldline to enable the ECR profile —
+  **usually a config on their side, not new hardware.**
 - `_worldline_config`: terminal IP/port, terminal id, TIM endpoint. No card data ever touches HelixPOS (PCI scope stays
   on the terminal) — we send amount, we get an approve/decline.
+
+### 🎯 THE BIG MATRIX — Felix's actual terminals (identified 2026-07-18 off shop photos)
+
+Both are Ingenico terminals on **Worldline** (ex-SIX Payment Services), both run **ep2** — so integration is
+**possible, not a dead-end.** The only missing step is Worldline enabling the ECR/ep2 integration interface (a
+registration on their side). Full labels: `docs/testing/banco/field-2026-07-08/BL-19-card-readers.md`.
+
+| Field | Terminal 1 — **AXIUM DX8000** (preferred) | Terminal 2 — **Move/5000** (fallback) |
+|-------|-------------------------------------------|----------------------------------------|
+| Type | Android smart POS (fixed counter) | Portable (CL / 4G / WiFi / BT) |
+| Acquirer | Worldline | Worldline |
+| Standard | ep2 | ep2 |
+| **TID** | **25409030** | **25145450** |
+| Part no. (PN) | TWT52011865A | TWB32012105T |
+| Serial / IMEI | SN 22BNHD885709 | IMEI 353085093029381 |
+| HVN | — | MOV50BC |
+| Connectivity | LAN / WiFi (Android) | 4G (Swisscom) / WiFi / BT |
+| Integration verdict | ✅ **cleaner target** — Android ep2, on-device or cloud API | ✅ works (LAN/TCP ECR); BT is *not* the till transport |
+| Worldline hotline | 0800 111 600 · 0848 000 601 | (same) |
+
+**Why AXIUM DX8000 leads:** Worldline's newer Android platform, cleaner ECR integration; the Move/5000 is the
+fallback and the portable option. The email to Worldline asks them to confirm which they recommend.
+
+**The unblock chain:** Worldline enables ECR on the TID(s) above → returns the **ep2-ECR spec/SDK + terminal
+IP/port** → we build M2 (send amount → await approve/decline → record txn ref). No hardware purchase; no
+merchant-account change; TWINT rides the same integrated flow (must be confirmed by Worldline).
 
 ---
 
@@ -177,8 +201,9 @@ payments alone. Design the `on_approved` hook so the fiscal emit is a pluggable 
    (adapter registry empty → resolves None → zero regression). 13 tests; full suite 2034 pass / 3 known-flaky.
    NOT deployed (invisible no-op — nothing to demo until an adapter lands). The "waiting for card" UI is
    deferred to M2 (nothing to wait for without a provider).
-2. **M2 — Worldline TIM adapter.** Drive Felix's **existing ep2 terminal** (TWINT + cards) via TIM. *Blocked on:*
-   his terminal **model number** + confirming TWINT is activated + Worldline enabling the **ECR/TIM package**.
+2. **M2 — Worldline TIM adapter.** Drive Felix's **existing ep2 terminals** (§4 matrix: AXIUM DX8000 / Move/5000,
+   TWINT + cards) via TIM. ✅ terminals identified · 📧 ECR-activation email drafted 2026-07-18 (Felix → Worldline).
+   *Blocked on:* Worldline enabling the **ECR/ep2 package** + returning the **spec/SDK + terminal IP/port**.
 3. **M3 — Human-green on the sandbox store, then the gate ladder** sandbox→staging→prod, backup-gated. One live
    low-value TWINT + card test charge on Felix's counter.
 4. **M4 — Refund/void + reconciliation report** (cent-precision match of `payments` vs Worldline settlement).
@@ -187,7 +212,8 @@ payments alone. Design the `on_approved` hook so the fiscal emit is a pluggable 
 
 ## 9. Open questions (Angel)
 
-- **Felix's Worldline terminal model** — the M4 unblock. (Get the model number.)
+- ✅ **Felix's Worldline terminal model — ANSWERED 2026-07-18.** 2× ep2: AXIUM DX8000 (TID 25409030) + Move/5000
+  (TID 25145450) — see §4 matrix. Now blocked on Worldline enabling ECR + returning the spec/IP (email sent via Felix).
 - SumUp merchant account: open a **sandbox** dev account now (free) for M1; the real CH/IT merchant contract comes at M2/M3.
 - Acquirer confirm at contract: exact CH + IT fee tiers, settlement timing, and whether the Solo is the right SKU vs
   the printer-integrated Terminal for Felix's counter.

@@ -37,12 +37,15 @@ is the north-star sprint, teed up behind the current NEXT ACTIONABLE hypercare i
     counter without it bleeds sales. SumUp's sandbox is also KYC-walled (forces real company+IBAN). **PARKED.**
   - **Worldline first** = Felix's *existing* acquirer, does **TWINT + PostFinance + all cards** on his ep2
     terminal via TIM. **He keeps his acquirer + rates, zero new hardware.**
-  - ✅ **TERMINALS IDENTIFIED 2026-07-18** (off shop photos): 2× Worldline/Ingenico, both TIM-capable —
-    **Move/5000 (TID 25145450, WiFi, preferred)** + **Axium DX8000 (TID 25409030)**. ▶ **NEXT ACTION (Angel):
-    send Worldline the TIM-activation request (drafted, German — in the payments memory)** → get TIM package + terminal IP.
-  - **Buildable NOW with no terminal:** M1 = the provider-agnostic seam (protocol + `payments` table + checkout
-    wiring + waiting-for-card UI, null provider = no regression). M2 = the Worldline TIM adapter (needs the terminal).
-  - Status: **NOT BUILT.** Next: (Tigs) build M1 seam · (Angel) Felix's terminal model → unblocks M2.
+  - ✅ **TERMINALS IDENTIFIED 2026-07-18** (off shop photos, full labels in `docs/testing/banco/field-2026-07-08/BL-19-card-readers.md`):
+    2× Ingenico/Worldline ep2, both integration-capable — **Axium DX8000 (TID 25409030, PN TWT52011865A, SN 22BNHD885709 —
+    preferred/cleaner target, Android ep2)** + **Move/5000 (TID 25145450, PN TWB32012105T, CL/4G/WiFi/BT — fallback)**.
+  - 📧 **EMAIL DRAFTED 2026-07-18 (EN, in Angel's Gmail)** — "Enable ECR/ep2 till integration on 2 Worldline terminals":
+    names BOTH exact units (TID + serials), asks Worldline to **register/activate integrated-payment mode** + hand back the
+    ep2-ECR spec/SDK + terminal IP/port + TWINT confirmation. ▶ **NEXT ACTION (Angel): fill customer/contract no. → SEND to Worldline.**
+  - ⏳ **STATUS: awaiting Worldline activation** (external dependency — no code progress possible on M2 until they reply with
+    the ep2 spec + terminal IP). M1 seam already BUILT/committed (provider-agnostic, null provider = no regression).
+  - **M2 = the Worldline ep2-ECR adapter** — unblocked the moment Worldline enables the interface + returns the spec/IP.
 - **🌍-2 · FISCAL CERTIFICATION — TSE / RT / CH.** 🐯👥 fiskaly for the German TSE (rent-the-cert), Italian
   RT, Swiss baseline. Architecture is ready — it's a **rentable plug-in, not a rebuild** (memory
   `banco-fiskaly-integration-brief`, `banco-fiscalized-markets-italy-germany`). Status: **ARCHITECTED, not
