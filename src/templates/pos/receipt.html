@@ -483,10 +483,19 @@
             // /config (regime.vat_rates); CH = [{A,8.1,default},{B,2.6}] → byte-identical to the
             // old STD/RED. A jurisdiction with N rates (IT 22/10/5/4) just serves a longer list.
             vatRates() {
-                const r = (window.POSConfig && POSConfig.regime && POSConfig.regime.vat_rates);
-                if (Array.isArray(r) && r.length) return r;
-                return [{ code: 'A', label: 'standard', rate: this.STD(), default: true },
-                        { code: 'B', label: 'reduced', rate: this.RED() }];
+                // A receipt shows the rate that was ACTUALLY CHARGED — derive the codes from the
+                // recorded line snapshots, not current config. So an old receipt stays truthful if the
+                // shop later changes its rate, AND a 22.1% sale shows 22.1% (was reading the 8.1 default
+                // via the window.POSConfig bug). Distinct line rates → codes, standard (highest) = A.
+                const lines = this.transaction.line_items || [];
+                const rates = [...new Set(lines.map(i => parseFloat(i.vat_rate)).filter(r => !isNaN(r)))];
+                if (!rates.length) return [{ code:'A', label:'standard', rate:this.STD(), default:true },
+                                           { code:'B', label:'reduced', rate:this.RED() }];
+                rates.sort((a, b) => b - a);   // standard (highest) first = A, then B, C…
+                const labels = ['standard', 'reduced', 'reduced-2', 'reduced-3'];
+                return rates.map((rate, i) => ({
+                    code: String.fromCharCode(65 + i), label: labels[i] || ('rate-' + (i + 1)),
+                    rate, default: i === 0 }));
             },
             defaultCode() {
                 const rt = this.vatRates();
