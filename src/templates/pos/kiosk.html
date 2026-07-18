@@ -28,6 +28,14 @@
 </style></head>
 <body x-data="kiosk()" x-init="init()" @click="refocus()">
 
+<!-- Assisted-mode badge — shown ONLY when a cashier launched this kiosk (staff powers on). A guest
+     device never has a pos_token, so it never appears there. -->
+<div x-show="staff" style="display:none"
+     class="fixed top-3 left-3 z-50 px-3 py-1.5 rounded-full text-sm font-bold bg-amber-400 text-emerald-950 shadow-lg">
+  👑 <span x-text="'Assisted · ' + staffName"></span>
+</div>
+
+
   <!-- The scanner types here no matter what's on screen (hardware scanner = keyboard). -->
   <input x-ref="scanInput" class="off-focus" @keydown.enter.prevent="doScan(scanBuffer); scanBuffer=''"
          x-model="scanBuffer" aria-hidden="true" autocomplete="off">
@@ -341,6 +349,13 @@
     <div class="text-7xl mb-5">🤔</div>
     <p class="text-2xl font-semibold max-w-xl mb-3" x-text="t('notFound')"></p>
     <p class="text-emerald-200/50 mb-8" x-text="lastBarcode"></p>
+    <!-- Assisted mode: a miss isn't a dead end — Pam creates the product now. Hands off to the
+         till's born-once create flow with the scanned barcode prefilled (SPEC-assisted-kiosk M1). -->
+    <button x-show="staff" style="display:none"
+            @click="location.href='/pos/scan?capture=' + encodeURIComponent(lastBarcode || '')"
+            class="mb-4 px-7 py-4 rounded-2xl bg-amber-400 hover:bg-amber-300 text-emerald-950 text-lg font-bold">
+      ➕ <span x-text="t('createProduct')"></span>
+    </button>
     <button @click="reset()" class="px-7 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-emerald-950 text-lg font-bold">
       ← <span x-text="t('another')"></span>
     </button>
@@ -369,6 +384,8 @@
       cartCode: '',       // the in-progress held-order code (cleared after each send)
       sentCode: '',       // the code shown on the "order sent" screen
       pQty: 1,            // quantity stepper on the product view
+      staff: false,       // assisted mode: a cashier launched this (?staff=1 + a valid pos_token in-tab)
+      staffName: '',      // the cashier's handle, shown in the assisted-mode badge
 
       langs: [
         { code:'de', flag:'🇩🇪', label:'Deutsch' },
@@ -381,25 +398,30 @@
              typeHint:'nach Name oder Barcode suchen', looking:'Suche…', printCard:'Karte drucken', details:'Details', another:'Neu scannen',
              scanNext:'Einfach das nächste Produkt scannen', age:'18+ Ausweis nötig', pickOne:'Welches Produkt?',
              useCamera:'Mit Kamera scannen', onPhone:'Oder auf deinem Handy öffnen', noCamera:'Keine Kamera verfügbar. Bitte den Scanner oder die Eingabe nutzen.',
-             notFound:'Dieses Produkt haben wir nicht gefunden. Bitte frag unser Team.' },
+             notFound:'Dieses Produkt haben wir nicht gefunden. Bitte frag unser Team.', createProduct:'Produkt jetzt anlegen' },
         fr:{ head:'Scannez un produit', sub:'Tous les détails — dans votre langue.', s1:'Scanner', s2:'Voir', s3:'Imprimer une carte',
              typeHint:'rechercher par nom ou code-barres', looking:'Recherche…', printCard:'Imprimer une carte', details:'Détails', another:'Nouveau scan',
              scanNext:'Scannez simplement le produit suivant', age:'18+ pièce d’identité requise', pickOne:'Quel produit ?',
              useCamera:'Scanner avec la caméra', onPhone:'Ou ouvrez-le sur votre téléphone', noCamera:'Pas de caméra. Utilisez le scanner ou la saisie.',
-             notFound:'Nous n’avons pas trouvé ce produit. Merci de demander à notre équipe.' },
+             notFound:'Nous n’avons pas trouvé ce produit. Merci de demander à notre équipe.', createProduct:'Créer le produit' },
         it:{ head:'Scansiona un prodotto', sub:'Tutti i dettagli — nella tua lingua.', s1:'Scansiona', s2:'Guarda', s3:'Stampa una card',
              typeHint:'cerca per nome o codice a barre', looking:'Ricerca…', printCard:'Stampa una card', details:'Dettagli', another:'Nuova scansione',
              scanNext:'Scansiona semplicemente il prossimo prodotto', age:'18+ documento richiesto', pickOne:'Quale prodotto?',
              useCamera:'Scansiona con la fotocamera', onPhone:'Oppure aprilo sul tuo telefono', noCamera:'Nessuna fotocamera. Usa lo scanner o digita.',
-             notFound:'Non abbiamo trovato questo prodotto. Chiedi al nostro team.' },
+             notFound:'Non abbiamo trovato questo prodotto. Chiedi al nostro team.', createProduct:'Crea il prodotto' },
         en:{ head:'Scan a product', sub:'Every detail — in your language.', s1:'Scan', s2:'See it', s3:'Print a card',
              typeHint:'search by name or barcode', looking:'Looking…', printCard:'Print a card', details:'Details', another:'Scan another',
              scanNext:'Just scan the next product', age:'18+ ID required', pickOne:'Which one?',
              useCamera:'Scan with camera', onPhone:'Or open it on your phone', noCamera:'No camera available. Use the scanner or type it in.',
-             notFound:'We couldn’t find that product. Please ask our team.' },
+             notFound:'We couldn’t find that product. Please ask our team.', createProduct:'Create this product' },
       },
 
       t(k){ return (this.STR[this.lang] || this.STR.en)[k] || (this.STR.en[k] || k); },
+
+      // Decode a JWT payload just to greet the cashier by name in the assisted badge (UTF-8 safe).
+      _jwtName(tok){ try { const b = tok.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+        const p = JSON.parse(decodeURIComponent(escape(atob(b))));
+        return p.preferred_username || p.name || p.given_name || 'Staff'; } catch(e){ return 'Staff'; } },
 
       MEMBER: {
         de:{ join:'Mitglied werden — {pct}% Rabatt heute', joinTitle:'Mitglied werden', joinSub:'{pct}% auf deine erste Bestellung. Dauert 20 Sekunden.',
@@ -453,6 +475,16 @@
       get cartAfter(){ return (this._cartNum() * (1 - this.cartDiscountPct / 100)).toFixed(2); },
 
       init(){
+        // Assisted (staff) mode: launched from a cashier's dashboard (?staff=1) with a POS session
+        // in this tab. A new tab from window.open inherits a COPY of the opener's sessionStorage
+        // (same-origin), so Pam's pos_token is here; a cold guest device has none → stays pure guest.
+        // The server still enforces the staff role on every create/sale call — this flag is only an
+        // affordance (SPEC-assisted-kiosk M1).
+        try {
+          const sp = new URLSearchParams(location.search);
+          const tok = sessionStorage.getItem('pos_token');
+          if (sp.get('staff') === '1' && tok) { this.staff = true; this.staffName = this._jwtName(tok); }
+        } catch(e){}
         // remember the guest's language choice within a session
         const saved = sessionStorage.getItem('kiosk_lang');
         if (saved && this.STR[saved]) this.lang = saved;

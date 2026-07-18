@@ -895,6 +895,17 @@
                 this.maxDiscount = this.user.isAdmin ? 100 : (this.user.isManager ? 25 : 10);
                 this.loadDiscountCap();
 
+                // Assisted-kiosk hand-off (SPEC-assisted-kiosk M1): Pam scanned an unknown item at
+                // the kiosk and tapped "Create this product" → she lands here with ?capture=<barcode>.
+                // Open the born-once create-on-fly modal prefilled with that barcode, then clean the URL.
+                try {
+                    const cap = new URLSearchParams(location.search).get('capture');
+                    if (cap) {
+                        this.$nextTick(() => this.openLazyCapture(cap));
+                        history.replaceState({}, document.title, '/pos/scan');
+                    }
+                } catch (e) {}
+
                 // Restore cart from sessionStorage if coming back from checkout (Edit Cart)
                 const storedCart = sessionStorage.getItem('pos_cart');
                 if (storedCart) {

@@ -174,7 +174,7 @@
                  guest-facing device. Gated isCashier (true for cashier/manager/admin) so Pam can open
                  it at the counter too — the /pos/kiosk route is public (no login), so this is safe. -->
             <template x-if="user.isCashier">
-                <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.open('/pos/kiosk','_blank')">
+                <div class="card hover:shadow-xl transition cursor-pointer" onclick="window.open('/pos/kiosk?staff=1','_blank')">
                     <div class="text-center py-8">
                         <span class="text-6xl mb-4 block">🖥️</span>
                         <h3 class="text-2xl font-bold text-gray-900 mb-2" data-i18n="dashboard.kiosk">Guest Kiosk</h3>
