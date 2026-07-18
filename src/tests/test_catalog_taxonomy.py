@@ -11,7 +11,31 @@ Pure function, no DB/network — fast regression guard on classify().
 """
 from src.services.catalog_taxonomy import (
     classify, class_is_age_restricted, reconcile_age, resolve_class_on_create,
+    canonicalize_category, CATEGORIES,
 )
+
+
+# ---- Alcohol: a real merchandising category (Angel: "no cat for alcohol??") ----
+
+def test_alcohol_is_a_category_and_survives_the_funnel():
+    assert "Alcohol" in CATEGORIES
+    # the funnel must KEEP 'Alcohol' (its own group), not wipe it to Unsorted
+    assert canonicalize_category("Alcohol") == ("Alcohol", "Bar & Alcohol")
+    # common ways it's written / imported all funnel to Alcohol
+    for s in ("Alkohol", "Beer", "Bier", "Wine", "Wein", "Spirits", "Spirituosen"):
+        assert canonicalize_category(s)[0] == "Alcohol", s
+
+
+def test_real_bottle_files_under_alcohol_and_flags_18plus():
+    for t in ("Absolut Vodka 0.7L", "Feldschlösschen Bier", "Gin Bombay Sapphire", "Rum Havana Club"):
+        cat, cls, age = classify(t)
+        assert cat == "Alcohol" and cls == "alcohol" and age is True, t
+
+
+def test_flavoured_papers_are_not_mislabelled_alcohol():
+    # "Rum Flavour Papers" is rolling papers, NOT alcohol — its own product rule wins, class stays open
+    cat, cls, age = classify("Juicy Jay Rum Flavour Papers")
+    assert cat == "Papers & Filters" and cls == "standard" and age is False
 
 
 def _ft(cg2, cg1="Headshop"):

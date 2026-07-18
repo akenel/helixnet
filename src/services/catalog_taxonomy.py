@@ -20,7 +20,7 @@ import re
 CATEGORIES = [
     "CBD & Hemp", "Edibles", "Creams & Topicals", "Papers & Filters", "Grinders",
     "Lighters", "Pipes & Bongs", "Vaporizers", "E-Liquids", "Tobacco & Cigarettes",
-    "Grow Supplies", "Café", "Merch", "Accessories", "Other",
+    "Alcohol", "Grow Supplies", "Café", "Merch", "Accessories", "Other",
 ]
 
 # --- CATEGORY EMOJI (display only — never behaviour) -----------------------------------------
@@ -34,7 +34,7 @@ CATEGORY_EMOJI = {
     # skeleton (CATEGORIES above)
     "CBD & Hemp": "🌿", "Edibles": "🍬", "Creams & Topicals": "🧴", "Papers & Filters": "📄",
     "Grinders": "⚙️", "Lighters": "🔥", "Pipes & Bongs": "🌀", "Vaporizers": "💨",
-    "E-Liquids": "🧪", "Tobacco & Cigarettes": "🚬", "Grow Supplies": "🌱", "Café": "☕",
+    "E-Liquids": "🧪", "Tobacco & Cigarettes": "🚬", "Alcohol": "🍷", "Grow Supplies": "🌱", "Café": "☕",
     "Merch": "👕", "Accessories": "🎒", "Other": "🏷️",
     # common aliases / demo-seed names so existing data also looks right
     "CBD": "🌿", "Hemp": "🌿", "Cafe": "☕", "Coffee": "☕", "Bar": "🍺", "Beer": "🍺",
@@ -200,6 +200,10 @@ _CATEGORY_RULES = [
     (re.compile(r"\bgrow|dünger|substrat|\berde\b|\bseed|\bsamen|\bzelt|grow.?lamp|nährstoff", re.I), "Grow Supplies"),
     (re.compile(r"shirt|hoodie|\bcap\b|mütze|sticker|poster|patch|\bpin\b", re.I),     "Merch"),
     (re.compile(r"tray|ashtray|aschenbecher|storage|\bbox\b|\betui|stash|waage|scale|brush|reinig|tasche|portemonnaie|\bhalter\b|befeuchter|humidor", re.I), "Accessories"),
+    # Alcohol LAST — same _ALCOHOL marker as the 18+ class, so a real bottle (vodka/bier/gin…) files
+    # under Alcohol AND flags 18+ together. Placed last so a flavoured PAPER/EDIBLE/E-LIQUID ("Rum
+    # Flavour Papers") is caught by its own product rule first and never mislabelled Alcohol.
+    (_ALCOHOL,                                                                   "Alcohol"),
 ]
 
 # FourTwenty's own clean buckets we trust as-is (only "Accessories"/"Themed"/"Promotions" are the dump).
@@ -323,6 +327,7 @@ def resolve_class_on_create(name: str | None, product_class: str | None,
 # ============================================================================
 CANONICAL_LABEL_GROUP = {
     "Accessories (general)": "Unsorted / System",
+    "Alcohol": "Bar & Alcohol",
     "Apparel & Textiles": "Lifestyle & Gifts",
     "Ashtrays": "Smoking Gear",
     "Blunts & Wraps": "Papers & Rolling",
@@ -377,6 +382,16 @@ CANONICAL_LABEL_GROUP = {
 CATEGORY_SYNONYMS = {
     "Accessories": "Accessories (general)",
     "Accessories (general)": "Accessories (general)",
+    # Alcohol (its own 18+ merchandising line) + the common ways it's written / imported.
+    "Alcohol": "Alcohol",
+    "Alkohol": "Alcohol",
+    "Beer": "Alcohol",
+    "Bier": "Alcohol",
+    "Wine": "Alcohol",
+    "Wein": "Alcohol",
+    "Spirits": "Alcohol",
+    "Spirituosen": "Alcohol",
+    "Liquor": "Alcohol",
     "Apparel & Textiles": "Apparel & Textiles",
     "Aschenbecher": "Ashtrays",
     "Ashtrays": "Ashtrays",

@@ -107,7 +107,7 @@ class ProductBase(BaseModel):
     vending_compatible: bool = Field(default=False, description="Can be sold via vending machine")
     vending_slot: Optional[int] = Field(None, description="Vending machine slot number")
     # Catalog picture + supplier + reorder fields (BL-88 catalog dashboard / P4 reorder)
-    image_url: Optional[str] = Field(None, max_length=500, description="Catalog picture URL")
+    image_url: Optional[str] = Field(None, max_length=2048, description="Catalog picture URL (supplier/CDN URLs run long)")
     supplier_name: Optional[str] = Field(None, max_length=100, description="Supplier")
     supplier_price: Optional[Decimal] = Field(None, ge=0, description="Supplier's suggested/reference price (RRP) — kept alongside our editable price so we can show it as a grayed reference to beat")
     price_tiers: Optional[list] = Field(None, description="BL-26 quantity-break tiers: [{min_qty, unit_price}, ...] ascending; empty = flat price")
@@ -145,7 +145,7 @@ class ProductUpdate(BaseModel):
     product_class: Optional[str] = Field(None, max_length=40)
     vending_compatible: Optional[bool] = None
     vending_slot: Optional[int] = None
-    image_url: Optional[str] = Field(None, max_length=500)
+    image_url: Optional[str] = Field(None, max_length=2048)  # Text column; supplier/CDN URLs run long
     supplier_name: Optional[str] = Field(None, max_length=100)  # match DB varchar(100)
     supplier_price: Optional[Decimal] = Field(None, ge=0)
     price_tiers: Optional[list] = Field(None)

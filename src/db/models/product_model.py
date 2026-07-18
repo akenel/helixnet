@@ -223,9 +223,9 @@ class ProductModel(Base):
 
     # Product Images
     image_url: Mapped[str | None] = mapped_column(
-        String(500),
+        Text,
         nullable=True,
-        comment="Primary product image URL"
+        comment="Primary product image URL (Text — supplier/CDN URLs routinely exceed 500 chars)"
     )
 
     # La Piazza bridge (Artemis Premium) -- push-once-then-decouple.
