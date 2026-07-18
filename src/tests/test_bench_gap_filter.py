@@ -9,10 +9,11 @@ import uuid
 from decimal import Decimal
 
 import pytest
+from datetime import datetime, timezone, timedelta
 from sqlalchemy import delete
 
 from src.db.models import LineItemModel, ProductModel
-from src.routes.pos_router import _bench_queue
+from src.routes.pos_router import _bench_queue, _readiness
 
 
 def _p(name, **kw):
@@ -69,3 +70,53 @@ async def test_unknown_gap_falls_back_to_all(db_session):
     r = await _bench_queue(db_session, limit=20, offset=0, category=None, gap="bogus")
     assert r["gap"] == "all"
     assert r["remaining"] == 4
+
+
+# ---- Rookie workbench: readiness score, date scope, "keep tabs" notes ----
+
+def test_readiness_flags_lazy_done():
+    # cost + category + photo present but a 3-char description → NOT really done
+    weak = ProductModel(sku="rk1", name="Bong XL", price=1.0, category="Pipes & Bongs",
+                        cost=Decimal("1"), image_url="http://x/i.jpg", description="big")
+    score, gripes = _readiness(weak)
+    assert "description" in gripes and score < 100
+    # a proper record scores 100 with no gripes
+    good = ProductModel(sku="rk2", name="Bong XL", price=1.0, category="Pipes & Bongs",
+                        cost=Decimal("1"), image_url="http://x/i.jpg",
+                        description="A sturdy 40cm glass beaker bong with ice notches and a diffuser downstem.")
+    assert _readiness(good) == (100, [])
+
+
+def test_readiness_flags_unsorted_category():
+    p = ProductModel(sku="rk3", name="Thing", price=1.0, category="Unsorted",
+                     cost=Decimal("1"), image_url="http://x/i.jpg",
+                     description="A decent, long-enough description of the thing right here.")
+    _, gripes = _readiness(p)
+    assert "category" in gripes
+
+
+@pytest.mark.asyncio
+async def test_period_yesterday_scopes_by_created_at(db_session):
+    await db_session.execute(delete(LineItemModel))
+    await db_session.execute(delete(ProductModel))
+    now = datetime.now(timezone.utc)
+    db_session.add(_p("Yday", created_at=(now - timedelta(days=1)).replace(hour=12)))
+    db_session.add(_p("Old",  created_at=(now - timedelta(days=10))))
+    await db_session.commit()
+    r = await _bench_queue(db_session, limit=20, offset=0, category=None, period="yesterday")
+    names = {i["name"] for i in r["items"]}
+    assert "Yday" in names and "Old" not in names
+    assert r["period"] == "yesterday"
+
+
+@pytest.mark.asyncio
+async def test_noted_filter_and_work_note_roundtrip(db_session):
+    await db_session.execute(delete(LineItemModel))
+    await db_session.execute(delete(ProductModel))
+    db_session.add(_p("HasNote", work_note="no cost yet — need the delivery slip"))
+    db_session.add(_p("NoNote"))
+    await db_session.commit()
+    r = await _bench_queue(db_session, limit=20, offset=0, category=None, noted=True)
+    assert {i["name"] for i in r["items"]} == {"HasNote"}
+    assert r["items"][0]["work_note"] == "no cost yet — need the delivery slip"
+    assert r["gap_counts"]["noted"] == 1

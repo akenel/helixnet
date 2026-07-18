@@ -257,6 +257,7 @@ _ADDITIVE_COLUMNS: list[str] = [
     "ALTER TABLE products ADD COLUMN IF NOT EXISTS needs_translation BOOLEAN NOT NULL DEFAULT FALSE",
     # §6c SHARE rail permalink (QR target).
     "ALTER TABLE products ADD COLUMN IF NOT EXISTS qr_url VARCHAR(500)",
+    "ALTER TABLE products ADD COLUMN IF NOT EXISTS work_note TEXT",
     "CREATE INDEX IF NOT EXISTS ix_products_product_group ON products (product_group)",
     "CREATE INDEX IF NOT EXISTS ix_products_source_id ON products (source_id)",
     # Supplier Registry (2026-06-30, migration 011): formalize each import SOURCE as a

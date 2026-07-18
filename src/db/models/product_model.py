@@ -228,6 +228,15 @@ class ProductModel(Base):
         comment="Primary product image URL (Text — supplier/CDN URLs routinely exceed 500 chars)"
     )
 
+    # Rookie workbench (BL-98): a PRIVATE operator note — why an item is parked + the next step
+    # ("need the delivery slip for cost", "confirm supplier", "find a sharper pic"). Bench-only,
+    # never customer-facing / on a receipt. Lets whoever finishes the catalog keep tabs so they
+    # never stare at an item wondering "what now".
+    work_note: Mapped[str | None] = mapped_column(
+        Text, nullable=True,
+        comment="Private bench note: why parked + next action (never customer-facing)"
+    )
+
     # La Piazza bridge (Artemis Premium) -- push-once-then-decouple.
     # When the shop publishes this product to the La Piazza marketplace it lands as a
     # DRAFT under the shop's business account; we record the listing id/slug so we can

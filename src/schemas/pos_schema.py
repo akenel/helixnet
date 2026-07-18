@@ -146,6 +146,7 @@ class ProductUpdate(BaseModel):
     vending_compatible: Optional[bool] = None
     vending_slot: Optional[int] = None
     image_url: Optional[str] = Field(None, max_length=2048)  # Text column; supplier/CDN URLs run long
+    work_note: Optional[str] = Field(None, max_length=2000, description="Private bench note (why parked + next step)")
     supplier_name: Optional[str] = Field(None, max_length=100)  # match DB varchar(100)
     supplier_price: Optional[Decimal] = Field(None, ge=0)
     price_tiers: Optional[list] = Field(None)

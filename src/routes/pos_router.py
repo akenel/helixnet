@@ -5605,6 +5605,8 @@ async def get_cleanup_queue(
     offset: int = 0,
     category: Optional[str] = None,
     gap: Optional[str] = None,
+    period: Optional[str] = None,
+    noted: bool = False,
     db: AsyncSession = Depends(get_db_session),
     current_user: dict = Depends(require_manager_or_admin()),
 ):
@@ -5619,7 +5621,8 @@ async def get_cleanup_queue(
 
     Cashier never edits the catalog/cost — they ring it in; the manager sets it up here."""
     if mode == "bench":
-        return await _bench_queue(db, limit=limit, offset=offset, category=category, gap=gap)
+        return await _bench_queue(db, limit=limit, offset=offset, category=category,
+                                  gap=gap, period=period, noted=noted)
 
     # ---- mode=sold (original) ------------------------------------------------------------
     # Units + revenue + last-sold per real product, over ALL completed sales (giveaways excluded).
@@ -5684,8 +5687,55 @@ async def get_cleanup_queue(
     return {"items": items, "count": len(items), "mode": "sold"}
 
 
+# Rookie workbench — a description shorter than this "looks done" but says nothing.
+_WEAK_DESC_MIN = 40
+
+
+def _bench_period_bounds(period):
+    """(lo, hi) UTC datetimes for the created_at scope, or (None, None) for all-time.
+
+    The rookie works a BOUNDED batch — 'yesterday's new items' or 'this week' — so the pile is
+    finite and finishable, not a bottomless catalog. Day boundaries are UTC (good enough for a
+    bench filter; items are created during business hours)."""
+    period = (period or "all").strip().lower()
+    if period in ("", "all"):
+        return (None, None)
+    now = datetime.now(timezone.utc)
+    start_today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    if period == "today":
+        return (start_today, None)
+    if period == "yesterday":
+        return (start_today - timedelta(days=1), start_today)
+    if period == "week":                       # Monday 00:00 UTC → now (this week)
+        return (start_today - timedelta(days=start_today.weekday()), None)
+    return (None, None)
+
+
+def _readiness(p):
+    """Rule-based 'is this REALLY finished' read — catches the lazy 'done' the hard gaps miss:
+    still Unsorted, a one-word description, no picture. Returns (score 0-100, [gripe codes]).
+
+    Note vs the four hard gaps: a WEAK description (present but < 40 chars, or just the name) and
+    an UNSORTED category both pass the gap gate yet aren't really done — this is what surfaces them.
+    A future 🤖 AI review deepens this (thin-but-long copy, blurry photo)."""
+    cat = (p.category or "").strip()
+    desc = (p.description or "").strip()
+    checks = {
+        "category": bool(cat) and cat.lower() != "unsorted"
+                    and cat.lower() not in [c.lower() for c in _HALFBAKED_CATEGORIES],
+        "cost": p.cost is not None,
+        "photo": bool((p.image_url or "").strip()),
+        "description": bool(desc) and len(desc) >= _WEAK_DESC_MIN
+                       and desc.lower() != (p.name or "").strip().lower(),
+    }
+    gripes = [k for k, ok in checks.items() if not ok]
+    score = round(100 * (len(checks) - len(gripes)) / len(checks))
+    return score, gripes
+
+
 async def _bench_queue(db: AsyncSession, *, limit: int, offset: int,
-                       category: Optional[str], gap: Optional[str] = None):
+                       category: Optional[str], gap: Optional[str] = None,
+                       period: Optional[str] = None, noted: bool = False):
     """BL-98 ENRICHMENT QUEUE — the migration workbench (back office, not the till).
 
     Hands back the next `limit` UNFINISHED products plus the progress counter. Ordered by
@@ -5710,8 +5760,16 @@ async def _bench_queue(db: AsyncSession, *, limit: int, offset: int,
     scope = [ProductModel.is_active == True]
     if category:
         scope.append(func.lower(_bench_category_expr()) == category.strip().lower())
+    # Date scope — the rookie's bounded batch (yesterday / this week / …), by when it was added.
+    lo, hi = _bench_period_bounds(period)
+    if lo is not None:
+        scope.append(ProductModel.created_at >= lo)
+    if hi is not None:
+        scope.append(ProductModel.created_at < hi)
 
     active_gap = _bench_gap_expr(gap)    # the filter for THIS view (one kind, or all four)
+    noted_expr = func.coalesce(func.trim(ProductModel.work_note), "") != ""   # has a parked note
+    list_clause = and_(active_gap, noted_expr) if noted else active_gap
 
     async def _count(clause):
         return (await db.execute(
@@ -5721,16 +5779,17 @@ async def _bench_queue(db: AsyncSession, *, limit: int, offset: int,
     total = (await db.execute(
         select(func.count()).select_from(ProductModel).where(and_(*scope))
     )).scalar_one()
-    remaining = await _count(active_gap)   # unfinished FOR THIS FILTER (drives done/total)
+    remaining = await _count(list_clause)   # unfinished FOR THIS FILTER (drives done/total)
 
-    # Per-gap counts within the shelf → the numbers on the filter chips.
+    # Per-gap counts within the shelf/period → the numbers on the filter chips (incl. 🗒️ noted).
     gap_counts = {"all": await _count(_bench_gap_clause())}
     for k in _BENCH_GAP_KINDS:
         gap_counts[k] = await _count(_bench_gap_expr(k))
+    gap_counts["noted"] = await _count(and_(_bench_gap_clause(), noted_expr))
 
     rows = (await db.execute(
         select(ProductModel)
-        .where(and_(*scope, active_gap))
+        .where(and_(*scope, list_clause))
         .order_by(_bench_category_expr().asc(), ProductModel.name.asc())
         .limit(limit).offset(offset)
     )).scalars().all()
@@ -5738,6 +5797,7 @@ async def _bench_queue(db: AsyncSession, *, limit: int, offset: int,
     items = []
     for p in rows:
         cat = (p.category or "").strip()
+        score, gripes = _readiness(p)
         items.append({
             "product_id": str(p.id),
             "name": p.name,
@@ -5750,6 +5810,8 @@ async def _bench_queue(db: AsyncSession, *, limit: int, offset: int,
             "is_age_restricted": bool(p.is_age_restricted),
             "product_class": p.product_class,
             "image_url": p.image_url,
+            "work_note": p.work_note,                       # the rookie's parked-why / next-step note
+            "quality": {"score": score, "gripes": gripes},  # readiness read (catches lazy 'done')
             # Same shape the sold-mode card already renders, so the UI reuses one template.
             "qty_sold": 0,
             "revenue": 0.0,
@@ -5772,6 +5834,8 @@ async def _bench_queue(db: AsyncSession, *, limit: int, offset: int,
         "done": int(total) - int(remaining),        # the counter: done / total (for this filter)
         "gap": gap or "all",                        # the active gap filter
         "gap_counts": {k: int(v) for k, v in gap_counts.items()},   # chip numbers
+        "period": (period or "all").strip().lower(),
+        "noted": bool(noted),
         "limit": limit,
         "offset": offset,
         "category": category,

@@ -133,6 +133,24 @@
                         </button>
                     </div>
 
+                    <!-- Rookie workbench: a BOUNDED batch by when items were added — finish yesterday's
+                         before they pile up. Flexes to the whole week for a Friday close. + "keep tabs". -->
+                    <div class="flex gap-2 mt-3 flex-wrap items-center border-t pt-3">
+                        <span class="text-xs font-medium text-gray-500 mr-1" data-i18n="cleanup.f_added">Added:</span>
+                        <template x-for="pd in [['','cleanup.pd_all'],['today','cleanup.pd_today'],['yesterday','cleanup.pd_yesterday'],['week','cleanup.pd_week']]" :key="pd[0]">
+                            <button @click="setPeriod(pd[0])"
+                                    :class="periodFilter===pd[0] ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-gray-600 border-gray-300'"
+                                    class="px-3 py-1.5 rounded-full text-sm font-semibold border">
+                                📅 <span x-text="t(pd[1])"></span>
+                            </button>
+                        </template>
+                        <button @click="toggleNoted()"
+                                :class="notedOnly ? 'bg-amber-500 text-white border-amber-500' : 'bg-white text-gray-600 border-gray-300'"
+                                class="px-3 py-1.5 rounded-full text-sm font-semibold border ml-2">
+                            🗒️ <span data-i18n="cleanup.f_noted">My notes</span> <span class="opacity-70" x-text="'(' + (gapCounts.noted||0).toLocaleString() + ')'"></span>
+                        </button>
+                    </div>
+
                     <p class="text-xs text-gray-500 mt-2" data-i18n="cleanup.export_hint">Take it to the shelf: fill in the variant, the price and scan the barcode straight into the sheet — then import it back and the AI finishes the rest.</p>
 
                     <!-- Batch flags — scope the whole sheet in one line before importing it. -->
@@ -302,7 +320,18 @@
                                     </p>
                                     <p x-show="mode === 'bench' && p.category" style="display:none;" class="text-sm text-gray-500 mt-1" x-text="p.category"></p>
                                     <!-- Gap chips -->
-                                    <div class="flex flex-wrap gap-1 mt-2">
+                                    <div class="flex flex-wrap gap-1 mt-2 items-center">
+                                        <!-- Readiness (bench): catches the lazy "done" — Unsorted / weak
+                                             description / no photo — even when the hard gaps look filled. -->
+                                        <span x-show="mode === 'bench' && readyBadge(p).score < 100" style="display:none;"
+                                              class="text-xs px-2 py-0.5 rounded-full font-semibold"
+                                              :class="readyBadge(p).score >= 75 ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-700'"
+                                              :title="readyBadge(p).why">
+                                            ⚠ <span x-text="readyBadge(p).score + '% ready'"></span> · <span x-text="readyBadge(p).why"></span>
+                                        </span>
+                                        <span x-show="mode === 'bench' && p.work_note" style="display:none;"
+                                              class="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200"
+                                              :title="p.work_note" data-i18n="cleanup.chip_noted">🗒️ noted</span>
                                         <span x-show="p.gaps.category" class="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700" data-i18n="cleanup.chip_category">🏷️ no category</span>
                                         <span x-show="p.gaps.cost" class="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700" data-i18n="cleanup.chip_cost">💰 no cost</span>
                                         <span x-show="p.gaps.description" style="display:none;" class="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700" data-i18n="cleanup.chip_desc">📝 no description</span>
@@ -367,6 +396,24 @@
                                     <label class="block text-xs font-medium text-gray-500 mb-1" data-i18n="cleanup.f_desc">Description</label>
                                     <textarea x-model="p._description" rows="2" class="input-field"
                                               placeholder="What is it? Two lines is plenty." data-i18n-placeholder="cleanup.ph_desc"></textarea>
+                                </div>
+
+                                <!-- Rookie note: why it's parked + the next step, so he never stares at
+                                     an item stuck. Quick-tags drop a starter in so the box is never blank. -->
+                                <div x-show="mode === 'bench'" style="display:none;" class="sm:col-span-2">
+                                    <label class="block text-xs font-medium text-gray-500 mb-1">
+                                        🗒️ <span data-i18n="cleanup.f_worknote">Note — why it's parked / next step</span>
+                                    </label>
+                                    <div class="flex gap-1 flex-wrap mb-1">
+                                        <template x-for="qt in ['cleanup.qt_slip','cleanup.qt_supplier','cleanup.qt_pic','cleanup.qt_desc','cleanup.qt_ask']" :key="qt">
+                                            <button type="button" @click="addNoteTag(p, t(qt))"
+                                                    class="text-[11px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100"
+                                                    x-text="t(qt)"></button>
+                                        </template>
+                                    </div>
+                                    <textarea x-model="p._workNote" rows="2" class="input-field bg-amber-50/40"
+                                              placeholder="e.g. no cost yet — need the delivery slip; check supplier price Monday"
+                                              data-i18n-placeholder="cleanup.ph_worknote"></textarea>
                                 </div>
                                 <div x-show="mode === 'bench'" style="display:none;" class="sm:col-span-2">
                                     <label class="block text-xs font-medium text-gray-500 mb-1">
@@ -460,7 +507,10 @@
             progress: { done: 0, total: 0, remaining: 0 },
             // BL-98 gap filter — narrow the bench to ONE missing thing ('' = all four).
             gapFilter: '',
-            gapCounts: { all: 0, photo: 0, description: 0, category: 0, cost: 0 },
+            gapCounts: { all: 0, photo: 0, description: 0, category: 0, cost: 0, noted: 0 },
+            // Rookie workbench: bounded date batch + "keep tabs" noted filter.
+            periodFilter: '',   // '' = all · today · yesterday · week
+            notedOnly: false,   // show only items I've parked with a note
             postcardBusy: false, _pcT: null,   // indeterminate bar while a postcard tab loads
             selected: {},          // product_id -> true (bulk-delete selection)
             bulkBusy: false,
@@ -560,6 +610,19 @@
             applyShelf() { this.offset = 0; this.load(); },
             // BL-98 gap filter: jump to just the items missing ONE thing (photo/description/…).
             setGap(kind) { this.gapFilter = (this.gapFilter === kind) ? '' : kind; this.offset = 0; this.load(); },
+            // Rookie workbench: bounded date batch (yesterday / this week / …).
+            setPeriod(pd) { this.periodFilter = (this.periodFilter === pd) ? '' : pd; this.offset = 0; this.load(); },
+            toggleNoted() { this.notedOnly = !this.notedOnly; this.offset = 0; this.load(); },
+            // Quick-tag: drop a "next step" stub into the note so he never stares at a blank box.
+            addNoteTag(p, tag) {
+                const cur = (p._workNote || '').trim();
+                p._workNote = cur ? (cur + (cur.endsWith('\n') ? '' : '\n') + tag) : tag;
+            },
+            readyBadge(p) {
+                const q = p.quality || { score: 100, gripes: [] };
+                const label = { category: 'Unsorted', cost: 'no cost', photo: 'no/weak photo', description: 'weak description' };
+                return { score: q.score, why: (q.gripes || []).map(g => label[g] || g).join(' · ') };
+            },
             // Postcard opens in a new tab (server-rendered, slow). Flash a progress bar so the
             // operator sees it's working; auto-clear (we can't observe the other tab's finish).
             pcOpening() { this.postcardBusy = true; clearTimeout(this._pcT); this._pcT = setTimeout(() => { this.postcardBusy = false; }, 7000); },
@@ -658,6 +721,8 @@
                         const shelf = (this.catFilter || '').trim();
                         if (shelf) url += `&category=${encodeURIComponent(shelf)}`;
                         if (this.gapFilter) url += `&gap=${encodeURIComponent(this.gapFilter)}`;
+                        if (this.periodFilter) url += `&period=${encodeURIComponent(this.periodFilter)}`;
+                        if (this.notedOnly) url += `&noted=true`;
                     }
                     const data = await API.get(url);
                     this.items = (data.items || []).map(p => ({
@@ -669,6 +734,7 @@
                         _costEyeballed: false,   // BL-047b: true once the eyeball fills the cost
                         _imgUrl: '',
                         _description: (p.description || ''),
+                        _workNote: (p.work_note || ''),   // rookie's parked-why / next-step note
                         _age: !!p.is_age_restricted,
                         _saving: false,
                         _uploading: false,
@@ -775,6 +841,8 @@
                 if (costRaw !== null) payload.cost = costRaw;
                 if (priceRaw !== null) payload.price = priceRaw;
                 if (this.mode === 'bench' && desc) payload.description = desc;
+                // Rookie note travels with every save (incl. clearing) so "why parked / next step" sticks.
+                if (this.mode === 'bench') payload.work_note = (p._workNote || '').trim() || null;
                 p._saving = true;
                 try {
                     await API.put(`/api/v1/pos/products/${p.product_id}`, payload);
