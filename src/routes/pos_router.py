@@ -1940,6 +1940,20 @@ async def _apply_tender(db: AsyncSession, txn, amount_tendered, tender_currency)
     return Decimal(str(conv["base_amount"]))
 
 
+async def _tenant_vat_rates(db: AsyncSession):
+    """The shop's EFFECTIVE (standard, reduced) VAT rates as Decimals — from its vat_rates table
+    (resolve_regime), else CH config. Line-VAT snapshots MUST pass these so a 22.1% IT shop records
+    22.1, not the hardcoded CH 8.1 (Angel: the checkout displayed 22.1 but the stored line was 8.1).
+    A CH shop with a NULL table → resolve_regime → 8.1/2.6, byte-identical."""
+    try:
+        store = await get_active_store_settings(db)
+        regime = resolve_regime(store)
+        return Decimal(str(regime["vat_rate"])), Decimal(str(regime["vat_rate_reduced"]))
+    except Exception:
+        s = get_settings()
+        return Decimal(str(s.POS_VAT_RATE)), Decimal(str(s.POS_VAT_RATE_REDUCED))
+
+
 async def _reference_best_match(db: AsyncSession, name: str, barcode: str = "") -> Optional[dict]:
     """What our OWN supplier catalog already knows about this product. ASK THIS FIRST.
 
@@ -3733,7 +3747,9 @@ async def add_item_to_transaction(
     # (INC2: line-level only; the transaction total still uses the single-rate rollup
     # below — INC3 sums these per-line amounts.)
     prod_class = product.product_class if item.product_id is not None else "standard"
-    line_rate, line_vat_amount = line_vat(prod_class, item.consumption, line_total)
+    _add_std, _add_red = await _tenant_vat_rates(db)   # store's effective rates (not the CH 8.1 default)
+    line_rate, line_vat_amount = line_vat(prod_class, item.consumption, line_total,
+                                          standard_rate=_add_std, reduced_rate=_add_red)
 
     # Compliance: NO promotional discount on a promo-restricted class (tobacco, alcohol).
     # Swiss law (Tabakproduktegesetz / Alkoholgesetz) restricts sales promotions on these,
@@ -4124,6 +4140,8 @@ async def create_sale(
     db.add(txn)
 
     # --- Build every line server-authoritatively: catalog price wins, VAT snapshot, promo guard. ---
+    # The line VAT snapshot uses the STORE's effective rates (22.1 for IT), not the CH 8.1 default.
+    _sale_std, _sale_red = await _tenant_vat_rates(db)
     built_lines = []
     subtotal = Decimal("0.00")
     eligible_subtotal = Decimal("0.00")  # non-promo-restricted lines only -> the member tier discount base
@@ -4161,7 +4179,8 @@ async def create_sale(
 
         line_gross = (unit_price * ln.quantity).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         line_total = line_gross
-        line_rate, line_vat_amount = line_vat(prod_class, ln.consumption, line_total)
+        line_rate, line_vat_amount = line_vat(prod_class, ln.consumption, line_total,
+                                              standard_rate=_sale_std, reduced_rate=_sale_red)
         line = LineItemModel(
             transaction_id=txn.id, product_id=ln.product_id, quantity=ln.quantity,
             unit_price=unit_price, discount_percent=Decimal("0.00"),
