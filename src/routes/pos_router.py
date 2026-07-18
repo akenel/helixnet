@@ -5044,6 +5044,26 @@ def _bench_gap_clause():
     )
 
 
+# BL-98 gap FILTER (Angel: "most are just cost — let me filter when a photo/description is missing").
+# The SAME single-gap expression drives the list AND that gap's count chip, so a "📷 Photo (800)"
+# chip can never disagree with the rows it shows. An unknown/blank kind falls back to all-four.
+_BENCH_GAP_KINDS = ("photo", "description", "category", "cost")
+
+
+def _bench_gap_expr(kind):
+    """The gap clause for ONE kind (photo|description|category|cost), or ALL four (default)."""
+    cat = _bench_category_expr()
+    if kind == "photo":
+        return func.coalesce(func.trim(ProductModel.image_url), "") == ""
+    if kind == "description":
+        return func.coalesce(func.trim(ProductModel.description), "") == ""
+    if kind == "category":
+        return or_(cat == "", func.lower(cat).in_([c.lower() for c in _HALFBAKED_CATEGORIES]))
+    if kind == "cost":
+        return ProductModel.cost.is_(None)
+    return _bench_gap_clause()   # None / 'all' / anything else → any of the four
+
+
 @router.get("/catalog/worklist.xlsx")
 async def export_catalog_worklist(
     category: Optional[str] = None,
@@ -5584,6 +5604,7 @@ async def get_cleanup_queue(
     limit: int = 20,
     offset: int = 0,
     category: Optional[str] = None,
+    gap: Optional[str] = None,
     db: AsyncSession = Depends(get_db_session),
     current_user: dict = Depends(require_manager_or_admin()),
 ):
@@ -5598,7 +5619,7 @@ async def get_cleanup_queue(
 
     Cashier never edits the catalog/cost — they ring it in; the manager sets it up here."""
     if mode == "bench":
-        return await _bench_queue(db, limit=limit, offset=offset, category=category)
+        return await _bench_queue(db, limit=limit, offset=offset, category=category, gap=gap)
 
     # ---- mode=sold (original) ------------------------------------------------------------
     # Units + revenue + last-sold per real product, over ALL completed sales (giveaways excluded).
@@ -5663,7 +5684,8 @@ async def get_cleanup_queue(
     return {"items": items, "count": len(items), "mode": "sold"}
 
 
-async def _bench_queue(db: AsyncSession, *, limit: int, offset: int, category: Optional[str]):
+async def _bench_queue(db: AsyncSession, *, limit: int, offset: int,
+                       category: Optional[str], gap: Optional[str] = None):
     """BL-98 ENRICHMENT QUEUE — the migration workbench (back office, not the till).
 
     Hands back the next `limit` UNFINISHED products plus the progress counter. Ordered by
@@ -5671,28 +5693,44 @@ async def _bench_queue(db: AsyncSession, *, limit: int, offset: int, category: O
     and the queue hands you the next twenty from the same place. Uncategorised items sort first
     (they need the most work). Optional `category` narrows it to one shelf.
 
+    `gap` narrows to ONE missing thing (photo|description|category|cost) — Angel: "most are just
+    cost, let me filter to the ones missing a photo". Blank/unknown = all four (the full bench).
+    `gap_counts` returns how many are missing EACH thing (within the shelf) so the UI can label
+    the filter chips — same expression as the list, so a chip's number matches its rows.
+
     The `done / total` counter this returns is the number that replaces the paper binder —
     it is a QUERY, so it is always true, where a hand-filed binder rots the day a price changes.
     """
     limit = max(1, min(limit, 100))     # a bench holds a batch, not a catalog
     offset = max(0, offset)
+    gap = (gap or "").strip().lower() or None
+    if gap not in _BENCH_GAP_KINDS:
+        gap = None                       # 'all' / unknown → the full four-gap bench
 
     scope = [ProductModel.is_active == True]
     if category:
         scope.append(func.lower(_bench_category_expr()) == category.strip().lower())
 
-    gap = _bench_gap_clause()
+    active_gap = _bench_gap_expr(gap)    # the filter for THIS view (one kind, or all four)
+
+    async def _count(clause):
+        return (await db.execute(
+            select(func.count()).select_from(ProductModel).where(and_(*scope, clause))
+        )).scalar_one()
 
     total = (await db.execute(
         select(func.count()).select_from(ProductModel).where(and_(*scope))
     )).scalar_one()
-    remaining = (await db.execute(
-        select(func.count()).select_from(ProductModel).where(and_(*scope, gap))
-    )).scalar_one()
+    remaining = await _count(active_gap)   # unfinished FOR THIS FILTER (drives done/total)
+
+    # Per-gap counts within the shelf → the numbers on the filter chips.
+    gap_counts = {"all": await _count(_bench_gap_clause())}
+    for k in _BENCH_GAP_KINDS:
+        gap_counts[k] = await _count(_bench_gap_expr(k))
 
     rows = (await db.execute(
         select(ProductModel)
-        .where(and_(*scope, gap))
+        .where(and_(*scope, active_gap))
         .order_by(_bench_category_expr().asc(), ProductModel.name.asc())
         .limit(limit).offset(offset)
     )).scalars().all()
@@ -5730,8 +5768,10 @@ async def _bench_queue(db: AsyncSession, *, limit: int, offset: int, category: O
         "count": len(items),
         "mode": "bench",
         "total": int(total),                        # every active product in scope
-        "remaining": int(remaining),                # still unfinished
-        "done": int(total) - int(remaining),        # the counter: done / total
+        "remaining": int(remaining),                # still unfinished FOR THIS FILTER
+        "done": int(total) - int(remaining),        # the counter: done / total (for this filter)
+        "gap": gap or "all",                        # the active gap filter
+        "gap_counts": {k: int(v) for k, v in gap_counts.items()},   # chip numbers
         "limit": limit,
         "offset": offset,
         "category": category,

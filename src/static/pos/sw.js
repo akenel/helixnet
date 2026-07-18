@@ -11,7 +11,7 @@
  * Phases 1–2 build on this: P1 adds an IndexedDB catalog read-cache; P2 adds the
  * offline sales OUTBOX + background sync. Bump CACHE_NAME on any shell change.
  */
-const CACHE_NAME = 'banco-pos-v159';
+const CACHE_NAME = 'banco-pos-v160';
 
 // The shell we want available instantly / offline. Kept small + safe (GET, same-origin).
 const SHELL = [

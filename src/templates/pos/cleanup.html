@@ -53,6 +53,7 @@
                             <p class="text-sm text-gray-500">
                                 <span class="font-semibold text-amber-600" x-text="progress.remaining.toLocaleString()"></span>
                                 <span data-i18n="cleanup.still_to_do">still to do</span>
+                                <span x-show="gapFilter" style="display:none;" class="text-indigo-600 font-medium">· <span x-text="gapLabel()"></span></span>
                             </p>
                         </div>
                         <button @click="load()" class="btn-secondary" :disabled="loading">
@@ -88,6 +89,38 @@
                         <input type="file" x-ref="wbFile" class="hidden" accept=".xlsx"
                                @change="previewImport($event.target.files[0]); $event.target.value=''">
                     </div>
+
+                    <!-- BL-98 gap filter: work ONE missing thing at a time. "Most are just cost —
+                         show me only the ones missing a photo." Each chip carries its live count. -->
+                    <div class="flex gap-2 mt-3 flex-wrap items-center border-t pt-3">
+                        <span class="text-xs font-medium text-gray-500 mr-1" data-i18n="cleanup.f_missing">Show only missing:</span>
+                        <button @click="setGap('')"
+                                :class="!gapFilter ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-300'"
+                                class="px-3 py-1.5 rounded-full text-sm font-semibold border">
+                            <span data-i18n="cleanup.gap_all">All gaps</span> <span class="opacity-70" x-text="'(' + (gapCounts.all||0).toLocaleString() + ')'"></span>
+                        </button>
+                        <button @click="setGap('photo')"
+                                :class="gapFilter==='photo' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-300'"
+                                class="px-3 py-1.5 rounded-full text-sm font-semibold border">
+                            📷 <span data-i18n="cleanup.gap_photo">Photo</span> <span class="opacity-70" x-text="'(' + (gapCounts.photo||0).toLocaleString() + ')'"></span>
+                        </button>
+                        <button @click="setGap('description')"
+                                :class="gapFilter==='description' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-300'"
+                                class="px-3 py-1.5 rounded-full text-sm font-semibold border">
+                            📝 <span data-i18n="cleanup.gap_description">Description</span> <span class="opacity-70" x-text="'(' + (gapCounts.description||0).toLocaleString() + ')'"></span>
+                        </button>
+                        <button @click="setGap('category')"
+                                :class="gapFilter==='category' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-300'"
+                                class="px-3 py-1.5 rounded-full text-sm font-semibold border">
+                            🏷️ <span data-i18n="cleanup.gap_category">Category</span> <span class="opacity-70" x-text="'(' + (gapCounts.category||0).toLocaleString() + ')'"></span>
+                        </button>
+                        <button @click="setGap('cost')"
+                                :class="gapFilter==='cost' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-300'"
+                                class="px-3 py-1.5 rounded-full text-sm font-semibold border">
+                            💰 <span data-i18n="cleanup.gap_cost">Cost</span> <span class="opacity-70" x-text="'(' + (gapCounts.cost||0).toLocaleString() + ')'"></span>
+                        </button>
+                    </div>
+
                     <p class="text-xs text-gray-500 mt-2" data-i18n="cleanup.export_hint">Take it to the shelf: fill in the variant, the price and scan the barcode straight into the sheet — then import it back and the AI finishes the rest.</p>
 
                     <!-- Batch flags — scope the whole sheet in one line before importing it. -->
@@ -412,6 +445,9 @@
             impSourceSite: '',
             impSupplier: '',
             progress: { done: 0, total: 0, remaining: 0 },
+            // BL-98 gap filter — narrow the bench to ONE missing thing ('' = all four).
+            gapFilter: '',
+            gapCounts: { all: 0, photo: 0, description: 0, category: 0, cost: 0 },
             selected: {},          // product_id -> true (bulk-delete selection)
             bulkBusy: false,
 
@@ -489,6 +525,13 @@
             },
 
             applyShelf() { this.offset = 0; this.load(); },
+            // BL-98 gap filter: jump to just the items missing ONE thing (photo/description/…).
+            setGap(kind) { this.gapFilter = (this.gapFilter === kind) ? '' : kind; this.offset = 0; this.load(); },
+            gapLabel() {
+                return ({ photo: '📷 missing a photo', description: '📝 missing a description',
+                          category: '🏷️ missing a category', cost: '💰 missing a cost' })[this.gapFilter]
+                       || 'unfinished (any gap)';
+            },
 
             // BL-131: download the worklist as a real .xlsx. A plain <a href> can't carry the bearer
             // token, so fetch the bytes with auth and hand the browser a blob.
@@ -578,6 +621,7 @@
                         url += `&limit=${this.limit}&offset=${this.offset}`;
                         const shelf = (this.catFilter || '').trim();
                         if (shelf) url += `&category=${encodeURIComponent(shelf)}`;
+                        if (this.gapFilter) url += `&gap=${encodeURIComponent(this.gapFilter)}`;
                     }
                     const data = await API.get(url);
                     this.items = (data.items || []).map(p => ({
@@ -599,6 +643,7 @@
                             total: data.total || 0,
                             remaining: data.remaining || 0,
                         };
+                        if (data.gap_counts) this.gapCounts = data.gap_counts;
                         // Worked the last item off the final batch? Step back so we're not on an empty page.
                         if (!this.items.length && this.offset > 0) {
                             this.offset = Math.max(0, this.offset - this.limit);
