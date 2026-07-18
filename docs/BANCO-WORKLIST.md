@@ -64,6 +64,12 @@ is the north-star sprint, teed up behind the current NEXT ACTIONABLE hypercare i
   - 🖥️ **VISUAL SIM + TESTSHEET (sandbox-safe, no hardware/money):** `docs/testing/banco/WORLDLINE-TERMINAL-SIM.html`
     (watch the till→terminal→receipt flow on both terminals, card+TWINT+decline, live ep2/TIM message log) +
     `docs/testing/banco/WORLDLINE-SIM-TESTSHEET.html` (№ LP-UAT-20260718-WL-SIM, tri-state runbook, headless-verified 0 errors).
+  - ✅ **IN-POS SIM SHIPPED TO SANDBOX 2026-07-18 (`aa640aa8`) — "full mock capture", Angel's ask:** the REAL sandbox
+    checkout now runs the buttery terminal overlay on a card/TWINT sale (amount pops → tap Karte/TWINT → GENEHMIGT/
+    ABGELEHNT), the backend drives the sim adapter + records a PaymentModel row + gates the sale on approval. Sandbox
+    store set `payment_provider='worldline_sim'` (data-setting; **prod stays 'manual' → byte-identical**). E2E-verified on
+    sandbox: approve → sale + PaymentModel (500 EUR, twint, TID 25409030) → receipt; decline → cart kept, 0 orphan rows.
+    ▶ **NEXT (Angel): human-green the in-POS overlay on sandbox** (log in → ring an item → pay TWINT/card → watch it).
   - ⏳ **STATUS: everything buildable-without-hardware DONE; awaiting Worldline activation** (external dependency — the
     ONLY remaining unblock is Worldline enabling ECR + returning the spec/SDK + terminal IP; the email is drafted, Angel to send).
   - **📇 Worldline CH contacts:** email `customerservices@worldline.com` · Worldline Schweiz AG, Hardturmstrasse 201, 8021
