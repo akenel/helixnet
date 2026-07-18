@@ -543,7 +543,15 @@ both the list and the counts, so the counter can't drift from the list. `mode=so
      so it highlights the gaps ("yesterday covered · Monday still needs the bong prices · weekly report ready when the
      cracks are closed"). Needs REAL costs (block 2) to be honest. Gives the kid a deadline + makes him look good.
   4. **🪪 Master-data audit** — who CREATED + who LAST EDITED each item (provenance stamp, ties to `banco-master-data-vision`).
-- ▶ **On sandbox now — needs Angel human-green (run the testsheet), then the gated ladder to staging→prod.**
+- ✅ **SHIPPED PROD 2026-07-18 (`59602381`, b1944) — human-green 18/18 → staging → prod, backup-gated.** The whole week's
+  pile is live: BL-98 gap filter + rookie workbench (date scope · parked notes · readiness score) · Details-logout fix ·
+  edit-and-return-to-bench loop · Alcohol category · image_url 422 fix. Both gates green; Felix byte-identical
+  (CHF/8.1/manual/no picker); payments seam + terminal sim dormant on prod (store=manual). Backup restore-verified
+  61/5200/190. **Manual prod migrations done:** `image_url`→TEXT + `default_markup_pct` (see below).
+  - 🩺 **STAGING CAUGHT A DRIFT (why the ladder exists):** `banco_staging` was missing `store_settings.default_markup_pct`
+    → 500 on every store_settings read. Prod HAD it (verified pre-deploy). Fixed staging live + added to `_ADDITIVE_COLUMNS`
+    (`59602381`) so all envs converge. `image_url` VARCHAR(500)→TEXT ALTERed on sandbox+staging+prod (create_all can't widen).
+  - ⚠️ **staging is 1 idempotent commit behind main** (the additive-list line; already applied live) — resync on next deploy.
 
 **🐯 BL-99 · Label renderer size×flags** — widen `scripts/generate_label.py` (today: one fixed 62×37,
 EAN-13→Code128, Puppeteer PDF, `brother_ql` → QL-820NWB). Bones are right; just needs the matrix. Not started.
