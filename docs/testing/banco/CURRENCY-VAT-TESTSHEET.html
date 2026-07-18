@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi-Currency + VAT — Test Runbook</title>
+<style>
+  :root{ --red:#C0392B; --dark:#8B0000; --ink:#1f2937; --mut:#6b7280; --line:#e5e7eb; --ok:#059669; --bg:#f7f7f8; }
+  *{ box-sizing:border-box; }
+  body{ font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--bg); margin:0; line-height:1.5; }
+  a{ color:var(--red); }
+  header{ position:sticky; top:0; z-index:10; background:#fff; border-bottom:2px solid var(--red); padding:14px 20px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  .htop{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  h1{ font-size:19px; margin:0; }
+  h1 small{ color:var(--mut); font-weight:500; font-size:13px; display:block; margin-top:2px; }
+  .meters{ display:flex; align-items:center; gap:18px; }
+  .meter{ text-align:center; }
+  .meter b{ font-size:20px; color:var(--red); display:block; }
+  .meter span{ font-size:11px; color:var(--mut); text-transform:uppercase; letter-spacing:.04em; }
+  .timer{ font-variant-numeric:tabular-nums; font-size:22px; font-weight:700; color:var(--ink); }
+  .btn{ border:1px solid var(--line); background:#fff; border-radius:8px; padding:6px 12px; font-size:13px; cursor:pointer; }
+  .btn:hover{ background:#f0f0f0; }
+  .btn.red{ background:var(--red); color:#fff; border-color:var(--red); }
+  main{ max-width:920px; margin:0 auto; padding:24px 20px 80px; }
+  .lead{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-bottom:22px; }
+  section{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:18px 20px; margin-bottom:18px; }
+  section h2{ font-size:16px; margin:0 0 4px; display:flex; align-items:center; gap:8px; }
+  section .why{ color:var(--mut); font-size:13px; margin:0 0 12px; }
+  .open{ display:inline-block; background:var(--ink); color:#fff; text-decoration:none; padding:8px 14px; border-radius:8px; font-size:13px; font-weight:600; margin-bottom:12px; }
+  .open:hover{ background:#000; }
+  .url{ font-family:ui-monospace,Menlo,monospace; font-size:12px; color:var(--mut); margin-left:10px; }
+  ol.steps{ margin:0; padding:0; list-style:none; }
+  ol.steps li{ display:flex; gap:10px; padding:8px 0; border-top:1px dashed var(--line); align-items:flex-start; }
+  ol.steps li:first-child{ border-top:none; }
+  .verdict{ display:flex; gap:4px; flex:none; margin-top:1px; }
+  .vbtn{ border:1px solid var(--line); background:#fff; border-radius:7px; padding:4px 8px; font-size:11px; font-weight:700; cursor:pointer; color:var(--mut); letter-spacing:.02em; white-space:nowrap; }
+  .vbtn:hover{ background:#f6f6f6; }
+  .vbtn.v-pass.on{ background:#059669; border-color:#059669; color:#fff; }
+  .vbtn.v-fail.on{ background:#C0392B; border-color:#C0392B; color:#fff; }
+  .vbtn.v-issue.on{ background:#d97706; border-color:#d97706; color:#fff; }
+  @media (max-width:600px){ .vbtn{ padding:4px 6px; font-size:10px; } ol.steps li{ flex-wrap:wrap; } }
+  .step-body{ flex:1; min-width:220px; }
+  .exp{ color:var(--ok); font-size:12.5px; }
+  .exp::before{ content:"✓ expect: "; font-weight:600; }
+  textarea{ width:100%; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font:inherit; font-size:13px; margin-top:10px; resize:vertical; min-height:54px; }
+  textarea.step-cm{ margin-top:0; min-height:32px; font-size:12.5px; background:#fcfcfd; flex:1; }
+  .step-extra{ margin-top:8px; }
+  .cm-row{ display:flex; gap:6px; align-items:flex-start; }
+  .mic-btn{ border:1px solid var(--line); background:#fff; border-radius:8px; padding:4px 9px; cursor:pointer; font-size:15px; flex:none; }
+  .mic-btn.on{ background:#fde8e6; border-color:var(--red); color:var(--red); animation:pulse 1s infinite; }
+  @keyframes pulse{ 50%{ opacity:.45 } }
+  .shot-zone{ margin-top:6px; border:1.5px dashed var(--line); border-radius:8px; padding:8px 10px; font-size:12px; color:var(--mut); cursor:pointer; background:#fafafa; }
+  .shot-zone:focus, .shot-zone.drag{ outline:none; border-color:var(--red); background:#fff7f6; color:var(--ink); }
+  .thumbs{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+  .thumbs .sh{ position:relative; }
+  .thumbs img{ height:66px; border-radius:6px; border:1px solid var(--line); cursor:zoom-in; display:block; }
+  .thumbs .rm{ position:absolute; top:-7px; right:-7px; background:var(--red); color:#fff; border:none; border-radius:99px; width:19px; height:19px; font-size:11px; cursor:pointer; line-height:1; }
+  .hidden{ display:none; }
+  label.cm{ font-size:11px; color:var(--mut); text-transform:uppercase; letter-spacing:.04em; }
+  .tag{ font-size:11px; font-weight:700; padding:2px 8px; border-radius:99px; background:#fde8e6; color:var(--dark); }
+  .tag.sbx{ background:#dcfce7; color:#065f46; }
+  .tag.key{ background:#fef3c7; color:#92400e; }
+  footer{ text-align:center; color:var(--mut); font-size:12px; padding:20px; }
+  @media print{ header{ position:static; } .btn,.open{ display:none; } body{ background:#fff; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="htop">
+    <h1>💶 Multi-Currency + VAT — Test Runbook<small>rates persist · VAT from settings · foreign cash · receipt · drawer — SANDBOX</small><small style="color:#C0392B;font-weight:700;letter-spacing:.05em">🐺 La Piazza · № LP-UAT-20260718-CCY-VAT · rev.1 · registered</small></h1>
+    <div class="meters">
+      <div class="meter"><b id="prog">0/0</b><span>decided</span></div>
+      <div class="meter"><b id="tally" style="font-size:15px">✓0 ✗0 ⚠0</b><span>pass / fail / issue</span></div>
+      <div class="meter"><span class="timer" id="clock">00:00</span><span>elapsed</span></div>
+      <button class="btn" id="startBtn" onclick="toggleTimer()">▶ Start</button>
+      <button class="btn" onclick="resetTimer()">reset</button>
+      <button class="btn" onclick="copyReport()">⧉ Copy text</button>
+      <button class="btn red" onclick="exportReport()">⬇ Export report (with screenshots)</button>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="lead">
+    <strong>The lesson driving this sheet:</strong> this whole feature kept <em>looking</em> right on screen while
+    being <em>wrong underneath</em> — rates that didn't save, VAT that displayed 22.1% but recorded 8.1%. So the
+    golden rule here: <strong class="tag key">CHECK THE RECEIPT, not just the checkout</strong>. The receipt (and the
+    drawer) show what was actually <em>recorded</em> — that's the truth.
+    <br><br>
+    <strong>Two logins:</strong> <strong>felix</strong> (admin — sets rates) and <strong>pam</strong> (cashier).
+    Sandbox is the <strong>Roma / EUR</strong> shop, standard VAT <strong>22.1%</strong>.
+    <span class="tag sbx">SANDBOX only</span> <span class="tag">hard-refresh after a change (SW cache)</span>
+  </div>
+
+  <!-- 0. LOGIN -->
+  <section>
+    <h2>0 · Log in <span class="tag">felix + pam</span></h2>
+    <a class="open" href="https://sandbox-banco.lapiazza.app/pos" target="_blank">Open Banco (sandbox) ↗</a>
+    <span class="url">https://sandbox-banco.lapiazza.app/pos</span>
+    <ol class="steps" data-sec="login">
+      <li><div class="step-body">Sign in as <strong>felix</strong> (admin). <span class="exp">dashboard, role admin</span></div></li>
+    </ol>
+  </section>
+
+  <!-- 1. RATES PERSIST -->
+  <section>
+    <h2>1 · Accepted rates persist <span class="tag">the one that didn't save</span></h2>
+    <p class="why">The bug: rates vanished on reload (an unmapped DB column). Now they stick.</p>
+    <a class="open" href="https://sandbox-banco.lapiazza.app/pos/settings" target="_blank">Settings → Tax ↗</a>
+    <ol class="steps" data-sec="rates">
+      <li><div class="step-body">As felix, Settings → Tax → 💱 Accepted currencies & rates. Add/adjust a currency (e.g. CHF), Save. <span class="exp">saves, no error</span></div></li>
+      <li><div class="step-body"><strong>Reload</strong> the page (Ctrl-Shift-R). <span class="exp">the rate is STILL there — it persisted</span></div></li>
+      <li><div class="step-body">The Add-currency dropdown does NOT list the shop's home currency (EUR). <span class="exp">only foreign currencies are addable</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="rates" placeholder="Persist? Dropdown excludes EUR?"></textarea>
+  </section>
+
+  <!-- 2. VAT FROM SETTINGS -->
+  <section>
+    <h2>2 · VAT comes from settings — CHECK THE RECEIPT <span class="tag key">the 8.1 vs 22.1 bug</span></h2>
+    <p class="why">The nasty one: the checkout showed 22.1% but the recorded receipt said 8.1%. The receipt is truth.</p>
+    <a class="open" href="https://sandbox-banco.lapiazza.app/pos/scan" target="_blank">New Sale ↗</a>
+    <ol class="steps" data-sec="vat">
+      <li><div class="step-body">Confirm Settings → Tax shows standard VAT = <strong>22.1%</strong> (A / standard / default). <span class="exp">22.1 in the table</span></div></li>
+      <li><div class="step-body">Ring a <strong>€100</strong> sale (e.g. 2 × €50), go to checkout. <span class="exp">"incl. VAT (22.1%): €18.10" — label AND amount both 22.1%</span></div></li>
+      <li><div class="step-body">Tap the "incl. VAT" line → the breakdown tooltip. <span class="exp">Net €81.90 · VAT (22.1%) €18.10 · Total €100 · "prices include VAT" note</span></div></li>
+      <li><div class="step-body"><strong>Complete the sale, open the RECEIPT.</strong> <span class="exp">receipt reads "VAT A = 22.1%" and "incl. VAT: €18.10" — NOT 8.1% / €7.49</span></div></li>
+    </ol>
+    <label class="cm">notes — this is the key check</label><textarea data-cm="vat" placeholder="Does the RECEIPT show 22.1% and €18.10? (not 8.1/7.49)"></textarea>
+  </section>
+
+  <!-- 3. FOREIGN CASH -->
+  <section>
+    <h2>3 · Take foreign cash — change in home, receipt honest <span class="tag">Block 1</span></h2>
+    <p class="why">Customer pays foreign cash; you give change in EUR; the sale is recorded in EUR + stamped.</p>
+    <ol class="steps" data-sec="tender">
+      <li><div class="step-body">Open your drawer (My Drawer → Open Shift), then ring a €100 sale → Checkout → <strong>Cash</strong>. <span class="exp">the currency picker appears: EUR + your foreign currencies</span></div></li>
+      <li><div class="step-body">Tap <strong>CHF</strong>. <span class="exp">"collect ≈ CHF …" hint; the Amount received field switches to CHF</span></div></li>
+      <li><div class="step-body">Enter a CHF amount over the total (e.g. CHF 100 at rate 1.08). <span class="exp">change shows in EUR (100×1.08 − 100 = €8.00)</span></div></li>
+      <li><div class="step-body">Complete → open the <strong>RECEIPT</strong>. <span class="exp">"Paid in cash: CHF 100.00 @ 1.08" · Amount Tendered €108.00 · Change €8.00 · TOTAL/VAT in EUR</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="tender" placeholder="Picker shows? Change in EUR? Receipt honest?"></textarea>
+  </section>
+
+  <!-- 4. PER-SHOP CURRENCIES -->
+  <section>
+    <h2>4 · Only the configured currencies show <span class="tag">per-shop</span></h2>
+    <ol class="steps" data-sec="pershop">
+      <li><div class="step-body">The cash picker offers EXACTLY the currencies in your Settings table — no others. <span class="exp">e.g. only CHF/USD if that's what's set</span></div></li>
+      <li><div class="step-body">(Optional) Remove one currency in Settings, save, hard-refresh, back to checkout. <span class="exp">that currency is gone from the picker</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="pershop" placeholder="Picker matches the configured set?"></textarea>
+  </section>
+
+  <!-- 5. DRAWER CLOSE -->
+  <section>
+    <h2>5 · Drawer close sees the foreign cash <span class="tag">Block 2</span></h2>
+    <a class="open" href="https://sandbox-banco.lapiazza.app/pos/shift" target="_blank">My Drawer ↗</a>
+    <ol class="steps" data-sec="drawer">
+      <li><div class="step-body">After the foreign-cash sale, go to close the drawer. <span class="exp">a "💱 Foreign cash in the drawer" block lists CHF 100.00 ≈ €108.00 (count separately)</span></div></li>
+      <li><div class="step-body">The Expected-in-drawer figure includes that foreign cash's home value. <span class="exp">expected reflects the sale; you count home + foreign notes</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="drawer" placeholder="Foreign breakdown shows at close?"></textarea>
+  </section>
+
+  <!-- 6. NO REGRESSION -->
+  <section>
+    <h2>6 · No regression <span class="tag">the normal path still works</span></h2>
+    <ol class="steps" data-sec="regress">
+      <li><div class="step-body">A normal EUR cash sale (home currency) rings + gives change exactly as before. <span class="exp">unchanged</span></div></li>
+      <li><div class="step-body">A card (Visa) sale completes normally. <span class="exp">cards untouched — no currency picker, no change</span></div></li>
+      <li><div class="step-body">Subtotal shows a real number, money labels show € (not NaN, not CHF). <span class="exp">earlier fixes hold</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="regress" placeholder="Normal sales unaffected?"></textarea>
+  </section>
+
+  <!-- OVERALL -->
+  <section>
+    <h2>★ Overall verdict</h2>
+    <ol class="steps" data-sec="verdict">
+      <li><div class="step-body"><strong>Multi-currency + VAT good on sandbox?</strong></div></li>
+      <li><div class="step-body"><strong>Ship to prod?</strong> — tick ONLY to ladder to Felix's live shop.</div></li>
+    </ol>
+    <label class="cm">the big notes</label>
+    <textarea data-cm="verdict" placeholder="Your call, Wolf." style="min-height:90px"></textarea>
+  </section>
+
+  <footer>
+    <div style="border-top:2px solid #C0392B;max-width:920px;margin:0 auto;padding-top:10px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:11px">
+      <span><strong style="color:#C0392B">🐺 La Piazza</strong> · Multi-Currency + VAT UAT Runbook · registered artifact</span>
+      <span style="font-variant-numeric:tabular-nums">№ LP-UAT-20260718-CCY-VAT · rev.1 · 2026-07-18</span>
+    </div>
+    <div style="margin-top:6px">One sheet — screen, print, or postcard. Stamped either way. · sandbox only, no prod until you say so 🐺</div>
+  </footer>
+</main>
+
+<script>
+  const KEY='ccy_vat_runbook';
+  const STEPS=[];
+  const VDEFS=[['pass','PASS','✓'],['fail','FAIL','✗'],['issue','ISSUE','⚠']];
+  const VMARK={pass:'[PASS]',fail:'[FAIL]',issue:'[ISSUE]','':'[ -- ]'};
+  function vMark(v){ return v==='pass'?'<span class="ok">✓ PASS</span>' : v==='fail'?'<span style="color:#C0392B;font-weight:700">✗ FAIL</span>' : v==='issue'?'<span style="color:#b45309;font-weight:700">⚠ ISSUE</span>' : '<span class="no">○ —</span>'; }
+  function verdictControl(i){
+    const box=document.createElement('div'); box.className='verdict';
+    VDEFS.forEach(([v,lbl,ic])=>{ const b=document.createElement('button'); b.type='button';
+      b.className='vbtn v-'+v; b.innerHTML=ic+' '+lbl; b.title=lbl;
+      b.addEventListener('click', ()=>setVerdict(i, STEPS[i].verdict===v ? '' : v));
+      box.appendChild(b); STEPS[i]._btns[v]=b; });
+    return box;
+  }
+  function paintVerdict(i){ const s=STEPS[i]; VDEFS.forEach(([v])=>{ const b=s._btns[v]; if(b) b.classList.toggle('on', s.verdict===v); }); }
+  function setVerdict(i,v){ STEPS[i].verdict=v; paintVerdict(i); save(); progress(); }
+  function buildSteps(){
+    document.querySelectorAll('ol.steps li').forEach((li,i)=>{
+      const bodyEl = li.querySelector('.step-body');
+      const label = (bodyEl?.textContent||'').trim().replace(/\s+/g,' ');
+      STEPS[i]={ li, label, verdict:'', ta:null, thumbs:null, shots:[], _btns:{} };
+      li.insertBefore(verdictControl(i), li.firstChild);
+      const wrap = document.createElement('div'); wrap.className='step-extra';
+      const row = document.createElement('div'); row.className='cm-row';
+      const ta = document.createElement('textarea'); ta.className='step-cm'; ta.rows=1; ta.placeholder='note… (type or 🎤 speak)';
+      ta.addEventListener('input', save);
+      const mic = document.createElement('button'); mic.className='mic-btn'; mic.type='button'; mic.textContent='🎤'; mic.title='Dictate this note';
+      mic.addEventListener('click', ()=>micToggle(mic, ta));
+      row.appendChild(ta); row.appendChild(mic); wrap.appendChild(row);
+      const zone = document.createElement('div'); zone.className='shot-zone'; zone.tabIndex=0;
+      zone.textContent='📋 click here & paste a screenshot (Ctrl+V) · drop an image · or 📷 pick a file';
+      const fin = document.createElement('input'); fin.type='file'; fin.accept='image/*'; fin.capture='environment'; fin.className='hidden';
+      zone.addEventListener('click', ()=>{ activeIdx=i; fin.click(); });
+      zone.addEventListener('focus', ()=>{ activeIdx=i; });
+      zone.addEventListener('dragover', e=>{ e.preventDefault(); zone.classList.add('drag'); });
+      zone.addEventListener('dragleave', ()=>zone.classList.remove('drag'));
+      zone.addEventListener('drop', e=>{ e.preventDefault(); zone.classList.remove('drag'); activeIdx=i;
+        [...(e.dataTransfer.files||[])].forEach(f=>{ if(f.type.startsWith('image/')) addShot(i,f); }); });
+      fin.addEventListener('change', e=>{ [...(e.target.files||[])].forEach(f=>addShot(i,f)); e.target.value=''; });
+      const thumbs = document.createElement('div'); thumbs.className='thumbs';
+      wrap.appendChild(zone); wrap.appendChild(fin); wrap.appendChild(thumbs);
+      bodyEl.appendChild(wrap);
+      STEPS[i].ta=ta; STEPS[i].thumbs=thumbs;
+    });
+  }
+  let activeIdx=null;
+  document.addEventListener('paste', e=>{ if(activeIdx==null) return; const items=(e.clipboardData||{}).items||[];
+    for(const it of items){ if(it.type && it.type.startsWith('image/')){ const f=it.getAsFile(); if(f){ addShot(activeIdx,f); e.preventDefault(); } } } });
+  function downscale(file, cb){ const url=URL.createObjectURL(file); const img=new Image();
+    img.onload=()=>{ const max=1000; let w=img.width,h=img.height; if(w>max){ h=Math.round(h*max/w); w=max; }
+      const c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(url); try{ cb(c.toDataURL('image/jpeg',0.6)); }catch(e){ cb(null); } };
+    img.onerror=()=>{ URL.revokeObjectURL(url); cb(null); }; img.src=url; }
+  function addShot(i,file){ downscale(file, data=>{ if(!data) return; STEPS[i].shots.push({name:file.name||'screenshot.png', data}); renderThumbs(i); save(); }); }
+  function renderThumbs(i){ const t=STEPS[i].thumbs; t.innerHTML='';
+    STEPS[i].shots.forEach((sh,si)=>{ const d=document.createElement('div'); d.className='sh';
+      const im=document.createElement('img'); im.src=sh.data; im.title=sh.name; im.onclick=()=>{ const w=window.open(); if(w) w.document.write('<img src="'+sh.data+'" style="max-width:100%">'); };
+      const rm=document.createElement('button'); rm.className='rm'; rm.textContent='✕'; rm.title='remove'; rm.onclick=()=>{ STEPS[i].shots.splice(si,1); renderThumbs(i); save(); };
+      d.appendChild(im); d.appendChild(rm); t.appendChild(d); }); }
+  function save(){ const d={verdict:[],note:[],shots:[],cm:{},seconds};
+    STEPS.forEach((s,i)=>{ d.verdict[i]=s.verdict||''; d.note[i]=s.ta.value; d.shots[i]=s.shots; });
+    document.querySelectorAll('textarea[data-cm]').forEach(t=>d.cm[t.dataset.cm]=t.value);
+    try{ localStorage.setItem(KEY,JSON.stringify(d)); }
+    catch(e){ console.warn('storage full', e); flash('⚠ Storage full — Export, then clear.'); } }
+  function restore(){ try{ const d=JSON.parse(localStorage.getItem(KEY)||'{}');
+    STEPS.forEach((s,i)=>{ if(d.verdict&&d.verdict[i]){ s.verdict=d.verdict[i]; paintVerdict(i); } if(d.note&&d.note[i]!=null) s.ta.value=d.note[i];
+      if(d.shots&&Array.isArray(d.shots[i])){ s.shots=d.shots[i]; renderThumbs(i); } });
+    if(d.cm) document.querySelectorAll('textarea[data-cm]').forEach(t=>{ if(d.cm[t.dataset.cm]!=null) t.value=d.cm[t.dataset.cm]; });
+    if(typeof d.seconds==='number'){ seconds=d.seconds; paintClock(); } }catch(e){} }
+  function progress(){ let p=0,f=0,iss=0,dec=0;
+    STEPS.forEach(s=>{ if(s.verdict){ dec++; if(s.verdict==='pass')p++; else if(s.verdict==='fail')f++; else iss++; } });
+    document.getElementById('prog').textContent=dec+'/'+STEPS.length;
+    const tly=document.getElementById('tally'); if(tly) tly.textContent='✓'+p+' ✗'+f+' ⚠'+iss; }
+  document.addEventListener('change', save);
+  let flashT=null; function flash(msg){ alert(msg); }
+  let seconds=0, timer=null;
+  function paintClock(){ const m=String(Math.floor(seconds/60)).padStart(2,'0'), s=String(seconds%60).padStart(2,'0'); document.getElementById('clock').textContent=m+':'+s; }
+  function toggleTimer(){ const b=document.getElementById('startBtn');
+    if(timer){ clearInterval(timer); timer=null; b.textContent='▶ Resume'; }
+    else { timer=setInterval(()=>{ seconds++; paintClock(); if(seconds%10===0) save(); },1000); b.textContent='⏸ Pause'; } }
+  function resetTimer(){ if(timer){ clearInterval(timer); timer=null; } seconds=0; paintClock(); document.getElementById('startBtn').textContent='▶ Start'; save(); }
+  let rec=null;
+  function micToggle(btn, ta){
+    if(rec){ rec.stop(); return; }
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){ alert('Voice notes need Chrome.'); return; }
+    rec=new SR(); rec.lang='en-US'; rec.continuous=true; rec.interimResults=true;
+    let base=ta.value?ta.value.trim()+' ':'';
+    btn.classList.add('on');
+    rec.onresult=e=>{ let fin='',int=''; for(let k=e.resultIndex;k<e.results.length;k++){ const t=e.results[k][0].transcript; if(e.results[k].isFinal) fin+=t; else int+=t; }
+      if(fin) base+=fin+' '; ta.value=(base+int).replace(/\s+/g,' ').trimStart(); save(); };
+    rec.onerror=()=>{}; rec.onend=()=>{ btn.classList.remove('on'); rec=null; };
+    try{ rec.start(); }catch(e){ btn.classList.remove('on'); rec=null; }
+  }
+  function copyReport(){ let out='MULTI-CURRENCY + VAT — TEST REPORT (№ LP-UAT-20260718-CCY-VAT)\n'+document.getElementById('prog').textContent+' decided · '+document.getElementById('tally').textContent+' · '+document.getElementById('clock').textContent+' elapsed\n\n';
+    document.querySelectorAll('section').forEach(sec=>{ const h=sec.querySelector('h2'); if(!h) return; out+='## '+h.textContent.trim()+'\n';
+      sec.querySelectorAll('ol.steps li').forEach(li=>{ const idx=STEPS.findIndex(s=>s.li===li); const s=STEPS[idx]||{};
+        out+=(VMARK[s.verdict||'']||'[ -- ]')+' '+(s.label||'')+'\n';
+        if(s.ta&&s.ta.value.trim()) out+='     note: '+s.ta.value.trim()+'\n';
+        if(s.shots&&s.shots.length) out+='     📷 '+s.shots.length+' screenshot(s)\n'; });
+      const t=sec.querySelector('textarea[data-cm]'); if(t&&t.value.trim()) out+='   section notes: '+t.value.trim()+'\n'; out+='\n'; });
+    navigator.clipboard.writeText(out).then(()=>alert('Copied.')).catch(()=>prompt('Copy:',out)); }
+  function exportReport(){ const esc=s=>(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+    let h='<!doctype html><meta charset=utf-8><title>Multi-Currency + VAT — UAT report</title>'+
+      '<style>body{font-family:system-ui,Arial;max-width:820px;margin:24px auto;padding:0 16px;color:#1f2937}h2{border-bottom:2px solid #C0392B;padding-bottom:4px;margin-top:28px}li{margin:10px 0;list-style:none}.ok{color:#059669;font-weight:700}.no{color:#9ca3af}.n{color:#374151;font-size:14px;margin:4px 0 0 24px}img{max-width:320px;display:block;margin:6px 0 0 24px;border:1px solid #ddd;border-radius:6px}.h{color:#6b7280;font-size:13px}</style>';
+    h+='<h1>💶 Multi-Currency + VAT — UAT report</h1><p class=h>№ LP-UAT-20260718-CCY-VAT · '+document.getElementById('prog').textContent+' decided · '+document.getElementById('tally').textContent+' · '+document.getElementById('clock').textContent+' elapsed · '+new Date().toLocaleString()+'</p>';
+    document.querySelectorAll('section').forEach(sec=>{ const ttl=sec.querySelector('h2'); if(!ttl) return; h+='<h2>'+esc(ttl.textContent.trim())+'</h2><ul>';
+      sec.querySelectorAll('ol.steps li').forEach(li=>{ const s=STEPS[STEPS.findIndex(x=>x.li===li)]||{};
+        h+='<li>'+vMark(s.verdict)+' '+esc(s.label||'');
+        if(s.ta&&s.ta.value.trim()) h+='<div class=n>📝 '+esc(s.ta.value.trim())+'</div>';
+        (s.shots||[]).forEach(sh=>{ h+='<img src="'+sh.data+'" alt="'+esc(sh.name)+'">'; }); h+='</li>'; });
+      const t=sec.querySelector('textarea[data-cm]'); if(t&&t.value.trim()) h+='<li class=n>📝 '+esc(t.value.trim())+'</li>'; h+='</ul>'; });
+    const blob=new Blob([h],{type:'text/html'}); const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='ccy-vat-uat-report.html'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); }
+  buildSteps(); restore(); progress(); paintClock();
+</script>
+</body>
+</html>
