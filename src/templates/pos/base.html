@@ -386,23 +386,31 @@
     <script>
         // JWT token management
         const AuthHelper = {
+            // Session lives in sessionStorage (per-tab) BUT is mirrored into localStorage
+            // (shared across tabs) so a target=_blank link (Details / Postcard) opens a new tab
+            // that is still logged in. Without this, the new tab has an empty sessionStorage and
+            // bounces to the login screen — the "Details logs me out as ralph" bug.
+            _mirror(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} },
+
             getToken() {
-                return sessionStorage.getItem('pos_token');
+                return sessionStorage.getItem('pos_token') || localStorage.getItem('pos_token');
             },
 
             setToken(token) {
                 sessionStorage.setItem('pos_token', token);
+                this._mirror('pos_token', token);
                 this._revealChrome();
             },
 
             // Store the full session from the OAuth callback (access + refresh + expiry)
             // so the till can refresh silently and never hard-logout mid-sale.
             setSession({ access, refresh, expiresIn }) {
-                if (access) sessionStorage.setItem('pos_token', access);
-                if (refresh) sessionStorage.setItem('pos_refresh', refresh);
+                if (access) { sessionStorage.setItem('pos_token', access); this._mirror('pos_token', access); }
+                if (refresh) { sessionStorage.setItem('pos_refresh', refresh); this._mirror('pos_refresh', refresh); }
                 if (expiresIn) {
                     const expAt = Date.now() + (parseInt(expiresIn, 10) * 1000);
                     sessionStorage.setItem('pos_token_exp', String(expAt));
+                    this._mirror('pos_token_exp', String(expAt));
                 }
                 if (access) this._revealChrome();
             },
@@ -416,12 +424,12 @@
             },
 
             getRefreshToken() {
-                return sessionStorage.getItem('pos_refresh');
+                return sessionStorage.getItem('pos_refresh') || localStorage.getItem('pos_refresh');
             },
 
             // True when the access token is missing or within `skewMs` of expiry.
             isExpiring(skewMs = 30000) {
-                const expAt = parseInt(sessionStorage.getItem('pos_token_exp') || '0', 10);
+                const expAt = parseInt(sessionStorage.getItem('pos_token_exp') || localStorage.getItem('pos_token_exp') || '0', 10);
                 return !expAt || Date.now() >= (expAt - skewMs);
             },
 
@@ -448,10 +456,10 @@
             },
 
             clearToken() {
-                sessionStorage.removeItem('pos_token');
-                sessionStorage.removeItem('pos_refresh');
-                sessionStorage.removeItem('pos_token_exp');
-                sessionStorage.removeItem('pos_user');
+                ['pos_token', 'pos_refresh', 'pos_token_exp', 'pos_user'].forEach(k => {
+                    sessionStorage.removeItem(k);
+                    try { localStorage.removeItem(k); } catch (e) {}   // clear the shared mirror too, so logout is real
+                });
             },
 
             decodeToken(token) {
@@ -537,6 +545,21 @@
                 window.location.href = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/logout?post_logout_redirect_uri=${redirectUri}&client_id=helix_pos_web`;
             }
         };
+
+        // Hydrate THIS tab from the shared (localStorage) session mirror. A new tab opened by a
+        // target=_blank link (Details / Postcard) starts with an EMPTY sessionStorage; copy the
+        // session in before anything reads it, so the tab is already logged in and the many direct
+        // `sessionStorage.getItem('pos_token')` readers keep working. (Fixes: Details → login-as-ralph.)
+        (function hydratePosSession() {
+            try {
+                if (!sessionStorage.getItem('pos_token') && localStorage.getItem('pos_token')) {
+                    ['pos_token', 'pos_refresh', 'pos_token_exp', 'pos_user'].forEach(k => {
+                        const v = localStorage.getItem(k);
+                        if (v != null) sessionStorage.setItem(k, v);
+                    });
+                }
+            } catch (e) {}
+        })();
 
         // API helper with automatic auth + silent token refresh
         const API = {

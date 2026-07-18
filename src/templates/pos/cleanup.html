@@ -3,7 +3,19 @@
 {% block title %}Catalog Cockpit - HelixPOS - Artemis Store{% endblock %}
 
 {% block content %}
+<style>
+  @keyframes pcSlide { 0%{left:-40%} 100%{left:100%} }
+  .pc-bar-fill { position:absolute; top:0; height:100%; width:40%; background:#4f46e5; animation:pcSlide 1.1s ease-in-out infinite; }
+</style>
 <div class="min-h-screen bg-gray-50" x-data="cleanupData()" x-init="init()">
+    <!-- 📇 Postcard is server-rendered in a new tab and can take a few seconds — show an
+         indeterminate progress bar so the operator knows it's working (Angel's ask). -->
+    <div x-show="postcardBusy" x-transition style="display:none;" class="fixed top-0 left-0 right-0 z-[95] h-1 bg-indigo-100 overflow-hidden">
+        <div class="pc-bar-fill"></div>
+    </div>
+    <div x-show="postcardBusy" x-transition style="display:none;" class="fixed top-2 left-1/2 -translate-x-1/2 z-[95] bg-indigo-600 text-white text-sm font-semibold px-4 py-1.5 rounded-full shadow-lg">
+        📇 <span data-i18n="cleanup.postcard_building">Building postcard… opening in a new tab</span>
+    </div>
     <div class="max-w-4xl mx-auto px-4 py-8">
 
         <!-- Header -->
@@ -201,7 +213,7 @@
                             </div>
                             <div class="flex gap-2 flex-none">
                                 <a :href="zoom ? '/pos/catalog?edit=' + zoom.product_id : '#'" target="_blank" class="btn-secondary text-sm">🔎 <span data-i18n="cleanup.open_details">Details</span></a>
-                                <a :href="zoom ? '/pos/products/' + zoom.product_id + '/postcard' : '#'" target="_blank" class="btn-secondary text-sm">📇 <span data-i18n="cleanup.open_postcard">Postcard</span></a>
+                                <a :href="zoom ? '/pos/products/' + zoom.product_id + '/postcard' : '#'" target="_blank" @click="pcOpening()" class="btn-secondary text-sm">📇 <span data-i18n="cleanup.open_postcard">Postcard</span></a>
                                 <button @click="zoom = null" class="btn-secondary text-sm" data-i18n="cleanup.close">Close</button>
                             </div>
                         </div>
@@ -278,6 +290,7 @@
                                            class="text-indigo-600 font-semibold hover:underline"
                                            data-i18n="cleanup.open_details">🔎 Details</a>
                                         <a :href="'/pos/products/' + p.product_id + '/postcard'" target="_blank"
+                                           @click="pcOpening()"
                                            class="text-indigo-600 font-semibold hover:underline"
                                            data-i18n="cleanup.open_postcard">📇 Postcard</a>
                                     </p>
@@ -448,6 +461,7 @@
             // BL-98 gap filter — narrow the bench to ONE missing thing ('' = all four).
             gapFilter: '',
             gapCounts: { all: 0, photo: 0, description: 0, category: 0, cost: 0 },
+            postcardBusy: false, _pcT: null,   // indeterminate bar while a postcard tab loads
             selected: {},          // product_id -> true (bulk-delete selection)
             bulkBusy: false,
 
@@ -527,6 +541,9 @@
             applyShelf() { this.offset = 0; this.load(); },
             // BL-98 gap filter: jump to just the items missing ONE thing (photo/description/…).
             setGap(kind) { this.gapFilter = (this.gapFilter === kind) ? '' : kind; this.offset = 0; this.load(); },
+            // Postcard opens in a new tab (server-rendered, slow). Flash a progress bar so the
+            // operator sees it's working; auto-clear (we can't observe the other tab's finish).
+            pcOpening() { this.postcardBusy = true; clearTimeout(this._pcT); this._pcT = setTimeout(() => { this.postcardBusy = false; }, 7000); },
             gapLabel() {
                 return ({ photo: '📷 missing a photo', description: '📝 missing a description',
                           category: '🏷️ missing a category', cost: '💰 missing a cost' })[this.gapFilter]
