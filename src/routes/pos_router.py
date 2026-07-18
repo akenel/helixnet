@@ -7346,7 +7346,11 @@ async def last_cash_shift(
     ).order_by(CashShiftModel.closed_at.desc()).limit(1))).scalar_one_or_none()
     if not shift:
         return {"ok": False}
-    return _shift_report(shift)
+    # Recompute the foreign-cash breakdown from the shift's transactions so a revisited/closed report
+    # still shows it (Block 2 — it isn't stored on the shift row). Cheap: same query as the close tally.
+    s = await _shift_sales(db, await _resolve_cashier_uid(db, current_user),
+                           shift.opened_at, shift.closed_at or shift.opened_at)
+    return _shift_report(shift, foreign=s.get("foreign"))
 
 
 @router.get("/shift/{shift_id}/transactions")

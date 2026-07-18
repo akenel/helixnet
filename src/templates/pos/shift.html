@@ -209,6 +209,15 @@
                     <tbody>
                         <tr class="border-b"><td class="py-2 text-gray-600" data-i18n="shift.opening_float">Opening float</td><td class="py-2 text-right font-semibold" x-text="formatPrice(num(report && report.opening_float))"></td></tr>
                         <tr class="border-b"><td class="py-2 text-gray-600" data-i18n="shift.cash_sales">Cash sales</td><td class="py-2 text-right font-semibold text-green-600" x-text="formatPrice(num(report && report.cash_sales))"></td></tr>
+                        <!-- Block 2: foreign cash taken this shift — the FOREIGN notes physically in the
+                             drawer (face + home value). Their home value is already inside Cash sales /
+                             Expected; this row set tells the cashier which foreign notes to count. -->
+                        <template x-for="[ccy, f] in Object.entries((report && report.foreign) || {})" :key="ccy">
+                            <tr class="border-b bg-amber-50">
+                                <td class="py-2 text-amber-800">💱 <span class="font-mono font-semibold" x-text="ccy + ' ' + Number(f.face).toFixed(2)"></span> <span class="text-amber-600 text-xs" data-i18n="shift.foreign_taken_row">cash taken — count separately</span></td>
+                                <td class="py-2 text-right text-amber-800" x-text="'≈ ' + formatPrice(f.home)"></td>
+                            </tr>
+                        </template>
                         <tr class="border-b" x-show="report && num(report.cash_refunds) > 0"><td class="py-2 text-gray-600" data-i18n="shift.cash_refunds">Cash refunds</td><td class="py-2 text-right" x-text="'−' + formatPrice(num(report && report.cash_refunds))"></td></tr>
                         <tr class="border-b" x-show="report && num(report.paid_in_total) > 0"><td class="py-2 text-gray-600" data-i18n="shift.paid_in">Paid in</td><td class="py-2 text-right text-blue-600" x-text="formatPrice(num(report && report.paid_in_total))"></td></tr>
                         <tr class="border-b" x-show="report && num(report.paid_out_total) > 0"><td class="py-2 text-gray-600" data-i18n="shift.paid_out">Paid out</td><td class="py-2 text-right text-orange-600" x-text="'−' + formatPrice(num(report && report.paid_out_total))"></td></tr>
