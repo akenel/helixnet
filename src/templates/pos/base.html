@@ -968,6 +968,11 @@
                 if (window.console && console.error) console.error('[i18n] missing key:', key);
                 return key;
             }
+            // {ccy} ALWAYS resolves to the shop's currency, so any money label stays correct on a
+            // non-CHF shop (EUR Roma / USD). Works for both the data-i18n sweep and x-text t() calls.
+            // An explicit replacements.ccy still overrides. (Fixes hardcoded "(CHF)" leaks — Angel.)
+            if (val.indexOf('{ccy}') !== -1 && !(replacements && 'ccy' in replacements))
+                val = val.split('{ccy}').join((window.POSConfig && POSConfig.currency) || 'CHF');
             if (replacements) {
                 for (var k in replacements) {
                     if (Object.prototype.hasOwnProperty.call(replacements, k))
