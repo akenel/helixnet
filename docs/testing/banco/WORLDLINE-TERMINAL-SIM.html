@@ -1,0 +1,484 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Banco × Worldline — Terminal Integration Simulation</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#171b22; --panel-2:#1e242d; --edge:#2b323d;
+    --ink:#e8edf4; --ink-dim:#9aa6b6; --ink-faint:#66707e;
+    --accent:#e4b84a;           /* Banco gold */
+    --accent-ink:#2a2410;
+    --ok:#37c26a; --ok-soft:#0f3a22;
+    --bad:#ec5b5b; --bad-soft:#3a1414;
+    --twint:#00b3a4; --card:#4f9dff;
+    --screen:#0b1f18; --screen-glow:#0e3a2a;
+    --radius:16px; --shadow:0 20px 50px rgba(0,0,0,.5);
+    --mono:"SF Mono",ui-monospace,"Cascadia Code","JetBrains Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:light){
+    :root{
+      --bg:#eef1f5; --panel:#ffffff; --panel-2:#f4f6f9; --edge:#dde2ea;
+      --ink:#1a2029; --ink-dim:#55606f; --ink-faint:#8b95a3;
+      --shadow:0 18px 44px rgba(30,45,70,.16);
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--bg); color:var(--ink); font-family:var(--sans);
+    line-height:1.5; -webkit-font-smoothing:antialiased; padding:0 0 48px;
+  }
+  .wrap{max-width:1180px; margin:0 auto; padding:0 20px}
+
+  /* ---- header ---- */
+  header.top{
+    border-bottom:1px solid var(--edge); background:
+      radial-gradient(1200px 200px at 20% -40%, rgba(228,184,74,.12), transparent 70%), var(--panel);
+    padding:22px 0 20px; margin-bottom:26px;
+  }
+  .brandrow{display:flex; align-items:center; gap:14px; flex-wrap:wrap}
+  .wolf{font-size:30px; filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))}
+  h1{font-size:22px; margin:0; letter-spacing:.2px; font-weight:700}
+  h1 .x{color:var(--accent); font-weight:800; margin:0 4px}
+  .sub{color:var(--ink-dim); font-size:13.5px; margin-top:4px}
+  .stamp{margin-left:auto; text-align:right; font-family:var(--mono); font-size:11px; color:var(--ink-faint); line-height:1.7}
+  .stamp b{color:var(--accent); font-weight:600}
+  .simchip{display:inline-flex; align-items:center; gap:6px; margin-top:8px; padding:3px 10px; border-radius:999px;
+    background:var(--panel-2); border:1px solid var(--edge); font-size:11.5px; color:var(--ink-dim); font-family:var(--mono)}
+  .simdot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px rgba(228,184,74,.18)}
+
+  /* ---- layout ---- */
+  .grid{display:grid; grid-template-columns:340px 1fr; gap:22px; align-items:start}
+  @media (max-width:900px){ .grid{grid-template-columns:1fr} }
+
+  .card{background:var(--panel); border:1px solid var(--edge); border-radius:var(--radius); box-shadow:var(--shadow)}
+  .card .hd{padding:14px 18px; border-bottom:1px solid var(--edge); display:flex; align-items:center; gap:10px}
+  .card .hd h2{font-size:13px; margin:0; text-transform:uppercase; letter-spacing:.10em; color:var(--ink-dim); font-weight:700}
+  .card .bd{padding:18px}
+
+  /* ---- till ---- */
+  .till .line{display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px dashed var(--edge); font-size:14px}
+  .till .line span:last-child{font-variant-numeric:tabular-nums}
+  .till .qty{color:var(--ink-faint); font-family:var(--mono); font-size:12px; margin-right:6px}
+  .till .total{display:flex; justify-content:space-between; align-items:baseline; margin-top:12px; padding-top:12px; border-top:2px solid var(--edge)}
+  .till .total .lbl{font-size:12px; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-dim)}
+  .till .total .amt{font-size:30px; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:-.5px}
+  .till .total .amt small{font-size:15px; color:var(--ink-dim); font-weight:600; margin-right:5px}
+
+  .field{margin-top:16px}
+  .field label{display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); margin-bottom:6px}
+  .segrow{display:flex; gap:8px}
+  .seg{flex:1; text-align:center; padding:9px 6px; border-radius:10px; border:1px solid var(--edge); background:var(--panel-2);
+    color:var(--ink-dim); cursor:pointer; font-size:12.5px; font-weight:600; transition:.15s; user-select:none}
+  .seg:hover{border-color:var(--accent)}
+  .seg.on{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+  .amtinput{display:flex; align-items:center; gap:8px; background:var(--panel-2); border:1px solid var(--edge); border-radius:10px; padding:8px 12px}
+  .amtinput span{color:var(--ink-dim); font-weight:700; font-size:14px}
+  .amtinput input{flex:1; background:transparent; border:0; color:var(--ink); font-size:18px; font-weight:700; outline:none; width:100%;
+    font-variant-numeric:tabular-nums; font-family:var(--mono)}
+
+  .receipt{margin-top:16px; border:1px dashed var(--edge); border-radius:10px; padding:14px; background:var(--panel-2);
+    font-family:var(--mono); font-size:12px; color:var(--ink-dim); min-height:96px; transition:.3s}
+  .receipt.paid{border-color:var(--ok); background:var(--ok-soft)}
+  .receipt.failed{border-color:var(--bad); background:var(--bad-soft)}
+  .receipt .rhd{color:var(--ink-faint); text-transform:uppercase; letter-spacing:.08em; font-size:10px; margin-bottom:8px}
+  .receipt .rrow{display:flex; justify-content:space-between; padding:2px 0}
+  .receipt .rrow b{color:var(--ink)}
+  .receipt .rbadge{display:inline-block; margin-top:8px; padding:3px 10px; border-radius:6px; font-weight:700; font-size:11px; letter-spacing:.05em}
+  .receipt.paid .rbadge{background:var(--ok); color:#04120a}
+  .receipt.failed .rbadge{background:var(--bad); color:#1a0505}
+
+  /* ---- terminals ---- */
+  .devs{display:grid; grid-template-columns:1fr 1fr; gap:20px}
+  @media (max-width:620px){ .devs{grid-template-columns:1fr} }
+
+  .dev{display:flex; flex-direction:column; align-items:center; gap:12px}
+  .devname{font-size:12px; font-family:var(--mono); color:var(--ink-dim); text-align:center}
+  .devname b{color:var(--ink); display:block; font-size:13px; letter-spacing:.02em}
+  .devip{color:var(--ink-faint); font-size:10.5px}
+
+  /* device body */
+  .term{position:relative; width:100%; max-width:230px; border-radius:26px; padding:14px; background:
+    linear-gradient(160deg,#20262f,#12161c); border:1px solid #333b46; box-shadow:0 24px 44px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05)}
+  .term.selected{outline:2px solid var(--accent); outline-offset:4px}
+  .term.axium{max-width:250px}
+  .term .brandbar{display:flex; justify-content:space-between; align-items:center; padding:0 6px 10px; color:#8b95a3; font-size:9px; font-family:var(--mono); letter-spacing:.12em}
+  .term .brandbar .wl{color:#c9d2dd; font-weight:700}
+
+  .screen{position:relative; border-radius:14px; background:
+    radial-gradient(120% 90% at 50% 0%, var(--screen-glow), var(--screen) 70%);
+    aspect-ratio:1/1.02; overflow:hidden; border:1px solid #0a2a1f; box-shadow:inset 0 2px 14px rgba(0,0,0,.6)}
+  .axium .screen{aspect-ratio:1/1.35}
+  .screen .inner{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:14px; gap:8px}
+  .scr-brand{color:#5fd3a9; font-size:10px; letter-spacing:.2em; font-family:var(--mono); text-transform:uppercase; opacity:.85}
+  .scr-hint{color:#9fe6c8; font-size:12.5px; font-weight:600; min-height:16px}
+  .scr-amt{color:#eafff5; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:-.5px; font-size:30px; line-height:1}
+  .scr-amt small{font-size:14px; color:#7fd8b4; font-weight:600; margin-right:3px}
+  .scr-amt.pop{animation:pop .5s cubic-bezier(.2,1.3,.4,1)}
+  @keyframes pop{0%{transform:scale(.5);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+
+  .waves{width:44px;height:44px;position:relative;margin:2px auto}
+  .waves::before,.waves::after,.waves i{position:absolute;inset:0;margin:auto;border:2.5px solid #37c26a;border-radius:50%;opacity:0}
+  .awaiting .waves::before{animation:wv 1.5s ease-out infinite}
+  .awaiting .waves i{animation:wv 1.5s ease-out .5s infinite}
+  .awaiting .waves::after{animation:wv 1.5s ease-out 1s infinite}
+  @keyframes wv{0%{width:10px;height:10px;opacity:.9}100%{width:52px;height:52px;opacity:0}}
+
+  .methods{display:flex; gap:8px; margin-top:4px}
+  .m{padding:6px 12px; border-radius:8px; font-size:11px; font-weight:700; cursor:pointer; border:1px solid transparent; transition:.15s; letter-spacing:.03em}
+  .m.card{background:rgba(79,157,255,.14); color:#9cc6ff; border-color:rgba(79,157,255,.4)}
+  .m.twint{background:rgba(0,179,164,.14); color:#5fe6d8; border-color:rgba(0,179,164,.4)}
+  .m:hover{transform:translateY(-1px); filter:brightness(1.2)}
+  .m:active{transform:translateY(0)}
+
+  .spinner{width:34px;height:34px;border-radius:50%;border:3px solid rgba(95,211,169,.2);border-top-color:#5fd3a9;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .verdict{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .vmark{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;animation:pop .4s cubic-bezier(.2,1.3,.4,1)}
+  .vmark.ok{background:var(--ok);color:#04120a;box-shadow:0 0 0 0 rgba(55,194,106,.6);animation:pop .4s cubic-bezier(.2,1.3,.4,1),beep 1.4s ease-out}
+  .vmark.bad{background:var(--bad);color:#1a0505}
+  @keyframes beep{0%{box-shadow:0 0 0 0 rgba(55,194,106,.6)}100%{box-shadow:0 0 0 26px rgba(55,194,106,0)}}
+  .vtext{font-size:14px;font-weight:800;letter-spacing:.08em}
+  .vtext.ok{color:#8affc0}.vtext.bad{color:#ff9d9d}
+  .vref{font-family:var(--mono);font-size:9.5px;color:#7fd8b4;letter-spacing:.02em}
+
+  /* keypad (move only) */
+  .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px}
+  .keypad b{background:#232a33;border:1px solid #333b46;border-radius:8px;text-align:center;padding:8px 0;color:#aeb8c4;font-size:13px;font-weight:600;box-shadow:inset 0 -2px 0 rgba(0,0,0,.3)}
+  .keypad b.red{color:#ec8888}.keypad b.grn{color:#7fd39c}
+  .axium .contactbar{margin-top:12px;height:6px;border-radius:4px;background:linear-gradient(90deg,#37c26a,#00b3a4);opacity:.5}
+
+  .chargebtn{width:100%;margin-top:10px;padding:11px;border-radius:11px;border:0;cursor:pointer;font-weight:800;font-size:13.5px;
+    background:var(--accent);color:var(--accent-ink);letter-spacing:.02em;transition:.15s}
+  .chargebtn:hover{filter:brightness(1.06)}
+  .chargebtn:disabled{opacity:.4;cursor:not-allowed}
+  .statechip{font-family:var(--mono);font-size:10px;color:var(--ink-faint);text-align:center;min-height:14px;letter-spacing:.04em}
+
+  /* ---- message log ---- */
+  .log{margin-top:22px}
+  .log .bd{padding:0}
+  .logstream{font-family:var(--mono); font-size:11.5px; max-height:230px; overflow:auto; padding:12px 16px}
+  .logrow{display:flex; gap:10px; padding:3px 0; align-items:baseline; animation:fade .3s}
+  @keyframes fade{from{opacity:0;transform:translateY(3px)}to{opacity:1}}
+  .logrow .t{color:var(--ink-faint); width:58px; flex:none}
+  .logrow .dir{width:74px; flex:none; font-weight:700; letter-spacing:.02em}
+  .logrow .dir.tx{color:var(--card)} .logrow .dir.rx{color:var(--ok)} .logrow .dir.sys{color:var(--ink-faint)}
+  .logrow .msg{color:var(--ink-dim)} .logrow .msg b{color:var(--ink)}
+  .logempty{color:var(--ink-faint);padding:18px 16px;font-family:var(--mono);font-size:12px}
+
+  .note{margin-top:22px;padding:14px 16px;border-left:3px solid var(--accent);background:var(--panel-2);border-radius:0 10px 10px 0;
+    font-size:12.5px;color:var(--ink-dim)}
+  .note b{color:var(--ink)}
+  .note code{font-family:var(--mono);font-size:11.5px;background:rgba(228,184,74,.12);color:var(--accent);padding:1px 6px;border-radius:5px}
+
+  footer.foot{margin-top:30px;padding-top:16px;border-top:1px solid var(--edge);display:flex;flex-wrap:wrap;gap:8px;
+    justify-content:space-between;font-family:var(--mono);font-size:10.5px;color:var(--ink-faint)}
+  footer .wolf{font-size:16px}
+
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<header class="top"><div class="wrap brandrow">
+  <span class="wolf">🐺</span>
+  <div>
+    <h1>Banco <span class="x">×</span> Worldline — Terminal Integration <em style="color:var(--accent);font-style:normal">Simulation</em></h1>
+    <div class="sub">The till sends the amount → the terminal shows it → the customer taps card or TWINT → the result flows back. No hardware, no real money.</div>
+    <div class="simchip"><span class="simdot"></span> SIMULATED as if Worldline delivered the TIM spec + terminal IPs</div>
+  </div>
+  <div class="stamp">
+    <b>№ LP-SIM-20260718-WL-TIM</b><br>
+    Banco · La Piazza<br>
+    ep2 / TIM mock · rev 1
+  </div>
+</div></header>
+
+<div class="wrap">
+  <div class="grid">
+
+    <!-- ================= TILL ================= -->
+    <section class="card till">
+      <div class="hd"><h2>🧾 Banco Till</h2></div>
+      <div class="bd">
+        <div class="line"><span><span class="qty">2×</span>Grinder Alu 50mm</span><span>34.00</span></div>
+        <div class="line"><span><span class="qty">1×</span>Papers King Size</span><span>4.50</span></div>
+        <div class="line"><span><span class="qty">1×</span>Filter Tips</span><span>4.00</span></div>
+        <div class="total"><span class="lbl">Total</span><span class="amt"><small>CHF</small><span id="totalAmt">42.50</span></span></div>
+
+        <div class="field">
+          <label>Amount to charge (edit freely)</label>
+          <div class="amtinput"><span>CHF</span><input id="amt" type="text" inputmode="decimal" value="42.50"></div>
+        </div>
+
+        <div class="field">
+          <label>Simulated terminal outcome</label>
+          <div class="segrow">
+            <div class="seg on" data-out="approve">✓ Approve</div>
+            <div class="seg" data-out="decline">✕ Decline</div>
+          </div>
+        </div>
+
+        <div class="receipt" id="receipt">
+          <div class="rhd">Receipt — awaiting payment</div>
+          <div style="color:var(--ink-faint)">Charge on a terminal to the right. The approved result (method + transaction reference) lands here, exactly as the real ep2 flow returns it.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TERMINALS ================= -->
+    <section class="card">
+      <div class="hd"><h2>💳 Felix's Worldline terminals</h2>
+        <span style="margin-left:auto;font-size:11px;color:var(--ink-faint);font-family:var(--mono)">click a terminal to select · then Charge</span></div>
+      <div class="bd">
+        <div class="devs">
+
+          <!-- AXIUM DX8000 -->
+          <div class="dev">
+            <div class="term axium selected" id="dev-axium" data-id="axium">
+              <div class="brandbar"><span class="wl">worldline</span><span>AXIUM DX8000</span></div>
+              <div class="screen"><div class="inner" id="scr-axium"></div></div>
+              <div class="contactbar"></div>
+            </div>
+            <div class="devname"><b>AXIUM DX8000</b> <span class="devip">TID 25409030 · 192.168.1.50:7784</span></div>
+            <button class="chargebtn" data-charge="axium">Charge CHF <span class="cbamt">42.50</span></button>
+            <div class="statechip" id="state-axium">IDLE</div>
+          </div>
+
+          <!-- MOVE/5000 -->
+          <div class="dev">
+            <div class="term move" id="dev-move" data-id="move">
+              <div class="brandbar"><span class="wl">worldline</span><span>MOVE/5000</span></div>
+              <div class="screen"><div class="inner" id="scr-move"></div></div>
+              <div class="keypad">
+                <b>1</b><b>2</b><b>3</b><b>4</b><b>5</b><b>6</b><b>7</b><b>8</b><b>9</b>
+                <b class="red">✕</b><b>0</b><b class="grn">✓</b>
+              </div>
+            </div>
+            <div class="devname"><b>Move/5000</b> <span class="devip">TID 25145450 · 192.168.1.51:7784</span></div>
+            <button class="chargebtn" data-charge="move">Charge CHF <span class="cbamt">42.50</span></button>
+            <div class="statechip" id="state-move">IDLE</div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ================= MESSAGE LOG ================= -->
+  <section class="card log">
+    <div class="hd"><h2>🔌 ep2 / TIM message exchange</h2>
+      <span style="margin-left:auto;font-size:11px;color:var(--ink-faint);font-family:var(--mono)">POS ↔ terminal · this is the real protocol shape the adapter will speak</span></div>
+    <div class="bd"><div class="logstream" id="log"><div class="logempty">— idle — the wire is quiet until you charge —</div></div></div>
+  </section>
+
+  <div class="note">
+    <b>Why this matters:</b> the state machine you're watching — <code>OPEN_READER → REQUEST_PAYMENT(amount) → CARD_PRESENTED → PROCESSING → APPROVED(ref)</code> —
+    is the <b>same flow the real Worldline TIM adapter runs.</b> Today it's driven by a mock terminal in the browser. When Worldline returns the
+    real spec + terminal IP, we point the adapter at <code>192.168.1.50:7784</code> instead of the mock — and the till, the receipt, and this log stay identical.
+    <b>That's the swap that makes "plug it in and it works" real.</b>
+  </div>
+
+  <footer class="foot">
+    <span>🐺 Banco · La Piazza — Worldline TIM integration simulation</span>
+    <span>№ LP-SIM-20260718-WL-TIM · SIMULATION ONLY — no card data, no settlement</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var seq = 1000;
+  var busy = {axium:false, move:false};
+  var meta = {
+    axium:{name:"AXIUM DX8000", tid:"25409030", brand:"WORLDLINE ep2"},
+    move: {name:"Move/5000",    tid:"25145450", brand:"WORLDLINE ep2"}
+  };
+
+  var $ = function(id){ return document.getElementById(id); };
+  var logEl = $("log");
+  var logStarted = false;
+
+  function now(){
+    var d = new Date();
+    return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")+":"+String(d.getSeconds()).padStart(2,"0");
+  }
+  function log(dir, msg){
+    if(!logStarted){ logEl.innerHTML=""; logStarted=true; }
+    var row = document.createElement("div");
+    row.className = "logrow";
+    var dcls = dir==="POS→TERM"?"tx":dir==="TERM→POS"?"rx":"sys";
+    var dlabel = dir==="POS→TERM"?"POS →":dir==="TERM→POS"?"→ POS":"· · ·";
+    row.innerHTML = '<span class="t">'+now()+'</span><span class="dir '+dcls+'">'+dlabel+'</span><span class="msg">'+msg+'</span>';
+    logEl.appendChild(row);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function parseAmt(){
+    var v = parseFloat(($("amt").value||"").replace(",", "."));
+    if(!isFinite(v) || v<=0) v = 0;
+    return v;
+  }
+  function fmt(v){ return v.toFixed(2); }
+
+  function syncAmt(){
+    var v = parseAmt();
+    $("totalAmt").textContent = fmt(v);
+    var chips = document.querySelectorAll(".cbamt");
+    for(var i=0;i<chips.length;i++) chips[i].textContent = fmt(v);
+  }
+
+  function delay(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+
+  // ---- screen renderers (a tiny view layer over the device state) ----
+  function render(id, state, data){
+    var scr = $("scr-"+id); data = data||{};
+    var term = $("dev-"+id);
+    term.classList.remove("awaiting");
+    var m = meta[id];
+    if(state==="IDLE"){
+      scr.innerHTML = '<div class="scr-brand">'+m.brand+'</div><div class="scr-hint">Bereit</div>';
+    } else if(state==="AMOUNT"){
+      scr.innerHTML = '<div class="scr-brand">Betrag</div><div class="scr-amt pop"><small>CHF</small>'+fmt(data.amt)+'</div>';
+    } else if(state==="AWAIT"){
+      term.classList.add("awaiting");
+      scr.innerHTML =
+        '<div class="scr-amt"><small>CHF</small>'+fmt(data.amt)+'</div>'+
+        '<div class="waves"><i></i></div>'+
+        '<div class="scr-hint">Karte oder TWINT auflegen</div>'+
+        '<div class="methods"><span class="m card" data-m="Karte">KARTE</span><span class="m twint" data-m="TWINT">TWINT</span></div>';
+      // wire method taps
+      var ms = scr.querySelectorAll(".m");
+      for(var i=0;i<ms.length;i++){
+        ms[i].addEventListener("click", function(ev){
+          if(data.onTap) data.onTap(ev.currentTarget.getAttribute("data-m"));
+        });
+      }
+    } else if(state==="PROCESSING"){
+      scr.innerHTML = '<div class="spinner"></div><div class="scr-hint">Verarbeitung…</div><div class="scr-brand">'+data.method+'</div>';
+    } else if(state==="APPROVED"){
+      scr.innerHTML =
+        '<div class="verdict"><div class="vmark ok">✓</div><div class="vtext ok">GENEHMIGT</div>'+
+        '<div class="scr-amt" style="font-size:20px"><small>CHF</small>'+fmt(data.amt)+'</div>'+
+        '<div class="vref">'+data.ref+'</div></div>';
+    } else if(state==="DECLINED"){
+      scr.innerHTML =
+        '<div class="verdict"><div class="vmark bad">✕</div><div class="vtext bad">ABGELEHNT</div>'+
+        '<div class="scr-hint" style="color:#ff9d9d">Bitte erneut versuchen</div></div>';
+    }
+  }
+
+  function setState(id, s){ $("state-"+id).textContent = s; }
+
+  // ---- the adapter flow (mirrors the real ep2/TIM state machine) ----
+  function waitForTap(id, amt){
+    return new Promise(function(resolve){
+      var auto = setTimeout(function(){ resolve("Karte"); }, 2600); // auto-tap if operator doesn't
+      render(id, "AWAIT", { amt:amt, onTap:function(method){ clearTimeout(auto); resolve(method); } });
+    });
+  }
+
+  function charge(id){
+    if(busy[id]) return;
+    var amt = parseAmt();
+    if(amt<=0){ return; }
+    var out = document.querySelector(".seg.on").getAttribute("data-out");
+    var m = meta[id];
+    busy[id]=true;
+    setBtns(true);
+    resetReceipt();
+
+    // OPEN_READER
+    setState(id,"OPEN_READER");
+    log("POS→TERM", '<b>OpenReader</b> → '+m.name+' (TID '+m.tid+' @ 192.168.1.'+(id==="axium"?"50":"51")+':7784)');
+    delay(500).then(function(){
+      log("TERM→POS", '<b>ReaderReady</b> · ep2 session open');
+      // REQUEST_PAYMENT
+      setState(id,"REQUEST_PAYMENT");
+      log("POS→TERM", '<b>RequestPayment</b> amount=<b>CHF '+fmt(amt)+'</b> ref=SALE-'+(seq+1));
+      render(id,"AMOUNT",{amt:amt});
+      return delay(850);
+    }).then(function(){
+      // AWAIT CARD
+      setState(id,"AWAITING_CARD");
+      log("TERM→POS", '<b>AmountDisplayed</b> · waiting for card / TWINT');
+      return waitForTap(id, amt);
+    }).then(function(method){
+      log("TERM→POS", '<b>CardPresented</b> · method=<b>'+method+'</b>');
+      setState(id,"PROCESSING");
+      render(id,"PROCESSING",{method:method});
+      log("POS→TERM", '<b>Authorize</b> · (host handles settlement — POS never sees card data)');
+      return delay(1300).then(function(){ return method; });
+    }).then(function(method){
+      seq += 1;
+      if(out==="approve"){
+        var ref = m.tid+"-"+String(seq).padStart(6,"0");
+        setState(id,"APPROVED");
+        render(id,"APPROVED",{amt:amt, ref:ref, method:method});
+        log("TERM→POS", '<b style="color:var(--ok)">Approved</b> · txnRef=<b>'+ref+'</b> · method='+method);
+        payReceipt(m, amt, method, ref);
+      } else {
+        setState(id,"DECLINED");
+        render(id,"DECLINED",{});
+        log("TERM→POS", '<b style="color:var(--bad)">Declined</b> · reason=SIMULATED_DECLINE · cart kept, retry or cash');
+        failReceipt(m);
+      }
+      log("POS→TERM", '<b>CloseReader</b> · session ended');
+      // return to idle after a beat
+      setTimeout(function(){ render(id,"IDLE",{}); setState(id,"IDLE"); busy[id]=false; setBtns(false); }, 2600);
+    });
+  }
+
+  // ---- receipt (the till side receiving the result) ----
+  function resetReceipt(){
+    var r = $("receipt"); r.className="receipt";
+    r.innerHTML = '<div class="rhd">Receipt — charging…</div><div style="color:var(--ink-faint)">Waiting for the terminal…</div>';
+  }
+  function payReceipt(m, amt, method, ref){
+    var r = $("receipt"); r.className="receipt paid";
+    r.innerHTML =
+      '<div class="rhd">Receipt — payment captured</div>'+
+      '<div class="rrow"><span>Amount</span><b>CHF '+fmt(amt)+'</b></div>'+
+      '<div class="rrow"><span>Method</span><b>'+method+'</b></div>'+
+      '<div class="rrow"><span>Terminal</span><b>'+m.name+'</b></div>'+
+      '<div class="rrow"><span>TID</span><b>'+m.tid+'</b></div>'+
+      '<div class="rrow"><span>Txn ref</span><b>'+ref+'</b></div>'+
+      '<span class="rbadge">✓ BEZAHLT · recorded on sale</span>';
+  }
+  function failReceipt(m){
+    var r = $("receipt"); r.className="receipt failed";
+    r.innerHTML =
+      '<div class="rhd">Receipt — payment not completed</div>'+
+      '<div class="rrow"><span>Terminal</span><b>'+m.name+'</b></div>'+
+      '<div class="rrow"><span>Result</span><b>Declined</b></div>'+
+      '<div style="margin-top:6px;color:var(--ink-dim)">Cart is preserved — cashier can retry the card or take cash.</div>'+
+      '<span class="rbadge">✕ ABGELEHNT · no charge</span>';
+  }
+
+  function setBtns(disabled){
+    var b = document.querySelectorAll(".chargebtn");
+    for(var i=0;i<b.length;i++){ b[i].disabled = disabled; }
+  }
+
+  // ---- wiring ----
+  document.querySelectorAll("[data-charge]").forEach(function(btn){
+    btn.addEventListener("click", function(){ selectTerm(btn.getAttribute("data-charge")); charge(btn.getAttribute("data-charge")); });
+  });
+  document.querySelectorAll(".term").forEach(function(t){
+    t.addEventListener("click", function(){ selectTerm(t.getAttribute("data-id")); });
+  });
+  function selectTerm(id){
+    document.querySelectorAll(".term").forEach(function(t){ t.classList.toggle("selected", t.getAttribute("data-id")===id); });
+  }
+  document.querySelectorAll(".seg").forEach(function(s){
+    s.addEventListener("click", function(){
+      document.querySelectorAll(".seg").forEach(function(x){ x.classList.remove("on"); });
+      s.classList.add("on");
+    });
+  });
+  $("amt").addEventListener("input", syncAmt);
+
+  // init both screens
+  render("axium","IDLE",{}); render("move","IDLE",{});
+  syncAmt();
+})();
+</script>
