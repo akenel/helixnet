@@ -14,15 +14,25 @@ actually charge. This is the single highest-leverage gap between "best POS for F
 
 ## The decision (locked 2026-07-18)
 
+> **⚠️ AMENDED 2026-07-18 (same day) — WORLDLINE-FIRST.** SumUp does **not support TWINT** — the dominant Swiss
+> mobile payment (~5.5M active users); a Swiss counter without it bleeds sales, so SumUp is unfit as the CH
+> primary. Its onboarding also walls the sandbox behind full company+IBAN KYC (couldn't reach a test key without
+> registering a real business). **Worldline is now the first adapter**: it does **TWINT + PostFinance Card + all
+> cards** on Felix's *existing* ep2 terminal via TIM, keeping his acquirer and rates, zero new hardware. **SumUp
+> is PARKED** — revisit only for a future non-CH shop where TWINT is irrelevant. The seam design is unchanged;
+> that's the whole point — swapping which adapter is first costs nothing. The SumUp/SDK detail below stays valid
+> as reference for that parked path.
+
 **ONE payment seam, TWO adapters, provider-is-data per store.** Same shape as `_store_currency(db)` (never assume
 CHF) and BYO-brain model targets (the model is data a recipe names). The store's `payment_provider` is a settings
 value; the POS core never knows which terminal is on the counter.
 
-- **Build SumUp FIRST** — its **Cloud API is web-native** (HTTPS + webhook, perfect for FastAPI) and it has a
-  **Virtual Solo sandbox** so we build and prove the whole flow **today, zero hardware, zero waiting on a sales rep.**
-- **Get fully prepared for Worldline in parallel** — it's Felix's *existing* acquirer. If his terminal is a current
-  **ep2** model, HelixPOS drives it via Worldline **TIM** (Till Integration Module) over LAN/WiFi — he keeps his
-  acquirer, keeps his rates, **zero new hardware.** The Worldline adapter slots into the *same seam*.
+- **Build WORLDLINE first** *(per the amendment above)* — Felix's *existing* acquirer, and it does **TWINT** (the
+  non-negotiable Swiss payment method). If his terminal is a current **ep2** model, HelixPOS drives it via Worldline
+  **TIM** (Till Integration Module) over LAN/WiFi — he keeps his acquirer, keeps his rates, **zero new hardware.**
+- **SumUp PARKED** — its Cloud API is genuinely web-native (HTTPS + webhook + async SDK, all documented below) and
+  its Virtual Solo sandbox is nice, BUT **no TWINT** makes it unfit as the CH primary and its sandbox is KYC-walled.
+  Keep the SumUp/SDK detail below as the ready-made recipe for a future non-CH shop; the seam swaps adapters for free.
 
 Net: shop #2-on-SumUp and Felix-on-Worldline run identical POS code. "SumUp or Worldline?" → "yes — whichever the
 store carries."
@@ -158,15 +168,18 @@ payments alone. Design the `on_approved` hook so the fiscal emit is a pluggable 
 
 ---
 
-## 8. Build order (milestones)
+## 8. Build order (milestones) — WORLDLINE-FIRST (amended 2026-07-18)
 
-1. **M1 — SumUp sandbox round-trip.** Seam + SumUp adapter + Virtual Solo. Prove `initiate → webhook approved` end
-   to end with a sandbox merchant. *No hardware, no store change.* ← start here.
-2. **M2 — SumUp on a real Solo, sandbox store first** (sandbox-first: never prod). One live low-value test charge.
-3. **M3 — Checkout wiring + `payments` table + waiting-for-card UI**, ladder sandbox→staging→prod, backup-gated.
-4. **M4 — Worldline TIM adapter** against Felix's confirmed ep2 terminal (blocked on his model number + ECR activation).
-5. **M5 — Refund/void + reconciliation report** (cent-precision match of `payments` vs settlement).
-6. **M6 — IT fiscal `on_approved` emit** (joins 🌍-2).
+1. **M1 — Provider-agnostic seam.** `src/payments/` protocol + resolver + `payments` table + checkout wiring +
+   "waiting for card" UI, with a **null/manual provider** (today's behaviour, no regression). Fully buildable NOW,
+   no terminal, no account. ← start here.
+2. **M2 — Worldline TIM adapter.** Drive Felix's **existing ep2 terminal** (TWINT + cards) via TIM. *Blocked on:*
+   his terminal **model number** + confirming TWINT is activated + Worldline enabling the **ECR/TIM package**.
+3. **M3 — Human-green on the sandbox store, then the gate ladder** sandbox→staging→prod, backup-gated. One live
+   low-value TWINT + card test charge on Felix's counter.
+4. **M4 — Refund/void + reconciliation report** (cent-precision match of `payments` vs Worldline settlement).
+5. **M5 — IT fiscal `on_approved` emit** (joins 🌍-2) — only when a non-CH/IT shop needs it.
+6. **(Parked) SumUp adapter** — the §3 recipe, built only for a future non-CH shop where TWINT is irrelevant.
 
 ## 9. Open questions (Angel)
 

@@ -30,16 +30,17 @@ These two are the entire difference between "best for Felix" and "best in the wo
 worklist widens an already-winning lead; **these unlock selling beyond Felix.** Do NOT start mid-flight — this
 is the north-star sprint, teed up behind the current NEXT ACTIONABLE hypercare items, not ahead of them.
 
-- **🌍-1 · MOVE THE MONEY — card payments.** 🧍👥 **ACQUIRER DECIDED 2026-07-18: SumUp first + Worldline
-  for Felix.** Build **ONE payment seam, TWO adapters, provider-is-data per store** (like `_store_currency`).
-  Full spec: **[docs/SPEC-payments-seam.md](SPEC-payments-seam.md)** (memory `banco-payments-provider-seam`).
-  - **SumUp first** — its **Cloud API is web-native** (HTTPS + webhook, fits FastAPI) + a **Virtual Solo
-    sandbox** → build the whole round-trip **today, zero hardware.** Fees CH ~1.1–1.3% / IT ~0.95%.
-  - **Worldline = Felix's existing acquirer** — TIM drives ep2 terminals over LAN/WiFi, **he keeps his rates,
-    zero new hardware** IF his terminal is ep2+ECR. **▶ FIRST ACTION (Angel): get Felix's terminal MODEL
-    NUMBER** — that decides "already ready?".
-  - 🇮🇹 Italy welds this to 🌍-2: since 1 Jan 2026 IT law requires the POS wired to the RT (auto-corrispettivi).
-  - Status: **NOT BUILT.** Next: open a free SumUp sandbox dev account (M1) + get Felix's terminal model (M4 unblock).
+- **🌍-1 · MOVE THE MONEY — card payments.** 🧍👥 **ACQUIRER DECIDED 2026-07-18: WORLDLINE-FIRST (SumUp parked).**
+  Build **ONE payment seam, adapters are data per store** (like `_store_currency`). Full spec:
+  **[docs/SPEC-payments-seam.md](SPEC-payments-seam.md)** (memory `banco-payments-provider-seam`).
+  - **Why the pivot:** **SumUp does NOT do TWINT** — the dominant CH mobile payment (~5.5M users); a Swiss
+    counter without it bleeds sales. SumUp's sandbox is also KYC-walled (forces real company+IBAN). **PARKED.**
+  - **Worldline first** = Felix's *existing* acquirer, does **TWINT + PostFinance + all cards** on his ep2
+    terminal via TIM. **He keeps his acquirer + rates, zero new hardware.** ▶ **FIRST ACTION (Angel): get
+    Felix's terminal MODEL NUMBER** + confirm TWINT is already active on it.
+  - **Buildable NOW with no terminal:** M1 = the provider-agnostic seam (protocol + `payments` table + checkout
+    wiring + waiting-for-card UI, null provider = no regression). M2 = the Worldline TIM adapter (needs the terminal).
+  - Status: **NOT BUILT.** Next: (Tigs) build M1 seam · (Angel) Felix's terminal model → unblocks M2.
 - **🌍-2 · FISCAL CERTIFICATION — TSE / RT / CH.** 🐯👥 fiskaly for the German TSE (rent-the-cert), Italian
   RT, Swiss baseline. Architecture is ready — it's a **rentable plug-in, not a rebuild** (memory
   `banco-fiskaly-integration-brief`, `banco-fiscalized-markets-italy-germany`). Status: **ARCHITECTED, not
