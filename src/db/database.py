@@ -206,6 +206,9 @@ _ADDITIVE_COLUMNS: list[str] = [
     "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS fx_rates TEXT",
     # Shop's own SKU prefix for house/no-supplier goods (receiving mints PREFIX-#### from it).
     "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS house_sku_prefix VARCHAR(8)",
+    # was created via create_all only → drifted (missing on banco_staging, caused a 500 on every
+    # store_settings read). Idempotent here so every env converges on deploy.
+    "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS default_markup_pct NUMERIC(5,2) NOT NULL DEFAULT 50.0",
     # Short links for scannable QR (2026-07-13): the postcard QR encodes /p/{short_code} instead of
     # the full /pos/products/{uuid}/postcard so the QR stays low-density → scans reliably even printed
     # ~20mm on a label. short_code minted lazily on first postcard render, unique among non-nulls
