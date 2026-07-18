@@ -2,6 +2,21 @@
 
 > 🔑 **Code word "ON DECK"** → you're reading the right file. State the top items and start executing the first actionable one. No re-planning, no re-asking.
 
+## 🆕 LAST TOUCH — 2026-07-17/18 HYPERCARE DAY · prod = sandbox = `66bb41c`
+
+**READ [docs/HANDOFF-2026-07-17.md](HANDOFF-2026-07-17.md) FIRST** (has the EVENING ADDENDUM). A big
+hypercare day (39 commits) + an evening bug-hunt off the prod sanity sweep. Shipped + prod-verified +
+backup-gated (restore-verified 60/5200/188):
+- Migration Workbench, cost eyeball (BL-047b), auto-weather timesheet (BL-047), 86-desc language cleanup.
+- Evening: `2ebfa07` postcard-sheet 500 (display_img NameError, broken since BL-043), `d9c7d72` currency
+  seal-sweep (8 views hardcoded CHF → `_store_currency`), `66bb41c` Settings missing Français.
+- ✅ backup gate RAN (60/5200/188). No open deploy items.
+
+**NEXT ACTIONABLE (top-down, still the ordered work):** (1) BL-100 seal sweep — other `42xxxxxx`
+cross-wires (read-only, confirm physically); (2) Receiving/Ecolution cost-auto-fill + goods-receipt →
+human-green sbx then ladder; (3) BL-98 bench human-green + backlog edit-guard rollout. Detail in the
+tiers below; this banner is the only new thing — nothing below was re-planned.
+
 *Open this, work top-down, finish one tier before opening the next. Don't fan out across five things. 2026-06-28.*
 
 *Owners: 🧍 = Angel's hands needed (physical / decision / external call) · 🐯 = Tigs can do it · 👥 = both, together.*
