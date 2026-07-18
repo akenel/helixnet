@@ -233,6 +233,12 @@
                     <span x-text="(transaction.payment_method || 'CARD').toUpperCase()"></span>
                 </div>
                 <div x-show="transaction.payment_method === 'cash'" class="mt-2 space-y-1 text-sm">
+                    <!-- Multi-currency tender (Block 1): honest foreign-cash line. amount_tendered/change
+                         below are the HOME-currency equivalents; this shows what was physically handed over. -->
+                    <div x-show="transaction.tender_currency" class="flex justify-between text-amber-700">
+                        <span data-i18n="receipt.paid_foreign">Paid in cash:</span>
+                        <span x-text="(transaction.tender_currency || '') + ' ' + Number(transaction.tender_amount || 0).toFixed(2) + ' @ ' + (transaction.tender_rate || '')"></span>
+                    </div>
                     <div class="flex justify-between">
                         <span data-i18n="receipt.amount_tendered">Amount Tendered:</span>
                         <span x-text="formatPrice(transaction.amount_tendered)"></span>

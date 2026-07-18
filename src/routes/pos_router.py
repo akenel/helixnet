@@ -3548,6 +3548,10 @@ async def get_transaction(
         "total": str(transaction.total),
         "amount_tendered": str(transaction.amount_tendered) if transaction.amount_tendered else None,
         "change_given": str(transaction.change_given) if transaction.change_given else None,
+        # Multi-currency tender (Block 1): the foreign cash detail for an honest receipt.
+        "tender_currency": transaction.tender_currency,
+        "tender_amount": str(transaction.tender_amount) if transaction.tender_amount is not None else None,
+        "tender_rate": str(transaction.tender_rate) if transaction.tender_rate is not None else None,
         "receipt_number": transaction.receipt_number,
         "receipt_pdf_url": transaction.receipt_pdf_url,
         "notes": transaction.notes,
@@ -7112,18 +7116,28 @@ async def _shift_sales(db: AsyncSession, user_id: str, start: datetime, end: dat
     ))).scalars().all()
     cash_sales = card_sales = cash_refunds = Decimal("0")
     count = 0
+    foreign: dict = {}   # Block 2: ccy -> {face, home} — foreign notes physically in the drawer
     for t in rows:
         total = Decimal(str(t.total or 0))
         if t.status == TransactionStatus.COMPLETED:
             count += 1
             if t.payment_method == PaymentMethod.CASH:
                 cash_sales += total
+                # Block 2: a foreign-cash sale leaves FOREIGN notes in the drawer (face = tender_amount)
+                # whose HOME value is amount_tendered (= face × rate). Change went out in home notes. Track
+                # per currency so the cashier can account for the foreign notes at close.
+                if t.tender_currency:
+                    f = foreign.setdefault(t.tender_currency, {"face": Decimal("0"), "home": Decimal("0")})
+                    f["face"] += Decimal(str(t.tender_amount or 0))
+                    f["home"] += Decimal(str(t.amount_tendered or 0))
             else:
                 card_sales += total
         elif t.status == TransactionStatus.REFUNDED and t.payment_method == PaymentMethod.CASH:
             cash_refunds += total
     return {"cash_sales": money(cash_sales), "card_sales": money(card_sales),
-            "cash_refunds": money(cash_refunds), "count": count}
+            "cash_refunds": money(cash_refunds), "count": count,
+            "foreign": {k: {"face": str(money(v["face"])), "home": str(money(v["home"]))}
+                        for k, v in foreign.items()}}
 
 
 class OpenShiftReq(BaseModel):
@@ -7229,6 +7243,7 @@ async def current_cash_shift(
         "paid_out_total": str(money(shift.paid_out_total)),
         "expected_cash": str(exp), "transaction_count": s["count"],
         "tolerance": str(money(shift.tolerance)),
+        "foreign": s["foreign"],   # Block 2: foreign cash in the drawer, per currency (face + home value)
     }
 
 
@@ -7269,16 +7284,17 @@ async def close_cash_shift(
     hours = (now - shift.opened_at).total_seconds() / 3600.0
     logger.info(f"Cash shift CLOSE: {username} expected={res['expected']} counted={counted} "
                 f"variance={res['variance']} within={res['within_tolerance']}")
-    return _shift_report(shift, hours)
+    return _shift_report(shift, hours, s["foreign"])
 
 
-def _shift_report(shift: CashShiftModel, hours: float | None = None) -> dict:
+def _shift_report(shift: CashShiftModel, hours: float | None = None, foreign: dict | None = None) -> dict:
     """The one-page per-cashier shift report payload (used by close + /shift/last)."""
     if hours is None and shift.closed_at:
         hours = (shift.closed_at - shift.opened_at).total_seconds() / 3600.0
     return {
         "ok": True, "shift_id": str(shift.id),
         "username": shift.username,
+        "foreign": foreign or {},   # Block 2: foreign cash taken this shift (per ccy: face + home)
         "opening_float": str(money(shift.opening_float)),
         "cash_sales": str(money(shift.cash_sales or 0)),
         "card_sales": str(money(shift.card_sales or 0)),

@@ -90,6 +90,18 @@
                     <div x-show="num(shift && shift.paid_in_total) > 0"><p class="text-gray-500" data-i18n="shift.paid_in">Paid in</p><p class="font-semibold text-blue-600" x-text="formatPrice(num(shift && shift.paid_in_total))"></p></div>
                     <div x-show="num(shift && shift.paid_out_total) > 0"><p class="text-gray-500" data-i18n="shift.paid_out">Paid out</p><p class="font-semibold text-orange-600" x-text="formatPrice(num(shift && shift.paid_out_total))"></p></div>
                 </div>
+                <!-- Block 2: foreign cash taken this shift — the FOREIGN notes physically in the drawer.
+                     Their home value is already inside cash sales / expected; this tells the cashier what
+                     to count and at what value, so the drawer still balances in the home currency. -->
+                <div x-show="shift && shift.foreign && Object.keys(shift.foreign).length" style="display:none" class="border-t mt-4 pt-3 bg-amber-50 -mx-2 px-2 rounded">
+                    <p class="text-amber-800 text-sm font-semibold mb-1">💱 <span data-i18n="shift.foreign_taken">Foreign cash in the drawer — count these separately</span></p>
+                    <template x-for="[ccy, f] in Object.entries((shift && shift.foreign) || {})" :key="ccy">
+                        <div class="flex justify-between text-sm">
+                            <span class="font-mono font-semibold" x-text="ccy + ' ' + Number(f.face).toFixed(2)"></span>
+                            <span class="text-gray-600">≈ <span x-text="formatPrice(f.home)"></span> <span class="text-gray-400" data-i18n="shift.of_value">of value</span></span>
+                        </div>
+                    </template>
+                </div>
                 <div class="border-t mt-4 pt-4 flex justify-between items-center">
                     <span class="font-semibold text-gray-700" data-i18n="shift.expected_now">Expected in drawer now</span>
                     <span class="text-2xl font-bold text-indigo-700" x-text="formatPrice(num(shift && shift.expected_cash))"></span>
