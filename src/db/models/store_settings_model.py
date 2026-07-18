@@ -188,6 +188,14 @@ class StoreSettingsModel(Base):
         Text, nullable=True,
         comment="Per-tenant N-rate VAT table as JSON [{code,label,rate,default}]. NULL → CH config default.")
 
+    # Accepted-currency plan rates (multi-currency TENDER): {base, as_of, rates:{EUR:0.96,…}} as a JSON
+    # string. NULL → currency.DEFAULT_FX. ⚠️ The DB column was ADDED via ALTER (2026-07-13) but never
+    # mapped here — so ORM writes to it vanished silently (fx_rates never persisted, config always read
+    # DEFAULT_FX via getattr→None). Mapping it fixed that (2026-07-18). Admin-only to edit.
+    fx_rates: Mapped[str | None] = mapped_column(
+        Text, nullable=True,
+        comment="Accepted-currency plan rates as JSON {base,as_of,rates}. NULL → currency.DEFAULT_FX.")
+
     # 🌍-1 payments seam (2026-07-18): which electronic terminal provider drives this shop's
     # till. 'manual' (default) = no terminal integration; the cashier takes cash/card/TWINT by
     # hand exactly as today. 'worldline' (M2) drives Felix's existing ep2 terminal via TIM.
