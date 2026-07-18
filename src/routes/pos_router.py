@@ -3939,6 +3939,12 @@ async def checkout_transaction(
             raise HTTPException(status_code=400, detail="Insufficient payment amount")
         transaction.change_given = tendered - total_due
 
+    # 🌍-1 payments seam (M1): if this store has an electronic terminal provider configured,
+    # drive it here. Default 'manual' → returns None → the sale completes exactly as today
+    # (zero regression). M2 (Worldline TIM) implements the real capture behind this call.
+    from src.payments import capture_on_terminal_if_configured
+    await capture_on_terminal_if_configured(db, transaction)
+
     transaction.payment_method = checkout.payment_method
     transaction.amount_tendered = checkout.amount_tendered
     transaction.status = TransactionStatus.COMPLETED
@@ -4204,6 +4210,11 @@ async def create_sale(
         if tendered < total_due:
             raise HTTPException(status_code=400, detail="Insufficient payment amount")
         txn.change_given = tendered - total_due
+
+    # 🌍-1 payments seam (M1): same no-op-today hook as the legacy checkout path (seal lesson —
+    # both sale-completion paths get the seam). Default 'manual' → None → byte-identical today.
+    from src.payments import capture_on_terminal_if_configured
+    await capture_on_terminal_if_configured(db, txn)
 
     txn.payment_method = sale.payment_method
     txn.amount_tendered = sale.amount_tendered

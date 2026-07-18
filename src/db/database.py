@@ -194,6 +194,11 @@ _ADDITIVE_COLUMNS: list[str] = [
     # Only persisted when the shop opens the Settings → Tax editor and saves. Additive TEXT, same
     # proven idiom as the JSON blobs above (caps_json / attachments).
     "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS vat_rates TEXT",
+    # 🌍-1 payments seam (2026-07-18): the electronic terminal provider per store. NOT NULL
+    # DEFAULT 'manual' backfills every existing row to today's behaviour (no terminal, cashier
+    # takes payment by hand) — byte-identical. 'worldline' lights up the seam in M2. Same proven
+    # VARCHAR(N) NOT NULL DEFAULT idiom as fiscal_regime above. See docs/SPEC-payments-seam.md.
+    "ALTER TABLE store_settings ADD COLUMN IF NOT EXISTS payment_provider VARCHAR(16) NOT NULL DEFAULT 'manual'",
     # Currency plan-rates (2026-07-13): flat FX table {base, rates, as_of} for showing a foreign
     # supplier price in the shop's currency (Near Dark EUR → ≈ CHF). NULLABLE — NULL falls back to
     # currency.DEFAULT_FX, so a shop is byte-identical until it sets its own plan rates. Same

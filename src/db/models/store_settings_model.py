@@ -188,6 +188,15 @@ class StoreSettingsModel(Base):
         Text, nullable=True,
         comment="Per-tenant N-rate VAT table as JSON [{code,label,rate,default}]. NULL → CH config default.")
 
+    # 🌍-1 payments seam (2026-07-18): which electronic terminal provider drives this shop's
+    # till. 'manual' (default) = no terminal integration; the cashier takes cash/card/TWINT by
+    # hand exactly as today. 'worldline' (M2) drives Felix's existing ep2 terminal via TIM.
+    # NOT NULL DEFAULT 'manual' so every existing row backfills byte-identical. See
+    # docs/SPEC-payments-seam.md.
+    payment_provider: Mapped[str] = mapped_column(
+        String(16), nullable=False, default="manual",
+        comment="Electronic terminal provider: manual (default, no integration) | worldline | sumup")
+
     # La Piazza module (Artemis Premium) -- the switch the shop flips to tie its
     # catalog to the public marketplace. ON => products can be pushed as drafts to
     # La Piazza (the env-matching instance) under the shop's own business account.
