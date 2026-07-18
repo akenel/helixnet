@@ -499,7 +499,12 @@ both the list and the counts, so the counter can't drift from the list. `mode=so
 - 🧪 `tests/pos/test_pos_cleanup_queue.py` **12/12** (6 original + 6 new bench) · `make test` **1844 pass / 3
   known-flaky** · POS suite baselined against clean HEAD → **0 new failures**. sw.js **v69→v70** (i18n keys!).
 - 🌍 i18n en/it/de — **45 keys each, parity-checked** (a missing key renders raw — the BL-28/29/30 bug class).
-- ▶ **NOT deployed** — needs Angel human-green on sandbox, then the gated ladder.
+- ➕ **GAP FILTER added 2026-07-18 (`e1f0bfd4`) — Angel's ask "most are just cost, let me filter to missing photo":**
+  chips All/📷Photo/📝Description/🏷️Category/💰Cost with live per-gap counts; `?gap=` on the queue; same single-gap
+  expr drives list + count so a chip's number matches its rows. i18n ×4 (en/fr/it/de), sw v160, 4 tests (suite 2054).
+  **SHIPPED TO SANDBOX + live-verified** (sandbox catalog: cost 417 · photo 78 · desc 68 · cat 0 — Angel was right).
+- 📋 **Testsheet:** `docs/testing/banco/BL98-BENCH-TESTSHEET.html` (№ LP-UAT-20260718-BL98-BENCH, tri-state, sandbox).
+- ▶ **On sandbox now — needs Angel human-green (run the testsheet), then the gated ladder to staging→prod.**
 
 **🐯 BL-99 · Label renderer size×flags** — widen `scripts/generate_label.py` (today: one fixed 62×37,
 EAN-13→Code128, Puppeteer PDF, `brother_ql` → QL-820NWB). Bones are right; just needs the matrix. Not started.
