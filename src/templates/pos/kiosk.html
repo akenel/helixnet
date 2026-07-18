@@ -365,14 +365,25 @@
     <div class="w-full max-w-md glass rounded-3xl p-6">
       <h2 class="text-2xl font-bold mb-5 text-center">➕ <span x-text="t('createTitle')"></span></h2>
 
-      <!-- Photo — kiosk camera on capable devices (capture), else file pick. The picture is the label. -->
-      <label class="block mb-4">
-        <div class="rounded-2xl border-2 border-dashed border-white/25 h-44 flex items-center justify-center overflow-hidden cursor-pointer bg-black/20">
+      <!-- Photo — LIVE camera snap (the kiosk has a real built-in camera) → AI reads it & drafts the
+           name/price. File pick stays as a fallback for a device without a camera. -->
+      <div class="mb-4">
+        <div @click="snapPhoto()" class="relative rounded-2xl border-2 border-dashed border-white/25 h-44 flex items-center justify-center overflow-hidden cursor-pointer bg-black/20">
           <template x-if="cPhotoPreview"><img :src="cPhotoPreview" class="h-full w-full object-cover" alt=""></template>
-          <template x-if="!cPhotoPreview"><span class="text-emerald-200/70 text-lg">📷 <span x-text="t('fldPhoto')"></span></span></template>
+          <template x-if="!cPhotoPreview">
+            <span class="text-center text-emerald-200/80 text-lg">📷 <span x-text="t('fldPhoto')"></span>
+              <span class="block text-xs text-emerald-200/50 mt-1">✨ <span x-text="t('aiFills')"></span></span></span>
+          </template>
+          <div x-show="cAiBusy" style="display:none" class="absolute inset-0 flex items-center justify-center bg-black/55 text-lg font-semibold">🔍 <span x-text="t('aiReading')"></span></div>
         </div>
-        <input type="file" accept="image/*" capture="environment" class="hidden" @change="onCreatePhoto($event)">
-      </label>
+        <div class="flex items-center justify-between mt-2 gap-2">
+          <label class="text-xs text-emerald-200/60 cursor-pointer underline whitespace-nowrap">
+            📁 <span x-text="t('orFile')"></span>
+            <input type="file" accept="image/*" class="hidden" @change="onCreatePhoto($event)">
+          </label>
+          <span x-show="cAiNote" style="display:none" class="text-xs text-emerald-300/90 truncate" x-text="cAiNote"></span>
+        </div>
+      </div>
 
       <label class="block text-sm text-emerald-100/80 mb-1" x-text="t('fldName')"></label>
       <input x-model="cName" type="text" :placeholder="t('fldName')"
@@ -431,6 +442,7 @@
       staffName: '',      // the cashier's handle, shown in the assisted-mode badge
       staffToken: '',     // Pam's POS token — authorises the in-kiosk create/image calls (M2)
       cName: '', cPrice: '', cBarcode: '', cPhotoFile: null, cPhotoPreview: '', cSaving: false, createErr: '',
+      cAiBusy: false, cAiNote: '',   // Snap & fill: AI reads the photo and drafts the name/price
 
       langs: [
         { code:'de', flag:'🇩🇪', label:'Deutsch' },
@@ -444,25 +456,25 @@
              scanNext:'Einfach das nächste Produkt scannen', age:'18+ Ausweis nötig', pickOne:'Welches Produkt?',
              useCamera:'Mit Kamera scannen', onPhone:'Oder auf deinem Handy öffnen', noCamera:'Keine Kamera verfügbar. Bitte den Scanner oder die Eingabe nutzen.',
              notFound:'Dieses Produkt haben wir nicht gefunden. Bitte frag unser Team.', createProduct:'Produkt jetzt anlegen',
-             createTitle:'Neues Produkt', fldName:'Name', fldPrice:'Preis', fldPhoto:'Foto aufnehmen', createSave:'Anlegen & verkaufen', cancel:'Abbrechen' },
+             createTitle:'Neues Produkt', fldName:'Name', fldPrice:'Preis', fldPhoto:'Foto aufnehmen', createSave:'Anlegen & verkaufen', cancel:'Abbrechen', orFile:'oder Datei wählen', aiFills:'die KI füllt den Namen', aiReading:'KI liest…' },
         fr:{ head:'Scannez un produit', sub:'Tous les détails — dans votre langue.', s1:'Scanner', s2:'Voir', s3:'Imprimer une carte',
              typeHint:'rechercher par nom ou code-barres', looking:'Recherche…', printCard:'Imprimer une carte', details:'Détails', another:'Nouveau scan',
              scanNext:'Scannez simplement le produit suivant', age:'18+ pièce d’identité requise', pickOne:'Quel produit ?',
              useCamera:'Scanner avec la caméra', onPhone:'Ou ouvrez-le sur votre téléphone', noCamera:'Pas de caméra. Utilisez le scanner ou la saisie.',
              notFound:'Nous n’avons pas trouvé ce produit. Merci de demander à notre équipe.', createProduct:'Créer le produit',
-             createTitle:'Nouveau produit', fldName:'Nom', fldPrice:'Prix', fldPhoto:'Prendre une photo', createSave:'Créer & vendre', cancel:'Annuler' },
+             createTitle:'Nouveau produit', fldName:'Nom', fldPrice:'Prix', fldPhoto:'Prendre une photo', createSave:'Créer & vendre', cancel:'Annuler', orFile:'ou choisir un fichier', aiFills:'l’IA remplit le nom', aiReading:'IA lit…' },
         it:{ head:'Scansiona un prodotto', sub:'Tutti i dettagli — nella tua lingua.', s1:'Scansiona', s2:'Guarda', s3:'Stampa una card',
              typeHint:'cerca per nome o codice a barre', looking:'Ricerca…', printCard:'Stampa una card', details:'Dettagli', another:'Nuova scansione',
              scanNext:'Scansiona semplicemente il prossimo prodotto', age:'18+ documento richiesto', pickOne:'Quale prodotto?',
              useCamera:'Scansiona con la fotocamera', onPhone:'Oppure aprilo sul tuo telefono', noCamera:'Nessuna fotocamera. Usa lo scanner o digita.',
              notFound:'Non abbiamo trovato questo prodotto. Chiedi al nostro team.', createProduct:'Crea il prodotto',
-             createTitle:'Nuovo prodotto', fldName:'Nome', fldPrice:'Prezzo', fldPhoto:'Scatta una foto', createSave:'Crea & vendi', cancel:'Annulla' },
+             createTitle:'Nuovo prodotto', fldName:'Nome', fldPrice:'Prezzo', fldPhoto:'Scatta una foto', createSave:'Crea & vendi', cancel:'Annulla', orFile:'o scegli un file', aiFills:'l’IA compila il nome', aiReading:'IA legge…' },
         en:{ head:'Scan a product', sub:'Every detail — in your language.', s1:'Scan', s2:'See it', s3:'Print a card',
              typeHint:'search by name or barcode', looking:'Looking…', printCard:'Print a card', details:'Details', another:'Scan another',
              scanNext:'Just scan the next product', age:'18+ ID required', pickOne:'Which one?',
              useCamera:'Scan with camera', onPhone:'Or open it on your phone', noCamera:'No camera available. Use the scanner or type it in.',
              notFound:'We couldn’t find that product. Please ask our team.', createProduct:'Create this product',
-             createTitle:'New product', fldName:'Name', fldPrice:'Price', fldPhoto:'Take a photo', createSave:'Create & sell', cancel:'Cancel' },
+             createTitle:'New product', fldName:'Name', fldPrice:'Price', fldPhoto:'Take a photo', createSave:'Create & sell', cancel:'Cancel', orFile:'or choose a file', aiFills:'the AI fills the name', aiReading:'AI reading…' },
       },
 
       t(k){ return (this.STR[this.lang] || this.STR.en)[k] || (this.STR.en[k] || k); },
@@ -670,8 +682,38 @@
       onCreatePhoto(e){
         const f = e.target.files && e.target.files[0];
         if (!f) return;
+        this._usePhoto(f);
+      },
+      // LIVE camera snap — the kiosk has a real built-in camera. Reuses PosCameraPhoto
+      // (getUserMedia → 📸 Snap → JPEG), the same primitive the till uses for Snap & fill.
+      async snapPhoto(){
+        if (!window.PosCameraPhoto || !window.PosCameraPhoto.capture){ return; }
+        let f = null;
+        try { f = await window.PosCameraPhoto.capture(); } catch(e){}
+        if (f) this._usePhoto(f);
+      },
+      _usePhoto(f){
         this.cPhotoFile = f;
         try { this.cPhotoPreview = URL.createObjectURL(f); } catch(_){}
+        this.runAiSuggest(f);
+      },
+      // Snap & fill: send the photo to the vision AI; it drafts the name (and a price guess).
+      // The AI is a helper, never a blocker — a failure just leaves the fields for Pam to type.
+      async runAiSuggest(f){
+        if (!f || !this.staffToken) return;
+        this.cAiBusy = true; this.cAiNote = '';
+        try {
+          const fd = new FormData(); fd.append('file', f);
+          const r = await fetch('/api/v1/pos/products/ai-suggest', {
+            method:'POST', headers:{ 'Authorization':`Bearer ${this.staffToken}` }, body: fd });
+          if (r.ok){
+            const d = await r.json(); const s = (d && d.suggestion) || {};
+            if (s.name && !(this.cName||'').trim()) this.cName = s.name;
+            if (s.price_estimate != null && !(this.cPrice||'').toString().trim()) this.cPrice = String(s.price_estimate);
+            this.cAiNote = s.name ? ('✨ ' + s.name) : '';
+          }
+        } catch(e){ /* AI is a helper, never a blocker */ }
+        finally { this.cAiBusy = false; }
       },
       async saveCreate(){
         if (this.cSaving) return;

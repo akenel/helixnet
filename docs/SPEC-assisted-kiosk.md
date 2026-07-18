@@ -30,8 +30,13 @@ enforces the staff role independently — the client flag is an affordance, not 
   "👑 Assisted · {name}" badge, and on a scan-MISS shows a **"➕ Create this product"** button that hands off to the
   till's existing born-once create flow (`/pos/scan?capture=<barcode>` → `openLazyCapture`), barcode prefilled. Pam
   finishes the create + sale on her powered till. Smallest safe vertical slice that proves the whole story.
-- **M2 — create IN the kiosk.** Bring the create-on-fly modal (photo via kiosk camera, name, price, category) into
-  the kiosk itself so Pam never leaves the screen. Reuse the `openLazyCapture` primitives + `_copy_external_image`.
+- ✅ **M2 — create IN the kiosk** (sandbox `faba6c72`). In-kiosk create form (photo, name, price, barcode) → same
+  `/products/quick` + `/images` endpoints as the till → renders the new product via `pickResult`.
+- ✅ **M2.5 — LIVE camera + AI snap-fill** (Angel UAT 2026-07-18: "only file upload — the kiosk has a real camera for
+  the AI pic"). The photo box now calls `PosCameraPhoto.capture()` (getUserMedia → 📸 Snap → JPEG, already loaded in
+  the kiosk) and POSTs the shot to `/products/ai-suggest` → drafts the name/price. File pick kept as a fallback.
+  UAT-verified: M2 create correctly set the photo as COVER (Bobby's Gin, sandbox). ▶ Minor open: till cart LIST
+  thumbnail shows 📦 for a set-cover product (image-serve/fallback, pre-existing, not an M2 regression).
 - **M3 — ring out IN the kiosk (assisted checkout).** Complete the sale on the spot (payment method + the 🌍-1
   payments seam when live) instead of routing through Held Orders. Skips the "guest gets a code → cashier re-rings".
 - **M4 — supplier on-ramp (bonus).** A "new maker" flow: photograph a batch of never-seen goods (Ecolution/Cynthia),
