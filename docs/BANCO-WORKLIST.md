@@ -523,6 +523,21 @@ both the list and the counts, so the counter can't drift from the list. `mode=so
   classify→canonical funnel (CBD Gummies would wrongly become "CBD Flower"). Classifier is right on obvious cases
   (Volcano→Vaporizers) but a blind sweep would corrupt others. Fix mis-seeded items **on the bench as you go**; a
   careful targeted pass (esp. the 127 age-18 flag mismatches → compliance) is a separate, deliberate task, not a sweep.
+- 🧑‍🏫 **`57212715` — ROOKIE WORKBENCH (the new-guy training + never-fall-behind workflow):** the kid works the kiosk
+  all day (manager role so he can edit catalog) and CLOSES the catalog books on a rolling basis so costs never slip:
+  - **📅 Date scope** (by created_at): Today / Yesterday / This week / All — a BOUNDED daily batch (flexes to a Friday
+    weekly close). "Finish yesterday's before they pile up."
+  - **🗒️ Parked note per item** (`work_note` col): why it's stuck + next step, with quick-tags (get slip / confirm
+    supplier / find pic / write desc / ask Ralph) + a "My notes" filter to keep tabs — so he never stares blank.
+  - **⚠ Readiness score** (rule-based): catches the lazy "done" the hard gaps miss — still Unsorted, weak/one-word
+    description, no photo — a badge even when it "looks done". Verified live. i18n ×4, sw v163, 4 tests (suite 2061).
+- 📋 **ROOKIE-WORKFLOW ROADMAP (Angel's ideas 2026-07-18, captured — next blocks, NOT built):**
+  1. **🤖 AI deep-review** — beyond the rule score: "looks good BUT the description is weak / the photo is blurry or
+     missing." On-demand LLM (desc quality) + vision (blur/missing). The real anti-lazy-done.
+  2. **📊 Daily margin+sales report (Felix would love)** — the WHY behind closing costs: it can't run until costs are in,
+     so it highlights the gaps ("yesterday covered · Monday still needs the bong prices · weekly report ready when the
+     cracks are closed"). Report gives the kid a deadline + makes him look good.
+  3. **🪪 Master-data audit** — who CREATED + who LAST EDITED each item (provenance stamp, ties to `banco-master-data-vision`).
 - ▶ **On sandbox now — needs Angel human-green (run the testsheet), then the gated ladder to staging→prod.**
 
 **🐯 BL-99 · Label renderer size×flags** — widen `scripts/generate_label.py` (today: one fixed 62×37,
