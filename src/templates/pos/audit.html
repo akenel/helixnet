@@ -50,14 +50,24 @@
       </div>
       <div class="flex items-center gap-2 flex-wrap">
         <span class="text-[11px] font-bold text-gray-400 uppercase">When</span>
-        <input type="datetime-local" x-model="f.since" @change="load()" class="input-field text-xs" style="width:auto">
-        <span class="text-gray-400 text-xs">→</span>
-        <input type="datetime-local" x-model="f.until" @change="load()" class="input-field text-xs" style="width:auto">
         <button @click="preset('hour')" class="chip">Last hour</button>
         <button @click="preset('today')" class="chip">Today</button>
         <button @click="preset('yday')" class="chip">Yesterday</button>
-        <button @click="preset('ydaylunch')" class="chip">🍽️ Yest. 13–14</button>
-        <button @click="f.since='';f.until='';load()" class="chip" x-show="f.since||f.until" style="display:none">✕ time</button>
+        <button @click="showRange=!showRange" class="chip" :class="showRange?'chip-on':''">📅 Custom range</button>
+        <span x-show="rangeLabel()" class="text-xs text-gray-600 font-medium" x-text="rangeLabel()"></span>
+        <button @click="clearTime()" class="chip" x-show="f.since||f.until" style="display:none">✕ clear</button>
+      </div>
+      <div x-show="showRange" style="display:none" class="flex items-end gap-4 flex-wrap bg-gray-50 rounded-lg p-3 border border-gray-100">
+        <div>
+          <label class="text-[11px] font-bold text-gray-400 uppercase block mb-1">From</label>
+          <div class="flex gap-1"><input type="date" x-model="r.fromD" class="input-field text-xs" style="width:auto"><input type="time" x-model="r.fromT" class="input-field text-xs" style="width:auto"></div>
+        </div>
+        <div>
+          <label class="text-[11px] font-bold text-gray-400 uppercase block mb-1">To</label>
+          <div class="flex gap-1"><input type="date" x-model="r.toD" class="input-field text-xs" style="width:auto"><input type="time" x-model="r.toT" class="input-field text-xs" style="width:auto"></div>
+        </div>
+        <button @click="applyRange()" class="btn-primary text-sm">Apply window</button>
+        <p class="text-[11px] text-gray-400 w-full">Pick a day and, if you like, a start &amp; end time — leave a time blank for the whole day. Then <b>Apply</b>.</p>
       </div>
       <div>
         <input type="text" x-model="f.q" @input.debounce.400ms="load()" placeholder="🔎 search a name, field, value, user…"
@@ -151,6 +161,8 @@ function auditData() {
     items: [], total: 0, act: {}, actors: [], entityTypes: [],
     loading: false, loadingMore: false,
     f: { entity_type: '', actor: '', action: '', entity_id: '', q: '', since: '', until: '' },
+    showRange: false,
+    r: { fromD: '', fromT: '', toD: '', toT: '' },
     init() {
       const u = AuthHelper.getUserInfo();
       if (!u) { window.location.href = '/pos'; return; }
@@ -177,10 +189,24 @@ function auditData() {
       if (k === 'hour')      { this.f.since = L(new Date(now.getTime()-3600e3)); this.f.until = ''; }
       else if (k === 'today'){ this.f.since = L(sod(now)); this.f.until = ''; }
       else if (k === 'yday') { const y = new Date(now.getTime()-86400e3); this.f.since = L(sod(y)); this.f.until = L(new Date(sod(now).getTime()-60000)); }
-      else if (k === 'ydaylunch') { const y = sod(new Date(now.getTime()-86400e3));
-        const s = new Date(y); s.setHours(13,0,0,0); const e = new Date(y); e.setHours(14,0,0,0);
-        this.f.since = L(s); this.f.until = L(e); }
+      this._syncR(); this.load();
+    },
+    _syncR() {
+      this.r.fromD = this.f.since ? this.f.since.slice(0,10) : '';
+      this.r.fromT = this.f.since ? this.f.since.slice(11,16) : '';
+      this.r.toD   = this.f.until ? this.f.until.slice(0,10) : '';
+      this.r.toT   = this.f.until ? this.f.until.slice(11,16) : '';
+    },
+    applyRange() {
+      this.f.since = this.r.fromD ? (this.r.fromD + 'T' + (this.r.fromT || '00:00')) : '';
+      this.f.until = this.r.toD   ? (this.r.toD   + 'T' + (this.r.toT   || '23:59')) : '';
       this.load();
+    },
+    clearTime() { this.f.since = ''; this.f.until = ''; this.r = { fromD:'', fromT:'', toD:'', toT:'' }; this.load(); },
+    rangeLabel() {
+      if (!this.f.since && !this.f.until) return '';
+      const nice = s => s ? s.replace('T', ' ') : '';
+      return '🕐 ' + (this.f.since ? nice(this.f.since) : 'start') + ' → ' + (this.f.until ? nice(this.f.until) : 'now');
     },
     async load() {
       this.loading = true;
