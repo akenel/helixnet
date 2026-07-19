@@ -60,36 +60,20 @@
       <div x-show="showRange" style="display:none" class="flex items-end gap-4 flex-wrap bg-gray-50 rounded-lg p-3 border border-gray-100">
         <div>
           <label class="text-[11px] font-bold text-gray-400 uppercase block mb-1">From</label>
-          <div class="flex gap-1 items-center">
+          <div class="flex gap-1.5 items-center">
             <input type="date" x-model="r.fromD" class="input-field text-xs" style="width:auto">
-            <div class="relative" x-data="{o:false}">
-              <button type="button" @click="o=!o" class="input-field text-xs text-left flex items-center gap-1" style="width:96px">
-                🕐 <span x-text="r.fromT || 'any'"></span>
-              </button>
-              <div x-show="o" @click.outside="o=false" x-transition.opacity style="display:none" class="absolute z-30 mt-1 left-0 bg-white border border-gray-200 rounded-xl shadow-xl max-h-56 overflow-y-auto w-28">
-                <button type="button" @click="r.fromT='';o=false" class="block w-full text-left px-3 py-1.5 text-xs hover:bg-gray-100" :class="!r.fromT?'bg-indigo-50 text-indigo-700 font-bold':''">any time</button>
-                <template x-for="t in timeSlots" :key="'f'+t">
-                  <button type="button" @click="r.fromT=t;o=false" class="block w-full text-left px-3 py-1.5 text-xs transition" :class="r.fromT===t?'bg-indigo-600 text-white font-bold':'hover:bg-indigo-50'" x-text="t"></button>
-                </template>
-              </div>
-            </div>
+            <div class="spin"><button type="button" @click="bump('fromH',-1)" class="spb">▼</button><input type="number" min="0" max="23" x-model.number="r.fromH" @input="clampT()" class="spi" title="hour"><button type="button" @click="bump('fromH',1)" class="spb">▲</button></div>
+            <span class="text-gray-400 font-bold">:</span>
+            <div class="spin"><button type="button" @click="bump('fromM',-5)" class="spb">▼</button><input type="number" min="0" max="59" x-model.number="r.fromM" @input="clampT()" class="spi" title="minute"><button type="button" @click="bump('fromM',5)" class="spb">▲</button></div>
           </div>
         </div>
         <div>
           <label class="text-[11px] font-bold text-gray-400 uppercase block mb-1">To</label>
-          <div class="flex gap-1 items-center">
+          <div class="flex gap-1.5 items-center">
             <input type="date" x-model="r.toD" class="input-field text-xs" style="width:auto">
-            <div class="relative" x-data="{o:false}">
-              <button type="button" @click="o=!o" class="input-field text-xs text-left flex items-center gap-1" style="width:96px">
-                🕐 <span x-text="r.toT || 'any'"></span>
-              </button>
-              <div x-show="o" @click.outside="o=false" x-transition.opacity style="display:none" class="absolute z-30 mt-1 left-0 bg-white border border-gray-200 rounded-xl shadow-xl max-h-56 overflow-y-auto w-28">
-                <button type="button" @click="r.toT='';o=false" class="block w-full text-left px-3 py-1.5 text-xs hover:bg-gray-100" :class="!r.toT?'bg-indigo-50 text-indigo-700 font-bold':''">any time</button>
-                <template x-for="t in timeSlots" :key="'t'+t">
-                  <button type="button" @click="r.toT=t;o=false" class="block w-full text-left px-3 py-1.5 text-xs transition" :class="r.toT===t?'bg-indigo-600 text-white font-bold':'hover:bg-indigo-50'" x-text="t"></button>
-                </template>
-              </div>
-            </div>
+            <div class="spin"><button type="button" @click="bump('toH',-1)" class="spb">▼</button><input type="number" min="0" max="23" x-model.number="r.toH" @input="clampT()" class="spi" title="hour"><button type="button" @click="bump('toH',1)" class="spb">▲</button></div>
+            <span class="text-gray-400 font-bold">:</span>
+            <div class="spin"><button type="button" @click="bump('toM',-5)" class="spb">▼</button><input type="number" min="0" max="59" x-model.number="r.toM" @input="clampT()" class="spi"><button type="button" @click="bump('toM',5)" class="spb">▲</button></div>
           </div>
         </div>
         <button @click="applyRange()" class="btn-primary text-sm">Apply window</button>
@@ -179,6 +163,13 @@
   .chip{ font-size:12px; padding:4px 10px; border-radius:999px; border:1px solid #e5e7eb; background:#fff; color:#4b5563; cursor:pointer; white-space:nowrap; }
   .chip:hover{ background:#f9fafb; }
   .chip-on{ background:#111827; color:#fff; border-color:#111827; }
+  .spin{ display:flex; align-items:center; border:1px solid #e5e7eb; border-radius:8px; background:#fff; overflow:hidden; }
+  .spb{ padding:6px 8px; color:#6b7280; font-size:10px; line-height:1; cursor:pointer; user-select:none; }
+  .spb:hover{ background:#eef2ff; color:#4f46e5; }
+  .spb:active{ background:#4f46e5; color:#fff; }
+  .spi{ width:36px; text-align:center; font-size:14px; font-variant-numeric:tabular-nums; border:0; padding:5px 0; -moz-appearance:textfield; }
+  .spi::-webkit-outer-spin-button, .spi::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+  .spi:focus{ outline:none; background:#eef2ff; }
 </style>
 
 <script>
@@ -188,14 +179,10 @@ function auditData() {
     loading: false, loadingMore: false,
     f: { entity_type: '', actor: '', action: '', entity_id: '', q: '', since: '', until: '' },
     showRange: false,
-    r: { fromD: '', fromT: '', toD: '', toT: '' },
-    timeSlots: [],
+    r: { fromD: '', fromH: 0, fromM: 0, toD: '', toH: 23, toM: 59 },  // times default to whole-day bounds
     init() {
       const u = AuthHelper.getUserInfo();
       if (!u) { window.location.href = '/pos'; return; }
-      // 15-min slots for the buttery time dropdown (00:00 … 23:45)
-      for (let h = 0; h < 24; h++) for (const m of [0,15,30,45])
-        this.timeSlots.push(String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0'));
       // deep-link: /pos/audit?entity_id=... (from a product's History link)
       const sp = new URLSearchParams(location.search);
       if (sp.get('entity_id')) this.f.entity_id = sp.get('entity_id');
@@ -221,18 +208,32 @@ function auditData() {
       else if (k === 'yday') { const y = new Date(now.getTime()-86400e3); this.f.since = L(sod(y)); this.f.until = L(new Date(sod(now).getTime()-60000)); }
       this._syncR(); this.load();
     },
+    // spin a HH/MM field by delta, wrapping like a real time wheel (23→00, 55+5→00)
+    bump(field, delta) {
+      const mod = field.endsWith('H') ? 24 : 60;
+      let v = ((parseInt(this.r[field], 10) || 0) + delta) % mod;
+      if (v < 0) v += mod;
+      this.r[field] = v;
+    },
+    // after typing, keep values in range
+    clampT() {
+      const c = (v, max) => { v = parseInt(v, 10); if (isNaN(v)) return 0; return Math.max(0, Math.min(max, v)); };
+      this.r.fromH = c(this.r.fromH,23); this.r.fromM = c(this.r.fromM,59);
+      this.r.toH   = c(this.r.toH,23);   this.r.toM   = c(this.r.toM,59);
+    },
+    _pad(n) { return String(n).padStart(2,'0'); },
     _syncR() {
-      this.r.fromD = this.f.since ? this.f.since.slice(0,10) : '';
-      this.r.fromT = this.f.since ? this.f.since.slice(11,16) : '';
-      this.r.toD   = this.f.until ? this.f.until.slice(0,10) : '';
-      this.r.toT   = this.f.until ? this.f.until.slice(11,16) : '';
+      const s = this.f.since, u = this.f.until;
+      this.r.fromD = s ? s.slice(0,10) : ''; this.r.fromH = s ? +s.slice(11,13) : 0;  this.r.fromM = s ? +s.slice(14,16) : 0;
+      this.r.toD   = u ? u.slice(0,10) : ''; this.r.toH   = u ? +u.slice(11,13) : 23; this.r.toM   = u ? +u.slice(14,16) : 59;
     },
     applyRange() {
-      this.f.since = this.r.fromD ? (this.r.fromD + 'T' + (this.r.fromT || '00:00')) : '';
-      this.f.until = this.r.toD   ? (this.r.toD   + 'T' + (this.r.toT   || '23:59')) : '';
+      this.clampT();
+      this.f.since = this.r.fromD ? `${this.r.fromD}T${this._pad(this.r.fromH)}:${this._pad(this.r.fromM)}` : '';
+      this.f.until = this.r.toD   ? `${this.r.toD}T${this._pad(this.r.toH)}:${this._pad(this.r.toM)}`     : '';
       this.load();
     },
-    clearTime() { this.f.since = ''; this.f.until = ''; this.r = { fromD:'', fromT:'', toD:'', toT:'' }; this.load(); },
+    clearTime() { this.f.since = ''; this.f.until = ''; this.r = { fromD:'', fromH:0, fromM:0, toD:'', toH:23, toM:59 }; this.load(); },
     rangeLabel() {
       if (!this.f.since && !this.f.until) return '';
       const nice = s => s ? s.replace('T', ' ') : '';
