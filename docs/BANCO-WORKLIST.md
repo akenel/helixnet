@@ -20,8 +20,11 @@ till-block). **▶ Angel: scan the physical `42470335` box → remove the stray 
 fix, surface-not-live). ✅ **BL-100 #4 STANDING SWEEP BUILT + ON SANDBOX 2026-07-19 (`be5a2e7`, b1947):**
 `GET /pos/integrity/sweep` + "🔍 Run seal sweep" panel in the Hypercare Cockpit — COLLISION (one code→many
 products) + STRANDED-INACTIVE (dead row's code + live same-name twin); 7 tests, Core-SQL both DBs,
-surface-not-fix. Demo collision seeded on sbx (`42238072`). **▶ Angel human-green `/pos/hypercare` as manager
-→ then ladder to prod (it surfaces the real GIZEH `42470335`).** Detail in memory
+surface-not-fix. ✅✅ **SHIPPED PROD 2026-07-19 (`3c989f9`, b1948, backup-gated 61/5200/190, config
+byte-identical).** On run one it caught 2 prod collisions incl. a NEW one the hand-sweep missed:
+**`5056325633565` = Drifter Watermelon Ice Shortfill CHF 15.90 (primary) vs Bar Salts 10ml CHF 7.90 (alias)
+— 2× price gap = money trap.** **▶ Angel: scan both boxes (`5056325633565` + `42470335`) → move each code to
+its true row, remove the stray (gated prod fix).** Detail in memory
 `banco-product-matching-integrity-bl100`.** (2) Receiving/Ecolution
 cost-auto-fill + goods-receipt → human-green sbx then ladder; (3) ✅ BL-98 bench SHIPPED PROD b1944 —
 remainder = edit-guard rollout to supplier/tier/order-book/settings modals. Detail in the tiers below.
