@@ -31,25 +31,32 @@ CREATE INDEX IF NOT EXISTS ix_audit_entity ON audit_log (entity_type, entity_id,
 -- 2) the tripwire: ONE table-agnostic function (diffs OLD vs NEW generically)
 CREATE OR REPLACE FUNCTION audit_capture() RETURNS trigger AS $fn$
 DECLARE
-  who TEXT := coalesce(nullif(current_setting('app.actor', true), ''), 'system');
-  eid TEXT;
-  chg JSONB;
+  who TEXT; eid TEXT; chg JSONB; do_log BOOLEAN := true;
 BEGIN
-  IF TG_OP = 'DELETE' THEN
-    eid := OLD.id::text; chg := to_jsonb(OLD);
-  ELSIF TG_OP = 'INSERT' THEN
-    eid := NEW.id::text; chg := to_jsonb(NEW);
-  ELSE
-    eid := NEW.id::text;
-    SELECT jsonb_object_agg(o.key, jsonb_build_object('old', o.value, 'new', n.value))
-      INTO chg
-      FROM jsonb_each(to_jsonb(OLD)) o JOIN jsonb_each(to_jsonb(NEW)) n USING (key)
-      WHERE o.value IS DISTINCT FROM n.value
-        AND o.key NOT IN ('updated_at', 'created_at');   -- housekeeping, not a real change
-    IF chg IS NULL THEN RETURN NEW; END IF;           -- only updated_at moved -> no log noise
-  END IF;
-  INSERT INTO audit_log (entity_type, entity_id, action, changed_by, changes)
-    VALUES (TG_TABLE_NAME, eid, TG_OP, who, chg);
+  -- PROD SAFETY: the whole audit is wrapped so a logging failure can NEVER roll back
+  -- the real sale/edit. Worst case we lose one audit row, never a transaction.
+  BEGIN
+    who := coalesce(nullif(current_setting('app.actor', true), ''), 'system');
+    IF TG_OP = 'DELETE' THEN
+      eid := OLD.id::text; chg := to_jsonb(OLD);
+    ELSIF TG_OP = 'INSERT' THEN
+      eid := NEW.id::text; chg := to_jsonb(NEW);
+    ELSE
+      eid := NEW.id::text;
+      SELECT jsonb_object_agg(o.key, jsonb_build_object('old', o.value, 'new', n.value))
+        INTO chg
+        FROM jsonb_each(to_jsonb(OLD)) o JOIN jsonb_each(to_jsonb(NEW)) n USING (key)
+        WHERE o.value IS DISTINCT FROM n.value
+          AND o.key NOT IN ('updated_at', 'created_at');   -- housekeeping, not a real change
+      IF chg IS NULL THEN do_log := false; END IF;         -- only updated_at moved -> no noise
+    END IF;
+    IF do_log THEN
+      INSERT INTO audit_log (entity_type, entity_id, action, changed_by, changes)
+        VALUES (TG_TABLE_NAME, eid, TG_OP, who, chg);
+    END IF;
+  EXCEPTION WHEN OTHERS THEN
+    NULL;  -- auditing must NEVER break the actual sale/edit
+  END;
   RETURN CASE WHEN TG_OP='DELETE' THEN OLD ELSE NEW END;
 END;
 $fn$ LANGUAGE plpgsql;
