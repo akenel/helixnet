@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Banco — Backup &amp; Disaster Recovery, in Blocks</title>
+<style>
+  :root{
+    --ink:#1a1c1a; --mut:#5b625b; --line:#e3e6e2; --paper:#ffffff; --bg:#f6f7f4;
+    --green:#1b4332; --green2:#2d6a4f; --gold:#b0862f; --gold-soft:#f4ecd8;
+    --code-bg:#132018; --code-ink:#e6efe8; --warn:#9a6a12;
+  }
+  *{ box-sizing:border-box; }
+  body{ font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:var(--ink);
+        background:var(--bg); margin:0; line-height:1.45; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  @page{ size:A4; margin:9mm; }
+  .sheet{ max-width:860px; margin:0 auto; background:var(--paper); }
+  .band{ background:var(--green); color:#fff; padding:16px 30px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  .band h1{ font-size:21px; margin:0; }
+  .band h1 small{ display:block; font-weight:500; font-size:12.5px; color:var(--gold-soft); margin-top:3px; }
+  .band .brand{ text-align:right; font-size:11px; color:var(--gold-soft); line-height:1.35; }
+  .band .brand b{ color:#fff; font-size:13px; letter-spacing:.06em; }
+  main{ padding:18px 30px 8px; }
+  h2{ font-size:13px; text-transform:uppercase; letter-spacing:.07em; color:var(--green2); margin:18px 0 9px; padding-bottom:4px; border-bottom:2px solid var(--gold); }
+  h2:first-of-type{ margin-top:4px; }
+  .blocks{ display:grid; grid-template-columns:repeat(2,1fr); gap:9px; }
+  .blk{ border:1px solid var(--line); border-left:4px solid var(--green2); border-radius:8px; padding:8px 11px; background:#fbfcfa; font-size:12.5px; }
+  .blk b{ color:var(--green); }
+  .blk .live{ color:var(--mut); font-size:11.5px; display:block; margin-top:1px; }
+  .flow{ counter-reset:step; margin:0; padding:0; list-style:none; }
+  .flow li{ position:relative; padding:5px 0 5px 30px; font-size:12.5px; border-top:1px dashed var(--line); }
+  .flow li:first-child{ border-top:none; }
+  .flow li::before{ counter-increment:step; content:counter(step); position:absolute; left:0; top:5px;
+    width:20px; height:20px; background:var(--green); color:#fff; border-radius:50%; font-size:11px; font-weight:700;
+    display:flex; align-items:center; justify-content:center; }
+  .flow li b{ color:var(--ink); }
+  .twokeys{ display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+  .keycard{ border:1px solid var(--gold); border-radius:8px; padding:9px 12px; background:var(--gold-soft); font-size:12.5px; }
+  .keycard b{ color:#5a4a1e; }
+  .keycard .job{ color:#6a5518; display:block; margin-top:2px; }
+  pre{ background:var(--code-bg); color:var(--code-ink); border-radius:8px; padding:11px 13px; margin:8px 0 0;
+    font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; line-height:1.5; overflow-x:auto; }
+  pre .c{ color:#7fb89a; }        /* comment */
+  pre .k{ color:#e8c675; }        /* command / key word */
+  .recover-note{ font-size:12px; color:var(--mut); margin:8px 0 0; }
+  .guarantees{ display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-top:2px; }
+  .g{ font-size:12.5px; padding:4px 0 4px 22px; position:relative; }
+  .g::before{ content:"✓"; position:absolute; left:2px; top:4px; color:var(--gold); font-weight:800; }
+  .g b{ color:var(--ink); }
+  .straight{ margin-top:14px; border:1px solid var(--gold); background:var(--gold-soft); border-radius:10px; padding:10px 14px; }
+  .straight .h{ font-weight:800; color:var(--warn); font-size:12.5px; text-transform:uppercase; letter-spacing:.05em; }
+  .straight p{ font-size:12px; color:#5a4a1e; margin:5px 0 0; }
+  footer{ padding:12px 30px 18px; }
+  .stamp{ border-top:2px solid var(--green); padding-top:9px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:11px; color:var(--mut); }
+  .stamp b{ color:var(--green); }
+  .stamp .no{ font-variant-numeric:tabular-nums; }
+  @media (max-width:640px){ .blocks,.twokeys,.guarantees{ grid-template-columns:1fr; } .band,main,footer{ padding-left:18px; padding-right:18px; } }
+  pre, .blk, .keycard, .straight, .twokeys, .blocks{ break-inside:avoid; }
+  h2{ break-after:avoid; }
+  @media print{ body{ background:#fff; } .sheet{ max-width:none; } pre{ white-space:pre-wrap; } }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <div class="band">
+    <div style="display:flex;align-items:center;gap:13px;">
+      <span style="font-size:28px;">🧱</span>
+      <h1>Banco — Backup &amp; Disaster Recovery<small>How the pieces fit, and exactly how to rebuild from a laptop + a password</small></h1>
+    </div>
+    <div class="brand"><b>LA PIAZZA · BANCO</b><br>lose the shop, keep the data</div>
+  </div>
+
+  <main>
+    <!-- THE PIECES -->
+    <h2>The pieces (7 blocks)</h2>
+    <div class="blocks">
+      <div class="blk"><b>🖥️ The Box</b> — the Hetzner server. Runs the till AND makes the backups. Always on.<span class="live">46.62.138.218</span></div>
+      <div class="blk"><b>🗄️ The Backup</b> — a full copy of the database, made <b>every night at 3am</b> by itself.<span class="live">banco_prod_YYYYMMDD_HHMM.sql.gz.gpg</span></div>
+      <div class="blk"><b>🔒 The Lock</b> — GPG AES-256. Scrambles each backup so the file is useless without the passphrase.<span class="live">gpg --symmetric</span></div>
+      <div class="blk"><b>☁️ The Vault (B2)</b> — Backblaze off-site storage. Copies here <b>can't be deleted for 14 days</b> (ransomware-proof).<span class="live">bucket: ecolution-banco-backups</span></div>
+      <div class="blk"><b>🔑 The Read-Key</b> — your Backblaze login that pulls a copy <b>out</b> of the vault. Read-only.<span class="live">B2 app key · in KeePass</span></div>
+      <div class="blk"><b>🗝️ The Passphrase</b> — the GPG password that <b>unscrambles</b> a backup back into a database.<span class="live">64 chars · in KeePass</span></div>
+      <div class="blk" style="grid-column:1 / -1;border-left-color:var(--gold);"><b>🔐 KeePass</b> — the safe on your laptop that holds <b>both keys</b>. One master password (in your head) opens it. This is the single thing you must protect.<span class="live">KeePass-Helix-DB.kdbx · also synced to Google Drive</span></div>
+    </div>
+
+    <!-- HOW THEY SNAP TOGETHER -->
+    <h2>How they snap together — every night, 3am, no one touches it</h2>
+    <ol class="flow">
+      <li><b>Copy</b> — the box dumps the whole <code>banco_prod</code> database.</li>
+      <li><b>Lock</b> — GPG scrambles it (AES-256). Now it's an unreadable <code>.gpg</code> file.</li>
+      <li><b>Prove</b> — the box <em>unlocks its own copy and reloads it</em> into a throwaway database, and checks the row counts match. A backup that can't restore is caught here, not in a disaster.</li>
+      <li><b>Ship</b> — the locked copy goes to the B2 vault, stamped immutable for 14 days.</li>
+      <li><b>Signal</b> — the box pings the alarm: "I'm alive, backup done." <b>If any step fails — or the box goes dark — no ping arrives, and the alarm emails you</b> within 2 hours.</li>
+    </ol>
+
+    <!-- TWO KEYS -->
+    <h2>Two locks, two keys — the one thing to remember</h2>
+    <div class="twokeys">
+      <div class="keycard"><b>🔑 The Read-Key</b> opens the <b>VAULT</b><span class="job">gets the sealed file OUT of Backblaze B2. Can't read what's inside it.</span></div>
+      <div class="keycard"><b>🗝️ The Passphrase</b> opens the <b>FILE</b><span class="job">unscrambles the sealed file into the real database. Can't get it out of B2.</span></div>
+    </div>
+    <p class="recover-note">Neither key alone is enough — steal one, you get nothing. Both live in KeePass, behind your master password. That's the whole security model in one sentence.</p>
+
+    <!-- RECOVER -->
+    <h2>Rebuild it — from a dead box, with only a laptop + KeePass</h2>
+    <pre><span class="c"># 0 — open KeePass (master password) → copy out the Read-Key (id+key) and the GPG passphrase</span>
+
+<span class="c"># 1 — log into the B2 vault with the Read-Key</span>
+<span class="k">b2 account authorize</span> «read-keyID» «read-appKey»
+
+<span class="c"># 2 — find the newest backup, then pull it out of the vault</span>
+<span class="k">b2 ls</span> b2://ecolution-banco-backups/banco/
+<span class="k">b2 file download</span> b2://ecolution-banco-backups/banco/«newest».sql.gz.gpg  /tmp/restore.gpg
+
+<span class="c"># 3 — unscramble it with the GPG passphrase (paste it when asked)</span>
+<span class="k">gpg</span> --pinentry-mode loopback -d /tmp/restore.gpg | <span class="k">gunzip</span> &gt; /tmp/restore.sql
+
+<span class="c"># 4 — load it into a fresh Postgres → the database is back</span>
+<span class="k">createdb</span> banco_prod  &amp;&amp;  <span class="k">psql</span> -d banco_prod &lt; /tmp/restore.sql</pre>
+    <p class="recover-note">✅ Proven end-to-end on 2026-07-19: steps 1–3 pull today's immutable copy from B2 and decrypt it to <code>-- PostgreSQL database dump</code>, with the box completely out of the picture. That's not a claim — it's a drill you ran.</p>
+
+    <!-- GUARANTEES -->
+    <h2>What this guarantees you</h2>
+    <div class="guarantees">
+      <div class="g"><b>Three places</b> — the box, the B2 vault, and off-box copies. Lose any one, lose nothing.</div>
+      <div class="g"><b>Immutable 14 days</b> — a hacked box can add copies but can't erase the ones already in the vault.</div>
+      <div class="g"><b>Self-verified nightly</b> — every backup is test-restored, so it's <em>proven</em>, not hoped.</div>
+      <div class="g"><b>Alarm on silence</b> — a failed or missed backup emails you within 2 hours.</div>
+    </div>
+
+    <div class="straight">
+      <div class="h">⚖️ Straight talk — scope</div>
+      <p>This recovers the <b>data</b> (the database — the thing that's irreplaceable), and it's proven. Rebuilding the whole <em>server</em> (a fresh box, Docker, Keycloak) is a separate, longer job — hours following the ops runbook — because Banco runs on one server today. The keys live in KeePass; if you ever lose the KeePass master password, nothing above can help — that password is the one irreplaceable thing.</p>
+    </div>
+  </main>
+
+  <footer>
+    <div class="stamp">
+      <span><b>🐺 La Piazza · Banco</b> — Backup &amp; Disaster Recovery brief · runbook + reference</span>
+      <span class="no">№ LP-DOC-20260719-DR-BRIEF · rev.1 · 2026-07-19</span>
+    </div>
+  </footer>
+</div>
+</body>
+</html>
