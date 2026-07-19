@@ -17,7 +17,12 @@ backup-gated (restore-verified 60/5200/188):
 the ONE cross-wire → **`42470335`** is primary of `TAM-22387` *All Pink Rolls Slim* AND alias on
 `REF-FOURTWENTY-…360136PAP` *Black Rolls Slim* (both active, both CHF 3.50 → fragments Pink/Black sales, no
 till-block). **▶ Angel: scan the physical `42470335` box → remove the stray from the other row (gated prod
-fix, surface-not-live). Detail in memory `banco-product-matching-integrity-bl100`.** (2) Receiving/Ecolution
+fix, surface-not-live). ✅ **BL-100 #4 STANDING SWEEP BUILT + ON SANDBOX 2026-07-19 (`be5a2e7`, b1947):**
+`GET /pos/integrity/sweep` + "🔍 Run seal sweep" panel in the Hypercare Cockpit — COLLISION (one code→many
+products) + STRANDED-INACTIVE (dead row's code + live same-name twin); 7 tests, Core-SQL both DBs,
+surface-not-fix. Demo collision seeded on sbx (`42238072`). **▶ Angel human-green `/pos/hypercare` as manager
+→ then ladder to prod (it surfaces the real GIZEH `42470335`).** Detail in memory
+`banco-product-matching-integrity-bl100`.** (2) Receiving/Ecolution
 cost-auto-fill + goods-receipt → human-green sbx then ladder; (3) ✅ BL-98 bench SHIPPED PROD b1944 —
 remainder = edit-guard rollout to supplier/tier/order-book/settings modals. Detail in the tiers below.
 
