@@ -88,6 +88,10 @@
     <div x-show="loading" class="text-center py-10 text-gray-500">Loading the log…</div>
     <div x-show="!loading && items.length===0" class="card text-center py-10 text-gray-400">Nothing matches. When someone changes a product, rings a sale, or closes out — it lands here.</div>
 
+    <div x-show="!loading && hasFilter()" style="display:none" class="text-sm text-gray-600 mb-2 px-1">
+      🔎 Showing <b x-text="matched"></b> of <span x-text="total"></span> events matching your filter.
+    </div>
+
     <!-- the feed -->
     <div class="space-y-2" x-show="!loading">
       <template x-for="it in items" :key="it.id">
@@ -175,7 +179,7 @@
 <script>
 function auditData() {
   return {
-    items: [], total: 0, act: {}, actors: [], entityTypes: [],
+    items: [], total: 0, matched: 0, act: {}, actors: [], entityTypes: [],
     loading: false, loadingMore: false,
     f: { entity_type: '', actor: '', action: '', entity_id: '', q: '', since: '', until: '' },
     showRange: false,
@@ -192,10 +196,16 @@ function auditData() {
     qs(extra) {
       const p = new URLSearchParams({ limit: 40, offset: 0, ...extra });
       ['entity_type','actor','action','entity_id','q'].forEach(k => { if (this.f[k]) p.set(k, this.f[k]); });
-      // datetime-local is LOCAL; convert to a UTC ISO instant the server can compare
-      if (this.f.since) { try { p.set('since', new Date(this.f.since).toISOString()); } catch(e){} }
-      if (this.f.until) { try { p.set('until', new Date(this.f.until).toISOString()); } catch(e){} }
+      const s = this._toISO(this.f.since); if (s) p.set('since', s);
+      const u = this._toISO(this.f.until); if (u) p.set('until', u);
       return p.toString();
+    },
+    // "YYYY-MM-DDTHH:MM" (LOCAL) → UTC ISO. Build from parts — Firefox returns Invalid Date
+    // for strings without seconds, which silently killed the filter.
+    _toISO(str) {
+      const m = str && /^(\d{4})-(\d{2})-(\d{2})T(\d{1,2}):(\d{2})/.exec(str);
+      if (!m) return null;
+      try { return new Date(+m[1], +m[2]-1, +m[3], +m[4], +m[5], 0).toISOString(); } catch (e) { return null; }
     },
     // quick time windows. L() formats a Date as a datetime-local string (the inputs).
     preset(k) {
@@ -245,6 +255,7 @@ function auditData() {
         const d = await API.get('/api/v1/pos/audit/feed?' + this.qs());
         this.items = (d.items || []).map(x => ({ ...x, _open: false }));
         this.total = d.total || 0;
+        this.matched = (d.matched ?? d.total) || 0;
         this.act = d.actions || {};
         this.actors = d.actors || [];
         this.entityTypes = d.entity_types || [];

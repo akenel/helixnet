@@ -6641,6 +6641,17 @@ async def audit_feed(
         "label": r["label"], "changes": _chg(r["changes"]),
     } for r in rows]
 
+    matched = (await db.execute(text("""
+        SELECT count(*) FROM audit_log a
+        WHERE (CAST(:et  AS text) IS NULL OR a.entity_type = :et)
+          AND (CAST(:ac  AS text) IS NULL OR a.changed_by  = :ac)
+          AND (CAST(:act AS text) IS NULL OR a.action      = :act)
+          AND (CAST(:eid AS text) IS NULL OR a.entity_id   = :eid)
+          AND (CAST(:q   AS text) IS NULL OR a.changed_by ILIKE :q OR a.entity_type ILIKE :q OR a.changes::text ILIKE :q)
+          AND (CAST(:since AS timestamptz) IS NULL OR a.changed_at >= CAST(:since AS timestamptz))
+          AND (CAST(:until AS timestamptz) IS NULL OR a.changed_at <= CAST(:until AS timestamptz))
+    """), params)).scalar() or 0
+
     facet_actor = (await db.execute(text(
         "SELECT changed_by, count(*) c FROM audit_log GROUP BY changed_by ORDER BY c DESC"))).all()
     facet_type = (await db.execute(text(
@@ -6648,7 +6659,7 @@ async def audit_feed(
     facet_action = (await db.execute(text(
         "SELECT action, count(*) c FROM audit_log GROUP BY action"))).all()
     total = (await db.execute(text("SELECT count(*) FROM audit_log"))).scalar() or 0
-    return {"total": int(total), "shown": len(items), "items": items,
+    return {"total": int(total), "matched": int(matched), "shown": len(items), "items": items,
             "actors": [{"name": a[0], "count": a[1]} for a in facet_actor],
             "entity_types": [{"name": t[0], "count": t[1]} for t in facet_type],
             "actions": {a[0]: a[1] for a in facet_action}}
