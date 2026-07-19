@@ -2,6 +2,22 @@
 
 > 🔑 **Code word "ON DECK"** → you're reading the right file. State the top items and start executing the first actionable one. No re-planning, no re-asking.
 
+## 🆕🆕 2026-07-19 — HUGE DAY (backups + audit) · NEXT FRESH TASK = "PROVE OWNERSHIP"
+
+**Shipped/verified today (all prod unless noted):** (1) **B2 immutable offsite backups LIVE** (compliance
+14d, write-only key, dead-man's-switch alerting proven, full DR drill + delete-a-record drill passed) — memory
+`banco-p5-offsite-backups`, brief `docs/business/BANCO-DR-BRIEF.html`. (2) **AUDIT SYSTEM SHIPPED PROD** (b1972)
+— universal who/when/what change-log (5 tables, trigger + app.actor), cockpit `/pos/audit` (multi-select
+super-filters, buttery time-range spinner, 🔞 danger flags, ↩️ one-click revert, drill-downs); setup
+`scripts/db/audit_log_setup.sql` (prod-safe exception-wrapped trigger); Felix config byte-identical.
+
+**▶ NEXT FRESH SESSION (Angel's call): the "PROVE OWNERSHIP" drill — the highest-leverage TRUST asset.** A
+stranger clones the public repo → stands up a fresh instance → restores a real backup from B2 with a key we
+hand them → running shop. Turns the solo-founder / "what if the vendor vanishes" blocker into the differentiator
+(self-insured continuity — you can't clone SAP). **Full phased plan: [docs/BANCO-PROVE-OWNERSHIP-PLAN.md](BANCO-PROVE-OWNERSHIP-PLAN.md)**
+(⚠️ Phase 0 hard gate = secret-scan the git HISTORY first). Memory `banco-self-insured-ownership-model`. Also:
+🇨🇭 **Worldline/TWINT terminal enables NEXT WEEK** → closes the payments blocker (sim already proven on sandbox).
+
 ## 🆕 LAST TOUCH — 2026-07-17/18 HYPERCARE DAY · prod = sandbox = `66bb41c`
 
 **READ [docs/HANDOFF-2026-07-17.md](HANDOFF-2026-07-17.md) FIRST** (has the EVENING ADDENDUM). A big
