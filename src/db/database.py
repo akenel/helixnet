@@ -1,10 +1,11 @@
+import contextvars
 import logging
 import os
 from contextlib import asynccontextmanager, contextmanager
 from typing import AsyncGenerator, Iterator, Optional
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, AsyncEngine
 from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, event, text
 from src.db.models.base import Base
 from src.core.config import get_settings
 
@@ -69,6 +70,36 @@ AsyncSessionLocal = sessionmaker(
 )
 
 SyncSessionLocal: Optional[sessionmaker] = None
+
+# ================================================================
+# 🪪 AUDIT ACTOR — tell the DB *who* is making each change, per request,
+# so the audit_log triggers (scripts/db/audit_log_setup.sql) record the real
+# user instead of 'system'. verify_token() sets the contextvar on every
+# authenticated request; the after_begin event copies it onto each transaction
+# as the `app.actor` GUC, which audit_capture() reads. Unauthenticated /
+# background / CLI writes leave it unset → they log as 'system'.
+# ================================================================
+_audit_actor: contextvars.ContextVar = contextvars.ContextVar("audit_actor", default="")
+
+
+def set_audit_actor(username: Optional[str]) -> None:
+    """Per authenticated request: stash WHO, so DB audit triggers attribute the change."""
+    try:
+        _audit_actor.set((username or "").strip()[:120])
+    except Exception:
+        pass
+
+
+@event.listens_for(Session, "after_begin")
+def _apply_audit_actor(session, transaction, connection) -> None:
+    """On every transaction begin, set app.actor so audit_capture() records the real
+    user. Defensive by design — this must NEVER be able to break a real transaction."""
+    try:
+        actor = _audit_actor.get()
+        if actor:
+            connection.execute(text("SELECT set_config('app.actor', :a, true)"), {"a": actor})
+    except Exception:
+        pass
 
 # ================================================================
 # 🔗 ASYNC SESSION DEPENDENCY

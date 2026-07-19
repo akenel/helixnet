@@ -134,6 +134,13 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
         )
 
         logger.debug(f"Token verified for user: {payload.get('preferred_username')} (realm: {realm})")
+        # Tell the DB WHO this is, so audit_log triggers attribute changes to the real
+        # user instead of 'system'. Never let audit wiring break authentication.
+        try:
+            from src.db.database import set_audit_actor
+            set_audit_actor(payload.get("preferred_username") or payload.get("sub"))
+        except Exception:
+            pass
         return payload
 
     except JWTError as e:
