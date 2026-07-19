@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Backup Hardening — Setup Runbook</title>
+<style>
+  :root{ --red:#C0392B; --dark:#8B0000; --ink:#1f2937; --mut:#6b7280; --line:#e5e7eb; --ok:#059669; --bg:#f7f7f8; --green:#1b4332; --gold:#b0862f; }
+  *{ box-sizing:border-box; }
+  body{ font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--bg); margin:0; line-height:1.5; }
+  a{ color:var(--red); }
+  header{ position:sticky; top:0; z-index:10; background:#fff; border-bottom:2px solid var(--green); padding:14px 20px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  .htop{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  h1{ font-size:19px; margin:0; }
+  h1 small{ color:var(--mut); font-weight:500; font-size:13px; display:block; margin-top:2px; }
+  .meters{ display:flex; align-items:center; gap:18px; }
+  .meter{ text-align:center; }
+  .meter b{ font-size:20px; color:var(--green); display:block; }
+  .meter span{ font-size:11px; color:var(--mut); text-transform:uppercase; letter-spacing:.04em; }
+  .timer{ font-variant-numeric:tabular-nums; font-size:22px; font-weight:700; color:var(--ink); }
+  .btn{ border:1px solid var(--line); background:#fff; border-radius:8px; padding:6px 12px; font-size:13px; cursor:pointer; }
+  .btn:hover{ background:#f0f0f0; }
+  .btn.red{ background:var(--green); color:#fff; border-color:var(--green); }
+  main{ max-width:920px; margin:0 auto; padding:24px 20px 80px; }
+  .lead{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-bottom:22px; }
+  section{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:18px 20px; margin-bottom:18px; }
+  section h2{ font-size:16px; margin:0 0 4px; display:flex; align-items:center; gap:8px; }
+  section .why{ color:var(--mut); font-size:13px; margin:0 0 12px; }
+  .open{ display:inline-block; background:var(--ink); color:#fff; text-decoration:none; padding:8px 14px; border-radius:8px; font-size:13px; font-weight:600; margin-bottom:12px; }
+  .open:hover{ background:#000; }
+  .url{ font-family:ui-monospace,Menlo,monospace; font-size:12px; color:var(--mut); margin-left:10px; }
+  code{ font-family:ui-monospace,Menlo,monospace; font-size:12px; background:#f3f4f6; border:1px solid var(--line); border-radius:5px; padding:1px 5px; }
+  ol.steps{ margin:0; padding:0; list-style:none; }
+  ol.steps li{ display:flex; gap:10px; padding:8px 0; border-top:1px dashed var(--line); align-items:flex-start; }
+  ol.steps li:first-child{ border-top:none; }
+  .verdict{ display:flex; gap:4px; flex:none; margin-top:1px; }
+  .vbtn{ border:1px solid var(--line); background:#fff; border-radius:7px; padding:4px 8px; font-size:11px; font-weight:700; cursor:pointer; color:var(--mut); letter-spacing:.02em; white-space:nowrap; }
+  .vbtn:hover{ background:#f6f6f6; }
+  .vbtn.v-pass.on{ background:#059669; border-color:#059669; color:#fff; }
+  .vbtn.v-fail.on{ background:#C0392B; border-color:#C0392B; color:#fff; }
+  .vbtn.v-issue.on{ background:#d97706; border-color:#d97706; color:#fff; }
+  @media (max-width:600px){ .vbtn{ padding:4px 6px; font-size:10px; } ol.steps li{ flex-wrap:wrap; } }
+  .step-body{ flex:1; min-width:220px; }
+  .exp{ color:var(--ok); font-size:12.5px; }
+  .exp::before{ content:"✓ expect: "; font-weight:600; }
+  textarea{ width:100%; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font:inherit; font-size:13px; margin-top:10px; resize:vertical; min-height:54px; }
+  textarea.step-cm{ margin-top:0; min-height:32px; font-size:12.5px; background:#fcfcfd; flex:1; }
+  .step-extra{ margin-top:8px; }
+  .cm-row{ display:flex; gap:6px; align-items:flex-start; }
+  .mic-btn{ border:1px solid var(--line); background:#fff; border-radius:8px; padding:4px 9px; cursor:pointer; font-size:15px; flex:none; }
+  .mic-btn.on{ background:#fde8e6; border-color:var(--red); color:var(--red); animation:pulse 1s infinite; }
+  @keyframes pulse{ 50%{ opacity:.45 } }
+  .shot-zone{ margin-top:6px; border:1.5px dashed var(--line); border-radius:8px; padding:8px 10px; font-size:12px; color:var(--mut); cursor:pointer; background:#fafafa; }
+  .shot-zone:focus, .shot-zone.drag{ outline:none; border-color:var(--green); background:#f6faf7; color:var(--ink); }
+  .thumbs{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+  .thumbs .sh{ position:relative; }
+  .thumbs img{ height:66px; border-radius:6px; border:1px solid var(--line); cursor:zoom-in; display:block; }
+  .thumbs .rm{ position:absolute; top:-7px; right:-7px; background:var(--red); color:#fff; border:none; border-radius:99px; width:19px; height:19px; font-size:11px; cursor:pointer; line-height:1; }
+  .hidden{ display:none; }
+  label.cm{ font-size:11px; color:var(--mut); text-transform:uppercase; letter-spacing:.04em; }
+  .tag{ font-size:11px; font-weight:700; padding:2px 8px; border-radius:99px; background:#dcfce7; color:#065f46; }
+  .tag.you{ background:#e0edff; color:#1e40af; }
+  .tag.tigs{ background:#fde8e6; color:var(--dark); }
+  .handoff{ border:1px solid var(--gold); background:#fbf6e9; border-radius:10px; padding:10px 13px; margin:8px 0; font-size:13px; }
+  footer{ text-align:center; color:var(--mut); font-size:12px; padding:20px; }
+  @media print{ header{ position:static; } .btn,.open{ display:none; } body{ background:#fff; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="htop">
+    <h1>🛡️ Backup Hardening — Setup Runbook<small>Two last pieces: an ALARM (never fail silently) + a RESTORE KEY (recover from B2)</small><small style="color:#1b4332;font-weight:700;letter-spacing:.05em">🐺 La Piazza · № LP-UAT-20260719-BACKUP-HARDEN · rev.1 · registered</small></h1>
+    <div class="meters">
+      <div class="meter"><b id="prog">0/0</b><span>done</span></div>
+      <div class="meter"><b id="tally" style="font-size:15px">✓0 ✗0 ⚠0</b><span>ok / stuck / note</span></div>
+      <div class="meter"><span class="timer" id="clock">00:00</span><span>elapsed</span></div>
+      <button class="btn" id="startBtn" onclick="toggleTimer()">▶ Start</button>
+      <button class="btn" onclick="resetTimer()">reset</button>
+      <button class="btn" onclick="copyReport()">⧉ Copy text</button>
+      <button class="btn red" onclick="exportReport()">⬇ Export report</button>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="lead">
+    <strong>What you're doing:</strong> the database backups already run on Hetzner at <b>3am, every night</b>, with
+    zero dependency on this laptop — dump → encrypt → self-verify restore → 30-day keep → <b>immutable copy to Backblaze B2</b>.
+    This runbook bolts on the last two things that make it bullet-proof:
+    <br><br>
+    🔔 <b>An alarm</b> (healthchecks.io "dead-man's-switch") that screams to your email/Telegram the moment a backup
+    <em>silently</em> fails or the box goes dark. &nbsp; 🔑 <b>A restore key</b> stored in KeePass so you can actually
+    pull a backup <em>out</em> of B2 in a disaster (the box's key is write-only — it can save but not restore).
+    <br><br>
+    <span class="tag you">🧍 YOU do the clicks</span> <span class="tag tigs">🐯 TIGS wires the box + fires the test</span>
+    <span class="tag">SETUP — do it once</span>
+    <div class="handoff">🎯 <b>The one handoff:</b> at the end of Part 1 you copy a <b>Ping URL</b> and give it to Tigs. That's the only thing Tigs needs — everything else you keep (the read-key goes straight into KeePass, never into chat).</div>
+  </div>
+
+  <!-- PART 1 -->
+  <section>
+    <h2>1 · The alarm — healthchecks.io <span class="tag you">you</span></h2>
+    <p class="why">A "dead-man's-switch": the box pings this URL every night when the backup succeeds. If a ping ever <b>doesn't</b> arrive (backup failed, box down, cron gone) — it alerts you. That's the only thing that catches a <em>silent</em> failure.</p>
+    <a class="open" href="https://healthchecks.io" target="_blank">Open healthchecks.io ↗</a>
+    <span class="url">healthchecks.io — free, 20 checks</span>
+    <ol class="steps" data-sec="hc">
+      <li><div class="step-body"><strong>Sign up</strong> at healthchecks.io (email, Google, or GitHub — free). <span class="exp">you land on the <b>My Checks</b> dashboard</span></div></li>
+      <li><div class="step-body">Click <strong>Add Check</strong>. Rename it (pencil icon) to <code>banco-nightly-backup</code>. <span class="exp">a check card appears with a unique <b>Ping URL</b> like <code>https://hc-ping.com/xxxxxxxx</code></span></div></li>
+      <li><div class="step-body">Open the check → <strong>Schedule</strong> → set <b>Period = 1 day</b>, <b>Grace = 2 hours</b>. Save. <span class="exp">reads "expected every 1 day, grace 2 h" — backup runs 3am, so if no ping by ~5am it alarms</span></div></li>
+      <li><div class="step-body">Go to <strong>Integrations</strong> → add <b>Email</b> (and/or <b>Telegram</b>: click Telegram → open the bot link → <code>/start</code> → connect your chat). Hit <b>Send Test Notification</b>. <span class="exp">a test alert lands in your inbox / Telegram — confirms the alarm can reach you</span></div></li>
+      <li><div class="step-body"><strong>Copy the check's Ping URL</strong> (the <code>https://hc-ping.com/…</code> one). <span class="exp">it's on your clipboard</span></div></li>
+      <li><div class="step-body"><strong>Test it yourself:</strong> in a terminal run <code>curl «your ping URL»</code>. <span class="exp">the check flips to <b>green / "up"</b> on the dashboard within seconds — you just proved the ping works</span></div></li>
+      <li><div class="step-body">🎯 <strong>Hand the Ping URL to Tigs</strong> (paste it in chat — a ping URL is low-risk; worst case someone could only <em>suppress</em> an alarm, never read data). <span class="exp">Tigs wires the box's 3am job to ping it on success and <code>/fail</code> on failure</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="hc" placeholder="Signed up? Check made? Test alert received? Ping URL handed over?"></textarea>
+  </section>
+
+  <!-- PART 2 -->
+  <section>
+    <h2>2 · The restore key — B2 read-only <span class="tag you">you</span></h2>
+    <p class="why">The box uploads with a <b>write-only</b> key (can save, can't read — good). But to <em>restore</em> in a disaster you need a <b>read</b> key, and it belongs in KeePass, not on any server.</p>
+    <a class="open" href="https://secure.backblaze.com/app_keys.htm" target="_blank">Open B2 → Application Keys ↗</a>
+    <span class="url">secure.backblaze.com → Application Keys</span>
+    <ol class="steps" data-sec="rk">
+      <li><div class="step-body"><strong>Add a New Application Key</strong>. <span class="exp">the key-creation form opens</span></div></li>
+      <li><div class="step-body">Name <code>banco-restore-readonly</code>; <b>Allow access to Bucket(s)</b> = <code>ecolution-banco-backups</code> (scope it); <b>Type of Access = Read Only</b>. Create. <span class="exp">it shows a <b>keyID</b> and an <b>applicationKey</b> — the applicationKey appears <u>only once</u></span></div></li>
+      <li><div class="step-body"><strong>Save both into KeePass</strong> as a new entry: <code>B2 banco restore (read-only)</code> — keyID in the username field, applicationKey in the password field. <span class="exp">saved in your kdbx (which syncs to Drive) — the restore key now lives where DR expects it</span></div></li>
+      <li><div class="step-body">(Optional, with Tigs) <strong>prove it reads:</strong> use the read-key to download the newest B2 blob. <span class="exp">it downloads + decrypts — the offsite copy is provably recoverable by you</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="rk" placeholder="Read-only key made, scoped to the bucket, and saved in KeePass?"></textarea>
+  </section>
+
+  <!-- PART 3 -->
+  <section>
+    <h2>3 · Your KeePass recovery key-ring is complete <span class="tag you">you — 30-sec check</span></h2>
+    <p class="why">The "can I actually recover?" checklist. These four together = a full restore, even if this laptop is gone.</p>
+    <ol class="steps" data-sec="ring">
+      <li><div class="step-body"><strong>KeePass master password</strong> — in your head (unlocks the whole kdbx). <span class="exp">you know it — this is the one thing that isn't written down anywhere</span></div></li>
+      <li><div class="step-body"><strong>GPG backup passphrase</strong> — decrypts the <code>.gpg</code> blobs (the box's <code>/root/.banco-backup-key</code>). <span class="exp">already an entry in KeePass (you decrypted with it on 2026-07-01)</span></div></li>
+      <li><div class="step-body"><strong>B2 restore read-key</strong> — just added in Part 2. <span class="exp">present in KeePass</span></div></li>
+      <li><div class="step-body"><strong>B2 master key</strong> — your admin record. <span class="exp">saved in KeePass (or you can regenerate it in the B2 console anytime)</span></div></li>
+    </ol>
+    <div class="handoff">🧭 <b>The whole recovery, in one line:</b> unlock KeePass → grab the read-key → download the newest blob from B2 → decrypt with the GPG passphrase → restore into Postgres. Nothing on this laptop is required.</div>
+    <label class="cm">notes</label><textarea data-cm="ring" placeholder="All four present? Any gap to fill?"></textarea>
+  </section>
+
+  <!-- PART 4 -->
+  <section>
+    <h2>4 · Tigs wires it + we fire a LIVE test <span class="tag tigs">tigs, after your handoff</span></h2>
+    <p class="why">The proof. A backup alarm you haven't watched fire is just a hope.</p>
+    <ol class="steps" data-sec="test">
+      <li><div class="step-body">You gave Tigs the Ping URL → Tigs adds it to the box's <code>banco_backup.sh</code>: ping on success, <code>/fail</code> on any error. <span class="exp">Tigs confirms the hook is in + the nightly job will ping from tonight</span></div></li>
+      <li><div class="step-body"><strong>Live success test:</strong> Tigs runs the backup once by hand. <span class="exp">the healthchecks dashboard shows a fresh ping + the check is green "up"</span></div></li>
+      <li><div class="step-body"><strong>Live FAILURE test:</strong> Tigs simulates a failed backup (e.g. bad key path). <span class="exp">within the grace window you get a <b>real alert</b> (email/Telegram) — this is the whole point, watch it fire</span></div></li>
+      <li><div class="step-body"><strong>Restore proof:</strong> Tigs (or you) uses the read-key to pull today's blob from B2 and decrypt it. <span class="exp">it restores — end-to-end, offsite copy is genuinely recoverable</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="test" placeholder="Success ping seen? Failure alert actually arrived? Restore from B2 worked?"></textarea>
+  </section>
+
+  <!-- OVERALL -->
+  <section>
+    <h2>★ Done when</h2>
+    <ol class="steps" data-sec="verdict">
+      <li><div class="step-body"><strong>Alarm is live and you watched a test alert arrive</strong> — a silent failure can never happen again.</div></li>
+      <li><div class="step-body"><strong>Restore read-key is in KeePass + the key-ring is complete</strong> — you can recover from B2 with nothing but your KeePass password.</div></li>
+    </ol>
+    <label class="cm">the big notes — anything unclear, anything to change?</label>
+    <textarea data-cm="verdict" placeholder="Your call, Wolf." style="min-height:90px"></textarea>
+  </section>
+
+  <footer>
+    <div style="border-top:2px solid #1b4332;max-width:920px;margin:0 auto;padding-top:10px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:11px">
+      <span><strong style="color:#1b4332">🐺 La Piazza · Banco</strong> · Backup Hardening Setup · registered artifact</span>
+      <span style="font-variant-numeric:tabular-nums">№ LP-UAT-20260719-BACKUP-HARDEN · rev.1 · 2026-07-19</span>
+    </div>
+    <div style="margin-top:6px">One sheet — screen or print. You click, Tigs wires, we test it together. 🐺</div>
+  </footer>
+</main>
+
+<script>
+  const KEY='backup_harden_runbook';
+  const STEPS=[];
+  const VDEFS=[['pass','DONE','✓'],['fail','STUCK','✗'],['issue','NOTE','⚠']];
+  const VMARK={pass:'[DONE]',fail:'[STUCK]',issue:'[NOTE]','':'[ -- ]'};
+  function vMark(v){ return v==='pass'?'<span class="ok">✓ DONE</span>' : v==='fail'?'<span style="color:#C0392B;font-weight:700">✗ STUCK</span>' : v==='issue'?'<span style="color:#b45309;font-weight:700">⚠ NOTE</span>' : '<span class="no">○ —</span>'; }
+
+  function verdictControl(i){
+    const box=document.createElement('div'); box.className='verdict';
+    VDEFS.forEach(([v,lbl,ic])=>{ const b=document.createElement('button'); b.type='button';
+      b.className='vbtn v-'+v; b.innerHTML=ic+' '+lbl; b.title=lbl;
+      b.addEventListener('click', ()=>setVerdict(i, STEPS[i].verdict===v ? '' : v));
+      box.appendChild(b); STEPS[i]._btns[v]=b; });
+    return box;
+  }
+  function paintVerdict(i){ const s=STEPS[i]; VDEFS.forEach(([v])=>{ const b=s._btns[v]; if(b) b.classList.toggle('on', s.verdict===v); }); }
+  function setVerdict(i,v){ STEPS[i].verdict=v; paintVerdict(i); save(); progress(); }
+
+  function buildSteps(){
+    document.querySelectorAll('ol.steps li').forEach((li,i)=>{
+      const cb = li.querySelector('input[type=checkbox]'); if(cb) cb.remove();
+      const bodyEl = li.querySelector('.step-body');
+      const label = (bodyEl?.textContent||'').trim().replace(/\s+/g,' ');
+      STEPS[i]={ li, label, verdict:'', ta:null, thumbs:null, shots:[], _btns:{} };
+      li.insertBefore(verdictControl(i), li.firstChild);
+      const wrap = document.createElement('div'); wrap.className='step-extra';
+      const row = document.createElement('div'); row.className='cm-row';
+      const ta = document.createElement('textarea'); ta.className='step-cm'; ta.rows=1; ta.placeholder='note… (type or 🎤 speak)';
+      ta.addEventListener('input', save);
+      const mic = document.createElement('button'); mic.className='mic-btn'; mic.type='button'; mic.textContent='🎤'; mic.title='Dictate this note';
+      mic.addEventListener('click', ()=>micToggle(mic, ta));
+      row.appendChild(ta); row.appendChild(mic); wrap.appendChild(row);
+      const zone = document.createElement('div'); zone.className='shot-zone'; zone.tabIndex=0;
+      zone.textContent='📋 click here & paste a screenshot (Ctrl+V) · drop an image · or 📷 pick a file';
+      const fin = document.createElement('input'); fin.type='file'; fin.accept='image/*'; fin.capture='environment'; fin.className='hidden';
+      zone.addEventListener('click', ()=>{ activeIdx=i; fin.click(); });
+      zone.addEventListener('focus', ()=>{ activeIdx=i; });
+      zone.addEventListener('dragover', e=>{ e.preventDefault(); zone.classList.add('drag'); });
+      zone.addEventListener('dragleave', ()=>zone.classList.remove('drag'));
+      zone.addEventListener('drop', e=>{ e.preventDefault(); zone.classList.remove('drag'); activeIdx=i;
+        [...(e.dataTransfer.files||[])].forEach(f=>{ if(f.type.startsWith('image/')) addShot(i,f); }); });
+      fin.addEventListener('change', e=>{ [...(e.target.files||[])].forEach(f=>addShot(i,f)); e.target.value=''; });
+      const thumbs = document.createElement('div'); thumbs.className='thumbs';
+      wrap.appendChild(zone); wrap.appendChild(fin); wrap.appendChild(thumbs);
+      bodyEl.appendChild(wrap);
+      STEPS[i].ta=ta; STEPS[i].thumbs=thumbs;
+    });
+  }
+
+  let activeIdx=null;
+  document.addEventListener('paste', e=>{ if(activeIdx==null) return; const items=(e.clipboardData||{}).items||[];
+    for(const it of items){ if(it.type && it.type.startsWith('image/')){ const f=it.getAsFile(); if(f){ addShot(activeIdx,f); e.preventDefault(); } } } });
+  function downscale(file, cb){ const url=URL.createObjectURL(file); const img=new Image();
+    img.onload=()=>{ const max=1000; let w=img.width,h=img.height; if(w>max){ h=Math.round(h*max/w); w=max; }
+      const c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(url); try{ cb(c.toDataURL('image/jpeg',0.6)); }catch(e){ cb(null); } };
+    img.onerror=()=>{ URL.revokeObjectURL(url); cb(null); }; img.src=url; }
+  function addShot(i,file){ downscale(file, data=>{ if(!data) return; STEPS[i].shots.push({name:file.name||'screenshot.png', data}); renderThumbs(i); save(); }); }
+  function renderThumbs(i){ const t=STEPS[i].thumbs; t.innerHTML='';
+    STEPS[i].shots.forEach((sh,si)=>{ const d=document.createElement('div'); d.className='sh';
+      const im=document.createElement('img'); im.src=sh.data; im.title=sh.name; im.onclick=()=>{ const w=window.open(); if(w) w.document.write('<img src="'+sh.data+'" style="max-width:100%">'); };
+      const rm=document.createElement('button'); rm.className='rm'; rm.textContent='✕'; rm.title='remove'; rm.onclick=()=>{ STEPS[i].shots.splice(si,1); renderThumbs(i); save(); };
+      d.appendChild(im); d.appendChild(rm); t.appendChild(d); }); }
+
+  function save(){ const d={verdict:[],note:[],shots:[],cm:{},seconds};
+    STEPS.forEach((s,i)=>{ d.verdict[i]=s.verdict||''; d.note[i]=s.ta.value; d.shots[i]=s.shots; });
+    document.querySelectorAll('textarea[data-cm]').forEach(t=>d.cm[t.dataset.cm]=t.value);
+    try{ localStorage.setItem(KEY,JSON.stringify(d)); }catch(e){ console.warn('storage full', e); } }
+  function restore(){ try{ const d=JSON.parse(localStorage.getItem(KEY)||'{}');
+    STEPS.forEach((s,i)=>{ if(d.verdict&&d.verdict[i]){ s.verdict=d.verdict[i]; paintVerdict(i); } if(d.note&&d.note[i]!=null) s.ta.value=d.note[i];
+      if(d.shots&&Array.isArray(d.shots[i])){ s.shots=d.shots[i]; renderThumbs(i); } });
+    if(d.cm) document.querySelectorAll('textarea[data-cm]').forEach(t=>{ if(d.cm[t.dataset.cm]!=null) t.value=d.cm[t.dataset.cm]; });
+    if(typeof d.seconds==='number'){ seconds=d.seconds; paintClock(); } }catch(e){} }
+  function progress(){ let p=0,f=0,iss=0,dec=0;
+    STEPS.forEach(s=>{ if(s.verdict){ dec++; if(s.verdict==='pass')p++; else if(s.verdict==='fail')f++; else iss++; } });
+    document.getElementById('prog').textContent=dec+'/'+STEPS.length;
+    const tly=document.getElementById('tally'); if(tly) tly.textContent='✓'+p+' ✗'+f+' ⚠'+iss; }
+
+  let seconds=0, timer=null;
+  function paintClock(){ const m=String(Math.floor(seconds/60)).padStart(2,'0'), s=String(seconds%60).padStart(2,'0'); document.getElementById('clock').textContent=m+':'+s; }
+  function toggleTimer(){ const b=document.getElementById('startBtn');
+    if(timer){ clearInterval(timer); timer=null; b.textContent='▶ Resume'; }
+    else { timer=setInterval(()=>{ seconds++; paintClock(); if(seconds%10===0) save(); },1000); b.textContent='⏸ Pause'; } }
+  function resetTimer(){ if(timer){ clearInterval(timer); timer=null; } seconds=0; paintClock(); document.getElementById('startBtn').textContent='▶ Start'; save(); }
+
+  let rec=null;
+  function micToggle(btn, ta){
+    if(rec){ rec.stop(); return; }
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){ alert('Voice notes need Chrome.'); return; }
+    rec=new SR(); rec.lang='en-US'; rec.continuous=true; rec.interimResults=true;
+    let base=ta.value?ta.value.trim()+' ':'';
+    btn.classList.add('on');
+    rec.onresult=e=>{ let fin='',int=''; for(let k=e.resultIndex;k<e.results.length;k++){ const t=e.results[k][0].transcript; if(e.results[k].isFinal) fin+=t; else int+=t; }
+      if(fin) base+=fin+' '; ta.value=(base+int).replace(/\s+/g,' ').trimStart(); save(); };
+    rec.onerror=()=>{}; rec.onend=()=>{ btn.classList.remove('on'); rec=null; };
+    try{ rec.start(); }catch(e){ btn.classList.remove('on'); rec=null; }
+  }
+
+  function copyReport(){ let out='BACKUP HARDENING — SETUP REPORT (№ LP-UAT-20260719-BACKUP-HARDEN)\n'+document.getElementById('prog').textContent+' done · '+document.getElementById('tally').textContent+' · '+document.getElementById('clock').textContent+' elapsed\n\n';
+    document.querySelectorAll('section').forEach(sec=>{ const h=sec.querySelector('h2'); if(!h) return; out+='## '+h.textContent.trim()+'\n';
+      sec.querySelectorAll('ol.steps li').forEach(li=>{ const idx=STEPS.findIndex(s=>s.li===li); const s=STEPS[idx]||{};
+        out+=(VMARK[s.verdict||'']||'[ -- ]')+' '+(s.label||'')+'\n';
+        if(s.ta&&s.ta.value.trim()) out+='     note: '+s.ta.value.trim()+'\n';
+        if(s.shots&&s.shots.length) out+='     📷 '+s.shots.length+' screenshot(s) (see exported report)\n'; });
+      const t=sec.querySelector('textarea[data-cm]'); if(t&&t.value.trim()) out+='   section notes: '+t.value.trim()+'\n'; out+='\n'; });
+    navigator.clipboard.writeText(out).then(()=>alert('Text report copied. (Use Export for screenshots.)')).catch(()=>prompt('Copy this:',out)); }
+
+  function exportReport(){ const esc=s=>(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+    let h='<!doctype html><meta charset=utf-8><title>Backup Hardening — setup report</title>'+
+      '<style>body{font-family:system-ui,Arial;max-width:820px;margin:24px auto;padding:0 16px;color:#1f2937}h2{border-bottom:2px solid #1b4332;padding-bottom:4px;margin-top:28px}li{margin:10px 0;list-style:none}.ok{color:#059669;font-weight:700}.no{color:#9ca3af}.n{color:#374151;font-size:14px;margin:4px 0 0 24px}img{max-width:320px;display:block;margin:6px 0 0 24px;border:1px solid #ddd;border-radius:6px}.h{color:#6b7280;font-size:13px}</style>';
+    h+='<h1>🛡️ Backup Hardening — setup report</h1><p class=h>№ LP-UAT-20260719-BACKUP-HARDEN · '+document.getElementById('prog').textContent+' done · '+document.getElementById('tally').textContent+' · '+document.getElementById('clock').textContent+' elapsed · '+new Date().toLocaleString()+'</p>';
+    document.querySelectorAll('section').forEach(sec=>{ const ttl=sec.querySelector('h2'); if(!ttl) return; h+='<h2>'+esc(ttl.textContent.trim())+'</h2><ul>';
+      sec.querySelectorAll('ol.steps li').forEach(li=>{ const s=STEPS[STEPS.findIndex(x=>x.li===li)]||{};
+        h+='<li>'+vMark(s.verdict)+' '+esc(s.label||'');
+        if(s.ta&&s.ta.value.trim()) h+='<div class=n>📝 '+esc(s.ta.value.trim())+'</div>';
+        (s.shots||[]).forEach(sh=>{ h+='<img src="'+sh.data+'" alt="'+esc(sh.name)+'">'; }); h+='</li>'; });
+      const t=sec.querySelector('textarea[data-cm]'); if(t&&t.value.trim()) h+='<li class=n>📝 '+esc(t.value.trim())+'</li>'; h+='</ul>'; });
+    const blob=new Blob([h],{type:'text/html'}); const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='backup-hardening-report.html'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); }
+
+  buildSteps(); restore(); progress(); paintClock();
+</script>
+</body>
+</html>
