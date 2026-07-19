@@ -6593,7 +6593,7 @@ async def audit_feed(
     limit: int = 40, offset: int = 0,
     entity_type: Optional[str] = None, actor: Optional[str] = None,
     action: Optional[str] = None, entity_id: Optional[str] = None,
-    q: Optional[str] = None,
+    q: Optional[str] = None, since: Optional[str] = None, until: Optional[str] = None,
     db: AsyncSession = Depends(get_db_session),
     current_user: dict = Depends(require_roles(["👔️ pos-manager", "👑️ pos-admin"])),
 ):
@@ -6605,7 +6605,8 @@ async def audit_feed(
     lim = max(1, min(int(limit or 40), 200))
     params = {"lim": lim, "off": max(0, int(offset or 0)),
               "et": entity_type or None, "ac": actor or None, "act": action or None,
-              "eid": entity_id or None, "q": (f"%{q}%" if q else None)}
+              "eid": entity_id or None, "q": (f"%{q}%" if q else None),
+              "since": since or None, "until": until or None}
     rows = (await db.execute(text("""
         SELECT a.id, a.changed_at, a.changed_by, a.action, a.entity_type, a.entity_id, a.changes,
                COALESCE(pr.name, su.name,
@@ -6618,6 +6619,8 @@ async def audit_feed(
           AND (CAST(:act AS text) IS NULL OR a.action      = :act)
           AND (CAST(:eid AS text) IS NULL OR a.entity_id   = :eid)
           AND (CAST(:q   AS text) IS NULL OR a.changed_by ILIKE :q OR a.entity_type ILIKE :q OR a.changes::text ILIKE :q)
+          AND (CAST(:since AS timestamptz) IS NULL OR a.changed_at >= CAST(:since AS timestamptz))
+          AND (CAST(:until AS timestamptz) IS NULL OR a.changed_at <= CAST(:until AS timestamptz))
         ORDER BY a.id DESC
         LIMIT :lim OFFSET :off
     """), params)).mappings().all()

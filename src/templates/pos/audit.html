@@ -48,6 +48,17 @@
           </button>
         </template>
       </div>
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="text-[11px] font-bold text-gray-400 uppercase">When</span>
+        <input type="datetime-local" x-model="f.since" @change="load()" class="input-field text-xs" style="width:auto">
+        <span class="text-gray-400 text-xs">→</span>
+        <input type="datetime-local" x-model="f.until" @change="load()" class="input-field text-xs" style="width:auto">
+        <button @click="preset('hour')" class="chip">Last hour</button>
+        <button @click="preset('today')" class="chip">Today</button>
+        <button @click="preset('yday')" class="chip">Yesterday</button>
+        <button @click="preset('ydaylunch')" class="chip">🍽️ Yest. 13–14</button>
+        <button @click="f.since='';f.until='';load()" class="chip" x-show="f.since||f.until" style="display:none">✕ time</button>
+      </div>
       <div>
         <input type="text" x-model="f.q" @input.debounce.400ms="load()" placeholder="🔎 search a name, field, value, user…"
                class="input-field w-full text-sm">
@@ -68,7 +79,7 @@
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-[11px] font-bold px-2 py-0.5 rounded-full border" :class="badge(it.action)" x-text="actionEmoji(it.action)+' '+actionWord(it.action)"></span>
                 <span class="font-semibold text-gray-900 truncate" x-text="it.label || (entityLabel(it.entity_type))"></span>
-                <span class="text-[11px] text-gray-400" x-text="entityLabel(it.entity_type)"></span>
+                <span class="text-[11px] text-gray-400" x-show="it.label" x-text="entityLabel(it.entity_type)"></span>
               </div>
               <div class="text-xs text-gray-500 mt-1">
                 <span x-text="(it.who==='system'?'🤖 ':'👤 ')+it.who"></span>
@@ -139,7 +150,7 @@ function auditData() {
   return {
     items: [], total: 0, act: {}, actors: [], entityTypes: [],
     loading: false, loadingMore: false,
-    f: { entity_type: '', actor: '', action: '', entity_id: '', q: '' },
+    f: { entity_type: '', actor: '', action: '', entity_id: '', q: '', since: '', until: '' },
     init() {
       const u = AuthHelper.getUserInfo();
       if (!u) { window.location.href = '/pos'; return; }
@@ -152,7 +163,24 @@ function auditData() {
     qs(extra) {
       const p = new URLSearchParams({ limit: 40, offset: 0, ...extra });
       ['entity_type','actor','action','entity_id','q'].forEach(k => { if (this.f[k]) p.set(k, this.f[k]); });
+      // datetime-local is LOCAL; convert to a UTC ISO instant the server can compare
+      if (this.f.since) { try { p.set('since', new Date(this.f.since).toISOString()); } catch(e){} }
+      if (this.f.until) { try { p.set('until', new Date(this.f.until).toISOString()); } catch(e){} }
       return p.toString();
+    },
+    // quick time windows. L() formats a Date as a datetime-local string (the inputs).
+    preset(k) {
+      const now = new Date();
+      const L = d => { const z = n => String(n).padStart(2,'0');
+        return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`; };
+      const sod = d => { const x = new Date(d); x.setHours(0,0,0,0); return x; };
+      if (k === 'hour')      { this.f.since = L(new Date(now.getTime()-3600e3)); this.f.until = ''; }
+      else if (k === 'today'){ this.f.since = L(sod(now)); this.f.until = ''; }
+      else if (k === 'yday') { const y = new Date(now.getTime()-86400e3); this.f.since = L(sod(y)); this.f.until = L(new Date(sod(now).getTime()-60000)); }
+      else if (k === 'ydaylunch') { const y = sod(new Date(now.getTime()-86400e3));
+        const s = new Date(y); s.setHours(13,0,0,0); const e = new Date(y); e.setHours(14,0,0,0);
+        this.f.since = L(s); this.f.until = L(e); }
+      this.load();
     },
     async load() {
       this.loading = true;
@@ -178,8 +206,8 @@ function auditData() {
     toggleActor(a) { this.f.actor = (this.f.actor === a) ? '' : a; this.load(); },
     toggleAction(a) { this.f.action = (this.f.action === a) ? '' : a; this.load(); },
     onlyThis(it) { this.f.entity_id = it.entity_id; this.f.entity_type = ''; this.f.actor = ''; this.f.action = ''; this.f.q = ''; this.load(); window.scrollTo({top:0,behavior:'smooth'}); },
-    hasFilter() { return !!(this.f.entity_type || this.f.actor || this.f.action || this.f.entity_id || this.f.q); },
-    reset() { this.f = { entity_type: '', actor: '', action: '', entity_id: '', q: '' }; this.load(); },
+    hasFilter() { return !!(this.f.entity_type || this.f.actor || this.f.action || this.f.entity_id || this.f.q || this.f.since || this.f.until); },
+    reset() { this.f = { entity_type: '', actor: '', action: '', entity_id: '', q: '', since: '', until: '' }; this.load(); },
     entityEmoji(t) { return ({products:'📦',transactions:'💰',cash_shifts:'🧾',suppliers:'🏭',store_settings:'⚙️'})[t] || '🗂️'; },
     entityLabel(t) { return ({products:'Product',transactions:'Sale',cash_shifts:'Closeout',suppliers:'Supplier',store_settings:'Settings'})[t] || t; },
     actionEmoji(a) { return ({INSERT:'➕',UPDATE:'✏️',DELETE:'🗑️'})[a] || '•'; },
