@@ -60,11 +60,37 @@
       <div x-show="showRange" style="display:none" class="flex items-end gap-4 flex-wrap bg-gray-50 rounded-lg p-3 border border-gray-100">
         <div>
           <label class="text-[11px] font-bold text-gray-400 uppercase block mb-1">From</label>
-          <div class="flex gap-1"><input type="date" x-model="r.fromD" class="input-field text-xs" style="width:auto"><input type="time" x-model="r.fromT" class="input-field text-xs" style="width:auto"></div>
+          <div class="flex gap-1 items-center">
+            <input type="date" x-model="r.fromD" class="input-field text-xs" style="width:auto">
+            <div class="relative" x-data="{o:false}">
+              <button type="button" @click="o=!o" class="input-field text-xs text-left flex items-center gap-1" style="width:96px">
+                🕐 <span x-text="r.fromT || 'any'"></span>
+              </button>
+              <div x-show="o" @click.outside="o=false" x-transition.opacity style="display:none" class="absolute z-30 mt-1 left-0 bg-white border border-gray-200 rounded-xl shadow-xl max-h-56 overflow-y-auto w-28">
+                <button type="button" @click="r.fromT='';o=false" class="block w-full text-left px-3 py-1.5 text-xs hover:bg-gray-100" :class="!r.fromT?'bg-indigo-50 text-indigo-700 font-bold':''">any time</button>
+                <template x-for="t in timeSlots" :key="'f'+t">
+                  <button type="button" @click="r.fromT=t;o=false" class="block w-full text-left px-3 py-1.5 text-xs transition" :class="r.fromT===t?'bg-indigo-600 text-white font-bold':'hover:bg-indigo-50'" x-text="t"></button>
+                </template>
+              </div>
+            </div>
+          </div>
         </div>
         <div>
           <label class="text-[11px] font-bold text-gray-400 uppercase block mb-1">To</label>
-          <div class="flex gap-1"><input type="date" x-model="r.toD" class="input-field text-xs" style="width:auto"><input type="time" x-model="r.toT" class="input-field text-xs" style="width:auto"></div>
+          <div class="flex gap-1 items-center">
+            <input type="date" x-model="r.toD" class="input-field text-xs" style="width:auto">
+            <div class="relative" x-data="{o:false}">
+              <button type="button" @click="o=!o" class="input-field text-xs text-left flex items-center gap-1" style="width:96px">
+                🕐 <span x-text="r.toT || 'any'"></span>
+              </button>
+              <div x-show="o" @click.outside="o=false" x-transition.opacity style="display:none" class="absolute z-30 mt-1 left-0 bg-white border border-gray-200 rounded-xl shadow-xl max-h-56 overflow-y-auto w-28">
+                <button type="button" @click="r.toT='';o=false" class="block w-full text-left px-3 py-1.5 text-xs hover:bg-gray-100" :class="!r.toT?'bg-indigo-50 text-indigo-700 font-bold':''">any time</button>
+                <template x-for="t in timeSlots" :key="'t'+t">
+                  <button type="button" @click="r.toT=t;o=false" class="block w-full text-left px-3 py-1.5 text-xs transition" :class="r.toT===t?'bg-indigo-600 text-white font-bold':'hover:bg-indigo-50'" x-text="t"></button>
+                </template>
+              </div>
+            </div>
+          </div>
         </div>
         <button @click="applyRange()" class="btn-primary text-sm">Apply window</button>
         <p class="text-[11px] text-gray-400 w-full">Pick a day and, if you like, a start &amp; end time — leave a time blank for the whole day. Then <b>Apply</b>.</p>
@@ -163,9 +189,13 @@ function auditData() {
     f: { entity_type: '', actor: '', action: '', entity_id: '', q: '', since: '', until: '' },
     showRange: false,
     r: { fromD: '', fromT: '', toD: '', toT: '' },
+    timeSlots: [],
     init() {
       const u = AuthHelper.getUserInfo();
       if (!u) { window.location.href = '/pos'; return; }
+      // 15-min slots for the buttery time dropdown (00:00 … 23:45)
+      for (let h = 0; h < 24; h++) for (const m of [0,15,30,45])
+        this.timeSlots.push(String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0'));
       // deep-link: /pos/audit?entity_id=... (from a product's History link)
       const sp = new URLSearchParams(location.search);
       if (sp.get('entity_id')) this.f.entity_id = sp.get('entity_id');
@@ -217,7 +247,7 @@ function auditData() {
         this.act = d.actions || {};
         this.actors = d.actors || [];
         this.entityTypes = d.entity_types || [];
-      } catch (e) { console.error(e); showToast('Could not load the audit log', 'error'); }
+      } catch (e) { console.error(e); if (!this.items.length) showToast('Could not load the audit log', 'error'); }
       finally { this.loading = false; }
     },
     async more() {
