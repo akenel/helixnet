@@ -87,12 +87,13 @@ async def test_same_products_primary_and_own_alias_not_flagged(db_session):
 
 
 @pytest.mark.asyncio
-async def test_stranded_barcode_on_discontinued_product(db_session):
-    # the Tycoon failure mode: a dead row still owns a scan-live code, no active twin shares it
+async def test_stranded_barcode_with_active_same_name_twin_is_flagged(db_session):
+    # the Tycoon shape: a discontinued row still owns a scan-live code while a LIVE row of the
+    # same item exists → scanning it dead-ends at "discontinued" though the shop still sells it
     await _clear(db_session)
     db_session.add_all([
-        _p("Tycoon dupe (discontinued)", barcode="4035687900004", active=False),
-        _p("Something Live", barcode="4001122330011"),
+        _p("Tycoon Gas 250ml", barcode="4035687900004", active=False),   # dead, holds the code
+        _p("Tycoon Gas 250ml", barcode="2000000058511", active=True),    # live twin, same name
     ])
     await db_session.commit()
     res = await barcode_integrity_sweep(db=db_session, current_user=_MGR)
@@ -103,12 +104,27 @@ async def test_stranded_barcode_on_discontinued_product(db_session):
 
 
 @pytest.mark.asyncio
+async def test_discontinued_barcode_with_no_live_twin_is_not_flagged(db_session):
+    # a genuinely-retired item keeping its barcode (no active same-name row) scanning as
+    # "discontinued" is CORRECT — not a trap, must not be flagged (keeps the signal clean)
+    await _clear(db_session)
+    db_session.add_all([
+        _p("Old Retired Thing", barcode="4035687900004", active=False),
+        _p("Unrelated Live", barcode="4001122330011", active=True),
+    ])
+    await db_session.commit()
+    res = await barcode_integrity_sweep(db=db_session, current_user=_MGR)
+    assert _check(res, "stranded_inactive")["count"] == 0
+
+
+@pytest.mark.asyncio
 async def test_collision_not_double_counted_as_stranded(db_session):
     # a code that is a discontinued row's primary AND an active row's alias is a COLLISION
-    # (Check A), NOT also counted as stranded (Check B) — no double-reporting
+    # (Check A), NOT also counted as stranded (Check B) — no double-reporting. Same name on both,
+    # so WITHOUT the collision-exclusion it WOULD show up in stranded — proving the exclusion works.
     await _clear(db_session)
-    dead = _p("Dead twin", barcode="4111222333044", active=False)   # primary on inactive
-    live = _p("Live twin", barcode="4111222555066", active=True)    # different primary
+    dead = _p("Twin Product", barcode="4111222333044", active=False)   # primary on inactive
+    live = _p("Twin Product", barcode="4111222555066", active=True)    # active same-name twin
     db_session.add_all([dead, live])
     await db_session.commit()
     db_session.add(ProductBarcodeModel(product_id=live.id, barcode="4111222333044"))  # alias on live

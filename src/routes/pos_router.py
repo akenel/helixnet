@@ -6541,7 +6541,16 @@ async def barcode_integrity_sweep(
 
     coll_set = set(coll_bcs)
 
-    # --- Check B: a scan-live barcode stranded on a DISCONTINUED product (no active twin) ---
+    # --- Check B: a scan-live barcode stranded on a DISCONTINUED product that has an ACTIVE
+    # same-name twin (the Tycoon shape — the scan dead-ends at "discontinued" while a live
+    # version of the item exists). A discontinued item with NO live twin scanning as
+    # "discontinued" is CORRECT behaviour, not a trap, so it's intentionally not flagged — that
+    # keeps the signal clean (sandbox has 100+ benign discontinued-with-barcode rows). The
+    # fuzzy/renamed-twin case (dead "Tycoon dupe" vs live "Tycoon Gas 250ml") needs the trigram
+    # brand/synonym layer BL-101 is building; exact same-name is the conservative zero-noise slice.
+    active_names = set((await db.execute(
+        select(func.lower(ProductModel.name)).where(ProductModel.is_active.is_(True))
+        .distinct())).scalars().all())
     _ps = select(literal("primary").label("role"), ProductModel.barcode.label("barcode"),
                  ProductModel.sku.label("sku"), ProductModel.name.label("name"),
                  ProductModel.category.label("category"), ProductModel.price.label("price")).where(
@@ -6559,7 +6568,9 @@ async def barcode_integrity_sweep(
     stranded = [{
         "barcode": r.barcode, "sku": r.sku, "name": r.name, "role": r.role,
         "category": r.category, "price": float(r.price) if r.price is not None else None,
-    } for r in stranded_rows if r.barcode not in coll_set]   # collisions live in Check A
+    } for r in stranded_rows
+        if r.barcode not in coll_set                       # collisions live in Check A
+        and (r.name or "").lower() in active_names]        # only trap if a live twin exists
 
     checks = [
         {"key": "collision", "severity": "high",
@@ -6568,9 +6579,9 @@ async def barcode_integrity_sweep(
                  "product the physical code belongs to; remove it from the other.",
          "count": len(collisions), "findings": collisions},
         {"key": "stranded_inactive", "severity": "medium",
-         "label": "Scan-live barcode on a discontinued product",
-         "hint": "Scanning this returns 'discontinued' with no active item to sell — release the "
-                 "code or point it at the live replacement.",
+         "label": "Discontinued row holds a code, but a live item has the same name",
+         "hint": "Scanning this dead-ends at 'discontinued' while an active version exists — move "
+                 "the code onto the live row, or point the scan at the replacement.",
          "count": len(stranded), "findings": stranded},
     ]
     total = sum(c["count"] for c in checks)
