@@ -177,7 +177,14 @@
               <span x-text="'🕔 '+fmtTime(it.at)"></span>
               <span class="font-mono" x-text="'#'+it.id"></span>
               <span class="font-mono truncate" x-text="it.entity_type+' · '+String(it.entity_id).slice(0,8)"></span>
-              <button class="ml-auto underline hover:text-gray-600" @click.stop="onlyThis(it)">🔗 just this record's history</button>
+              <div class="ml-auto flex items-center gap-3">
+                <button x-show="it.action==='UPDATE' && it.entity_type==='products'" @click.stop="revert(it)" :disabled="it._reverting"
+                        class="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 font-bold hover:bg-amber-200 text-[11px] transition">
+                  <span x-show="!it._reverting">↩️ Revert this change</span>
+                  <span x-show="it._reverting" style="display:none">reverting…</span>
+                </button>
+                <button class="underline hover:text-gray-600" @click.stop="onlyThis(it)">🔗 just this record's history</button>
+              </div>
             </div>
           </div>
         </div>
@@ -232,6 +239,16 @@ function auditData() {
       return p.toString();
     },
     toggleIn(key, val) { const a = this.f[key]; const i = a.indexOf(val); if (i >= 0) a.splice(i,1); else a.push(val); this.load(); },
+    async revert(it) {
+      if (!confirm('↩️ Revert this change?\n\nThis restores the OLD value(s) — and is itself logged as a new audit entry (you can even revert the revert).')) return;
+      it._reverting = true;
+      try {
+        const r = await API.post('/api/v1/pos/audit/' + it.id + '/revert', {});
+        showToast('↩️ Reverted: ' + ((r.reverted || []).join(', ') || 'done'), 'success');
+        await this.load();
+      } catch (e) { console.error(e); showToast('Revert failed — ' + (e.message || 'error'), 'error'); }
+      finally { it._reverting = false; }
+    },
     // "YYYY-MM-DDTHH:MM" (LOCAL) → UTC ISO. Build from parts — Firefox returns Invalid Date
     // for strings without seconds, which silently killed the filter.
     _toISO(str) {
@@ -285,7 +302,7 @@ function auditData() {
       this.loading = true;
       try {
         const d = await API.get('/api/v1/pos/audit/feed?' + this.qs());
-        this.items = (d.items || []).map(x => ({ ...x, _open: false }));
+        this.items = (d.items || []).map(x => ({ ...x, _open: false, _reverting: false }));
         this.total = d.total || 0;
         this.matched = (d.matched ?? d.total) || 0;
         this.act = d.actions || {};
@@ -298,7 +315,7 @@ function auditData() {
       this.loadingMore = true;
       try {
         const d = await API.get('/api/v1/pos/audit/feed?' + this.qs({ offset: this.items.length }));
-        (d.items || []).forEach(x => this.items.push({ ...x, _open: false }));
+        (d.items || []).forEach(x => this.items.push({ ...x, _open: false, _reverting: false }));
       } catch (e) { console.error(e); }
       finally { this.loadingMore = false; }
     },

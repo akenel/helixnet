@@ -6665,6 +6665,57 @@ async def audit_feed(
             "actions": {a[0]: a[1] for a in facet_action}}
 
 
+# columns that are safe to one-click-revert (scalars only — never jsonb/system/derived)
+_REVERTABLE = {
+    "products": {"name", "price", "cost", "description", "category", "product_class",
+                 "is_age_restricted", "age_reason", "min_stock", "max_stock", "is_active",
+                 "barcode", "supplier_name", "product_group", "short_code", "image_url",
+                 "stock_alert_threshold", "tier_mode", "supplier_sku", "supplier_price"},
+}
+
+
+@router.post("/audit/{audit_id}/revert")
+async def audit_revert(
+    audit_id: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_roles(["👔️ pos-manager", "👑️ pos-admin"])),
+):
+    """One-click REVERT — restore the OLD value(s) of an audited edit. Only UPDATE rows, only
+    a safe scalar allowlist of columns (field names come from the fixed set, never user input,
+    so no injection). The revert is itself a normal UPDATE, so the audit trigger logs it,
+    attributed to whoever clicked — the undo is fully auditable + itself reversible."""
+    from sqlalchemy import text
+    row = (await db.execute(text(
+        "SELECT entity_type, entity_id, action, changes FROM audit_log WHERE id = :id"),
+        {"id": audit_id})).mappings().first()
+    if not row:
+        raise HTTPException(status_code=404, detail="No such audit entry")
+    et, eid, action = row["entity_type"], row["entity_id"], row["action"]
+    if action != "UPDATE":
+        raise HTTPException(status_code=400, detail="Only edits (UPDATE) can be reverted")
+    allow = _REVERTABLE.get(et)
+    if not allow:
+        raise HTTPException(status_code=400, detail=f"Revert isn't supported for {et} yet")
+    chg = row["changes"]
+    if isinstance(chg, str):
+        try:
+            chg = json.loads(chg)
+        except Exception:
+            chg = {}
+    sets, params, reverted = [], {"eid": eid}, {}
+    for field, d in (chg or {}).items():
+        if field in allow and isinstance(d, dict) and "old" in d:
+            sets.append(f"{field} = :v_{field}")     # field ∈ fixed allowlist → safe as a column name
+            params[f"v_{field}"] = d["old"]
+            reverted[field] = d["old"]
+    if not sets:
+        raise HTTPException(status_code=400, detail="Nothing revertable in this change")
+    await db.execute(text(
+        f"UPDATE {et} SET {', '.join(sets)}, updated_at = now() WHERE id::text = :eid"), params)
+    await db.commit()
+    return {"ok": True, "entity_type": et, "reverted": list(reverted.keys())}
+
+
 @router.post("/feedback/{item_number}/done")
 async def mark_feedback_fixed(
     item_number: int,
