@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DR Fire Drill — Delete &amp; Restore (SANDBOX)</title>
+<style>
+  :root{ --red:#C0392B; --dark:#8B0000; --ink:#1f2937; --mut:#6b7280; --line:#e5e7eb; --ok:#059669; --bg:#f7f7f8; --green:#1b4332; --gold:#b0862f; }
+  *{ box-sizing:border-box; }
+  body{ font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--bg); margin:0; line-height:1.5; }
+  a{ color:var(--red); }
+  header{ position:sticky; top:0; z-index:10; background:#fff; border-bottom:2px solid var(--red); padding:14px 20px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  .htop{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  h1{ font-size:19px; margin:0; }
+  h1 small{ color:var(--mut); font-weight:500; font-size:13px; display:block; margin-top:2px; }
+  .meters{ display:flex; align-items:center; gap:18px; }
+  .meter{ text-align:center; }
+  .meter b{ font-size:20px; color:var(--red); display:block; }
+  .meter span{ font-size:11px; color:var(--mut); text-transform:uppercase; letter-spacing:.04em; }
+  .timer{ font-variant-numeric:tabular-nums; font-size:22px; font-weight:700; color:var(--ink); }
+  .btn{ border:1px solid var(--line); background:#fff; border-radius:8px; padding:6px 12px; font-size:13px; cursor:pointer; }
+  .btn:hover{ background:#f0f0f0; }
+  .btn.red{ background:var(--red); color:#fff; border-color:var(--red); }
+  main{ max-width:920px; margin:0 auto; padding:24px 20px 80px; }
+  .lead{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-bottom:22px; }
+  .victims{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0; }
+  .vic{ border:1px solid var(--line); border-left:4px solid var(--red); border-radius:8px; padding:8px 11px; background:#fdf5f4; font-size:12.5px; }
+  .vic b{ color:var(--dark); }
+  .vic code{ font-family:ui-monospace,Menlo,monospace; font-size:11.5px; background:#fff; border:1px solid var(--line); border-radius:4px; padding:0 4px; }
+  section{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:18px 20px; margin-bottom:18px; }
+  section h2{ font-size:16px; margin:0 0 4px; display:flex; align-items:center; gap:8px; }
+  section .why{ color:var(--mut); font-size:13px; margin:0 0 12px; }
+  code{ font-family:ui-monospace,Menlo,monospace; font-size:12px; background:#f3f4f6; border:1px solid var(--line); border-radius:5px; padding:1px 5px; }
+  ol.steps{ margin:0; padding:0; list-style:none; }
+  ol.steps li{ display:flex; gap:10px; padding:8px 0; border-top:1px dashed var(--line); align-items:flex-start; }
+  ol.steps li:first-child{ border-top:none; }
+  .verdict{ display:flex; gap:4px; flex:none; margin-top:1px; }
+  .vbtn{ border:1px solid var(--line); background:#fff; border-radius:7px; padding:4px 8px; font-size:11px; font-weight:700; cursor:pointer; color:var(--mut); letter-spacing:.02em; white-space:nowrap; }
+  .vbtn:hover{ background:#f6f6f6; }
+  .vbtn.v-pass.on{ background:#059669; border-color:#059669; color:#fff; }
+  .vbtn.v-fail.on{ background:#C0392B; border-color:#C0392B; color:#fff; }
+  .vbtn.v-issue.on{ background:#d97706; border-color:#d97706; color:#fff; }
+  @media (max-width:600px){ .vbtn{ padding:4px 6px; font-size:10px; } ol.steps li{ flex-wrap:wrap; } .victims{ grid-template-columns:1fr; } }
+  .step-body{ flex:1; min-width:220px; }
+  .exp{ color:var(--ok); font-size:12.5px; }
+  .exp::before{ content:"✓ expect: "; font-weight:600; }
+  textarea{ width:100%; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font:inherit; font-size:13px; margin-top:10px; resize:vertical; min-height:54px; }
+  textarea.step-cm{ margin-top:0; min-height:32px; font-size:12.5px; background:#fcfcfd; flex:1; }
+  .step-extra{ margin-top:8px; }
+  .cm-row{ display:flex; gap:6px; align-items:flex-start; }
+  .mic-btn{ border:1px solid var(--line); background:#fff; border-radius:8px; padding:4px 9px; cursor:pointer; font-size:15px; flex:none; }
+  .mic-btn.on{ background:#fde8e6; border-color:var(--red); color:var(--red); animation:pulse 1s infinite; }
+  @keyframes pulse{ 50%{ opacity:.45 } }
+  .shot-zone{ margin-top:6px; border:1.5px dashed var(--line); border-radius:8px; padding:8px 10px; font-size:12px; color:var(--mut); cursor:pointer; background:#fafafa; }
+  .shot-zone:focus, .shot-zone.drag{ outline:none; border-color:var(--red); background:#fff7f6; color:var(--ink); }
+  .thumbs{ display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+  .thumbs .sh{ position:relative; }
+  .thumbs img{ height:66px; border-radius:6px; border:1px solid var(--line); cursor:zoom-in; display:block; }
+  .thumbs .rm{ position:absolute; top:-7px; right:-7px; background:var(--red); color:#fff; border:none; border-radius:99px; width:19px; height:19px; font-size:11px; cursor:pointer; line-height:1; }
+  .hidden{ display:none; }
+  label.cm{ font-size:11px; color:var(--mut); text-transform:uppercase; letter-spacing:.04em; }
+  .tag{ font-size:11px; font-weight:700; padding:2px 8px; border-radius:99px; background:#dcfce7; color:#065f46; }
+  .tag.tigs{ background:#fde8e6; color:var(--dark); }
+  .tag.you{ background:#e0edff; color:#1e40af; }
+  .tag.danger{ background:#fee2e2; color:#991b1b; }
+  .safety{ border:1px solid var(--green); background:#f0f7f2; border-radius:10px; padding:10px 13px; margin:8px 0; font-size:12.5px; }
+  .safety b{ color:var(--green); }
+  footer{ text-align:center; color:var(--mut); font-size:12px; padding:20px; }
+  @media print{ header{ position:static; } .btn,.open{ display:none; } body{ background:#fff; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="htop">
+    <h1>🔥 DR Fire Drill — Delete &amp; Restore<small>Simulate a real disaster in SANDBOX: two records vanish → we restore the database → they're back</small><small style="color:#C0392B;font-weight:700;letter-spacing:.05em">🐺 La Piazza · № LP-UAT-20260719-DR-DRILL · rev.1 · registered</small></h1>
+    <div class="meters">
+      <div class="meter"><b id="prog">0/0</b><span>done</span></div>
+      <div class="meter"><b id="tally" style="font-size:15px">✓0 ✗0 ⚠0</b><span>ok / fail / note</span></div>
+      <div class="meter"><span class="timer" id="clock">00:00</span><span>elapsed</span></div>
+      <button class="btn" id="startBtn" onclick="toggleTimer()">▶ Start</button>
+      <button class="btn" onclick="resetTimer()">reset</button>
+      <button class="btn" onclick="copyReport()">⧉ Copy text</button>
+      <button class="btn red" onclick="exportReport()">⬇ Export report</button>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="lead">
+    <strong>The scenario:</strong> someone deletes two important records. We look for them — gone. Panic. "We have a
+    big problem." So we <strong>restore the database from a backup taken an hour ago</strong> and get them back. That's
+    the whole point of every backup we built — this proves it actually works when it counts.
+    <br><br>
+    <strong>The two victims</strong> (546 products in sandbox; delete these → 544 → restore → 546):
+    <div class="victims">
+      <div class="vic"><b>Victim 1</b> · 4-part Grinder 50mm<br>SKU <code>ACC-GRINDER</code> · CHF 15.00</div>
+      <div class="vic"><b>Victim 2</b> · Grinder Kräutermühle Tabakmühle 2-teilig<br>SKU <code>SEED-B0BCB0B273</code> · CHF 23.95</div>
+    </div>
+    <span class="tag">SANDBOX only — prod is never touched</span>
+    <span class="tag tigs">🐯 Tigs runs the DB ops</span>
+    <span class="tag you">🧍 You eyeball the till + call it</span>
+    <div class="safety">🛟 <b>Safety net:</b> this is sandbox — if anything goes sideways, <code>make sandbox-reset</code> rebuilds it from seed. There is <b>no way to hurt real data here.</b> That's why we rehearse disasters in sandbox, never prod.</div>
+  </div>
+
+  <!-- 0. SETUP -->
+  <section>
+    <h2>0 · Setup — sandbox can back up to B2 <span class="tag tigs">tigs, once</span></h2>
+    <p class="why">Same machinery as prod, pointed at <code>banco_sandbox</code> → encrypted → the B2 vault (<code>sandbox/</code> prefix). This is your practice run of the whole backup rig.</p>
+    <ol class="steps" data-sec="setup">
+      <li><div class="step-body">Tigs installs a sandbox backup (<code>banco_sandbox_backup.sh</code>) + does a <strong>dry run</strong>: back up → restore into a throwaway DB → row counts match. <span class="exp">the sandbox backup rig round-trips clean BEFORE we touch a single real step — facts straight</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="setup" placeholder="Sandbox backup rig set up + dry-run round-trip verified?"></textarea>
+  </section>
+
+  <!-- 1. KNOW THE VICTIMS -->
+  <section>
+    <h2>1 · Confirm the two records EXIST <span class="tag you">you</span></h2>
+    <p class="why">Before the disaster, prove they're there — so "gone" later means something.</p>
+    <a class="btn" href="https://sandbox-banco.lapiazza.app/pos" target="_blank" style="text-decoration:none;display:inline-block;margin-bottom:10px;">Open the sandbox till ↗</a>
+    <ol class="steps" data-sec="exist">
+      <li><div class="step-body">On the sandbox till, search <strong>grinder</strong>. Find both victims: <strong>4-part Grinder 50mm</strong> (CHF 15) and <strong>Grinder Kräutermühle 2-teilig</strong> (CHF 23.95). <span class="exp">both products show up, sellable</span></div></li>
+      <li><div class="step-body">Tigs confirms the count at the DB level. <span class="exp"><strong>546 products</strong> total; both victim SKUs present</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="exist" placeholder="Both victims found on the till? Count 546?"></textarea>
+  </section>
+
+  <!-- 2. GOOD BACKUP -->
+  <section>
+    <h2>2 · Take the "good" backup <span class="tag tigs">tigs</span></h2>
+    <p class="why">This is the snapshot we'll fall back to — "the database as it was an hour ago." It has all 546, including both victims.</p>
+    <ol class="steps" data-sec="backup">
+      <li><div class="step-body">Tigs runs the sandbox backup NOW → encrypts → ships to the B2 vault (immutable). <span class="exp">a sandbox backup file is made (546 products) + lands in B2 with an object-lock date</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="backup" placeholder="Good backup made + in B2? Filename / count noted?"></textarea>
+  </section>
+
+  <!-- 3. THE DISASTER -->
+  <section>
+    <h2>3 · 💥 THE DISASTER — delete the two records <span class="tag danger">destructive · sandbox</span></h2>
+    <p class="why">The "oops." Two records get deleted (as if a bad script, a fat finger, or a bad actor did it).</p>
+    <ol class="steps" data-sec="delete">
+      <li><div class="step-body">Tigs deletes <code>ACC-GRINDER</code> and <code>SEED-B0BCB0B273</code> from <code>banco_sandbox</code>. <span class="exp">2 rows deleted → <strong>544 products</strong> remain</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="delete" placeholder="2 deleted, count now 544?"></textarea>
+  </section>
+
+  <!-- 4. CONFIRM LOSS -->
+  <section>
+    <h2>4 · 😱 Confirm they're GONE <span class="tag you">you — the panic moment</span></h2>
+    <p class="why">This is what a real incident feels like: the record isn't there and everyone's asking where it went.</p>
+    <ol class="steps" data-sec="loss">
+      <li><div class="step-body">On the sandbox till, search <strong>grinder</strong> again. <span class="exp">the two victims are <strong>GONE</strong> — the 4-part Grinder 50mm and the Kräutermühle 2-teilig are missing from the results</span></div></li>
+      <li><div class="step-body">The gap is measurable: the <strong>backup has 546</strong>, the <strong>live DB has 544</strong>. <span class="exp">the difference (2) is exactly our lost records — proof the backup holds what the live DB lost</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="loss" placeholder="Victims gone from the till? Backup 546 vs live 544?"></textarea>
+  </section>
+
+  <!-- 5. RESTORE -->
+  <section>
+    <h2>5 · 🔧 RESTORE from the backup <span class="tag tigs">tigs</span></h2>
+    <p class="why">The rescue: pull the good backup out of the B2 vault, decrypt it, and reload <code>banco_sandbox</code> — exactly the DR-brief procedure.</p>
+    <ol class="steps" data-sec="restore">
+      <li><div class="step-body">Tigs downloads the good backup from B2 → decrypts (GPG passphrase) → reloads it into <code>banco_sandbox</code> (drop → recreate → load). <span class="exp">the restore runs clean; sandbox is now the "before-disaster" state</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="restore" placeholder="Restore ran clean from the B2 backup?"></textarea>
+  </section>
+
+  <!-- 6. CONFIRM RECOVERY -->
+  <section>
+    <h2>6 · 🎉 Confirm they're BACK <span class="tag you">you — the relief</span></h2>
+    <p class="why">The payoff: the "lost" data is recovered, and you can see it with your own eyes.</p>
+    <ol class="steps" data-sec="recover">
+      <li><div class="step-body">On the sandbox till, search <strong>grinder</strong> one more time. <span class="exp">both victims are <strong>BACK</strong> — 4-part Grinder 50mm (CHF 15) and Kräutermühle 2-teilig (CHF 23.95), sellable again</span></div></li>
+      <li><div class="step-body">Count check. <span class="exp"><strong>546 products</strong> again — the exact number from before the disaster</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="recover" placeholder="Both victims back on the till? Count back to 546?"></textarea>
+  </section>
+
+  <!-- 7. SANITY -->
+  <section>
+    <h2>7 · Sanity — nothing real was ever at risk <span class="tag">no regression</span></h2>
+    <ol class="steps" data-sec="sanity">
+      <li><div class="step-body">Prod was <strong>never touched</strong> — the whole drill was <code>banco_sandbox</code>. <span class="exp">prod product count unchanged (5,200); prod never connected to</span></div></li>
+      <li><div class="step-body">The safety net was always there. <span class="exp"><code>make sandbox-reset</code> would have rebuilt sandbox too — belt and suspenders</span></div></li>
+    </ol>
+    <label class="cm">notes</label><textarea data-cm="sanity" placeholder="Prod untouched? Comfortable with the safety net?"></textarea>
+  </section>
+
+  <!-- OVERALL -->
+  <section>
+    <h2>★ The verdict</h2>
+    <ol class="steps" data-sec="verdict">
+      <li><div class="step-body"><strong>We deleted real-looking data and got it back from a backup.</strong> — tick if you watched it vanish and return.</div></li>
+      <li><div class="step-body"><strong>You'd trust this to recover the shop after a bad day.</strong> — the whole reason we built the backups.</div></li>
+    </ol>
+    <label class="cm">the big notes — how did it feel, anything to change, ready to call DR proven?</label>
+    <textarea data-cm="verdict" placeholder="Your call, Wolf." style="min-height:90px"></textarea>
+  </section>
+
+  <footer>
+    <div style="border-top:2px solid #C0392B;max-width:920px;margin:0 auto;padding-top:10px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:11px">
+      <span><strong style="color:#C0392B">🐺 La Piazza · Banco</strong> · DR Fire Drill (delete &amp; restore) · registered artifact</span>
+      <span style="font-variant-numeric:tabular-nums">№ LP-UAT-20260719-DR-DRILL · rev.1 · 2026-07-19</span>
+    </div>
+    <div style="margin-top:6px">One sheet — screen or print. Sandbox only — the safe place to practice a disaster. 🐺</div>
+  </footer>
+</main>
+
+<script>
+  const KEY='dr_drill_runbook';
+  const STEPS=[];
+  const VDEFS=[['pass','OK','✓'],['fail','FAIL','✗'],['issue','NOTE','⚠']];
+  const VMARK={pass:'[OK]',fail:'[FAIL]',issue:'[NOTE]','':'[ -- ]'};
+  function vMark(v){ return v==='pass'?'<span class="ok">✓ OK</span>' : v==='fail'?'<span style="color:#C0392B;font-weight:700">✗ FAIL</span>' : v==='issue'?'<span style="color:#b45309;font-weight:700">⚠ NOTE</span>' : '<span class="no">○ —</span>'; }
+
+  function verdictControl(i){
+    const box=document.createElement('div'); box.className='verdict';
+    VDEFS.forEach(([v,lbl,ic])=>{ const b=document.createElement('button'); b.type='button';
+      b.className='vbtn v-'+v; b.innerHTML=ic+' '+lbl; b.title=lbl;
+      b.addEventListener('click', ()=>setVerdict(i, STEPS[i].verdict===v ? '' : v));
+      box.appendChild(b); STEPS[i]._btns[v]=b; });
+    return box;
+  }
+  function paintVerdict(i){ const s=STEPS[i]; VDEFS.forEach(([v])=>{ const b=s._btns[v]; if(b) b.classList.toggle('on', s.verdict===v); }); }
+  function setVerdict(i,v){ STEPS[i].verdict=v; paintVerdict(i); save(); progress(); }
+
+  function buildSteps(){
+    document.querySelectorAll('ol.steps li').forEach((li,i)=>{
+      const cb = li.querySelector('input[type=checkbox]'); if(cb) cb.remove();
+      const bodyEl = li.querySelector('.step-body');
+      const label = (bodyEl?.textContent||'').trim().replace(/\s+/g,' ');
+      STEPS[i]={ li, label, verdict:'', ta:null, thumbs:null, shots:[], _btns:{} };
+      li.insertBefore(verdictControl(i), li.firstChild);
+      const wrap = document.createElement('div'); wrap.className='step-extra';
+      const row = document.createElement('div'); row.className='cm-row';
+      const ta = document.createElement('textarea'); ta.className='step-cm'; ta.rows=1; ta.placeholder='note… (type or 🎤 speak)';
+      ta.addEventListener('input', save);
+      const mic = document.createElement('button'); mic.className='mic-btn'; mic.type='button'; mic.textContent='🎤'; mic.title='Dictate this note';
+      mic.addEventListener('click', ()=>micToggle(mic, ta));
+      row.appendChild(ta); row.appendChild(mic); wrap.appendChild(row);
+      const zone = document.createElement('div'); zone.className='shot-zone'; zone.tabIndex=0;
+      zone.textContent='📋 click here & paste a screenshot (Ctrl+V) · drop an image · or 📷 pick a file';
+      const fin = document.createElement('input'); fin.type='file'; fin.accept='image/*'; fin.capture='environment'; fin.className='hidden';
+      zone.addEventListener('click', ()=>{ activeIdx=i; fin.click(); });
+      zone.addEventListener('focus', ()=>{ activeIdx=i; });
+      zone.addEventListener('dragover', e=>{ e.preventDefault(); zone.classList.add('drag'); });
+      zone.addEventListener('dragleave', ()=>zone.classList.remove('drag'));
+      zone.addEventListener('drop', e=>{ e.preventDefault(); zone.classList.remove('drag'); activeIdx=i;
+        [...(e.dataTransfer.files||[])].forEach(f=>{ if(f.type.startsWith('image/')) addShot(i,f); }); });
+      fin.addEventListener('change', e=>{ [...(e.target.files||[])].forEach(f=>addShot(i,f)); e.target.value=''; });
+      const thumbs = document.createElement('div'); thumbs.className='thumbs';
+      wrap.appendChild(zone); wrap.appendChild(fin); wrap.appendChild(thumbs);
+      bodyEl.appendChild(wrap);
+      STEPS[i].ta=ta; STEPS[i].thumbs=thumbs;
+    });
+  }
+
+  let activeIdx=null;
+  document.addEventListener('paste', e=>{ if(activeIdx==null) return; const items=(e.clipboardData||{}).items||[];
+    for(const it of items){ if(it.type && it.type.startsWith('image/')){ const f=it.getAsFile(); if(f){ addShot(activeIdx,f); e.preventDefault(); } } } });
+  function downscale(file, cb){ const url=URL.createObjectURL(file); const img=new Image();
+    img.onload=()=>{ const max=1000; let w=img.width,h=img.height; if(w>max){ h=Math.round(h*max/w); w=max; }
+      const c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(url); try{ cb(c.toDataURL('image/jpeg',0.6)); }catch(e){ cb(null); } };
+    img.onerror=()=>{ URL.revokeObjectURL(url); cb(null); }; img.src=url; }
+  function addShot(i,file){ downscale(file, data=>{ if(!data) return; STEPS[i].shots.push({name:file.name||'screenshot.png', data}); renderThumbs(i); save(); }); }
+  function renderThumbs(i){ const t=STEPS[i].thumbs; t.innerHTML='';
+    STEPS[i].shots.forEach((sh,si)=>{ const d=document.createElement('div'); d.className='sh';
+      const im=document.createElement('img'); im.src=sh.data; im.title=sh.name; im.onclick=()=>{ const w=window.open(); if(w) w.document.write('<img src="'+sh.data+'" style="max-width:100%">'); };
+      const rm=document.createElement('button'); rm.className='rm'; rm.textContent='✕'; rm.title='remove'; rm.onclick=()=>{ STEPS[i].shots.splice(si,1); renderThumbs(i); save(); };
+      d.appendChild(im); d.appendChild(rm); t.appendChild(d); }); }
+
+  function save(){ const d={verdict:[],note:[],shots:[],cm:{},seconds};
+    STEPS.forEach((s,i)=>{ d.verdict[i]=s.verdict||''; d.note[i]=s.ta.value; d.shots[i]=s.shots; });
+    document.querySelectorAll('textarea[data-cm]').forEach(t=>d.cm[t.dataset.cm]=t.value);
+    try{ localStorage.setItem(KEY,JSON.stringify(d)); }catch(e){ console.warn('storage full', e); } }
+  function restore(){ try{ const d=JSON.parse(localStorage.getItem(KEY)||'{}');
+    STEPS.forEach((s,i)=>{ if(d.verdict&&d.verdict[i]){ s.verdict=d.verdict[i]; paintVerdict(i); } if(d.note&&d.note[i]!=null) s.ta.value=d.note[i];
+      if(d.shots&&Array.isArray(d.shots[i])){ s.shots=d.shots[i]; renderThumbs(i); } });
+    if(d.cm) document.querySelectorAll('textarea[data-cm]').forEach(t=>{ if(d.cm[t.dataset.cm]!=null) t.value=d.cm[t.dataset.cm]; });
+    if(typeof d.seconds==='number'){ seconds=d.seconds; paintClock(); } }catch(e){} }
+  function progress(){ let p=0,f=0,iss=0,dec=0;
+    STEPS.forEach(s=>{ if(s.verdict){ dec++; if(s.verdict==='pass')p++; else if(s.verdict==='fail')f++; else iss++; } });
+    document.getElementById('prog').textContent=dec+'/'+STEPS.length;
+    const tly=document.getElementById('tally'); if(tly) tly.textContent='✓'+p+' ✗'+f+' ⚠'+iss; }
+
+  let seconds=0, timer=null;
+  function paintClock(){ const m=String(Math.floor(seconds/60)).padStart(2,'0'), s=String(seconds%60).padStart(2,'0'); document.getElementById('clock').textContent=m+':'+s; }
+  function toggleTimer(){ const b=document.getElementById('startBtn');
+    if(timer){ clearInterval(timer); timer=null; b.textContent='▶ Resume'; }
+    else { timer=setInterval(()=>{ seconds++; paintClock(); if(seconds%10===0) save(); },1000); b.textContent='⏸ Pause'; } }
+  function resetTimer(){ if(timer){ clearInterval(timer); timer=null; } seconds=0; paintClock(); document.getElementById('startBtn').textContent='▶ Start'; save(); }
+
+  let rec=null;
+  function micToggle(btn, ta){
+    if(rec){ rec.stop(); return; }
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){ alert('Voice notes need Chrome.'); return; }
+    rec=new SR(); rec.lang='en-US'; rec.continuous=true; rec.interimResults=true;
+    let base=ta.value?ta.value.trim()+' ':'';
+    btn.classList.add('on');
+    rec.onresult=e=>{ let fin='',int=''; for(let k=e.resultIndex;k<e.results.length;k++){ const t=e.results[k][0].transcript; if(e.results[k].isFinal) fin+=t; else int+=t; }
+      if(fin) base+=fin+' '; ta.value=(base+int).replace(/\s+/g,' ').trimStart(); save(); };
+    rec.onerror=()=>{}; rec.onend=()=>{ btn.classList.remove('on'); rec=null; };
+    try{ rec.start(); }catch(e){ btn.classList.remove('on'); rec=null; }
+  }
+
+  function copyReport(){ let out='DR FIRE DRILL — REPORT (№ LP-UAT-20260719-DR-DRILL)\n'+document.getElementById('prog').textContent+' done · '+document.getElementById('tally').textContent+' · '+document.getElementById('clock').textContent+' elapsed\n\n';
+    document.querySelectorAll('section').forEach(sec=>{ const h=sec.querySelector('h2'); if(!h) return; out+='## '+h.textContent.trim()+'\n';
+      sec.querySelectorAll('ol.steps li').forEach(li=>{ const idx=STEPS.findIndex(s=>s.li===li); const s=STEPS[idx]||{};
+        out+=(VMARK[s.verdict||'']||'[ -- ]')+' '+(s.label||'')+'\n';
+        if(s.ta&&s.ta.value.trim()) out+='     note: '+s.ta.value.trim()+'\n';
+        if(s.shots&&s.shots.length) out+='     📷 '+s.shots.length+' screenshot(s) (see exported report)\n'; });
+      const t=sec.querySelector('textarea[data-cm]'); if(t&&t.value.trim()) out+='   section notes: '+t.value.trim()+'\n'; out+='\n'; });
+    navigator.clipboard.writeText(out).then(()=>alert('Text report copied. (Use Export for screenshots.)')).catch(()=>prompt('Copy this:',out)); }
+
+  function exportReport(){ const esc=s=>(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+    let h='<!doctype html><meta charset=utf-8><title>DR Fire Drill — report</title>'+
+      '<style>body{font-family:system-ui,Arial;max-width:820px;margin:24px auto;padding:0 16px;color:#1f2937}h2{border-bottom:2px solid #C0392B;padding-bottom:4px;margin-top:28px}li{margin:10px 0;list-style:none}.ok{color:#059669;font-weight:700}.no{color:#9ca3af}.n{color:#374151;font-size:14px;margin:4px 0 0 24px}img{max-width:320px;display:block;margin:6px 0 0 24px;border:1px solid #ddd;border-radius:6px}.h{color:#6b7280;font-size:13px}</style>';
+    h+='<h1>🔥 DR Fire Drill — report</h1><p class=h>№ LP-UAT-20260719-DR-DRILL · '+document.getElementById('prog').textContent+' done · '+document.getElementById('tally').textContent+' · '+document.getElementById('clock').textContent+' elapsed · '+new Date().toLocaleString()+'</p>';
+    document.querySelectorAll('section').forEach(sec=>{ const ttl=sec.querySelector('h2'); if(!ttl) return; h+='<h2>'+esc(ttl.textContent.trim())+'</h2><ul>';
+      sec.querySelectorAll('ol.steps li').forEach(li=>{ const s=STEPS[STEPS.findIndex(x=>x.li===li)]||{};
+        h+='<li>'+vMark(s.verdict)+' '+esc(s.label||'');
+        if(s.ta&&s.ta.value.trim()) h+='<div class=n>📝 '+esc(s.ta.value.trim())+'</div>';
+        (s.shots||[]).forEach(sh=>{ h+='<img src="'+sh.data+'" alt="'+esc(sh.name)+'">'; }); h+='</li>'; });
+      const t=sec.querySelector('textarea[data-cm]'); if(t&&t.value.trim()) h+='<li class=n>📝 '+esc(t.value.trim())+'</li>'; h+='</ul>'; });
+    const blob=new Blob([h],{type:'text/html'}); const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='dr-fire-drill-report.html'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); }
+
+  buildSteps(); restore(); progress(); paintClock();
+</script>
+</body>
+</html>
