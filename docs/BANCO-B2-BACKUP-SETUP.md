@@ -1,7 +1,10 @@
 # Banco Offsite Backup — Backblaze B2 (immutable, ransomware-proof)
 
-**Status:** code SHIPPED (2026-07-05), waiting on Angel's Backblaze account/keys to go live.
-**Owner of the remaining steps:** 🧍 Angel (external signup — I can't create the account).
+**Status:** ✅ **LIVE 2026-07-19.** Bucket `ecolution-banco-backups` (compliance object-lock 14d + 90d
+lifecycle), write-only box key in `/root/.banco-b2.env`, hook in `banco_backup.sh`, all 76 recovery points
+backfilled, restore drill passed (B2 copy bit-identical to box). Scripts patched to **B2 API v4** (v2/v3 are
+now rejected for restricted keys — `083fa64d`). Residuals: laptop `banco_offsite_pull.py` cron still broken
+(secondary now B2 is primary); no failure alert yet; box key is write-only but not bucket-scoped (low risk).
 
 ---
 
