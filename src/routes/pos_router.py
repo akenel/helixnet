@@ -6619,8 +6619,8 @@ async def audit_feed(
           AND (CAST(:act AS text) IS NULL OR a.action      = :act)
           AND (CAST(:eid AS text) IS NULL OR a.entity_id   = :eid)
           AND (CAST(:q   AS text) IS NULL OR a.changed_by ILIKE :q OR a.entity_type ILIKE :q OR a.changes::text ILIKE :q)
-          AND (CAST(:since AS timestamptz) IS NULL OR a.changed_at >= CAST(:since AS timestamptz))
-          AND (CAST(:until AS timestamptz) IS NULL OR a.changed_at <= CAST(:until AS timestamptz))
+          AND (CAST(:since AS text) IS NULL OR a.changed_at >= CAST(:since AS text)::timestamptz)
+          AND (CAST(:until AS text) IS NULL OR a.changed_at <= CAST(:until AS text)::timestamptz)
         ORDER BY a.id DESC
         LIMIT :lim OFFSET :off
     """), params)).mappings().all()
@@ -6648,8 +6648,8 @@ async def audit_feed(
           AND (CAST(:act AS text) IS NULL OR a.action      = :act)
           AND (CAST(:eid AS text) IS NULL OR a.entity_id   = :eid)
           AND (CAST(:q   AS text) IS NULL OR a.changed_by ILIKE :q OR a.entity_type ILIKE :q OR a.changes::text ILIKE :q)
-          AND (CAST(:since AS timestamptz) IS NULL OR a.changed_at >= CAST(:since AS timestamptz))
-          AND (CAST(:until AS timestamptz) IS NULL OR a.changed_at <= CAST(:until AS timestamptz))
+          AND (CAST(:since AS text) IS NULL OR a.changed_at >= CAST(:since AS text)::timestamptz)
+          AND (CAST(:until AS text) IS NULL OR a.changed_at <= CAST(:until AS text)::timestamptz)
     """), params)).scalar() or 0
 
     facet_actor = (await db.execute(text(
