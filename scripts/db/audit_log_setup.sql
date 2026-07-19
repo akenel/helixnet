@@ -44,8 +44,9 @@ BEGIN
     SELECT jsonb_object_agg(o.key, jsonb_build_object('old', o.value, 'new', n.value))
       INTO chg
       FROM jsonb_each(to_jsonb(OLD)) o JOIN jsonb_each(to_jsonb(NEW)) n USING (key)
-      WHERE o.value IS DISTINCT FROM n.value;
-    IF chg IS NULL THEN RETURN NEW; END IF;           -- no real change -> no noise
+      WHERE o.value IS DISTINCT FROM n.value
+        AND o.key NOT IN ('updated_at', 'created_at');   -- housekeeping, not a real change
+    IF chg IS NULL THEN RETURN NEW; END IF;           -- only updated_at moved -> no log noise
   END IF;
   INSERT INTO audit_log (entity_type, entity_id, action, changed_by, changes)
     VALUES (TG_TABLE_NAME, eid, TG_OP, who, chg);

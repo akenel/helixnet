@@ -697,6 +697,32 @@
         try { this.cPhotoPreview = URL.createObjectURL(f); } catch(_){}
         this.runAiSuggest(f);
       },
+      // The kiosk grabs the staff token ONCE at launch; a long-open kiosk lets it expire and then
+      // silently 401s on create. liveToken() returns the freshest token (localStorage is shared +
+      // kept fresh across tabs) and refreshes it in-place when it's expiring — so create-on-the-fly
+      // never dies under a staff member. Falls back to the launch token if there's nothing better.
+      async liveToken(){
+        try {
+          const expAt   = parseInt(localStorage.getItem('pos_token_exp') || sessionStorage.getItem('pos_token_exp') || '0', 10);
+          const refresh = localStorage.getItem('pos_refresh')   || sessionStorage.getItem('pos_refresh');
+          if (refresh && (!expAt || Date.now() >= expAt - 30000)) {
+            const r = await fetch('/pos/refresh', { method:'POST', headers:{ 'Content-Type':'application/json' },
+              body: JSON.stringify({ refresh_token: refresh }) });
+            if (r.ok) { const t = await r.json();
+              if (t.access_token) {
+                const exp = Date.now() + (t.expires_in ? t.expires_in*1000 : 300000);
+                sessionStorage.setItem('pos_token', t.access_token); try{ localStorage.setItem('pos_token', t.access_token); }catch(e){}
+                if (t.refresh_token){ sessionStorage.setItem('pos_refresh', t.refresh_token); try{ localStorage.setItem('pos_refresh', t.refresh_token); }catch(e){} }
+                sessionStorage.setItem('pos_token_exp', String(exp)); try{ localStorage.setItem('pos_token_exp', String(exp)); }catch(e){}
+                this.staffToken = t.access_token;
+                return t.access_token;
+              }
+            }
+          }
+        } catch(e){ /* fall through to whatever token we have */ }
+        return localStorage.getItem('pos_token') || sessionStorage.getItem('pos_token') || this.staffToken;
+      },
+
       // Snap & fill: send the photo to the vision AI; it drafts the name (and a price guess).
       // The AI is a helper, never a blocker — a failure just leaves the fields for Pam to type.
       async runAiSuggest(f){
@@ -704,8 +730,9 @@
         this.cAiBusy = true; this.cAiNote = '';
         try {
           const fd = new FormData(); fd.append('file', f);
+          const tok = await this.liveToken();
           const r = await fetch('/api/v1/pos/products/ai-suggest', {
-            method:'POST', headers:{ 'Authorization':`Bearer ${this.staffToken}` }, body: fd });
+            method:'POST', headers:{ 'Authorization':`Bearer ${tok}` }, body: fd });
           if (r.ok){
             const d = await r.json(); const s = (d && d.suggestion) || {};
             if (s.name && !(this.cName||'').trim()) this.cName = s.name;
@@ -728,11 +755,13 @@
           // Same cashier-safe endpoint + SKU rule as the till's born-once flow, so the create funnel
           // (canonical category, 18+ class, compliance) runs identically. Auth = Pam's token.
           const sku = bc ? ('LZ-' + bc) : ('LZ-' + Date.now());
+          const tok = await this.liveToken();
           const res = await fetch('/api/v1/pos/products/quick', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.staffToken}` },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tok}` },
             body: JSON.stringify({ barcode: bc || null, sku, name, price, cost: null, image_url: null, description: null }),
           });
+          if (res.status === 401) throw new Error('SESSION_EXPIRED');
           if (!res.ok) throw new Error('HTTP ' + res.status);
           const product = await res.json();
           // Attach the photo (kiosk camera / gallery) — the picture is the label. Non-fatal if it fails.
@@ -740,7 +769,7 @@
             try {
               const fd = new FormData(); fd.append('file', this.cPhotoFile);
               await fetch(`/api/v1/pos/products/${product.id}/images`, {
-                method: 'POST', headers: { 'Authorization': `Bearer ${this.staffToken}` }, body: fd });
+                method: 'POST', headers: { 'Authorization': `Bearer ${tok}` }, body: fd });
             } catch(_){}
           }
           this.cSaving = false;
@@ -750,7 +779,9 @@
           else { this.view = 'attract'; }
         } catch(e){
           this.cSaving = false;
-          this.createErr = 'HTTP ' + (e && e.message ? e.message : 'error');
+          this.createErr = (e && e.message === 'SESSION_EXPIRED')
+            ? '🔒 Session expired — reopen the kiosk from the till (Staff button).'
+            : 'HTTP ' + (e && e.message ? e.message : 'error');
         }
       },
 
