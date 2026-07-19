@@ -26,6 +26,69 @@
       <div class="card text-center"><p class="text-gray-500 text-xs uppercase tracking-wide" data-i18n="hypercare.sc_needs_questions">Needs questions</p><p class="text-xl sm:text-2xl font-bold text-red-600" x-text="sc.undecipherable"></p></div>
     </div>
 
+    <!-- BL-100 #4 — the standing SEAL SWEEP: find barcode cross-wires before a cashier scans one -->
+    <div class="card mb-5">
+      <div class="flex justify-between items-center gap-3 flex-wrap">
+        <div>
+          <p class="font-bold text-gray-900">🔒 Product-matching integrity</p>
+          <p class="text-xs text-gray-500">The seal sweep — barcode cross-wires caught here instead of at the till. Read-only.</p>
+        </div>
+        <button @click="runSweep()" :disabled="sweeping" class="btn-secondary">
+          <span x-show="!sweeping">🔍 Run seal sweep</span>
+          <span x-show="sweeping" style="display:none;">Sweeping…</span>
+        </button>
+      </div>
+
+      <template x-if="sweep">
+        <div class="mt-3">
+          <div x-show="sweep.clean" class="text-sm text-green-700 bg-green-50 rounded-lg p-3">✅ No cross-wires — every barcode resolves to exactly one live product.</div>
+          <template x-for="c in (sweep.checks||[])" :key="c.key">
+            <div x-show="c.count > 0" class="mt-3">
+              <p class="text-xs font-bold uppercase tracking-wide" :class="c.severity==='high' ? 'text-red-600' : 'text-amber-600'">
+                <span x-text="c.severity==='high' ? '🔴' : '🟠'"></span>
+                <span x-text="c.label"></span> · <span x-text="c.count"></span>
+              </p>
+              <p class="text-[11px] text-gray-500 mb-2" x-text="c.hint"></p>
+
+              <!-- collisions: one barcode → many products -->
+              <template x-if="c.key==='collision'">
+                <div class="space-y-2">
+                  <template x-for="f in c.findings" :key="f.barcode">
+                    <div class="border border-red-200 rounded-lg p-2">
+                      <p class="font-mono text-xs text-gray-700 mb-1">📟 <span x-text="f.barcode"></span> — wired to <span x-text="f.products.length"></span> products:</p>
+                      <template x-for="p in f.products" :key="p.sku">
+                        <div class="flex items-center gap-2 text-xs py-0.5">
+                          <span class="font-mono text-gray-400" x-text="p.sku"></span>
+                          <span class="text-gray-800 truncate" x-text="p.name"></span>
+                          <span class="text-[10px] px-1.5 py-0.5 rounded-full" :class="p.role==='primary' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500'" x-text="p.role"></span>
+                          <span x-show="!p.is_active" class="text-[10px] text-red-500">discontinued</span>
+                          <span class="text-gray-400 ml-auto" x-show="p.price!=null" x-text="p.price"></span>
+                        </div>
+                      </template>
+                    </div>
+                  </template>
+                </div>
+              </template>
+
+              <!-- stranded on an inactive product -->
+              <template x-if="c.key==='stranded_inactive'">
+                <div class="space-y-1">
+                  <template x-for="f in c.findings" :key="f.barcode+f.sku">
+                    <div class="flex items-center gap-2 text-xs border border-amber-200 rounded-lg p-2">
+                      <span class="font-mono text-gray-600" x-text="f.barcode"></span>
+                      <span class="text-gray-800 truncate" x-text="f.name"></span>
+                      <span class="font-mono text-gray-400" x-text="f.sku"></span>
+                      <span class="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500" x-text="f.role"></span>
+                    </div>
+                  </template>
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+      </template>
+    </div>
+
     <div x-show="loading" class="text-center py-10 text-gray-500" data-i18n="hypercare.loading_queue">Loading the queue…</div>
     <div x-show="!loading && items.length === 0" class="card text-center py-10 text-gray-400" data-i18n="hypercare.empty">No feedback yet. When the floor fires the 💬 button, it lands here.</div>
 
@@ -107,6 +170,7 @@ function hypercareData() {
   return {
     items: [], sc: { total:0, triaged:0, untriaged:0, undecipherable:0 },
     loading: false, triaging: false, filter: 'active',
+    sweep: null, sweeping: false,
     init() {
       const u = AuthHelper.getUserInfo();
       if (!u) { window.location.href = '/pos'; return; }
@@ -126,6 +190,16 @@ function hypercareData() {
         this.sc = { total:d.total||0, triaged:d.triaged||0, untriaged:d.untriaged||0, undecipherable:d.undecipherable||0 };
       } catch (e) { console.error(e); showToast(t('hypercare.toast_load_failed'), 'error'); }
       finally { this.loading = false; }
+    },
+    async runSweep() {
+      this.sweeping = true;
+      try {
+        this.sweep = await API.get('/api/v1/pos/integrity/sweep');
+        const n = this.sweep.total_findings || 0;
+        showToast(n ? (n + ' cross-wire' + (n>1?'s':'') + ' to review') : 'All seals tight — no cross-wires',
+                  n ? 'error' : 'success');
+      } catch (e) { console.error(e); showToast('Seal sweep failed', 'error'); }
+      finally { this.sweeping = false; }
     },
     async runTriage() {
       this.triaging = true;

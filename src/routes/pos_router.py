@@ -6477,6 +6477,106 @@ async def hypercare_queue(
             "undecipherable": undec, "items": items}
 
 
+@router.get("/integrity/sweep")
+async def barcode_integrity_sweep(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_roles(["👔️ pos-manager", "👑️ pos-admin"])),
+):
+    """BL-100 #4 — the STANDING SEAL SWEEP. Read-only. Finds barcode cross-wires BEFORE a
+    cashier scans into one at the till (the most expensive place to discover a bad match).
+
+    The lesson (CLAUDE.md, the MAX camper seals): when one seal fails, check ALL the seals.
+    The Tycoon Gas incident (2026-07-14) and the GIZEH Pink/Black cross-wire (found 2026-07-19)
+    were both a scan hitting the WRONG product because a barcode was double-assigned or stranded
+    on a dead row. This surfaces the whole class so we find traps instead of scanning into them.
+
+    Two checks map to the two real incidents:
+      • COLLISION       — one barcode value resolves to MORE THAN ONE product (a scan is
+                          ambiguous; the GIZEH `42470335` on both Pink Rolls + Black Rolls).
+      • STRANDED-INACTIVE — a discontinued product still OWNS a scan-live barcode that no active
+                          product shares (a scan → "discontinued" dead-end; the Tycoon failure).
+    A minted-but-not-yet-scanned synthetic barcode is NOT flagged — that's by design (the
+    capture-on-first-sale doctrine self-heals it), and flagging every fresh item would bury the
+    real signal. Fix is never applied here — findings are SURFACED for a human to confirm
+    physically, then resolved through the gated path.
+    """
+    from sqlalchemy import union_all, literal
+
+    # --- Check A: one barcode → many products (the ambiguous scan) ---
+    # Every scan target (primary products.barcode + product_barcodes aliases) → group by value,
+    # keep the ones that resolve to more than one DISTINCT product. Core (not raw SQL) so it
+    # compiles on both Postgres (prod) and sqlite (tests).
+    _prod_bc = select(ProductModel.barcode.label("barcode"),
+                      ProductModel.id.label("pid")).where(
+                          ProductModel.barcode.isnot(None), ProductModel.barcode != "")
+    _alias_bc = select(ProductBarcodeModel.barcode.label("barcode"),
+                       ProductBarcodeModel.product_id.label("pid"))
+    _allbc = union_all(_prod_bc, _alias_bc).subquery("allbc")
+    coll_bcs = (await db.execute(
+        select(_allbc.c.barcode).group_by(_allbc.c.barcode)
+        .having(func.count(func.distinct(_allbc.c.pid)) > 1))).scalars().all()
+
+    collisions = []
+    if coll_bcs:
+        _pm = select(ProductModel.barcode.label("barcode"), literal("primary").label("role"),
+                     ProductModel.id.label("pid")).where(ProductModel.barcode.in_(coll_bcs))
+        _am = select(ProductBarcodeModel.barcode.label("barcode"), literal("alias").label("role"),
+                     ProductBarcodeModel.product_id.label("pid")).where(
+                         ProductBarcodeModel.barcode.in_(coll_bcs))
+        _mem = union_all(_pm, _am).subquery("mem")
+        mem = (await db.execute(
+            select(_mem.c.barcode, _mem.c.role, ProductModel.sku, ProductModel.name,
+                   ProductModel.is_active, ProductModel.category, ProductModel.price)
+            .join(ProductModel, ProductModel.id == _mem.c.pid)
+            .order_by(_mem.c.barcode, ProductModel.is_active.desc(), ProductModel.sku))).all()
+        by_bc: dict = {}
+        for r in mem:
+            by_bc.setdefault(r.barcode, []).append({
+                "sku": r.sku, "name": r.name, "role": r.role,
+                "is_active": bool(r.is_active), "category": r.category,
+                "price": float(r.price) if r.price is not None else None,
+            })
+        for bc, prods in by_bc.items():
+            collisions.append({"barcode": bc, "products": prods})
+
+    coll_set = set(coll_bcs)
+
+    # --- Check B: a scan-live barcode stranded on a DISCONTINUED product (no active twin) ---
+    _ps = select(literal("primary").label("role"), ProductModel.barcode.label("barcode"),
+                 ProductModel.sku.label("sku"), ProductModel.name.label("name"),
+                 ProductModel.category.label("category"), ProductModel.price.label("price")).where(
+                     ProductModel.is_active.is_(False),
+                     ProductModel.barcode.isnot(None), ProductModel.barcode != "")
+    _as = select(literal("alias").label("role"), ProductBarcodeModel.barcode.label("barcode"),
+                 ProductModel.sku.label("sku"), ProductModel.name.label("name"),
+                 ProductModel.category.label("category"), ProductModel.price.label("price")).join(
+                     ProductModel, ProductModel.id == ProductBarcodeModel.product_id).where(
+                         ProductModel.is_active.is_(False))
+    _str = union_all(_ps, _as).subquery("stranded")
+    stranded_rows = (await db.execute(
+        select(_str.c.role, _str.c.barcode, _str.c.sku, _str.c.name, _str.c.category, _str.c.price)
+        .order_by(_str.c.barcode).limit(500))).all()
+    stranded = [{
+        "barcode": r.barcode, "sku": r.sku, "name": r.name, "role": r.role,
+        "category": r.category, "price": float(r.price) if r.price is not None else None,
+    } for r in stranded_rows if r.barcode not in coll_set]   # collisions live in Check A
+
+    checks = [
+        {"key": "collision", "severity": "high",
+         "label": "Barcode on more than one product",
+         "hint": "A scan is ambiguous — the same code rings up different items. Confirm which "
+                 "product the physical code belongs to; remove it from the other.",
+         "count": len(collisions), "findings": collisions},
+        {"key": "stranded_inactive", "severity": "medium",
+         "label": "Scan-live barcode on a discontinued product",
+         "hint": "Scanning this returns 'discontinued' with no active item to sell — release the "
+                 "code or point it at the live replacement.",
+         "count": len(stranded), "findings": stranded},
+    ]
+    total = sum(c["count"] for c in checks)
+    return {"total_findings": total, "clean": total == 0, "checks": checks}
+
+
 @router.post("/feedback/{item_number}/done")
 async def mark_feedback_fixed(
     item_number: int,

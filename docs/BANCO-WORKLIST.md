@@ -12,10 +12,14 @@ backup-gated (restore-verified 60/5200/188):
   seal-sweep (8 views hardcoded CHF → `_store_currency`), `66bb41c` Settings missing Français.
 - ✅ backup gate RAN (60/5200/188). No open deploy items.
 
-**NEXT ACTIONABLE (top-down, still the ordered work):** (1) BL-100 seal sweep — other `42xxxxxx`
-cross-wires (read-only, confirm physically); (2) Receiving/Ecolution cost-auto-fill + goods-receipt →
-human-green sbx then ladder; (3) BL-98 bench human-green + backlog edit-guard rollout. Detail in the
-tiers below; this banner is the only new thing — nothing below was re-planned.
+**NEXT ACTIONABLE (top-down, still the ordered work):** (1) ✅ **BL-100 seal sweep RAN read-only on prod
+2026-07-19** — scope contained: 5 short-`42` primaries (all GIZEH papers), 1 alias in the whole DB, and it's
+the ONE cross-wire → **`42470335`** is primary of `TAM-22387` *All Pink Rolls Slim* AND alias on
+`REF-FOURTWENTY-…360136PAP` *Black Rolls Slim* (both active, both CHF 3.50 → fragments Pink/Black sales, no
+till-block). **▶ Angel: scan the physical `42470335` box → remove the stray from the other row (gated prod
+fix, surface-not-live). Detail in memory `banco-product-matching-integrity-bl100`.** (2) Receiving/Ecolution
+cost-auto-fill + goods-receipt → human-green sbx then ladder; (3) ✅ BL-98 bench SHIPPED PROD b1944 —
+remainder = edit-guard rollout to supplier/tier/order-book/settings modals. Detail in the tiers below.
 
 ---
 
