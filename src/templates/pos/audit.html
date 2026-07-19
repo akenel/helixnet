@@ -104,6 +104,7 @@
                 <span class="text-[11px] font-bold px-2 py-0.5 rounded-full border" :class="badge(it.action)" x-text="actionEmoji(it.action)+' '+actionWord(it.action)"></span>
                 <span class="font-semibold text-gray-900 truncate" x-text="it.label || (entityLabel(it.entity_type))"></span>
                 <span class="text-[11px] text-gray-400" x-show="it.label" x-text="entityLabel(it.entity_type)"></span>
+                <span x-show="isSensitive(it)" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-600 text-white animate-pulse" x-text="'⚠️ '+sensitiveTip(it)"></span>
               </div>
               <div class="text-xs text-gray-500 mt-1">
                 <span x-text="(it.who==='system'?'🤖 ':'👤 ')+it.who"></span>
@@ -283,6 +284,24 @@ function auditData() {
     stripe(a) { return ({INSERT:'border-green-400',UPDATE:'border-amber-400',DELETE:'border-red-400'})[a] || 'border-gray-300'; },
     badge(a) { return ({INSERT:'bg-green-100 text-green-700 border-green-200',UPDATE:'bg-amber-100 text-amber-700 border-amber-200',DELETE:'bg-red-100 text-red-700 border-red-200'})[a] || 'bg-gray-100 text-gray-600'; },
     summary(it) { const k = Object.keys(it.changes || {}); return k.length ? k.slice(0,4).join(', ') + (k.length>4 ? ' +'+(k.length-4) : '') : ''; },
+    // the edits an owner actually cares about — flag them loud
+    isSensitive(it) {
+      if (it.action === 'DELETE') return true;
+      if (it.action !== 'UPDATE') return false;
+      const S = ['is_age_restricted','product_class','price','cost','name','barcode','discount_pct'];
+      return Object.keys(it.changes || {}).some(f => S.includes(f));
+    },
+    sensitiveTip(it) {
+      if (it.action === 'DELETE') return 'deleted';
+      const c = it.changes || {}, t = [];
+      if (c.is_age_restricted) t.push(c.is_age_restricted.new === false ? '🔞 18+ REMOVED' : '18+ set');
+      if (c.product_class)     t.push('class');
+      if (c.price)  { const o = +c.price.old, n = +c.price.new; t.push(isNaN(o)||isNaN(n) ? 'price' : (n < o ? 'price ↓' : 'price ↑')); }
+      if (c.cost)   t.push('cost');
+      if (c.name)   t.push('renamed');
+      if (c.barcode) t.push('barcode');
+      return t.join(' · ') || 'sensitive';
+    },
     nonEmpty(o) { const r = {}; Object.entries(o||{}).forEach(([k,v]) => { if (v!==null && v!=='' && !(typeof v==='object' && !Array.isArray(v) && Object.keys(v).length===0)) r[k]=v; }); return r; },
     fmt(v) { if (v===null||v===undefined) return '∅'; if (typeof v==='object') return JSON.stringify(v); const s=String(v); return s.length>60 ? s.slice(0,60)+'…' : s; },
     fmtTime(s) { return s ? formatDateTime(s,{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}) : ''; },
