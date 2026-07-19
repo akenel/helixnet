@@ -6614,9 +6614,9 @@ async def audit_feed(
         FROM audit_log a
         LEFT JOIN products  pr ON a.entity_type='products'  AND pr.id::text = a.entity_id
         LEFT JOIN suppliers su ON a.entity_type='suppliers' AND su.id::text = a.entity_id
-        WHERE (CAST(:et  AS text) IS NULL OR a.entity_type = :et)
-          AND (CAST(:ac  AS text) IS NULL OR a.changed_by  = :ac)
-          AND (CAST(:act AS text) IS NULL OR a.action      = :act)
+        WHERE (CAST(:et  AS text) IS NULL OR a.entity_type = ANY(string_to_array(CAST(:et  AS text), ',')))
+          AND (CAST(:ac  AS text) IS NULL OR a.changed_by  = ANY(string_to_array(CAST(:ac  AS text), ',')))
+          AND (CAST(:act AS text) IS NULL OR a.action      = ANY(string_to_array(CAST(:act AS text), ',')))
           AND (CAST(:eid AS text) IS NULL OR a.entity_id   = :eid)
           AND (CAST(:q   AS text) IS NULL OR a.changed_by ILIKE :q OR a.entity_type ILIKE :q OR a.changes::text ILIKE :q)
           AND (CAST(:since AS text) IS NULL OR a.changed_at >= CAST(:since AS text)::timestamptz)
@@ -6643,9 +6643,9 @@ async def audit_feed(
 
     matched = (await db.execute(text("""
         SELECT count(*) FROM audit_log a
-        WHERE (CAST(:et  AS text) IS NULL OR a.entity_type = :et)
-          AND (CAST(:ac  AS text) IS NULL OR a.changed_by  = :ac)
-          AND (CAST(:act AS text) IS NULL OR a.action      = :act)
+        WHERE (CAST(:et  AS text) IS NULL OR a.entity_type = ANY(string_to_array(CAST(:et  AS text), ',')))
+          AND (CAST(:ac  AS text) IS NULL OR a.changed_by  = ANY(string_to_array(CAST(:ac  AS text), ',')))
+          AND (CAST(:act AS text) IS NULL OR a.action      = ANY(string_to_array(CAST(:act AS text), ',')))
           AND (CAST(:eid AS text) IS NULL OR a.entity_id   = :eid)
           AND (CAST(:q   AS text) IS NULL OR a.changed_by ILIKE :q OR a.entity_type ILIKE :q OR a.changes::text ILIKE :q)
           AND (CAST(:since AS text) IS NULL OR a.changed_at >= CAST(:since AS text)::timestamptz)
