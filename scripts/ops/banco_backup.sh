@@ -5,10 +5,6 @@
 # proving the encrypted backup is both decryptable AND restorable. The key lives in
 # /root/.banco-backup-key (root-only); Angel ALSO holds a copy off-box (without it the
 # .gpg files are unrecoverable — that's the point once they go offsite).
-#
-# OFFSITE (P5): scripts/ops/banco_offsite_pull.py pulls these .gpg blobs to a second
-# machine and sha256-verifies each against the box. Ciphertext offsite + key in KeePass
-# = a real disaster-recovery pair (3-2-1). This script only makes the primary copy.
 BACKUP_DIR=/opt/backups/banco
 KEY=/root/.banco-backup-key
 DB=banco_prod
@@ -16,6 +12,13 @@ CHECK=banco_prod_restore_check
 TS=$(date +%Y%m%d_%H%M)
 FILE=${BACKUP_DIR}/${DB}_${TS}.sql.gz.gpg
 mkdir -p "$BACKUP_DIR"
+
+# healthcheck (dead-man's-switch): success ping at the very end; /fail on ANY error exit,
+# so a silent failure (or the box going dark → no ping at all) alerts within the grace window.
+HC_URL=$(grep -oP '(?<=^HC_PING_URL=).*' /root/.banco-notify.env 2>/dev/null)
+_hc(){ [ -n "$HC_URL" ] && curl -fsS -m 10 --retry 3 "${HC_URL}$1" >/dev/null 2>&1 || true; }
+trap '_rc=$?; [ $_rc -ne 0 ] && _hc /fail; exit $_rc' EXIT
+
 [ -s "$KEY" ] || { echo "[$(date)] NO BACKUP KEY at $KEY" >&2; exit 3; }
 
 # 1. dump -> gzip -> gpg(AES256)
@@ -44,10 +47,16 @@ find "$BACKUP_DIR" -name "${DB}_*.sql.gz.gpg" -mtime +30 -delete
 find "$BACKUP_DIR" -name "${DB}_*.sql.gz" ! -name "*.gpg" -delete   # never keep unencrypted
 echo "[$(date)] retention: $(ls "${BACKUP_DIR}"/${DB}_*.sql.gz.gpg 2>/dev/null | wc -l) encrypted backups on disk"
 
-# 4. offsite #3 — ship the encrypted blob to Backblaze B2 (IMMUTABLE, ransomware-proof).
-#    Non-fatal: LOCAL + laptop + Google-Drive copies already exist; B2 is the copy a
-#    compromised box can APPEND to but can NEVER wipe (Object-Lock). Clean no-op until
-#    /root/.banco-b2.env is filled — see docs/BANCO-B2-BACKUP-SETUP.md.
-if command -v python3 >/dev/null 2>&1 && [ -x /opt/ops/banco_b2_push.py ]; then
-  python3 /opt/ops/banco_b2_push.py "$FILE" || echo "[$(date)] B2 push failed (non-fatal)" >&2
+# 4. immutable offsite — ship the VERIFIED encrypted blob to Backblaze B2 (write-only key,
+#    object-locked 14d compliance). Non-fatal to the LOCAL backup, but a B2 failure DOES alert.
+if [ -f /root/.banco-b2.env ]; then
+  if python3 /opt/backups/banco_b2_push.py "$FILE"; then
+    echo "[$(date)] B2 offsite: shipped $(basename "$FILE") immutable ✅"
+    _hc            # SUCCESS: dump + restore-drill + immutable offsite all green
+  else
+    echo "[$(date)] B2 push FAILED — offsite immutable copy NOT updated" >&2
+    _hc /fail      # alert: the offsite immutable copy did NOT update
+  fi
+else
+  _hc              # dump + restore-drill green (no B2 configured)
 fi
