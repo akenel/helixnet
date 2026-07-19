@@ -6588,6 +6588,69 @@ async def barcode_integrity_sweep(
     return {"total_findings": total, "clean": total == 0, "checks": checks}
 
 
+@router.get("/audit/feed")
+async def audit_feed(
+    limit: int = 40, offset: int = 0,
+    entity_type: Optional[str] = None, actor: Optional[str] = None,
+    action: Optional[str] = None, entity_id: Optional[str] = None,
+    q: Optional[str] = None,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: dict = Depends(require_roles(["👔️ pos-manager", "👑️ pos-admin"])),
+):
+    """The AUDIT COCKPIT feed — who / when / what changed across products, sales, closeouts,
+    suppliers and settings (audit_log, filled by the audit_capture() trigger). Read-only,
+    manager-gated. Filters: entity_type · actor · action · entity_id · free-text q. Enriched
+    with the entity's display name so the feed reads in plain language, not UUIDs."""
+    from sqlalchemy import text
+    lim = max(1, min(int(limit or 40), 200))
+    params = {"lim": lim, "off": max(0, int(offset or 0)),
+              "et": entity_type or None, "ac": actor or None, "act": action or None,
+              "eid": entity_id or None, "q": (f"%{q}%" if q else None)}
+    rows = (await db.execute(text("""
+        SELECT a.id, a.changed_at, a.changed_by, a.action, a.entity_type, a.entity_id, a.changes,
+               COALESCE(pr.name, su.name,
+                        a.changes->>'name', a.changes->'name'->>'new', a.changes->'name'->>'old') AS label
+        FROM audit_log a
+        LEFT JOIN products  pr ON a.entity_type='products'  AND pr.id::text = a.entity_id
+        LEFT JOIN suppliers su ON a.entity_type='suppliers' AND su.id::text = a.entity_id
+        WHERE (:et  IS NULL OR a.entity_type = :et)
+          AND (:ac  IS NULL OR a.changed_by  = :ac)
+          AND (:act IS NULL OR a.action      = :act)
+          AND (:eid IS NULL OR a.entity_id   = :eid)
+          AND (:q   IS NULL OR a.changed_by ILIKE :q OR a.entity_type ILIKE :q OR a.changes::text ILIKE :q)
+        ORDER BY a.id DESC
+        LIMIT :lim OFFSET :off
+    """), params)).mappings().all()
+
+    def _chg(v):
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except Exception:
+                return {}
+        return v or {}
+
+    items = [{
+        "id": r["id"],
+        "at": r["changed_at"].isoformat() if r["changed_at"] else None,
+        "who": r["changed_by"], "action": r["action"],
+        "entity_type": r["entity_type"], "entity_id": r["entity_id"],
+        "label": r["label"], "changes": _chg(r["changes"]),
+    } for r in rows]
+
+    facet_actor = (await db.execute(text(
+        "SELECT changed_by, count(*) c FROM audit_log GROUP BY changed_by ORDER BY c DESC"))).all()
+    facet_type = (await db.execute(text(
+        "SELECT entity_type, count(*) c FROM audit_log GROUP BY entity_type ORDER BY c DESC"))).all()
+    facet_action = (await db.execute(text(
+        "SELECT action, count(*) c FROM audit_log GROUP BY action"))).all()
+    total = (await db.execute(text("SELECT count(*) FROM audit_log"))).scalar() or 0
+    return {"total": int(total), "shown": len(items), "items": items,
+            "actors": [{"name": a[0], "count": a[1]} for a in facet_actor],
+            "entity_types": [{"name": t[0], "count": t[1]} for t in facet_type],
+            "actions": {a[0]: a[1] for a in facet_action}}
+
+
 @router.post("/feedback/{item_number}/done")
 async def mark_feedback_fixed(
     item_number: int,
@@ -7876,6 +7939,13 @@ async def pos_hypercare(request: Request):
     """The Hypercare Cockpit — Angel's command center for AI-triaged feedback (the API
     behind it, /feedback/queue + /feedback/triage, is manager/admin gated)."""
     return templates.TemplateResponse("pos/hypercare.html", {"request": request})
+
+
+@html_router.get("/pos/audit", response_class=HTMLResponse, name="pos_audit")
+async def pos_audit(request: Request):
+    """The Audit Cockpit — a filterable, drill-down feed of who/when/what changed across
+    products, sales, closeouts, suppliers and settings (API /audit/feed, manager/admin gated)."""
+    return templates.TemplateResponse("pos/audit.html", {"request": request})
 
 
 @html_router.get("/pos/my-tickets", response_class=HTMLResponse, name="pos_my_tickets")

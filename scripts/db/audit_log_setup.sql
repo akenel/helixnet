@@ -59,11 +59,16 @@ DROP TRIGGER IF EXISTS audit_products ON products;
 CREATE TRIGGER audit_products AFTER INSERT OR UPDATE OR DELETE ON products
   FOR EACH ROW EXECUTE FUNCTION audit_capture();
 
--- To add more later, uncomment (a sale, a closeout, supplier + settings edits):
--- DROP TRIGGER IF EXISTS audit_transactions ON transactions;
--- CREATE TRIGGER audit_transactions AFTER INSERT OR UPDATE OR DELETE ON transactions
---   FOR EACH ROW EXECUTE FUNCTION audit_capture();
--- DROP TRIGGER IF EXISTS audit_cash_shifts ON cash_shifts;
--- CREATE TRIGGER audit_cash_shifts AFTER INSERT OR UPDATE OR DELETE ON cash_shifts
---   FOR EACH ROW EXECUTE FUNCTION audit_capture();
--- (suppliers, store_settings, etc. — same one-liner)
+-- the money + master-data events (a sale, a closeout, supplier + settings edits):
+DROP TRIGGER IF EXISTS audit_transactions ON transactions;
+CREATE TRIGGER audit_transactions AFTER INSERT OR UPDATE OR DELETE ON transactions
+  FOR EACH ROW EXECUTE FUNCTION audit_capture();
+DROP TRIGGER IF EXISTS audit_cash_shifts ON cash_shifts;
+CREATE TRIGGER audit_cash_shifts AFTER INSERT OR UPDATE OR DELETE ON cash_shifts
+  FOR EACH ROW EXECUTE FUNCTION audit_capture();
+DROP TRIGGER IF EXISTS audit_suppliers ON suppliers;
+CREATE TRIGGER audit_suppliers AFTER INSERT OR UPDATE OR DELETE ON suppliers
+  FOR EACH ROW EXECUTE FUNCTION audit_capture();
+DROP TRIGGER IF EXISTS audit_store_settings ON store_settings;
+CREATE TRIGGER audit_store_settings AFTER INSERT OR UPDATE OR DELETE ON store_settings
+  FOR EACH ROW EXECUTE FUNCTION audit_capture();
