@@ -101,11 +101,19 @@ dependency — enrich/snap need a model; quickstart must set `BH_OLLAMA_KEY` or 
   `freehold-starter-kit` (wolfhold.app = the same clone-and-run pattern already LIVE — reuse it).
 - Optional: film it (Born Once) — "watch a stranger stand up Banco from scratch + restore, in X minutes."
 
-## Open decisions for Angel (answer at kickoff)
-- Which repo(s) public? (helixnet + BorrowHood themes?)
+## Decisions made 2026-07-19 (banked before compaction)
+- **SCOPE = Banco/POS only.** BUT the app is a MONOLITH (one `src/` serves /pos + /compute/bottega + Cleo).
+  v1 of the starter ships the WHOLE app code (clean — minus junk + other repos), **positioned/documented as
+  Banco POS**; the other routes sit harmlessly. A true POS-only code-carve = a separate bigger refactor (weeks),
+  do NOT gate the cookie-cutter on it. This keeps the extract ~a day.
+- **DON'T pre-create the repo.** The work is curation → write plumbing → secret-scan → THEN `git init`. Flow:
+  extract into a fresh local dir → build plumbing → scan the curated set → `git init` → push **PRIVATE** →
+  prove the clean-room stand-up → **flip PUBLIC** only once it stands up + is secret-clean. Name: `akenel/banco-starter`.
+
+## Still-open decisions (answer at kickoff)
 - Clean-room = fresh Hetzner box / local VM / throwaway dir?
-- Minimal profile (just POS + Postgres, BYO-brain) vs full stack (KC + traefik + ollama) as the onboarding target?
-  → a **minimal profile** is probably the right onboarding target; full stack is the "advanced" path.
+- Minimal profile (POS + Postgres + KC, BYO-brain) vs full stack (+ traefik/ollama/minio) as the onboarding target?
+  → **minimal profile** is the right onboarding target; full stack is the "advanced" path.
 - Test backup + throwaway B2 key for the public demo (don't expose prod keys).
 
 ## Risks
