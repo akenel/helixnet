@@ -33,7 +33,8 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-AUTH_URL = "https://api.backblazeb2.com/b2api/v2/b2_authorize_account"
+# B2 sunsetting v2 (newer/restricted keys → HTTP 400); v4 nests apiUrl/allowed under apiInfo.storageApi.
+AUTH_URL = "https://api.backblazeb2.com/b2api/v4/b2_authorize_account"
 
 
 def load_env(env_file: Path | None) -> dict:
@@ -87,11 +88,14 @@ def main() -> int:
             a = json.loads(r.read())
     except urllib.error.HTTPError as e:
         print("ERROR: B2 authorize failed —", e.read().decode()[:200]); return 1
-    api_url, account_id = a["apiUrl"], a["accountId"]
-    bucket_id = (a.get("allowed") or {}).get("bucketId")
+    _storage = (a.get("apiInfo") or {}).get("storageApi") or {}   # v4 nests it here
+    api_url = _storage.get("apiUrl") or a.get("apiUrl")           # v4, else legacy v2
+    account_id = a["accountId"]
+    _allowed = _storage.get("allowed") or a.get("allowed") or {}
+    bucket_id = _allowed.get("bucketId")
     if not bucket_id:  # key not bucket-scoped — look it up (needs listBuckets)
         try:
-            lb = _post(f"{api_url}/b2api/v2/b2_list_buckets", a["authorizationToken"],
+            lb = _post(f"{api_url}/b2api/v4/b2_list_buckets", a["authorizationToken"],
                        {"accountId": account_id, "bucketName": bucket})
             bucket_id = lb["buckets"][0]["bucketId"]
         except (urllib.error.HTTPError, IndexError, KeyError):
@@ -99,7 +103,7 @@ def main() -> int:
 
     # 2) set default retention + lifecycle in one update
     try:
-        res = _post(f"{api_url}/b2api/v2/b2_update_bucket", a["authorizationToken"], {
+        res = _post(f"{api_url}/b2api/v4/b2_update_bucket", a["authorizationToken"], {
             "accountId": account_id, "bucketId": bucket_id,
             "defaultRetention": {"mode": lock_mode,
                                  "period": {"duration": lock_days, "unit": "days"}},

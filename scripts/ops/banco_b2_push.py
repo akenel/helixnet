@@ -39,7 +39,9 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-AUTH_URL = "https://api.backblazeb2.com/b2api/v2/b2_authorize_account"
+# B2 migrated newer/restricted keys to v4-only (v2/v3 → HTTP 400). v4 also nests the
+# storage apiUrl + the key's bucketId under apiInfo.storageApi instead of at the top level.
+AUTH_URL = "https://api.backblazeb2.com/b2api/v4/b2_authorize_account"
 DEFAULT_BACKUP_DIR = Path("/opt/backups/banco")
 PATTERN = "banco_prod_*.sql.gz.gpg"
 LEDGER_NAME = ".b2-synced"
@@ -74,7 +76,7 @@ def _post(url: str, token: str, data: dict) -> dict:
 
 
 def _get_upload_url(api_url: str, token: str, bucket_id: str) -> dict:
-    return _post(f"{api_url}/b2api/v2/b2_get_upload_url", token, {"bucketId": bucket_id})
+    return _post(f"{api_url}/b2api/v4/b2_get_upload_url", token, {"bucketId": bucket_id})
 
 
 def _upload(up: dict, remote_name: str, blob: bytes, sha1: str) -> None:
@@ -124,11 +126,16 @@ def main() -> int:
         a = _authorize(kid, app_key)
     except urllib.error.HTTPError as e:
         print("[b2] ERROR authorize failed —", e.read().decode()[:200]); return 1
-    api_url, token = a["apiUrl"], a["authorizationToken"]
-    bucket_id = (a.get("allowed") or {}).get("bucketId")
+    _storage = (a.get("apiInfo") or {}).get("storageApi") or {}   # v4 nests it here
+    api_url = _storage.get("apiUrl") or a.get("apiUrl")           # v4, else legacy v2
+    token = a["authorizationToken"]
+    # a bucket-scoped key hands us its bucketId via `allowed` (v4: under storageApi; v2: top-level).
+    # An explicit B2_BUCKET_ID in the env wins (covers a write-only key not scoped to one bucket).
+    _allowed = _storage.get("allowed") or a.get("allowed") or {}
+    bucket_id = env.get("B2_BUCKET_ID", "").strip() or _allowed.get("bucketId")
     if not bucket_id:
         try:
-            lb = _post(f"{api_url}/b2api/v2/b2_list_buckets", token,
+            lb = _post(f"{api_url}/b2api/v4/b2_list_buckets", token,
                        {"accountId": a["accountId"], "bucketName": bucket})
             bucket_id = lb["buckets"][0]["bucketId"]
         except Exception:
