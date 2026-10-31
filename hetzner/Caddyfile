@@ -112,3 +112,69 @@ staging-bottega.lapiazza.app {
 	# Staging is not for humans to Google.
 	header X-Robots-Tag "noindex, nofollow"
 }
+
+staging-banco.lapiazza.app {
+	handle /realms/* {
+		reverse_proxy keycloak:8080
+	}
+	handle /resources/* {
+		reverse_proxy keycloak:8080
+	}
+	handle /js/* {
+		reverse_proxy keycloak:8080
+	}
+	handle /media/* {
+		reverse_proxy minio:9000
+	}
+	# Banco IS the POS -- land the bare host on the till.
+	@root path /
+	redir @root /pos 302
+	handle {
+		reverse_proxy helix-platform-banco-staging:8000
+	}
+
+	# Staging is not for humans to Google.
+	header X-Robots-Tag "noindex, nofollow"
+}
+
+banco.lapiazza.app {
+	handle /realms/* {
+		reverse_proxy keycloak:8080
+	}
+	handle /resources/* {
+		reverse_proxy keycloak:8080
+	}
+	handle /js/* {
+		reverse_proxy keycloak:8080
+	}
+	handle /media/* {
+		reverse_proxy minio:9000
+	}
+	# Banco IS the POS -- land the bare host on the till.
+	@root path /
+	redir @root /pos 302
+	handle {
+		reverse_proxy helix-platform-banco:8000
+	}
+}
+
+sandbox-banco.lapiazza.app {
+	handle /realms/* {
+		reverse_proxy keycloak:8080
+	}
+	handle /resources/* {
+		reverse_proxy keycloak:8080
+	}
+	handle /js/* {
+		reverse_proxy keycloak:8080
+	}
+	handle /media/* {
+		reverse_proxy minio:9000
+	}
+	# Sandbox IS the POS -- land the bare host on the till.
+	@root path /
+	redir @root /pos 302
+	handle {
+		reverse_proxy helix-platform-sandbox:8000
+	}
+}
