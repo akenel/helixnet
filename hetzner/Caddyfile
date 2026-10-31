@@ -10,6 +10,11 @@ lapiazza.app, borrowhood.duckdns.org {
 	}
 
 	# Keycloak auth paths (OIDC login)
+	# The master realm (Keycloak admin login) stays off the internet — 2026-10-31
+	# audit. Everything that needs it uses http://keycloak:8080 on the Docker network.
+	handle /realms/master* {
+		respond 404
+	}
 	handle /realms/* {
 		reverse_proxy keycloak:8080
 	}
@@ -41,6 +46,9 @@ staging.lapiazza.app {
 
 	# Keycloak auth paths (staging uses the same Keycloak instance,
 	# but the app points at the borrowhood-staging realm via env var)
+	handle /realms/master* {
+		respond 404
+	}
 	handle /realms/* {
 		reverse_proxy keycloak:8080
 	}
@@ -63,6 +71,9 @@ staging.lapiazza.app {
 
 
 bottega.lapiazza.app {
+	handle /realms/master* {
+		respond 404
+	}
 	handle /realms/* {
 		reverse_proxy keycloak:8080
 	}
@@ -93,6 +104,9 @@ bottega.lapiazza.app {
 #   # verify: md5sum hetzner/Caddyfile == docker exec caddy md5sum /etc/caddy/Caddyfile
 
 staging-bottega.lapiazza.app {
+	handle /realms/master* {
+		respond 404
+	}
 	handle /realms/* {
 		reverse_proxy keycloak:8080
 	}
@@ -114,6 +128,9 @@ staging-bottega.lapiazza.app {
 }
 
 staging-banco.lapiazza.app {
+	handle /realms/master* {
+		respond 404
+	}
 	handle /realms/* {
 		reverse_proxy keycloak:8080
 	}
@@ -138,6 +155,9 @@ staging-banco.lapiazza.app {
 }
 
 banco.lapiazza.app {
+	handle /realms/master* {
+		respond 404
+	}
 	handle /realms/* {
 		reverse_proxy keycloak:8080
 	}
@@ -159,6 +179,9 @@ banco.lapiazza.app {
 }
 
 sandbox-banco.lapiazza.app {
+	handle /realms/master* {
+		respond 404
+	}
 	handle /realms/* {
 		reverse_proxy keycloak:8080
 	}
